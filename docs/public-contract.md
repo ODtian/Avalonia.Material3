@@ -18,7 +18,7 @@ dotnet pack src/Avalonia.Material3/Avalonia.Material3.csproj -c Release -o artif
 dotnet run --project samples/StandaloneHost -c Release
 ```
 
-根目录 `NuGet.Config` 将 `Avalonia.Material3` **只映射到本地源**，其他依赖来自 nuget.org。包尚未发布到公共源。复制宿主到其他目录时同时带上 `Directory.Build.props`、`global.json`、配置与本地包，或在自己的项目中明确指定上述版本和包源。不得以库的 ProjectReference 替代包消费。
+根目录 `NuGet.Config` 将 `Avalonia.Material3` **只映射到本地源**，其他依赖来自 nuget.org；默认使用仓库内 `artifacts/nuget` 缓存，不改动用户全局缓存。包尚未发布到公共源。复制宿主到其他目录时同时带上 `Directory.Build.props`、`global.json`、配置与本地包，或在自己的项目中明确指定上述版本和包源。不得以库的 ProjectReference 替代包消费。
 
 在创建窗口和内容之前安装主题（推荐 App.Initialize 中加载此 XAML）：
 
@@ -45,7 +45,7 @@ dotnet run --project samples/StandaloneHost -c Release
 ```
 
 - 初始变体：small、round、filled、非切换；其余样式/尺寸/选中状态由 M3-03 提供。
-- 视觉容器最小高度 40 DIP；整体命中区域最小高度 48 DIP，内容增长时可扩大。
+- 视觉容器最小高度 40 DIP；整体命中区域至少 48 DIP。本模板为容纳 3 DIP 焦点环及 2 DIP 间距，默认外框为 50 DIP 高；内容增长时可扩大。
 - `Content`、`ContentTemplate`、`Command`、`CommandParameter`、`Click`、`IsEnabled`、`Padding`、`Background`、`Foreground`、字体、圆角、`Template` 和 `Theme` 沿用 Avalonia 公开契约。局部值按 Avalonia 优先级覆盖主题；例如显式 Background 也会覆盖禁用样式，宿主需负责对应状态外观。
 - 鼠标/触摸释放在按钮内激活，移出后释放取消；Tab/Shift+Tab 导航；Enter 激活，Space 按下反馈、释放激活；禁用不激活、不参与焦点导航。
 - 悬停/按下状态层、禁用配色、键盘可见焦点；pressed 圆角按锁定规范变化。
@@ -86,7 +86,7 @@ app.Styles.Add(theme); // 创建窗口之前
 - 语义画刷：`M3.PrimaryBrush`、`M3.OnPrimaryBrush`、`M3.SurfaceBrush`、`M3.OnSurfaceBrush`、`M3.OnSurfaceVariantBrush`、`M3.OutlineBrush`。
 - 派生禁用画刷：`M3.DisabledContainerBrush`（OnSurface × 0.10）、`M3.DisabledForegroundBrush`（OnSurfaceVariant × 0.38）。
 - 字体：`M3.FontFamily`、`M3.LabelLargeFontSize`（14 × Scale）、`M3.BodyLargeFontSize`（16 × Scale）。按钮标签字重 500。
-- 形状：`M3.ButtonCornerRadius`、`M3.PressedButtonCornerRadius`、`M3.ButtonFocusCornerRadius`。
+- 形状：`M3.ButtonCornerRadius`、`M3.PressedButtonCornerRadius`、`M3.ButtonFocusCornerRadius`、`M3.PressedButtonFocusCornerRadius`。
 - 动效：`M3.StateLayerDuration`（TimeSpan）。
 
 Light/Dark 使用 Avalonia ThemeDictionaries；更新色彩输入替换相应字典，现有 DynamicResource 自动更新。字体、形状与动效输入同样更新现有资源。

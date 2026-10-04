@@ -2,9 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
-using Avalonia.Layout;
-using Avalonia.Material3.Controls;
-using Avalonia.Material3.Themes;
 using Avalonia.Material3.Tokens;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -14,6 +11,18 @@ namespace Avalonia.Material3.Tests;
 
 public class ButtonScenarioTests
 {
+    [AvaloniaFact]
+    public void Keyboard_focus_ring_is_separated_from_the_button_container()
+    {
+        using var host = new ButtonHost();
+        host.Window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.None);
+        host.Window.KeyReleaseQwerty(PhysicalKey.Tab, RawInputModifiers.None);
+        var leftGap = host.Button.TranslatePoint(new Point(4, host.Button.Bounds.Height / 2), host.Window)!.Value;
+        var rightGap = host.Button.TranslatePoint(new Point(host.Button.Bounds.Width - 5, host.Button.Bounds.Height / 2), host.Window)!.Value;
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(leftGap));
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(rightGap));
+    }
+
     [AvaloniaFact]
     public void Host_updates_initial_design_tokens_on_existing_content()
     {
@@ -104,36 +113,11 @@ public class ButtonScenarioTests
     [AvaloniaFact]
     public void Host_loads_a_filled_button_and_receives_pointer_feedback()
     {
-        var button = new MaterialButton
-        {
-            Content = "Continue",
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        var result = new TextBlock { Text = "Waiting" };
-        button.Click += (_, _) => result.Text = "Action completed";
-        var window = new Window
-        {
-            Width = 320,
-            Height = 240,
-            RequestedThemeVariant = ThemeVariant.Light
-        };
-        window.Styles.Add(new MaterialTheme());
-        window.Content = new StackPanel { Children = { button, result } };
-        window.Show();
-        try
-        {
-            var point = button.TranslatePoint(new Point(button.Bounds.Width / 2, button.Bounds.Height / 2), window)!.Value;
-            window.MouseDown(point, MouseButton.Left);
-            window.MouseUp(point, MouseButton.Left);
-
-            Assert.Equal("Action completed", result.Text);
-            Assert.Equal(Color.Parse("#6750A4"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Background).Color);
-            Assert.True(button.Bounds.Height >= 48);
-        }
-        finally
-        {
-            window.Close();
-        }
+        using var host = new ButtonHost();
+        host.Window.MouseDown(host.Center, MouseButton.Left);
+        host.Window.MouseUp(host.Center, MouseButton.Left);
+        Assert.Equal("Action completed", host.Result.Text);
+        Assert.Equal(Color.Parse("#6750A4"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Button.Background).Color);
+        Assert.True(host.Button.Bounds.Height >= 48);
     }
 }

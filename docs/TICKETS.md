@@ -27,6 +27,8 @@
 
 ## 已交付
 
+集成分支：`integration/m3-spec-1`。后续本规格票据从此分支的最新提交继续；本批不合并到 `main`。
+
 - [M3-01 / #2 — 主题按钮从控件包到独立宿主](https://github.com/ODtian/Avalonia.Material3/issues/2)：初始包 `0.1.0-preview.1`，见[验证记录](verification/m3-01.md)和[公开消费契约](public-contract.md)。
 
 ## M3-01 完成后的就绪前沿

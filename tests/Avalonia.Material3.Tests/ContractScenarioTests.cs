@@ -70,6 +70,7 @@ public class ContractScenarioTests
     [InlineData(-1)]
     [InlineData(double.NaN)]
     [InlineData(double.PositiveInfinity)]
+    [InlineData(double.MaxValue)]
     public void Invalid_font_scale_cannot_replace_the_host_theme(double scale)
     {
         using var host = new ButtonHost();

@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Material3.Tokens;
-using Avalonia.Media;
 using Avalonia.Media.Immutable;
 using Avalonia.Styling;
 
@@ -96,7 +95,8 @@ public class MaterialTheme : Styles
     {
         Resources["M3.ButtonCornerRadius"] = new CornerRadius(Shapes.ButtonCornerRadius);
         Resources["M3.PressedButtonCornerRadius"] = new CornerRadius(Shapes.PressedButtonCornerRadius);
-        Resources["M3.ButtonFocusCornerRadius"] = new CornerRadius(Shapes.ButtonCornerRadius + 4);
+        Resources["M3.ButtonFocusCornerRadius"] = new CornerRadius(Shapes.ButtonCornerRadius + 5);
+        Resources["M3.PressedButtonFocusCornerRadius"] = new CornerRadius(Shapes.PressedButtonCornerRadius + 5);
     }
 
     private void UpdateMotion() =>

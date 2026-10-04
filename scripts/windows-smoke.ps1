@@ -52,6 +52,8 @@ try {
     $name = [System.Windows.Automation.AutomationElement]::NameProperty
     $action = Wait-For { Find-By $window $id 'ActionButton' } 'action button'
     $theme = Wait-For { Find-By $window $id 'ThemeButton' } 'theme button'
+    $action.SetFocus()
+    Wait-For { $action.Current.HasKeyboardFocus } 'foreground action focus' | Out-Null
     New-Item -ItemType Directory -Force $Screenshots | Out-Null
     $sample = [System.IO.Path]::GetFileNameWithoutExtension($Executable)
     Start-Sleep -Milliseconds 300

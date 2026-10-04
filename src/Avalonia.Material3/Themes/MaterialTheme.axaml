@@ -34,7 +34,7 @@
       <Setter Property="Template">
         <ControlTemplate>
           <Grid Background="Transparent">
-            <Border x:Name="Container" Margin="0,4" MinHeight="40"
+            <Border x:Name="Container" Margin="5" MinHeight="40"
                     Background="{TemplateBinding Background}"
                     CornerRadius="{TemplateBinding CornerRadius}">
               <Grid>
@@ -75,6 +75,9 @@
       </Style>
       <Style Selector="^:pressed /template/ Border#Container">
         <Setter Property="BoxShadow" Value="none" />
+      </Style>
+      <Style Selector="^:pressed /template/ Border#FocusRing">
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.PressedButtonFocusCornerRadius}" />
       </Style>
       <Style Selector="^:focus-visible /template/ Border#FocusRing">
         <Setter Property="IsVisible" Value="True" />
