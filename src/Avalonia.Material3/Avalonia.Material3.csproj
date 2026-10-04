@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Version>$(Material3Version)</Version>
+    <Description>Material 3 Expressive controls and theme inputs for Avalonia.</Description>
+    <RepositoryUrl>https://github.com/ODtian/Avalonia.Material3</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+</Project>

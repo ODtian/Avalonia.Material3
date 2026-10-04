@@ -1,0 +1,24 @@
+name: Verify
+on:
+  push:
+  pull_request:
+
+jobs:
+  scenarios-and-package:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Verify source and isolated package consumers
+        shell: pwsh
+        run: ./scripts/verify.ps1
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verification-${{ matrix.os }}
+          path: artifacts/

@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:StandaloneHost"
+        xmlns:m3="using:Avalonia.Material3.Controls"
+        x:Class="StandaloneHost.MainWindow" x:DataType="local:MainWindow"
+        Title="Independent Material 3 Package Consumer" Width="560" Height="320"
+        MinWidth="360" MinHeight="280" RequestedThemeVariant="Light">
+  <StackPanel Margin="32" Spacing="16">
+    <TextBlock Text="Independent package consumer" FontSize="22" FontWeight="SemiBold" TextWrapping="Wrap" />
+    <m3:MaterialButton x:Name="ActionButton" Content="Run action" Click="OnAction"
+                       AutomationProperties.AutomationId="ActionButton" />
+    <TextBlock x:Name="ResultText" Text="{Binding Feedback}" />
+    <m3:MaterialButton x:Name="ThemeButton" Content="{Binding ThemeCaption}" Click="OnTheme"
+                       AutomationProperties.AutomationId="ThemeButton" />
+    <TextBlock Text="NuGet package only — no library project reference" TextWrapping="Wrap" />
+  </StackPanel>
+</Window>

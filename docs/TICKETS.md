@@ -25,9 +25,20 @@
 | M3-18 | [#19 — Carousel 与下拉刷新推动内容更新](https://github.com/ODtian/Avalonia.Material3/issues/19) | 用户浏览通用图片集合并下拉刷新，宿主更新内容，位置与加载反馈保持连续。 | [M3-09](https://github.com/ODtian/Avalonia.Material3/issues/7), [M3-11](https://github.com/ODtian/Avalonia.Material3/issues/12) |
 | M3-19 | [#20 — 独立宿主消费完整控件包并完成发布验收](https://github.com/ODtian/Avalonia.Material3/issues/20) | 全新宿主从明确版本的包安装到访问完整组件展厅，完成主题、输入、AOT 和兼容验证，并获得可复用的发布包及升级说明。 | [M3-02](https://github.com/ODtian/Avalonia.Material3/issues/3), [M3-04](https://github.com/ODtian/Avalonia.Material3/issues/9), [M3-05](https://github.com/ODtian/Avalonia.Material3/issues/10), [M3-06](https://github.com/ODtian/Avalonia.Material3/issues/5), [M3-08](https://github.com/ODtian/Avalonia.Material3/issues/11), [M3-10](https://github.com/ODtian/Avalonia.Material3/issues/8), [M3-13](https://github.com/ODtian/Avalonia.Material3/issues/15), [M3-14](https://github.com/ODtian/Avalonia.Material3/issues/16), [M3-16](https://github.com/ODtian/Avalonia.Material3/issues/17), [M3-17](https://github.com/ODtian/Avalonia.Material3/issues/18), [M3-18](https://github.com/ODtian/Avalonia.Material3/issues/19) |
 
-## 当前起始前沿
+## 已交付
 
-- [M3-01 — 主题按钮从控件包到独立宿主](https://github.com/ODtian/Avalonia.Material3/issues/2)
+- [M3-01 / #2 — 主题按钮从控件包到独立宿主](https://github.com/ODtian/Avalonia.Material3/issues/2)：初始包 `0.1.0-preview.1`，见[验证记录](verification/m3-01.md)和[公开消费契约](public-contract.md)。
+
+## M3-01 完成后的就绪前沿
+
+本批只执行 #2；以下票据等待后续授权开始：
+
+- [M3-02 / #3 — 种子色与动态主题驱动完整色彩方案](https://github.com/ODtian/Avalonia.Material3/issues/3)
+- [M3-03 / #4 — 标准按钮与图标按钮完成操作反馈](https://github.com/ODtian/Avalonia.Material3/issues/4)
+- [M3-06 / #5 — 复选单选与开关驱动表单状态](https://github.com/ODtian/Avalonia.Material3/issues/5)
+- [M3-07 / #6 — 文本输入从编辑到校验结果](https://github.com/ODtian/Avalonia.Material3/issues/6)
+- [M3-09 / #7 — 卡片列表与徽标呈现完整内容层级](https://github.com/ODtian/Avalonia.Material3/issues/7)
+- [M3-10 / #8 — 滑块控制单值范围与设置预览](https://github.com/ODtian/Avalonia.Material3/issues/8)
 
 ## 推进规则
 
