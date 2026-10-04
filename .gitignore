@@ -1,0 +1,14 @@
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+.env
+.env.*
+*.jks
+*.keystore
+*.apk
+*.aab
+*.nupkg
+*.snupkg
