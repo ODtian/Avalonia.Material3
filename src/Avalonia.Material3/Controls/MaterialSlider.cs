@@ -40,6 +40,15 @@ public class MaterialSlider : TemplatedControl
     public static readonly StyledProperty<IBrush?> ValueIndicatorForegroundProperty =
         AvaloniaProperty.Register<MaterialSlider, IBrush?>(nameof(ValueIndicatorForeground));
 
+    public static readonly StyledProperty<double> DisabledActiveOpacityProperty =
+        AvaloniaProperty.Register<MaterialSlider, double>(nameof(DisabledActiveOpacity), 0.38,
+            validate: value => double.IsFinite(value) && value is >= 0 and <= 1);
+    public static readonly StyledProperty<double> DisabledInactiveOpacityProperty =
+        AvaloniaProperty.Register<MaterialSlider, double>(nameof(DisabledInactiveOpacity), 0.12,
+            validate: value => double.IsFinite(value) && value is >= 0 and <= 1);
+    public double DisabledActiveOpacity { get => GetValue(DisabledActiveOpacityProperty); set => SetValue(DisabledActiveOpacityProperty, value); }
+    public double DisabledInactiveOpacity { get => GetValue(DisabledInactiveOpacityProperty); set => SetValue(DisabledInactiveOpacityProperty, value); }
+
     public bool ShowMarks { get => GetValue(ShowMarksProperty); set => SetValue(ShowMarksProperty, value); }
     public IReadOnlyList<double> Marks { get => GetValue(MarksProperty); set => SetValue(MarksProperty, value); }
     public string LabelFormat { get => GetValue(LabelFormatProperty); set => SetValue(LabelFormatProperty, value); }

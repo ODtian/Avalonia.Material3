@@ -22,6 +22,73 @@ namespace Avalonia.Material3.Tests;
 public class SliderScenarioTests
 {
     [AvaloniaFact]
+    public void Existing_slider_resolves_full_seed_and_platform_roles_and_restores_both_modes()
+    {
+        using var host = new SliderHost(new MaterialSlider { Value = 50, ValueLabelVisibility = SliderValueLabelVisibility.Always });
+        host.Theme.SeedColor = Color.Parse("#6750A4");
+        host.Capture();
+        // Independent Google MCU 0.3.0 + pinned AndroidX role fixture, not the generator under test.
+        Assert.Equal(Color.Parse("#313033"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.ValueIndicatorBrush).Color);
+        Assert.Equal(Color.Parse("#F4EFF4"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.ValueIndicatorForeground).Color);
+        host.Window.RequestedThemeVariant = ThemeVariant.Dark;
+        host.Capture();
+        Assert.Equal(Color.Parse("#E6E1E6"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.ValueIndicatorBrush).Color);
+        host.Theme.DynamicColors = new MaterialDynamicColors(
+            MaterialColorScheme.Light with { SecondaryContainer = Color.Parse("#123456"), InverseSurface = Color.Parse("#234567"), InverseOnSurface = Color.Parse("#FEDCBA") },
+            MaterialColorScheme.Dark with { SecondaryContainer = Color.Parse("#456789"), InverseSurface = Color.Parse("#56789A"), InverseOnSurface = Color.Parse("#ABCDEF") });
+        host.Capture();
+        Assert.Equal(Color.Parse("#456789"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.Background).Color);
+        Assert.Equal(Color.Parse("#56789A"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.ValueIndicatorBrush).Color);
+        Assert.Equal(Color.Parse("#ABCDEF"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.ValueIndicatorForeground).Color);
+        host.Window.RequestedThemeVariant = ThemeVariant.Light;
+        host.Capture();
+        Assert.Equal(Color.Parse("#123456"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.Background).Color);
+        Assert.Equal(Color.Parse("#234567"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.ValueIndicatorBrush).Color);
+        host.Theme.DynamicColors = null;
+        host.Capture();
+        Assert.Equal(Color.Parse("#313033"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.ValueIndicatorBrush).Color);
+        host.Theme.SeedColor = null;
+        host.Capture();
+        Assert.Equal(Color.Parse("#322F35"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Slider.ValueIndicatorBrush).Color);
+        Assert.Equal(50, host.Slider.Value);
+    }
+
+    [AvaloniaFact]
+    public void Disabled_tracks_follow_live_state_tokens_including_zero_active_opacity()
+    {
+        using var host = new SliderHost(new MaterialSlider { Value = 50, IsEnabled = false });
+        var active = host.Slider.TranslatePoint(new Point(60, host.Slider.Bounds.Height - 32), host.Window)!.Value;
+        var inactive = host.Slider.TranslatePoint(new Point(host.Slider.Bounds.Width - 60, host.Slider.Bounds.Height - 32), host.Window)!.Value;
+        host.Theme.States = new MaterialStates { DisabledForegroundOpacity = 1, DisabledContainerOpacity = 0 };
+        host.Capture();
+        Assert.Equal(Color.Parse("#1D1B20"), host.PixelAt(active));
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(inactive));
+        host.Theme.States = new MaterialStates { DisabledForegroundOpacity = 0, DisabledContainerOpacity = 1 };
+        host.Capture();
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(active));
+        Assert.Equal(Color.Parse("#1D1B20"), host.PixelAt(inactive));
+        Assert.Equal(50, host.Slider.Value);
+    }
+
+    [AvaloniaFact]
+    public void Existing_slider_uses_host_label_role_font_and_weight_overrides()
+    {
+        using var host = new SliderHost(new MaterialSlider { Value = 50, ValueLabelVisibility = SliderValueLabelVisibility.Always });
+        var before = host.Capture();
+        host.Theme.Typography = new MaterialTypography
+        {
+            FontFamily = new FontFamily("Times New Roman"), Scale = 1.5,
+            LabelLarge = new MaterialTypeStyle(18, 24, 0.2, FontWeight.Bold) { FontFamily = new FontFamily("Arial") }
+        };
+        host.Capture();
+        Assert.Equal(new FontFamily("Arial"), host.Slider.FontFamily);
+        Assert.Equal(FontWeight.Bold, host.Slider.FontWeight);
+        Assert.Equal(27, host.Slider.FontSize);
+        Assert.NotEqual(before, host.Capture());
+        Assert.Equal(50, host.Slider.Value);
+    }
+
+    [AvaloniaFact]
     public void Track_corner_next_to_the_handle_uses_the_pinned_two_dip_inside_radius()
     {
         using var host = new SliderHost(new MaterialSlider { Value = 50 });

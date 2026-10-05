@@ -6,7 +6,8 @@ $sandbox = Join-Path ([IO.Path]::GetTempPath()) ('m3-sliders-' + [guid]::NewGuid
 $previousPackages = $env:NUGET_PACKAGES
 function Invoke-Dotnet {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    & dotnet @Arguments
+    # Do not leave reusable build nodes holding the isolated package cache open.
+    & dotnet @Arguments --disable-build-servers
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments -join ' ') failed ($LASTEXITCODE)." }
 }
 function Copy-SourceTree([string]$relative) {
@@ -34,6 +35,7 @@ try {
 '@ | Set-Content (Join-Path $sandbox 'NuGet.Config')
     Copy-SourceTree 'samples'
     Copy-SourceTree 'tests/PackageConsumption.Tests'
+    Copy-SourceTree 'tests/ReferenceVectors'
     New-Item -ItemType Directory -Force "$sandbox/tests/Avalonia.Material3.Tests" | Out-Null
     # Copy scenario sources only: no source library, no library ProjectReference.
     Copy-Item "$root/tests/Avalonia.Material3.Tests/*.cs" "$sandbox/tests/Avalonia.Material3.Tests"

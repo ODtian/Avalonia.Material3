@@ -14,7 +14,7 @@ $previousPackages = $env:NUGET_PACKAGES
 
 function Invoke-Dotnet {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    & dotnet @Arguments
+    & dotnet @Arguments --disable-build-servers
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments -join ' ') failed ($LASTEXITCODE)." }
 }
 

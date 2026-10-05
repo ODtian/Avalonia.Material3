@@ -86,7 +86,6 @@ public sealed class MaterialSliderPresenter : Control
     private void DrawTrack(DrawingContext context)
     {
         var owner = _owner!;
-        using var stateOpacity = context.PushOpacity(owner.IsEffectivelyEnabled ? 1 : 0.38);
         var start = 24d;
         var end = Math.Max(start, Length - 24);
         var lower = Position(owner.Value);
@@ -114,6 +113,7 @@ public sealed class MaterialSliderPresenter : Control
                 leadingHandle: owner is MaterialRangeSlider, trailingHandle: true);
             DrawSegment(context, upper + 8, end, owner.Background, leadingHandle: true);
         }
+        using var activeOpacity = context.PushOpacity(owner.IsEffectivelyEnabled ? 1 : owner.DisabledActiveOpacity);
         if (owner.ShowMarks) DrawMarks(context, start, end, lower, upper);
         DrawHandle(context, lower, owner.IsFocused || (_endpoints.Count > 0 && _endpoints[0].IsFocused), !owner.ActiveUpper);
         if (owner is MaterialRangeSlider) DrawHandle(context, upper, _endpoints[1].IsFocused, owner.ActiveUpper);
@@ -126,7 +126,8 @@ public sealed class MaterialSliderPresenter : Control
         bool leadingHandle = false, bool trailingHandle = false)
     {
         if (end <= start) return;
-        using var opacity = context.PushOpacity(_owner!.IsEffectivelyEnabled || active ? 1 : 0.12 / 0.38);
+        using var opacity = context.PushOpacity(_owner!.IsEffectivelyEnabled ? 1 :
+            active ? _owner.DisabledActiveOpacity : _owner.DisabledInactiveOpacity);
         var leading = leadingHandle ? 2 : 8;
         var trailing = trailingHandle ? 2 : 8;
         var rect = new RoundedRect(new Rect(start, TrackY - 8, end - start, 16), new CornerRadius(leading, trailing, trailing, leading));
@@ -175,7 +176,7 @@ public sealed class MaterialSliderPresenter : Control
     {
         var owner = _owner!;
         var text = new FormattedText(value, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
-            new Typeface(owner.FontFamily, FontStyle.Normal, FontWeight.Medium), owner.FontSize, owner.ValueIndicatorForeground);
+            new Typeface(owner.FontFamily, owner.FontStyle, owner.FontWeight), owner.FontSize, owner.ValueIndicatorForeground);
         var width = Math.Min(Bounds.Width, text.Width + 16);
         var height = text.Height + 12;
         var x = Math.Clamp(handle - width / 2, 0, Math.Max(0, Bounds.Width - width));
