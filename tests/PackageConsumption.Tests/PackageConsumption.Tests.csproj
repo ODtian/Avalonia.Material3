@@ -17,5 +17,10 @@
     <Compile Include="../Avalonia.Material3.Tests/ButtonHost.cs" Link="ButtonHost.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ContractScenarioTests.cs" Link="ContractScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ContentScenarioTests.cs" Link="ContentScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/ThemeScenarioTests.cs" Link="ThemeScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/TokenReferenceScenarioTests.cs" Link="TokenReferenceScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/ThemeGalleryScenarioTests.cs" Link="ThemeGalleryScenarioTests.cs" />
+    <EmbeddedResource Include="../ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
+    <EmbeddedResource Include="../ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />
   </ItemGroup>
 </Project>
