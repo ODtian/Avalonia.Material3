@@ -6,6 +6,7 @@
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/SelectionControls.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sliders.axaml" />
       </ResourceDictionary.MergedDictionaries>
     <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
       <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />

@@ -14,7 +14,7 @@ $previousPackages = $env:NUGET_PACKAGES
 
 function Invoke-Dotnet {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    & dotnet @Arguments
+    & dotnet @Arguments --disable-build-servers
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments -join ' ') failed ($LASTEXITCODE)." }
 }
 
@@ -47,7 +47,7 @@ try {
     Copy-SourceTree 'tests/PackageConsumption.Tests'
     Copy-SourceTree 'tests/ReferenceVectors'
     New-Item -ItemType Directory -Force (Join-Path $sandbox 'tests/Avalonia.Material3.Tests') | Out-Null
-    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'SelectionHost.cs', 'SelectionScenarioTests.cs', 'SelectionFormScenarioTests.cs', 'SelectionAdaptationScenarioTests.cs') {
+    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'SelectionHost.cs', 'SelectionScenarioTests.cs', 'SelectionFormScenarioTests.cs', 'SelectionAdaptationScenarioTests.cs') {
         Copy-Item (Join-Path $root "tests/Avalonia.Material3.Tests/$file") (Join-Path $sandbox 'tests/Avalonia.Material3.Tests')
     }
     $env:NUGET_PACKAGES = Join-Path $sandbox 'packages'
