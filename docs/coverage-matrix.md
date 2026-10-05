@@ -50,8 +50,8 @@
 | Badges：点、计数 | 待交付 | [M3-09 #7][i7] | [Badges][badges]、BadgeTokens |
 | Dividers：水平、垂直、inset | 待交付 | [M3-09 #7][i7] | [Dividers][dividers]、DividerTokens |
 | Sliders：单值、范围、连续、离散、标记 | 场景交付：另含 vertical/centered/RTL、两端点 focus/RangeValue、预览与保存恢复；headless/API 和新包消费通过，真实读屏/硬件与最终展厅集成未认领 | [M3-10 #8][i8] | [Sliders][sliders]、SliderTokens v2_3_5；[公开契约](components/m3-10.md)、[验证记录](verification/m3-10.md) |
-| Progress indicators：线性、圆形、确定/不确定、Expressive 波形 | 待交付 | [M3-11 #12][i12] | [Progress][progress]、Linear/CircularProgressIndicatorTokens |
-| Loading indicator：Expressive 形状循环 | 待交付 | [M3-11 #12][i12] | LoadingIndicatorTokens |
+| Progress indicators：线性、圆形、确定/不确定、Expressive 波形 | 已交付真实轨道/间隙/stop/波形、宿主值与结果、暂停/减少动效/可控时间、只读 ProgressBar/RangeValue 与 Windows UIA；不声称 Compose PathMeasure 像素/帧等价 | [M3-11 #12][i12] | [Progress][progress]、Linear/CircularProgressIndicatorTokens v0_7_0；[契约](components/m3-11.md)、[证据与投影边界](verification/m3-11.md) |
+| Loading indicator：Expressive 形状循环 | 已交付锁定七种圆角形状的连续循环及进度驱动 circle→soft-burst、contained/uncontained、宿主状态和结果、新包展厅；形状对应/弹簧为明确的 Avalonia/#3 令牌投影，非上游 Morph 引擎复刻 | [M3-11 #12][i12] | LoadingIndicatorTokens v0_7_0、锁定 LoadingIndicator/MaterialShapes；[契约](components/m3-11.md)、[证据](verification/m3-11.md) |
 | Dialogs：basic、全屏；打开/确认/取消/焦点返回 | 待交付 | [M3-12 #13][i13] | [Dialogs][dialogs]、DialogTokens |
 | Menus：标准、vibrant、segmented、子菜单、锚定/上下文 | 待交付 | [M3-13 #15][i15] | [Menus][menus]、Menu/StandardMenu/VibrantMenu/SegmentedMenuTokens |
 | Tooltips：plain、rich | 待交付 | [M3-13 #15][i15] | [Tooltips][tooltips]、Plain/RichTooltipTokens |
