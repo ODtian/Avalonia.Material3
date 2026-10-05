@@ -24,6 +24,98 @@ namespace Avalonia.Material3.Tests;
 
 public class TextFieldScenarioTests
 {
+    [AvaloniaFact]
+    public void Text_input_for_an_interactive_slot_does_not_modify_the_editor_value()
+    {
+        var slot = new MaterialButton { Content = "Slot action" };
+        var invocations = 0;
+        slot.Click += (_, _) => invocations++;
+        using var host = new TextFieldHost(new MaterialTextField { Label = "Name", Text = "kept", InnerRightContent = slot });
+        host.Press(PhysicalKey.Tab);
+        host.Press(PhysicalKey.Tab);
+        Assert.True(slot.IsFocused);
+        host.Press(PhysicalKey.Backspace);
+        Assert.Equal("kept", host.Field.Text);
+        host.Window.KeyPressQwerty(PhysicalKey.Space, RawInputModifiers.None);
+        host.Window.KeyTextInput(" "); // Desktop Space emits text as well as the key events.
+        host.Window.KeyReleaseQwerty(PhysicalKey.Space, RawInputModifiers.None);
+        Assert.Equal(1, invocations);
+        Assert.Equal("kept", host.Field.Text);
+    }
+
+    [AvaloniaFact]
+    public void Keyboard_focus_on_clear_does_not_resize_the_editor_or_clear_target()
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Label = "Name", Text = "value", ShowClearButton = true });
+        host.Press(PhysicalKey.Tab);
+        host.Capture();
+        var clear = host.Window.GetVisualDescendants().OfType<Button>()
+            .Single(button => AutomationProperties.GetName(button) == "Clear text");
+        var before = clear.Bounds.Size;
+        host.Press(PhysicalKey.Tab);
+        host.Capture();
+        Assert.True(clear.IsFocused);
+        Assert.Equal(before, clear.Bounds.Size);
+        Assert.Equal(48, clear.Bounds.Width);
+    }
+
+    [AvaloniaFact]
+    public void Existing_field_follows_semantic_color_shape_and_action_state_tokens()
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Label = "Name", Text = "value", ShowClearButton = true });
+        host.Theme.Shapes = new MaterialShapes { CornerExtraSmall = 12 };
+        host.Theme.LightColorScheme = MaterialColorScheme.Light with
+        {
+            SurfaceContainerHighest = Color.Parse("#E8F3EA"), Error = Color.Parse("#004D40")
+        };
+        host.Theme.States = new MaterialStates { HoverStateLayerOpacity = 0.2 };
+        host.Capture();
+        Assert.Equal(new CornerRadius(12, 12, 0, 0), host.Field.CornerRadius);
+        Assert.Equal(Color.Parse("#E8F3EA"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Field.Background).Color);
+        var clear = host.Window.GetVisualDescendants().OfType<Button>()
+            .Single(button => AutomationProperties.GetName(button) == "Clear text");
+        var point = clear.TranslatePoint(new Point(8, 24), host.Window)!.Value;
+        host.Window.MouseMove(point);
+        var pixel = host.PixelAt(point);
+        // Worked sRGB source-over vector: (200,208,203); allow one 8-bit rasterization unit.
+        Assert.InRange(pixel.R, (byte)199, (byte)201);
+        Assert.InRange(pixel.G, (byte)207, (byte)209);
+        Assert.InRange(pixel.B, (byte)202, (byte)204);
+        host.Window.MouseMove(new Point(0, 0));
+        host.Field.ErrorText = "Correct the value";
+        Assert.Equal(Color.Parse("#004D40"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Field.BorderBrush).Color);
+        host.Field.Variant = MaterialTextFieldVariant.Outlined;
+        Assert.Equal(new CornerRadius(12), host.Field.CornerRadius);
+    }
+
+    [AvaloniaFact]
+    public void Existing_editor_and_feedback_follow_full_body_typography_roles()
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Label = "Name", SupportingText = "Details", ShowCounter = true });
+        host.Press(PhysicalKey.Tab);
+        host.Window.KeyTextInput("中文 Atlas");
+        host.Theme.Typography = new MaterialTypography
+        {
+            BodyLarge = new MaterialTypeStyle(20, 28, 0.7, FontWeight.Medium) { FontFamily = new FontFamily("Arial") },
+            BodySmall = new MaterialTypeStyle(14, 22, 0.3, FontWeight.Bold) { FontFamily = new FontFamily("Courier New") }
+        };
+        host.Capture();
+        Assert.Equal(new FontFamily("Arial"), host.Field.FontFamily);
+        Assert.Equal(20, host.Field.FontSize);
+        Assert.Equal(28, host.Field.LineHeight);
+        Assert.Equal(0.7, host.Field.LetterSpacing);
+        Assert.Equal(FontWeight.Medium, host.Field.FontWeight);
+        foreach (var text in host.Window.GetVisualDescendants().OfType<TextBlock>()
+                     .Where(text => text.IsEffectivelyVisible && text.Text is "Name" or "Details" or "8"))
+        {
+            Assert.Equal(14, text.FontSize);
+            Assert.Equal(22, text.LineHeight);
+            Assert.Equal(new FontFamily("Courier New"), text.FontFamily);
+            Assert.Equal(FontWeight.Bold, text.FontWeight);
+            Assert.Equal(0.3, text.LetterSpacing);
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(1)]
     [InlineData(2)]
@@ -198,6 +290,10 @@ public class TextFieldScenarioTests
         host.Window.MouseMove(point);
         Assert.Equal(Color.Parse("#1D1B20"), Assert.IsAssignableFrom<ISolidColorBrush>(host.Field.BorderBrush).Color);
         Assert.NotEqual(resting, host.Capture());
+        var hoveredLabel = host.Window.GetVisualDescendants().OfType<TextBlock>()
+            .Single(text => text.IsEffectivelyVisible && text.Text == "Name / 名称");
+        Assert.Equal(Color.Parse(variant == MaterialTextFieldVariant.Outlined ? "#1D1B20" : "#49454F"),
+            Assert.IsAssignableFrom<ISolidColorBrush>(hoveredLabel.Foreground).Color);
         host.Window.MouseDown(point, MouseButton.Left);
         host.Window.MouseUp(point, MouseButton.Left);
         Assert.True(host.Field.IsFocused);
@@ -391,6 +487,15 @@ public class TextFieldScenarioTests
         });
         var peer = ControlAutomationPeer.CreatePeerForElement(host.Field)!;
         var value = Assert.IsAssignableFrom<IValueProvider>(peer);
+        var emittedValues = new List<object?>();
+        peer.PropertyChanged += (_, change) =>
+        {
+            if (change.Property == ValuePatternIdentifiers.ValueProperty)
+            {
+                emittedValues.Add(change.OldValue);
+                emittedValues.Add(change.NewValue);
+            }
+        };
         Assert.Equal("Password / 密码", peer.GetName());
         Assert.Equal(AutomationControlType.Edit, peer.GetAutomationControlType());
         host.Press(PhysicalKey.Tab);
@@ -412,6 +517,8 @@ public class TextFieldScenarioTests
         host.Field.IsEnabled = false;
         Assert.False(peer.IsEnabled());
         Assert.Throws<InvalidOperationException>(() => value.SetValue("changed"));
+        Assert.NotEmpty(emittedValues);
+        Assert.All(emittedValues, emitted => Assert.Equal(string.Empty, emitted));
     }
 
     [AvaloniaFact]
@@ -424,6 +531,7 @@ public class TextFieldScenarioTests
         host.Press(PhysicalKey.Tab);
         host.Window.KeyTextInput("中文 ABC");
         Assert.Equal("6 / 10", host.Field.CounterText);
+        Assert.True(host.Field.CanUndo, "The native editor has no undo snapshot after this committed input.");
         host.Capture();
         Assert.Contains("6 / 10", host.VisibleText());
         host.Press(PhysicalKey.Tab);
@@ -435,6 +543,13 @@ public class TextFieldScenarioTests
         Assert.Equal(string.Empty, host.Field.Text);
         Assert.Equal("0 / 10", host.Field.CounterText);
         Assert.True(host.Field.IsFocused);
+        Assert.True(host.Field.CanUndo, "The clear action discarded native undo history.");
+        host.Press(PhysicalKey.Z, RawInputModifiers.Control);
+        Assert.Equal("中文 ABC", host.Field.Text);
+        Assert.Equal("6 / 10", host.Field.CounterText);
+        host.Press(PhysicalKey.Tab);
+        host.Press(PhysicalKey.Space);
+        Assert.Equal(string.Empty, host.Field.Text);
         host.Press(PhysicalKey.Tab);
         Assert.True(host.Next.IsFocused);
     }

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Material3.Controls;
+using Avalonia.Material3.Themes;
 using Avalonia.Media;
 using Avalonia.Styling;
 
@@ -10,8 +11,9 @@ namespace Gallery.Pages;
 /// <summary>Public-package text editing, validation, input forms and accessibility demonstrations.</summary>
 public sealed class TextFieldsPage : StackPanel
 {
-    public TextFieldsPage()
+    public TextFieldsPage(MaterialTheme? theme = null)
     {
+        theme ??= Application.Current?.Styles.OfType<MaterialTheme>().LastOrDefault();
         Spacing = 12;
         Children.Add(new TextBlock
         {
@@ -20,7 +22,7 @@ public sealed class TextFieldsPage : StackPanel
         Children.Add(new TextBlock
         {
             Text = "Tab / Shift+Tab navigate; arrows, Shift+arrows, Ctrl+A and Ctrl+Z use the native editor. " +
-                   "Try a Chinese IME, a narrow window, larger fonts and a screen reader. No input keys are intercepted.",
+                   "Try a Chinese IME, a narrow window, larger fonts and a screen reader. The native editor owns text, selection and IME; slot actions keep their own input.",
             TextWrapping = TextWrapping.Wrap
         });
 
@@ -50,13 +52,14 @@ public sealed class TextFieldsPage : StackPanel
         password.ShowClearButton = true;
         password.PlaceholderText = "At least eight characters";
         AutomationProperties.SetAutomationId(password, "TextField.Password");
-        var reveal = new MaterialButton { Content = "Show password" };
+        var reveal = new MaterialButton { Content = "◉", FontSize = 24, Padding = new Thickness(12) };
         reveal.Click += (_, _) =>
         {
             password.RevealPassword = !password.RevealPassword;
-            reveal.Content = password.RevealPassword ? "Hide password" : "Show password";
+            reveal.Content = password.RevealPassword ? "○" : "◉";
+            AutomationProperties.SetName(reveal, password.RevealPassword ? "Hide password" : "Show password");
         };
-        AutomationProperties.SetName(reveal, "Toggle password visibility");
+        AutomationProperties.SetName(reveal, "Show password");
         password.InnerRightContent = reveal;
 
         var notes = Field("Notes / 备注", "Enter inserts a newline; Tab leaves the editor. MinLines=3, MaxLines=5.", MaterialTextFieldVariant.Outlined);
@@ -107,21 +110,21 @@ public sealed class TextFieldsPage : StackPanel
         };
         name.TextChanged += (_, _) => { if (!string.IsNullOrWhiteSpace(name.Text)) name.ErrorText = null; };
 
-        var theme = new MaterialButton { Content = "Toggle light / dark" };
-        theme.Click += (_, _) =>
+        var themeButton = new MaterialButton { Content = "Toggle light / dark" };
+        themeButton.Click += (_, _) =>
         {
             if (TopLevel.GetTopLevel(this) is Window window)
                 window.RequestedThemeVariant = window.ActualThemeVariant == ThemeVariant.Dark ? ThemeVariant.Light : ThemeVariant.Dark;
         };
         var large = false;
-        var fontScale = new MaterialButton { Content = "Use 200% text" };
+        var fontScale = new MaterialButton { Content = "Use 200% text", IsEnabled = theme is not null };
         fontScale.Click += (_, _) =>
         {
             large = !large;
-            foreach (var field in Children.OfType<MaterialTextField>()) field.FontSize = large ? 32 : 16;
+            if (theme is not null) theme.Typography = theme.Typography with { Scale = large ? 2 : 1 };
             fontScale.Content = large ? "Use 100% text" : "Use 200% text";
         };
-        Children.Add(new WrapPanel { Children = { validate, theme, fontScale } });
+        Children.Add(new WrapPanel { Children = { validate, themeButton, fontScale } });
         Children.Add(result);
         foreach (var field in new[] { name, email, amount, password, notes, readonlyField, disabledFilled, disabledOutlined,
                      errorFilled, errorOutlined, placeholderOnly })

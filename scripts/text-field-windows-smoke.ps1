@@ -27,13 +27,26 @@ function Find-By {
     $condition = New-Object System.Windows.Automation.PropertyCondition($Property, $Value)
     $Root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
 }
+function Send-CommittedText {
+    param([string]$Text)
+    [Windows.Forms.SendKeys]::SendWait($Text)
+    # A platform IME may keep the ASCII input as preedit. Enter commits it without changing OS language preferences.
+    # These fields are single-line and have no default submit action.
+    [Windows.Forms.SendKeys]::SendWait('{ENTER}')
+}
 function Save-Window {
     param($Window, [string]$Name)
     $rect = $Window.Current.BoundingRectangle
-    $bitmap = New-Object Drawing.Bitmap([int]$rect.Width, [int]$rect.Height)
+    # Record the visible host viewport only; exclude the desktop taskbar if DPI makes the requested host taller than the work area.
+    $area = [Windows.Forms.Screen]::FromHandle($handle).WorkingArea
+    $left = [Math]::Max([int]$rect.X, $area.Left)
+    $top = [Math]::Max([int]$rect.Y, $area.Top)
+    $width = [Math]::Min([int]($rect.X + $rect.Width), $area.Right) - $left
+    $height = [Math]::Min([int]($rect.Y + $rect.Height), $area.Bottom) - $top
+    $bitmap = New-Object Drawing.Bitmap($width, $height)
     $graphics = [Drawing.Graphics]::FromImage($bitmap)
     try {
-        $graphics.CopyFromScreen([int]$rect.X, [int]$rect.Y, 0, 0, $bitmap.Size)
+        $graphics.CopyFromScreen($left, $top, 0, 0, $bitmap.Size)
         $bitmap.Save((Join-Path $Screenshots $Name), [Drawing.Imaging.ImageFormat]::Png)
     }
     finally { $graphics.Dispose(); $bitmap.Dispose() }
@@ -55,7 +68,7 @@ try {
     $name.SetFocus()
     Start-Sleep -Milliseconds 300
     Write-Host "Foreground: $([TextFieldSmokeWindow]::GetForegroundWindow()) / host: $handle"
-    [Windows.Forms.SendKeys]::SendWait('Atlas')
+    Send-CommittedText 'Atlas'
     Start-Sleep -Milliseconds 300
     $nameValue = $name.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
     Write-Host "Name value after typing: '$($nameValue.Current.Value)'; help: '$($name.Current.HelpText)'"
@@ -65,20 +78,30 @@ try {
     Wait-For { $clear.Current.HasKeyboardFocus } 'Tab to clear' | Out-Null
     [Windows.Forms.SendKeys]::SendWait(' ')
     Wait-For { $nameValue.Current.Value -eq '' -and $name.Current.HasKeyboardFocus } 'Space clears and returns editor focus' | Out-Null
-    [Windows.Forms.SendKeys]::SendWait('Atlas')
+    [Windows.Forms.SendKeys]::SendWait('^z')
+    Wait-For { $nameValue.Current.Value -eq 'Atlas' } 'native undo restores the cleared value without slot Space input' | Out-Null
+    $clear = Wait-For { Find-By $name $nameProperty 'Clear text' } 'restored clear action'
+    $clear.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Wait-For { $nameValue.Current.Value -eq '' -and $name.Current.HasKeyboardFocus } 'automation clear retains editor focus' | Out-Null
+    Send-CommittedText 'Atlas'
     $email.SetFocus()
-    [Windows.Forms.SendKeys]::SendWait('atlas')
+    Send-CommittedText 'atlas'
     $emailValue = $email.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
     Wait-For { $email.Current.HelpText -like '*Include an @ sign*' } 'accessible validation feedback' | Out-Null
-    [Windows.Forms.SendKeys]::SendWait('@example.test')
+    Send-CommittedText '@example.test'
     Wait-For { $emailValue.Current.Value -eq 'atlas@example.test' -and $email.Current.HelpText -like '*Use a valid address*' } 'native correction restores helper text' | Out-Null
     $validate.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     Wait-For { Find-By $window $nameProperty 'Form accepted' } 'form feedback' | Out-Null
     $password = Find-By $window $id 'TextField.Password'
     $password.SetFocus()
-    [Windows.Forms.SendKeys]::SendWait('secret123')
+    Send-CommittedText 'secret123'
     $passwordValue = $password.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
     if ($passwordValue.Current.Value -ne '') { throw 'Password exposed through ValuePattern.' }
+    $reveal = Find-By $password $nameProperty 'Show password'
+    $reveal.SetFocus()
+    [Windows.Forms.SendKeys]::SendWait(' ')
+    Wait-For { $reveal.Current.Name -eq 'Hide password' } 'keyboard password reveal slot action' | Out-Null
+    if ($passwordValue.Current.Value -ne '') { throw 'Revealed password exposed through ValuePattern.' }
     $readonly = Find-By $window $id 'TextField.ReadOnly'
     if (-not $readonly.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.IsReadOnly) { throw 'Read-only state missing.' }
     New-Item -ItemType Directory -Force $Screenshots | Out-Null
@@ -93,9 +116,11 @@ try {
     $font.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     $transform = $window.GetCurrentPattern([System.Windows.Automation.TransformPattern]::Pattern)
     $transform.Resize(320, 880)
+    $name.SetFocus()
+    [Windows.Forms.SendKeys]::SendWait('{END}')
     Start-Sleep -Milliseconds 300
     Save-Window $window 'text-fields-desktop-large-narrow.png'
-    Write-Host 'PASS Windows desktop: Edit role, native typing, Tab/Space clear, validation/correction and help text, password non-disclosure, read-only state, light/dark and large/narrow screenshots.'
+    Write-Host 'PASS Windows desktop: Edit role, native typing, Tab/Space clear and Ctrl+Z restore, validation/correction and help text, password reveal/non-disclosure, read-only state, light/dark and large/narrow screenshots.'
     Write-Host 'Not verified here: actual screen reader announcements or a platform Chinese IME candidate session.'
 }
 catch {

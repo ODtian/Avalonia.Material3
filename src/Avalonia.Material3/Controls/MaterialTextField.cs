@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Input;
 
 namespace Avalonia.Material3.Controls;
 
@@ -92,9 +93,23 @@ public class MaterialTextField : TextBox
     {
         if (!IsReadOnly && IsEffectivelyEnabled)
         {
-            Clear();
+            // Reconnect the native IME/editor client before editing; the clear action itself can own focus.
+            // Clearing while the client is detached would reset native undo history on the next focus.
             Focus();
+            Clear();
         }
+    }
+
+    // Interactive slots have their own keyboard/text focus. Do not let their bubbling events edit this value.
+    // No keys or text are remapped: the focused editor still delegates unchanged to the native TextBox pipeline.
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (IsFocused) base.OnKeyDown(e);
+    }
+
+    protected override void OnTextInput(TextInputEventArgs e)
+    {
+        if (IsFocused) base.OnTextInput(e);
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

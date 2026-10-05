@@ -14,7 +14,7 @@ $previousPackages = $env:NUGET_PACKAGES
 
 function Invoke-Dotnet {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    & dotnet @Arguments
+    & dotnet @Arguments --disable-build-servers
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments -join ' ') failed ($LASTEXITCODE)." }
 }
 
@@ -33,7 +33,7 @@ Push-Location $root
 try {
     if ($DesktopSmoke -and -not $IsWindows) { throw '-DesktopSmoke requires an interactive Windows desktop.' }
     New-Item -ItemType Directory -Force $feed, $results | Out-Null
-    Invoke-Dotnet @('test', 'Avalonia.Material3.slnx', '-c', 'Release', '--logger', 'trx;LogFileName=source.trx', '--results-directory', $results)
+    Invoke-Dotnet @('test', 'tests/Avalonia.Material3.Tests/Avalonia.Material3.Tests.csproj', '-c', 'Release', '--logger', 'trx;LogFileName=source.trx', '--results-directory', $results)
     Invoke-Dotnet @('pack', 'src/Avalonia.Material3/Avalonia.Material3.csproj', '-c', 'Release', '-o', $feed)
 
     # Copy only consumers and tests, never the library project, to a new directory and cache.
@@ -46,7 +46,7 @@ try {
     Copy-SourceTree 'tests/PackageConsumption.Tests'
     Copy-SourceTree 'tests/ReferenceVectors'
     New-Item -ItemType Directory -Force (Join-Path $sandbox 'tests/Avalonia.Material3.Tests') | Out-Null
-    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'TextFieldScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs') {
+    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'TextFieldScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs') {
         Copy-Item (Join-Path $root "tests/Avalonia.Material3.Tests/$file") (Join-Path $sandbox 'tests/Avalonia.Material3.Tests')
     }
     $env:NUGET_PACKAGES = Join-Path $sandbox 'packages'

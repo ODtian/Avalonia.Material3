@@ -20,7 +20,7 @@ public class TextFieldsGalleryScenarioTests
     {
         var theme = new MaterialTheme();
         Application.Current!.Styles.Add(theme);
-        var page = new TextFieldsPage();
+        var page = new TextFieldsPage(theme);
         var window = new Window { Width = 480, Height = 1800, Content = page, RequestedThemeVariant = ThemeVariant.Light };
         try
         {
