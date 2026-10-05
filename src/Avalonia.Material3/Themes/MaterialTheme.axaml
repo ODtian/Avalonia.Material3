@@ -4,9 +4,10 @@
         x:Class="Avalonia.Material3.Themes.MaterialTheme">
   <Styles.Resources>
     <ResourceDictionary>
-    <ResourceDictionary.MergedDictionaries>
-      <ResourceInclude Source="avares://Avalonia.Material3/Themes/ContentControls.axaml" />
-    </ResourceDictionary.MergedDictionaries>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/ContentControls.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sliders.axaml" />
+      </ResourceDictionary.MergedDictionaries>
     <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
       <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
