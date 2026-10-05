@@ -30,6 +30,7 @@ public sealed class ExpressiveButtonsPage : StackPanel
     public MaterialButton FontScaleButton { get; } = new() { Content = "200% font", Variant = MaterialButtonVariant.Text, IsToggle = true };
     public MaterialButton DisableButton { get; } = new() { Content = "Disable actions", Variant = MaterialButtonVariant.Text, IsToggle = true };
     public MaterialButton ShapeButton { get; } = new() { Content = "Square shape", Variant = MaterialButtonVariant.Text, IsToggle = true };
+    public MaterialButton MotionButton { get; } = new() { Content = "Motion: expressive", Variant = MaterialButtonVariant.Text, IsToggle = true, MaxWidth = 260, ContentTemplate = WrappingLabel };
 
     public ExpressiveButtonsPage()
     {
@@ -43,7 +44,7 @@ public sealed class ExpressiveButtonsPage : StackPanel
         Children.Add(actions);
         Children.Add(Result);
         var settings = new WrapPanel();
-        foreach (var button in new[] { ThemeButton, FontScaleButton, DisableButton, ShapeButton }) settings.Children.Add(button);
+        foreach (var button in new[] { ThemeButton, FontScaleButton, DisableButton, ShapeButton, MotionButton }) settings.Children.Add(button);
         Children.Add(settings);
         var count = 0;
         ActionButton.Command = new DemoCommand(parameter => Result.Text = $"Action completed ({++count}): {parameter}");
@@ -53,6 +54,7 @@ public sealed class ExpressiveButtonsPage : StackPanel
         AutomationProperties.SetAutomationId(FontScaleButton, nameof(FontScaleButton));
         AutomationProperties.SetAutomationId(DisableButton, nameof(DisableButton));
         AutomationProperties.SetAutomationId(Result, nameof(Result));
+        AutomationProperties.SetAutomationId(MotionButton, nameof(MotionButton));
         AutomationProperties.SetName(ActionButton, "Submit and continue");
         AutomationProperties.SetName(FavoriteButton, "Favorite");
         FavoriteButton.Click += (_, _) =>
@@ -77,6 +79,15 @@ public sealed class ExpressiveButtonsPage : StackPanel
         ShapeButton.Click += (_, _) =>
         {
             ActionButton.Shape = FavoriteButton.Shape = ShapeButton.IsChecked ? MaterialButtonShape.Square : MaterialButtonShape.Round;
+        };
+
+        MotionButton.IsChecked = Application.Current!.Styles.OfType<MaterialTheme>().FirstOrDefault()?.Motion.ReduceMotion ?? false;
+        MotionButton.Content = MotionButton.IsChecked ? "Motion: reduced" : "Motion: expressive";
+        MotionButton.Click += (_, _) =>
+        {
+            var theme = Application.Current!.Styles.OfType<MaterialTheme>().FirstOrDefault();
+            if (theme is not null) theme.Motion = theme.Motion with { ReduceMotion = MotionButton.IsChecked };
+            MotionButton.Content = MotionButton.IsChecked ? "Motion: reduced" : "Motion: expressive";
         };
 
         AddHeading("Action recipes: normal / toggle off / toggle on / disabled");

@@ -99,6 +99,10 @@ public class ExpressiveButtonsGalleryTests
             window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.None);
             window.KeyReleaseQwerty(PhysicalKey.Enter, RawInputModifiers.None);
             Assert.Equal("Action completed (2): confirmed", page.Result.Text);
+            Click(window, page.MotionButton);
+            Assert.False(theme.Motion.ReduceMotion);
+            Click(window, page.MotionButton);
+            Assert.True(theme.Motion.ReduceMotion);
             using var frame = window.CaptureRenderedFrame();
             Assert.NotNull(frame);
         }

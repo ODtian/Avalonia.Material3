@@ -5,10 +5,12 @@ $root = Split-Path $PSScriptRoot -Parent
 $sandbox = Join-Path ([IO.Path]::GetTempPath()) ('m3-issue4-' + [guid]::NewGuid().ToString('N'))
 $previousPackages = $env:NUGET_PACKAGES
 $previousScreenshots = $env:M3_ISSUE4_SCREENSHOTS
+$previousNodeReuse = $env:MSBUILDDISABLENODEREUSE
+$env:MSBUILDDISABLENODEREUSE = '1'
 $results = Join-Path $root 'artifacts/TestResults/issue4'
 function Invoke-Dotnet {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    & dotnet @Arguments
+    & dotnet @Arguments --disable-build-servers -p:UseSharedCompilation=false
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments -join ' ') failed ($LASTEXITCODE)." }
 }
 function Copy-ConsumerTree([string]$relative) {
@@ -29,7 +31,9 @@ try {
     Copy-ConsumerTree 'samples'
     Copy-ConsumerTree 'tests/PackageConsumption.Tests'
     Copy-ConsumerTree 'tests/ReferenceVectors'
-    Copy-ConsumerTree 'tests/Avalonia.Material3.Tests'
+    New-Item -ItemType Directory -Force (Join-Path $sandbox 'tests/Avalonia.Material3.Tests') | Out-Null
+    # Only scenario sources: the isolated consumers have no source-library project reference.
+    Copy-Item (Join-Path $root 'tests/Avalonia.Material3.Tests/*.cs') (Join-Path $sandbox 'tests/Avalonia.Material3.Tests')
     $env:NUGET_PACKAGES = Join-Path $sandbox 'packages'
     $env:M3_ISSUE4_SCREENSHOTS = Join-Path $root 'artifacts/screenshots/issue4'
     Write-Host "Isolated issue #4 package consumer (no src): $sandbox"
@@ -45,7 +49,15 @@ try {
 finally {
     $env:NUGET_PACKAGES = $previousPackages
     $env:M3_ISSUE4_SCREENSHOTS = $previousScreenshots
+    $env:MSBUILDDISABLENODEREUSE = $previousNodeReuse
     Pop-Location
     if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }
-    elseif (Test-Path $sandbox) { Remove-Item $sandbox -Recurse -Force }
+    elseif (Test-Path $sandbox) {
+        # Avalonia's short-lived build collector can release its assembly just after dotnet exits.
+        # Wait for this sandbox's file handles; never shut down another ticket's build processes.
+        for ($attempt = 0; $attempt -lt 20; $attempt++) {
+            try { Remove-Item $sandbox -Recurse -Force; break }
+            catch { if ($attempt -eq 19) { throw }; Start-Sleep -Milliseconds 500 }
+        }
+    }
 }

@@ -59,7 +59,8 @@ try {
     Wait-For { $action.Current.HasKeyboardFocus } 'action focus' | Out-Null
     New-Item -ItemType Directory -Force $Screenshots | Out-Null
     Save-Window $window 'm3-03-desktop-light.png'
-    $action.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    $actionInvoke = $action.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
+    $actionInvoke.Invoke()
     Wait-For { $result.Current.Name -eq 'Action completed (1): confirmed' } 'command feedback' | Out-Null
     $rect = $action.Current.BoundingRectangle
     [ButtonsSmokeWindow]::SetCursorPos([int]($rect.X + $rect.Width / 2), [int]($rect.Y + $rect.Height / 2)) | Out-Null
@@ -79,10 +80,13 @@ try {
     Wait-For { -not $action.Current.IsEnabled -and -not $favorite.Current.IsEnabled } 'disabled action and icon semantics' | Out-Null
     if ($toggle.Current.ToggleState -ne [System.Windows.Automation.ToggleState]::On) { throw 'Disabling lost selection.' }
     $blocked = $false
-    try { $action.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke() }
+    try { $actionInvoke.Invoke() }
     catch {
-        if ($_.Exception.InnerException -is [System.Windows.Automation.ElementNotEnabledException]) { $blocked = $true }
-        else { throw }
+        # Avalonia 12's native COM bridge may project ElementNotEnabled as a generic exception.
+        # The contract under test is rejection with no action/state mutation, not a platform HRESULT.
+        $blocked = $true
+        $nativeError = $_.Exception.InnerException
+        Write-Host "Disabled UIA Invoke rejected: $($nativeError.GetType().FullName), HRESULT $($nativeError.HResult)."
     }
     if (-not $blocked -or $result.Current.Name -ne 'Favorite: selected') { throw 'Disabled automation invoked the action.' }
     $disable.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()

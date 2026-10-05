@@ -6,6 +6,31 @@
   <Styles.Resources>
     <ResourceDictionary>
     <themes:ButtonFocusCornerRadiusConverter x:Key="M3.ButtonFocusCornerRadiusConverter" />
+    <!-- The gallery needs a real scrolling presenter, not ContentControl's non-scrolling fallback.
+         Scrollbar skinning remains a host concern; Avalonia owns offsets, wheel, gestures and automation. -->
+    <ControlTheme x:Key="{x:Type ScrollViewer}" TargetType="ScrollViewer">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <ScrollContentPresenter x:Name="PART_ContentPresenter" Background="{TemplateBinding Background}"
+                                  Padding="{TemplateBinding Padding}"
+                                  HorizontalSnapPointsType="{TemplateBinding HorizontalSnapPointsType}"
+                                  VerticalSnapPointsType="{TemplateBinding VerticalSnapPointsType}"
+                                  HorizontalSnapPointsAlignment="{TemplateBinding HorizontalSnapPointsAlignment}"
+                                  VerticalSnapPointsAlignment="{TemplateBinding VerticalSnapPointsAlignment}"
+                                  ScrollViewer.IsScrollInertiaEnabled="{TemplateBinding IsScrollInertiaEnabled}">
+            <ScrollContentPresenter.GestureRecognizers>
+              <ScrollGestureRecognizer CanHorizontallyScroll="{Binding CanHorizontallyScroll, ElementName=PART_ContentPresenter}"
+                                       CanVerticallyScroll="{Binding CanVerticallyScroll, ElementName=PART_ContentPresenter}"
+                                       IsScrollInertiaEnabled="{Binding (ScrollViewer.IsScrollInertiaEnabled), ElementName=PART_ContentPresenter}"
+                                       Offset="{Binding Offset, ElementName=PART_ContentPresenter}"
+                                       Viewport="{Binding Viewport, ElementName=PART_ContentPresenter}"
+                                       Extent="{Binding Extent, ElementName=PART_ContentPresenter}" />
+            </ScrollContentPresenter.GestureRecognizers>
+          </ScrollContentPresenter>
+        </ControlTemplate>
+      </Setter>
+    </ControlTheme>
     <!-- Component-local recipes; semantic resources are supplied by MaterialTheme. -->
     <ControlTheme x:Key="M3.ButtonBase" TargetType="controls:MaterialButton">
       <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
@@ -26,12 +51,13 @@
       <Setter Property="Template">
         <ControlTemplate>
           <Grid Background="Transparent">
-            <Border x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Center"
+            <controls:MaterialShapeBorder x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Center"
                     Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+                    BorderThickness="{TemplateBinding BorderThickness}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
+                    ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
               <Grid>
                 <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
-                        CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False">
+                        CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False">
                   <Border.Transitions>
                     <Transitions>
                       <DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" />
@@ -55,15 +81,17 @@
                                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True" />
                 </DockPanel>
               </Grid>
-            </Border>
-            <Border x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
+            </controls:MaterialShapeBorder>
+            <controls:MaterialShapeBorder x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
                     BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
-                    CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}" />
+                    ShapeCornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"
+                    ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
           </Grid>
         </ControlTemplate>
       </Setter>
       <Style Selector="^:extrasmall">
-        <Setter Property="Padding" Value="16,6" />
+        <!-- ButtonDefaults corrects generated XS horizontal spacing to 12 DIP. -->
+        <Setter Property="Padding" Value="12,6" />
         <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
       </Style>
       <Style Selector="^:medium">
@@ -211,13 +239,14 @@
       <Setter Property="Template">
         <ControlTemplate>
           <Grid Background="Transparent">
-            <Border x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}"
+            <controls:MaterialShapeBorder x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}"
                     MinWidth="{TemplateBinding ContainerWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"
                     Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+                    BorderThickness="{TemplateBinding BorderThickness}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
+                    ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
               <Grid>
                 <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
-                        CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False">
+                        CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False">
                   <Border.Transitions>
                     <Transitions>
                       <DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" />
@@ -230,10 +259,11 @@
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
                 </Viewbox>
               </Grid>
-            </Border>
-            <Border x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
+            </controls:MaterialShapeBorder>
+            <controls:MaterialShapeBorder x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
                     BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
-                    CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}" />
+                    ShapeCornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"
+                    ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
           </Grid>
         </ControlTemplate>
       </Setter>

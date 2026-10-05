@@ -43,7 +43,12 @@ public class MaterialButton : Button
     public double ContainerHeight => Size switch { MaterialButtonSize.ExtraSmall => 32, MaterialButtonSize.Medium => 56, MaterialButtonSize.Large => 96, MaterialButtonSize.ExtraLarge => 136, _ => 40 };
     public double IconSize => GetIconSize(Size);
     protected virtual double GetIconSize(MaterialButtonSize size) => size switch { MaterialButtonSize.ExtraSmall or MaterialButtonSize.Small => 20, MaterialButtonSize.Medium => 24, MaterialButtonSize.Large => 32, _ => 40 };
-    public double IconSpacing => Size switch { MaterialButtonSize.Large => 12, MaterialButtonSize.ExtraLarge => 16, _ => 8 };
+    public double IconSpacing => GetIconSpacing(Size);
+    // ButtonDefaults corrects the generated XS spacing token to 4 DIP at the pinned commit.
+    private static double GetIconSpacing(MaterialButtonSize size) => size switch
+    {
+        MaterialButtonSize.ExtraSmall => 4, MaterialButtonSize.Large => 12, MaterialButtonSize.ExtraLarge => 16, _ => 8
+    };
 
     public MaterialButton()
     {
@@ -100,7 +105,7 @@ public class MaterialButton : Button
             var oldIcon = GetIconSize(oldSize);
             RaisePropertyChanged(ContainerHeightProperty, oldHeight, ContainerHeight);
             RaisePropertyChanged(IconSizeProperty, oldIcon, IconSize);
-            RaisePropertyChanged(IconSpacingProperty, oldSize == MaterialButtonSize.Large ? 12 : oldSize == MaterialButtonSize.ExtraLarge ? 16 : 8, IconSpacing);
+            RaisePropertyChanged(IconSpacingProperty, GetIconSpacing(oldSize), IconSpacing);
             UpdateSizePseudoClasses();
         }
         if (change.Property == IsToggleProperty || change.Property == IsCheckedProperty)

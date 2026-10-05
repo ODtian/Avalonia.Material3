@@ -70,6 +70,53 @@ public class ExpressiveButtonScenarioTests
         Assert.Equal(ToggleState.On, peer.GetProvider<IToggleProvider>()!.ToggleState);
     }
 
+    [AvaloniaFact]
+    public async Task Default_effect_spring_settles_to_pressed_and_released_shapes_without_reduce_motion()
+    {
+        using var host = new ButtonHost();
+        host.Button.Content = string.Empty;
+        host.Button.Background = host.Button.Foreground = Brushes.Red;
+        host.Theme.Motion = new Avalonia.Material3.Tokens.MaterialMotion();
+        host.Capture();
+        var corner = host.Button.TranslatePoint(new Point(8, 8), host.Window)!.Value;
+        host.Window.MouseDown(host.Center, MouseButton.Left);
+        await Task.Delay(350);
+        Assert.Equal(Colors.Red, host.PixelAt(corner));
+        Assert.Equal("Waiting", host.Result.Text);
+        host.Window.MouseUp(host.Center, MouseButton.Left);
+        await Task.Delay(350);
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(corner));
+        Assert.Equal("Action completed", host.Result.Text);
+    }
+
+    [AvaloniaFact]
+    public async Task Pressed_shape_uses_the_effect_spring_and_runtime_reduce_motion_snaps_the_existing_button()
+    {
+        using var host = new ButtonHost();
+        host.Button.Content = string.Empty;
+        host.Button.Background = host.Button.Foreground = Brushes.Red; // Isolate shape from state-layer color animation.
+        host.Theme.Motion = new Avalonia.Material3.Tokens.MaterialMotion
+        {
+            Springs = Avalonia.Material3.Tokens.MaterialSpringScheme.Expressive with
+            {
+                DefaultEffects = new Avalonia.Material3.Tokens.MaterialSpring(1, 100)
+            }
+        };
+        host.Capture();
+        var corner = host.Button.TranslatePoint(new Point(8, 8), host.Window)!.Value;
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(corner));
+        host.Window.MouseDown(host.Center, MouseButton.Left);
+        Assert.True(host.Button.IsPressed);
+        await Task.Delay(50);
+        // A critical unit-mass spring with stiffness=100 is still near its round start at 50ms.
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(corner));
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
+        Assert.Equal(Colors.Red, host.PixelAt(corner));
+        host.Window.MouseUp(host.Center, MouseButton.Left);
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(corner));
+        Assert.Equal("Action completed", host.Result.Text);
+    }
+
     [AvaloniaTheory]
     [InlineData(MaterialButtonSize.ExtraSmall, 19, 26, 0.3, FontWeight.Bold)]
     [InlineData(MaterialButtonSize.Small, 19, 26, 0.3, FontWeight.Bold)]
@@ -464,7 +511,7 @@ public class ExpressiveButtonScenarioTests
     }
 
     [AvaloniaTheory]
-    [InlineData(MaterialButtonSize.ExtraSmall, 32, 20, 8, 16, 16)]
+    [InlineData(MaterialButtonSize.ExtraSmall, 32, 20, 4, 12, 16)]
     [InlineData(MaterialButtonSize.Small, 40, 20, 8, 16, 20)]
     [InlineData(MaterialButtonSize.Medium, 56, 24, 8, 24, 28)]
     [InlineData(MaterialButtonSize.Large, 96, 32, 12, 48, 48)]
