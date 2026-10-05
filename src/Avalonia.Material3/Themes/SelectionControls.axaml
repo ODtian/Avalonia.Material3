@@ -1,0 +1,307 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls">
+  <!-- Ticket-local fallbacks only: MaterialTheme's complete semantic resources take precedence. -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="M3.SurfaceContainerHighestBrush" Color="#E6E0E9" />
+      <SolidColorBrush x:Key="M3.PrimaryContainerBrush" Color="#EADDFF" />
+      <SolidColorBrush x:Key="M3.OnPrimaryContainerBrush" Color="#4F378B" />
+      <SolidColorBrush x:Key="M3.SecondaryBrush" Color="#625B71" />
+      <SolidColorBrush x:Key="M3.ErrorBrush" Color="#B3261E" />
+      <SolidColorBrush x:Key="M3.OnErrorBrush" Color="#FFFFFF" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="M3.SurfaceContainerHighestBrush" Color="#36343B" />
+      <SolidColorBrush x:Key="M3.PrimaryContainerBrush" Color="#4F378B" />
+      <SolidColorBrush x:Key="M3.OnPrimaryContainerBrush" Color="#EADDFF" />
+      <SolidColorBrush x:Key="M3.SecondaryBrush" Color="#CCC2DC" />
+      <SolidColorBrush x:Key="M3.ErrorBrush" Color="#F2B8B5" />
+      <SolidColorBrush x:Key="M3.OnErrorBrush" Color="#601410" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+  <ControlTheme x:Key="M3.SelectionInteraction" TargetType="ToggleButton">
+    <Style Selector="^:pointerover /template/ Border#StateLayer">
+      <Setter Property="Opacity" Value="0.08" />
+    </Style>
+    <Style Selector="^:focus-visible /template/ Border#FocusRing">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:focus-visible /template/ Border#StateLayer">
+      <Setter Property="Opacity" Value="0.10" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#StateLayer">
+      <Setter Property="Opacity" Value="0.10" />
+    </Style>
+    <Style Selector="^:unchecked:pointerover, ^:unchecked:pressed, ^:unchecked:focus-visible">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#StateLayer">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#FocusRing">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:disabled /template/ TextBlock#ErrorLabel">
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+      <Setter Property="Opacity" Value="0.38" />
+    </Style>
+    <Style Selector="^:disabled /template/ ContentPresenter">
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+      <Setter Property="Opacity" Value="0.38" />
+    </Style>
+  </ControlTheme>
+  <!-- Pinned AndroidX CheckboxTokens 14_1_0: 18 container, 2 outline, 40 state layer; 48 target. -->
+  <ControlTheme x:Key="{x:Type controls:MaterialCheckBox}" TargetType="controls:MaterialCheckBox" BasedOn="{StaticResource M3.SelectionInteraction}">
+    <Setter Property="MinWidth" Value="48" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.FontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="48,*" Background="Transparent">
+          <Grid Width="48" Height="48" VerticalAlignment="Center">
+            <Border x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False">
+              <Border.Transitions>
+                <Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions>
+              </Border.Transitions>
+            </Border>
+            <Border x:Name="FocusRing" Width="42" Height="42" CornerRadius="21" BorderThickness="3"
+                    BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
+            <Border x:Name="Box" Width="18" Height="18" CornerRadius="2" BorderThickness="2"
+                    BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" />
+            <Path x:Name="Check" Width="12" Height="10" Data="M 0,5 L 4,9 L 12,1" StrokeThickness="2"
+                  Stroke="{DynamicResource M3.OnPrimaryBrush}" IsVisible="False" />
+            <Border x:Name="Mixed" Width="10" Height="2" Background="{DynamicResource M3.OnPrimaryBrush}" IsVisible="False" />
+          </Grid>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}" TextWrapping="Wrap"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" />
+            <TextBlock x:Name="ErrorLabel" Text="{TemplateBinding ErrorText}" IsVisible="{TemplateBinding IsError}"
+                       Foreground="{DynamicResource M3.ErrorBrush}" TextWrapping="Wrap" />
+          </StackPanel>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked, ^:indeterminate">
+      <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" />
+    </Style>
+    <Style Selector="^:error:not(:disabled)">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
+    </Style>
+    <Style Selector="^:error:checked:not(:disabled), ^:error:indeterminate:not(:disabled)">
+      <Setter Property="Background" Value="{DynamicResource M3.ErrorBrush}" />
+    </Style>
+    <Style Selector="^:error:not(:disabled) /template/ Path#Check">
+      <Setter Property="Stroke" Value="{DynamicResource M3.OnErrorBrush}" />
+    </Style>
+    <Style Selector="^:error:not(:disabled) /template/ Border#Mixed">
+      <Setter Property="Background" Value="{DynamicResource M3.OnErrorBrush}" />
+    </Style>
+    <Style Selector="^:checked /template/ Path#Check">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:indeterminate /template/ Border#Mixed">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:disabled:checked, ^:disabled:indeterminate">
+      <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Box">
+      <Setter Property="Opacity" Value="0.38" />
+    </Style>
+    <Style Selector="^:disabled /template/ Path#Check">
+      <Setter Property="Stroke" Value="{DynamicResource M3.SurfaceBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Mixed">
+      <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+    </Style>
+  </ControlTheme>
+  <!-- RadioButtonTokens v0_117: 20 icon, 40 state layer; 48 target. -->
+  <ControlTheme x:Key="{x:Type controls:MaterialRadioButton}" TargetType="controls:MaterialRadioButton" BasedOn="{StaticResource M3.SelectionInteraction}">
+    <Setter Property="MinWidth" Value="48" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.FontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="48,*" Background="Transparent">
+          <Grid Width="48" Height="48" VerticalAlignment="Center">
+            <Border x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False">
+              <Border.Transitions>
+                <Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions>
+              </Border.Transitions>
+            </Border>
+            <Border x:Name="FocusRing" Width="42" Height="42" CornerRadius="21" BorderThickness="3"
+                    BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
+            <Border x:Name="Ring" Width="20" Height="20" CornerRadius="10" BorderThickness="2" BorderBrush="{TemplateBinding BorderBrush}" />
+            <Ellipse x:Name="Dot" Width="10" Height="10" Fill="{TemplateBinding BorderBrush}" IsVisible="False" />
+          </Grid>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}" TextWrapping="Wrap"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" />
+            <TextBlock x:Name="ErrorLabel" Text="{TemplateBinding ErrorText}" IsVisible="{TemplateBinding IsError}"
+                       Foreground="{DynamicResource M3.ErrorBrush}" TextWrapping="Wrap" />
+          </StackPanel>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" />
+    </Style>
+    <Style Selector="^:error:not(:disabled)">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
+    </Style>
+    <Style Selector="^:checked /template/ Ellipse#Dot">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#Ring, ^:disabled /template/ Ellipse#Dot">
+      <Setter Property="Opacity" Value="0.38" />
+    </Style>
+  </ControlTheme>
+  <!-- SwitchTokens v0_210: 52x32 track, 2 outline, 16/24 handle; 48 target. -->
+  <ControlTheme x:Key="{x:Type controls:MaterialSwitch}" TargetType="controls:MaterialSwitch" BasedOn="{StaticResource M3.SelectionInteraction}">
+    <Setter Property="MinWidth" Value="64" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.FontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ColumnDefinitions="64,*" Background="Transparent">
+          <Grid Width="64" Height="48" VerticalAlignment="Center">
+            <Border x:Name="Track" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
+                    BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" />
+            <Border x:Name="DisabledTrackOutline" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
+                    BorderBrush="{TemplateBinding BorderBrush}" Opacity="0.12" IsVisible="False" IsHitTestVisible="False" />
+            <Canvas x:Name="PART_SwitchKnob" Width="20" Height="48" HorizontalAlignment="Left" Margin="6,0,0,0">
+              <Grid x:Name="PART_MovingKnobs" Width="32" Height="48">
+                <Border x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False">
+                  <Border.Transitions>
+                    <Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions>
+                  </Border.Transitions>
+                </Border>
+                <Ellipse x:Name="Thumb" Width="16" Height="16" Fill="{DynamicResource M3.OutlineBrush}" />
+                <ContentPresenter x:Name="OffIcon" Width="16" Height="16" Content="{TemplateBinding OffIcon}"
+                                  Foreground="{DynamicResource M3.SurfaceContainerHighestBrush}" IsHitTestVisible="False"
+                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" AutomationProperties.AccessibilityView="Raw" />
+                <ContentPresenter x:Name="OnIcon" Width="16" Height="16" Content="{TemplateBinding OnIcon}"
+                                  Foreground="{DynamicResource M3.OnPrimaryContainerBrush}" IsVisible="False" IsHitTestVisible="False"
+                                  HorizontalContentAlignment="Center" VerticalContentAlignment="Center" AutomationProperties.AccessibilityView="Raw" />
+              </Grid>
+            </Canvas>
+            <Border x:Name="FocusRing" Width="60" Height="40" CornerRadius="20" BorderThickness="3"
+                    BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
+          </Grid>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}" TextWrapping="Wrap"
+                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" RecognizesAccessKey="True" />
+            <ContentPresenter x:Name="PART_OffContentPresenter" Content="{TemplateBinding OffContent}"
+                              ContentTemplate="{TemplateBinding OffContentTemplate}" TextWrapping="Wrap" />
+            <ContentPresenter x:Name="PART_OnContentPresenter" Content="{TemplateBinding OnContent}"
+                              ContentTemplate="{TemplateBinding OnContentTemplate}" TextWrapping="Wrap" IsVisible="False" />
+            <TextBlock x:Name="ErrorLabel" Text="{TemplateBinding ErrorText}" IsVisible="{TemplateBinding IsError}"
+                       Foreground="{DynamicResource M3.ErrorBrush}" TextWrapping="Wrap" />
+          </StackPanel>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked">
+      <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" />
+    </Style>
+    <Style Selector="^:off-icon /template/ Ellipse#Thumb">
+      <Setter Property="Width" Value="24" />
+      <Setter Property="Height" Value="24" />
+    </Style>
+    <Style Selector="^:checked /template/ ContentPresenter#OffIcon">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:checked /template/ ContentPresenter#OnIcon">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:checked /template/ Ellipse#Thumb">
+      <Setter Property="Width" Value="24" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="Fill" Value="{DynamicResource M3.OnPrimaryBrush}" />
+    </Style>
+    <Style Selector="^:error:not(:disabled)">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
+    </Style>
+    <Style Selector="^:error:checked:not(:disabled)">
+      <Setter Property="Background" Value="{DynamicResource M3.ErrorBrush}" />
+    </Style>
+    <Style Selector="^:unchecked:pointerover:not(:error), ^:unchecked:pressed:not(:error), ^:unchecked:focus-visible:not(:error)">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Ellipse#Thumb">
+      <Setter Property="Width" Value="28" />
+      <Setter Property="Height" Value="28" />
+    </Style>
+    <Style Selector="^:unchecked:pointerover /template/ Ellipse#Thumb, ^:unchecked:pressed /template/ Ellipse#Thumb, ^:unchecked:focus-visible /template/ Ellipse#Thumb">
+      <Setter Property="Fill" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    </Style>
+    <Style Selector="^:checked:pointerover /template/ Ellipse#Thumb, ^:checked:pressed /template/ Ellipse#Thumb, ^:checked:focus-visible /template/ Ellipse#Thumb">
+      <Setter Property="Fill" Value="{DynamicResource M3.PrimaryContainerBrush}" />
+    </Style>
+    <Style Selector="^:checked /template/ ContentPresenter#PART_OffContentPresenter">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:checked /template/ ContentPresenter#PART_OnContentPresenter">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
+      <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
+    </Style>
+    <Style Selector="^:disabled:checked">
+      <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:disabled:checked /template/ Border#Track">
+      <Setter Property="Opacity" Value="0.12" />
+    </Style>
+    <Style Selector="^:disabled:unchecked /template/ Border#Track">
+      <Setter Property="BorderThickness" Value="0" />
+    </Style>
+    <Style Selector="^:disabled:unchecked /template/ Border#DisabledTrackOutline">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:disabled /template/ Ellipse#Thumb">
+      <Setter Property="Fill" Value="{DynamicResource M3.OnSurfaceBrush}" />
+      <Setter Property="Opacity" Value="0.38" />
+    </Style>
+    <Style Selector="^:disabled:checked /template/ ContentPresenter#OnIcon">
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:disabled:unchecked /template/ ContentPresenter#OffIcon">
+      <Setter Property="Foreground" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
+    </Style>
+    <Style Selector="^:disabled:checked /template/ Ellipse#Thumb">
+      <Setter Property="Fill" Value="{DynamicResource M3.SurfaceBrush}" />
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
