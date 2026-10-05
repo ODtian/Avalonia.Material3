@@ -1,0 +1,38 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:conv="using:Avalonia.Data.Converters"
+                    xmlns:c="using:Avalonia.Material3.Controls">
+  <ControlTemplate x:Key="M3.ListItemTemplate" TargetType="c:MaterialListItem">
+    <Grid Background="{DynamicResource M3.SurfaceBrush}" ClipToBounds="True">
+      <ContentPresenter Content="{TemplateBinding RevealedActions}" ContentTemplate="{TemplateBinding RevealedActionsTemplate}" IsVisible="{TemplateBinding IsRevealed}" Width="{TemplateBinding RevealWidth}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+      <Grid Margin="{TemplateBinding RevealTranslation}">
+      <Border x:Name="Container" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" />
+      <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{TemplateBinding CornerRadius}" />
+      <StackPanel>
+        <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" Margin="{TemplateBinding Padding}">
+          <ContentPresenter Content="{TemplateBinding Leading}" ContentTemplate="{TemplateBinding LeadingTemplate}" VerticalAlignment="Center" Margin="0,0,12,0" IsVisible="{Binding Leading, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />
+          <ContentPresenter Grid.Column="1" Content="{TemplateBinding Image}" ContentTemplate="{TemplateBinding ImageTemplate}" VerticalAlignment="Center" Margin="0,0,12,0" IsVisible="{Binding Image, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />
+          <StackPanel Grid.Column="2" VerticalAlignment="Center">
+            <ContentPresenter x:Name="Overline" Content="{TemplateBinding Overline}" ContentTemplate="{TemplateBinding OverlineTemplate}" TextBlock.TextWrapping="Wrap" TextBlock.FontSize="{Binding FontSize, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource M3.ContentLabelSmallFallback}}" TextBlock.Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" IsVisible="{Binding Overline, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />
+            <ContentPresenter Content="{TemplateBinding Title}" ContentTemplate="{TemplateBinding TitleTemplate}" TextBlock.TextWrapping="Wrap" />
+            <ContentPresenter x:Name="Supporting" Content="{TemplateBinding SupportingContent}" ContentTemplate="{TemplateBinding SupportingContentTemplate}" TextBlock.TextWrapping="Wrap" TextBlock.Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" TextBlock.FontSize="{DynamicResource M3.LabelLargeFontSize}" />
+            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" TextBlock.TextWrapping="Wrap" />
+          </StackPanel>
+          <ContentPresenter Grid.Column="3" Content="{TemplateBinding Trailing}" ContentTemplate="{TemplateBinding TrailingTemplate}" VerticalAlignment="Center" Margin="12,0,0,0" IsVisible="{Binding Trailing, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />
+          <StackPanel Grid.Column="4" VerticalAlignment="Center">
+          <c:MaterialButton x:Name="PART_ExpandButton" Content="⌄" AutomationProperties.Name="Toggle expanded content" IsVisible="{TemplateBinding IsExpandable}" MinWidth="48" VerticalAlignment="Center" Background="{DynamicResource M3.SurfaceContainerBrush}" Foreground="{DynamicResource M3.OnSurfaceBrush}" />
+          <c:MaterialButton x:Name="PART_RevealButton" Content="⋯" AutomationProperties.Name="Toggle item actions" IsVisible="{TemplateBinding IsRevealEnabled}" MinWidth="48" VerticalAlignment="Center" Background="{DynamicResource M3.SecondaryContainerBrush}" Foreground="{DynamicResource M3.OnSecondaryContainerBrush}" />
+          <c:MaterialButton x:Name="PART_ReorderHandle" Content="≡" AutomationProperties.Name="Reorder item" IsVisible="{TemplateBinding IsReorderEnabled}" MinWidth="48" VerticalAlignment="Center" Background="Transparent" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+          </StackPanel>
+        </Grid>
+        <ContentPresenter Content="{TemplateBinding ExpandedContent}" ContentTemplate="{TemplateBinding ExpandedContentTemplate}" IsVisible="{TemplateBinding IsExpanded}" Margin="16,0,16,10" TextBlock.TextWrapping="Wrap" />
+        <WrapPanel IsVisible="{TemplateBinding IsReorderActionsVisible}" Margin="16,0,16,10">
+          <c:MaterialButton x:Name="PART_MoveUpButton" Content="Move up" AutomationProperties.Name="Move item up" MinWidth="48" />
+          <c:MaterialButton x:Name="PART_MoveDownButton" Content="Move down" AutomationProperties.Name="Move item down" MinWidth="48" />
+        </WrapPanel>
+      </StackPanel>
+      </Grid>
+      <Border x:Name="FocusRing" IsVisible="False" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="3" CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False" />
+    </Grid>
+  </ControlTemplate>
+</ResourceDictionary>
