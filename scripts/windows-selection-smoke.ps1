@@ -116,9 +116,11 @@ try {
     (By-Name 'Switch light / dark').GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     Start-Sleep -Milliseconds 300
     Save-Window 'm3-06-desktop-dark.png'
-    $height = $checkbox.Current.BoundingRectangle.Height
+    # A short checkbox label can remain inside its existing 48 DIP target at 200%.
+    # Observe actual text layout growth instead; narrow/long selection layout is covered by shared scenarios.
+    $height = $status.Current.BoundingRectangle.Height
     (By-Name 'Font scale 100% / 200%').GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
-    Wait-For { $checkbox.Current.BoundingRectangle.Height -gt $height } 'enlarged-font layout' | Out-Null
+    Wait-For { $status.Current.BoundingRectangle.Height -gt $height } 'enlarged-font status layout' | Out-Null
     Start-Sleep -Milliseconds 300
     Save-Window 'm3-06-desktop-dark-font-200.png'
     Write-Host 'PASS desktop M3-06: UIA names/roles/states/actions, mixed state, exclusive radio, disabled guard, save/reset/restore, native Space/Down and font-growth layout.'

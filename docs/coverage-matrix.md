@@ -39,9 +39,9 @@
 | Button groups：connected、非连接分组、选择与形变 | 待交付 | [M3-05 #10][i10] | ButtonGroupSmallTokens、ConnectedButtonGroupSmallTokens |
 | Segmented buttons：单选、多选 | 待交付 | [M3-05 #10][i10] | [Segmented buttons][segmented]、OutlinedSegmentedButtonTokens |
 | Split buttons：主操作、次级入口、全部尺寸 | 待交付 | [M3-05 #10][i10] | SplitButtonXSmall/Small/Medium/Large/XLargeTokens |
-| Checkbox：二态、三态、错误/禁用 | 待交付 | [M3-06 #5][i5] | [Checkbox][checkbox]、CheckboxTokens |
-| Radio buttons | 待交付 | [M3-06 #5][i5] | [Radio buttons][radio]、RadioButtonTokens |
-| Switch | 待交付 | [M3-06 #5][i5] | [Switch][switch]、SwitchTokens |
+| Checkbox：二态、三态、错误/禁用 | 已实现：18 DIP、48 触达、mixed/error/disabled、TwoWay 表单；headless + Windows UIA；人工读屏/移动平台未验收 | [M3-06 #5][i5] | [Checkbox][checkbox]、CheckboxTokens 14_1_0；[契约](components/m3-06.md)、[证据](verification/m3-06.md) |
+| Radio buttons | 已实现：20 DIP、48 触达、互斥/方向键/禁用/宿主错误扩展；headless + Windows UIA；人工读屏未验收 | [M3-06 #5][i5] | [Radio buttons][radio]、RadioButtonTokens v0_117；[M3-06](verification/m3-06.md) |
+| Switch | 已实现：52×32 track、16/24/28 handle、48 触达、图标/拖动/禁用/宿主错误扩展；headless + Windows UIA；物理触摸/人工读屏未验收 | [M3-06 #5][i5] | [Switch][switch]、SwitchTokens v0_210；[M3-06](verification/m3-06.md) |
 | Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 待交付 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens |
 | Search：search bar、search view、建议/autocomplete | 待交付 | [M3-08 #11][i11] | [Search][search]、SearchBar/SearchView、Filled/OutlinedAutocompleteTokens |
 | Chips：assist、filter、input、suggestion | 待交付 | [M3-08 #11][i11] | [Chips][chips]、Assist/Filter/Input/SuggestionChipTokens |

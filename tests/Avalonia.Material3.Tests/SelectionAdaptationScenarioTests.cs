@@ -4,6 +4,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Material3.Controls;
+using Avalonia.Material3.Tokens;
 using Avalonia.Media;
 using Avalonia.Styling;
 using Gallery.Pages;
@@ -75,6 +76,56 @@ public class SelectionAdaptationScenarioTests
         Assert.Equal(Color.Parse("#006C4C"), Assert.IsAssignableFrom<ISolidColorBrush>(control.BorderBrush).Color);
         Assert.Equal("host-value", control.Content);
         Assert.True(control.IsChecked);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("checkbox")]
+    [InlineData("radio")]
+    [InlineData("switch")]
+    public void Existing_selection_consumes_the_complete_host_body_typography_role(string kind)
+    {
+        ToggleButton control = kind switch
+        {
+            "checkbox" => new MaterialCheckBox { Content = "Notifications" },
+            "radio" => new MaterialRadioButton { Content = "Email" },
+            _ => new MaterialSwitch { Content = "Auto save" }
+        };
+        using var host = new SelectionHost(control);
+        host.Theme.Typography = new MaterialTypography
+        {
+            Scale = 1.5,
+            BodyLarge = new(18, 26, 0.3, FontWeight.Bold) { FontFamily = new FontFamily("Arial") },
+            PlainFontFamily = new FontFamily("Microsoft YaHei")
+        };
+        host.Capture();
+        Assert.Equal(new FontFamily("Arial"), control.FontFamily);
+        Assert.Equal(27, control.FontSize);
+        Assert.Equal(FontWeight.Bold, control.FontWeight);
+        Assert.True(control.Bounds.Height >= 48);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("checkbox")]
+    [InlineData("radio")]
+    [InlineData("switch")]
+    public void Existing_selection_updates_hover_and_disabled_feedback_from_host_state_tokens(string kind)
+    {
+        ToggleButton control = kind switch
+        {
+            "checkbox" => new MaterialCheckBox { Content = "Notifications" },
+            "radio" => new MaterialRadioButton { Content = "Email" },
+            _ => new MaterialSwitch { Content = "Auto save" }
+        };
+        using var host = new SelectionHost(control);
+        host.Window.MouseMove(host.PointIn(control, new Point(kind == "switch" ? 54 : 24, 24)));
+        var hovered = host.Capture();
+        host.Theme.States = host.Theme.States with { HoverStateLayerOpacity = 0.4 };
+        Assert.NotEqual(hovered, host.Capture());
+        control.IsEnabled = false;
+        var disabled = host.Capture();
+        host.Theme.States = host.Theme.States with { DisabledForegroundOpacity = 0.8, DisabledContainerOpacity = 0.5 };
+        Assert.NotEqual(disabled, host.Capture());
+        Assert.False(control.IsChecked);
     }
 
     [AvaloniaFact]

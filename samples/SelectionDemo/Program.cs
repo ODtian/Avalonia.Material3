@@ -35,7 +35,7 @@ public class SelectionDemoApplication : Application
             {
                 Title = "M3-06 Selection form — package consumer",
                 Width = 680,
-                Height = 920,
+                Height = 740,
                 MinWidth = 280,
                 MinHeight = 420,
                 RequestedThemeVariant = ThemeVariant.Light,
