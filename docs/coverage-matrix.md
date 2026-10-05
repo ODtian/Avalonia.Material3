@@ -42,13 +42,13 @@
 | Checkbox：二态、三态、错误/禁用 | 已实现：18 DIP、48 触达、mixed/error/disabled、TwoWay 表单；headless + Windows UIA；人工读屏/移动平台未验收 | [M3-06 #5][i5] | [Checkbox][checkbox]、CheckboxTokens 14_1_0；[契约](components/m3-06.md)、[证据](verification/m3-06.md) |
 | Radio buttons | 已实现：20 DIP、48 触达、互斥/方向键/禁用/宿主错误扩展；headless + Windows UIA；人工读屏未验收 | [M3-06 #5][i5] | [Radio buttons][radio]、RadioButtonTokens v0_117；[M3-06](verification/m3-06.md) |
 | Switch | 已实现：52×32 track、16/24/28 handle、48 触达、图标/拖动/禁用/宿主错误扩展；headless + Windows UIA；物理触摸/人工读屏未验收 | [M3-06 #5][i5] | [Switch][switch]、SwitchTokens v0_210；[M3-06](verification/m3-06.md) |
-| Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 待交付 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens |
+| Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 已实现并通过真实编辑、包隔离与 Windows UIA 场景；实际读屏、平台中文 IME 候选会话待核验 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens；[公开契约](components/m3-07.md)、[证据与限制](verification/m3-07.md) |
 | Search：search bar、search view、建议/autocomplete | 待交付 | [M3-08 #11][i11] | [Search][search]、SearchBar/SearchView、Filled/OutlinedAutocompleteTokens |
 | Chips：assist、filter、input、suggestion | 待交付 | [M3-08 #11][i11] | [Chips][chips]、Assist/Filter/Input/SuggestionChipTokens |
-| Cards：elevated、filled、outlined、交互 | 待交付 | [M3-09 #7][i7] | [Cards][cards]、Elevated/Filled/OutlinedCardTokens |
-| Lists：一/二/三行、leading/trailing、expanded、reorder、reveal | 待交付 | [M3-09 #7][i7] | [Lists][lists]、List/ExpandedList/ReorderList/RevealListTokens |
-| Badges：点、计数 | 待交付 | [M3-09 #7][i7] | [Badges][badges]、BadgeTokens |
-| Dividers：水平、垂直、inset | 待交付 | [M3-09 #7][i7] | [Dividers][dividers]、DividerTokens |
+| Cards：elevated、filled、outlined、交互 | 已交付：三变体、独立插槽/操作、选择与拖动态；真实平台及穷尽视觉一致性未验 | [M3-09 #7][i7] | [Cards][cards]、Elevated/Filled/OutlinedCardTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
+| Lists：一/二/三行、leading/trailing、expanded、reorder、reveal | 已交付：最小行高/变量高度、完整插槽、真实展开/排序/行动底层 reveal；手势适配契约与证据分别记录 | [M3-09 #7][i7] | [Lists][lists]、List/ExpandedList/ReorderList/RevealListTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
+| Badges：点、计数 | 已交付：点/计数/上限/零值、完整计数自动化语义及字体尺度 | [M3-09 #7][i7] | [Badges][badges]、BadgeTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
+| Dividers：水平、垂直、inset | 已交付：水平/垂直/全宽/边距、1 DIP 令牌及装饰性语义 | [M3-09 #7][i7] | [Dividers][dividers]、DividerTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
 | Sliders：单值、范围、连续、离散、标记 | 场景交付：另含 vertical/centered/RTL、两端点 focus/RangeValue、预览与保存恢复；headless/API 和新包消费通过，真实读屏/硬件与最终展厅集成未认领 | [M3-10 #8][i8] | [Sliders][sliders]、SliderTokens v2_3_5；[公开契约](components/m3-10.md)、[验证记录](verification/m3-10.md) |
 | Progress indicators：线性、圆形、确定/不确定、Expressive 波形 | 已交付真实轨道/间隙/stop/波形、宿主值与结果、暂停/减少动效/可控时间、只读 ProgressBar/RangeValue 与 Windows UIA；不声称 Compose PathMeasure 像素/帧等价 | [M3-11 #12][i12] | [Progress][progress]、Linear/CircularProgressIndicatorTokens v0_7_0；[契约](components/m3-11.md)、[证据与投影边界](verification/m3-11.md) |
 | Loading indicator：Expressive 形状循环 | 已交付锁定七种圆角形状的连续循环及进度驱动 circle→soft-burst、contained/uncontained、宿主状态和结果、新包展厅；形状对应/弹簧为明确的 Avalonia/#3 令牌投影，非上游 Morph 引擎复刻 | [M3-11 #12][i12] | LoadingIndicatorTokens v0_7_0、锁定 LoadingIndicator/MaterialShapes；[契约](components/m3-11.md)、[证据](verification/m3-11.md) |
