@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Material3" Version="$(Material3Version)" />
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <!-- Scaffold only: scroll viewer/scroll bars. Material controls use their own M3 templates. -->
+    <PackageReference Include="Avalonia.Themes.Simple" Version="$(AvaloniaVersion)" />
+    <Compile Include="../Gallery/Pages/SelectionFormPage.cs" Link="SelectionFormPage.cs" />
+  </ItemGroup>
+</Project>

@@ -33,6 +33,7 @@ Push-Location $root
 try {
     if ($DesktopSmoke -and -not $IsWindows) { throw '-DesktopSmoke requires an interactive Windows desktop.' }
     New-Item -ItemType Directory -Force $feed, $results | Out-Null
+    # Package consumers are tested below only after a fresh pack, never against a stale same-version cache.
     Invoke-Dotnet @('test', 'tests/Avalonia.Material3.Tests/Avalonia.Material3.Tests.csproj', '-c', 'Release', '--logger', 'trx;LogFileName=source.trx', '--results-directory', $results)
     Invoke-Dotnet @('pack', 'src/Avalonia.Material3/Avalonia.Material3.csproj', '-c', 'Release', '-o', $feed)
 
@@ -46,7 +47,7 @@ try {
     Copy-SourceTree 'tests/PackageConsumption.Tests'
     Copy-SourceTree 'tests/ReferenceVectors'
     New-Item -ItemType Directory -Force (Join-Path $sandbox 'tests/Avalonia.Material3.Tests') | Out-Null
-    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'ExpressiveButtonScenarioTests.cs') {
+    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'ExpressiveButtonScenarioTests.cs', 'SelectionHost.cs', 'SelectionScenarioTests.cs', 'SelectionFormScenarioTests.cs', 'SelectionAdaptationScenarioTests.cs') {
         Copy-Item (Join-Path $root "tests/Avalonia.Material3.Tests/$file") (Join-Path $sandbox 'tests/Avalonia.Material3.Tests')
     }
     $env:NUGET_PACKAGES = Join-Path $sandbox 'packages'
