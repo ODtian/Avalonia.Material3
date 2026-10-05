@@ -18,7 +18,8 @@
         </ControlTemplate>
       </Setter>
     </ControlTheme>
-    <ControlTheme x:Key="{x:Type controls:MaterialButton}" TargetType="controls:MaterialButton">
+    <!-- Kept as the #2 preview recipe; current button themes live in MaterialButtons.axaml. -->
+    <ControlTheme x:Key="M3.PreviewFilledButton" TargetType="controls:MaterialButton">
       <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" />
       <Setter Property="MinHeight" Value="48" />
@@ -97,4 +98,5 @@
       </Style>
     </ControlTheme>
   </Styles.Resources>
+  <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialButtons.axaml" />
 </Styles>

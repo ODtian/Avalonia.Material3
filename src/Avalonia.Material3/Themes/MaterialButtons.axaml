@@ -1,0 +1,352 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Avalonia.Material3.Controls"
+        xmlns:themes="using:Avalonia.Material3.Themes"
+        xmlns:converters="using:Avalonia.Data.Converters">
+  <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="M3.SecondaryBrush" Color="#625B71" />
+          <SolidColorBrush x:Key="M3.OnSecondaryBrush" Color="#FFFFFF" />
+          <SolidColorBrush x:Key="M3.SecondaryContainerBrush" Color="#E8DEF8" />
+          <SolidColorBrush x:Key="M3.OnSecondaryContainerBrush" Color="#1D192B" />
+          <SolidColorBrush x:Key="M3.SurfaceContainerBrush" Color="#F3EDF7" />
+          <SolidColorBrush x:Key="M3.SurfaceContainerLowBrush" Color="#F7F2FA" />
+          <SolidColorBrush x:Key="M3.OutlineVariantBrush" Color="#CAC4D0" />
+          <SolidColorBrush x:Key="M3.InverseSurfaceBrush" Color="#322F35" />
+          <SolidColorBrush x:Key="M3.InverseOnSurfaceBrush" Color="#F5EFF7" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="M3.SecondaryBrush" Color="#CCC2DC" />
+          <SolidColorBrush x:Key="M3.OnSecondaryBrush" Color="#332D41" />
+          <SolidColorBrush x:Key="M3.SecondaryContainerBrush" Color="#4A4458" />
+          <SolidColorBrush x:Key="M3.OnSecondaryContainerBrush" Color="#E8DEF8" />
+          <SolidColorBrush x:Key="M3.SurfaceContainerBrush" Color="#211F26" />
+          <SolidColorBrush x:Key="M3.SurfaceContainerLowBrush" Color="#1D1B20" />
+          <SolidColorBrush x:Key="M3.OutlineVariantBrush" Color="#49454F" />
+          <SolidColorBrush x:Key="M3.InverseSurfaceBrush" Color="#E6E0E9" />
+          <SolidColorBrush x:Key="M3.InverseOnSurfaceBrush" Color="#322F35" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+    <themes:ButtonFontSizeConverter x:Key="M3.ButtonFontSizeConverter" />
+    <themes:ButtonFocusCornerRadiusConverter x:Key="M3.ButtonFocusCornerRadiusConverter" />
+    <!-- Component-local recipes; semantic resources are supplied by MaterialTheme. -->
+    <ControlTheme x:Key="M3.ButtonBase" TargetType="controls:MaterialButton">
+      <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" />
+      <Setter Property="MinHeight" Value="48" />
+      <Setter Property="MinWidth" Value="48" />
+      <Setter Property="Padding" Value="16,8" />
+      <Setter Property="FontFamily" Value="{DynamicResource M3.FontFamily}" />
+      <Setter Property="ThemeLabelFontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
+      <Setter Property="FontSize">
+        <Setter.Value>
+          <MultiBinding Converter="{StaticResource M3.ButtonFontSizeConverter}">
+            <Binding Path="ThemeLabelFontSize" RelativeSource="{RelativeSource Self}" />
+            <Binding Path="Size" RelativeSource="{RelativeSource Self}" />
+          </MultiBinding>
+        </Setter.Value>
+      </Setter>
+      <Setter Property="FontWeight" Value="Medium" />
+      <Setter Property="LetterSpacing">
+        <Setter.Value>
+          <MultiBinding Converter="{StaticResource M3.ButtonFontSizeConverter}" ConverterParameter="Tracking">
+            <Binding Path="ThemeLabelFontSize" RelativeSource="{RelativeSource Self}" />
+            <Binding Path="Size" RelativeSource="{RelativeSource Self}" />
+          </MultiBinding>
+        </Setter.Value>
+      </Setter>
+      <Setter Property="TextBlock.LineHeight">
+        <Setter.Value>
+          <MultiBinding Converter="{StaticResource M3.ButtonFontSizeConverter}" ConverterParameter="LineHeight">
+            <Binding Path="ThemeLabelFontSize" RelativeSource="{RelativeSource Self}" />
+            <Binding Path="Size" RelativeSource="{RelativeSource Self}" />
+          </MultiBinding>
+        </Setter.Value>
+      </Setter>
+      <Setter Property="CornerRadius" Value="{DynamicResource M3.ButtonCornerRadius}" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid Background="Transparent">
+            <Border x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Center"
+                    Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+              <Grid>
+                <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
+                        CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False">
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" />
+                    </Transitions>
+                  </Border.Transitions>
+                </Border>
+                <DockPanel Margin="{TemplateBinding Padding}" HorizontalSpacing="{TemplateBinding IconSpacing}">
+                  <Viewbox DockPanel.Dock="Left" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}"
+                           VerticalAlignment="Center" IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
+                    <ContentPresenter Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}" />
+                  </Viewbox>
+                  <Viewbox DockPanel.Dock="Right" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}"
+                           VerticalAlignment="Center" IsVisible="{TemplateBinding TrailingIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
+                    <ContentPresenter Content="{TemplateBinding TrailingIcon}" ContentTemplate="{TemplateBinding TrailingIconTemplate}" />
+                  </Viewbox>
+                  <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    LineHeight="{TemplateBinding TextBlock.LineHeight}"
+                                    LetterSpacing="{TemplateBinding LetterSpacing}"
+                                    HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                    VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True" />
+                </DockPanel>
+              </Grid>
+            </Border>
+            <Border x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
+                    BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
+                    CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:extrasmall">
+        <Setter Property="Padding" Value="16,6" />
+        <Setter Property="CornerRadius" Value="16" />
+      </Style>
+      <Style Selector="^:medium">
+        <Setter Property="Padding" Value="24,16" />
+        <Setter Property="CornerRadius" Value="28" />
+      </Style>
+      <Style Selector="^:large">
+        <Setter Property="Padding" Value="48,32" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="CornerRadius" Value="48" />
+      </Style>
+      <Style Selector="^:extralarge">
+        <Setter Property="Padding" Value="64,48" />
+        <Setter Property="FontWeight" Value="Normal" />
+        <Setter Property="CornerRadius" Value="68" />
+      </Style>
+      <Style Selector="^:square">
+        <Setter Property="CornerRadius" Value="12" />
+      </Style>
+      <Style Selector="^:square:medium">
+        <Setter Property="CornerRadius" Value="16" />
+      </Style>
+      <Style Selector="^:square:large, ^:square:extralarge">
+        <Setter Property="CornerRadius" Value="28" />
+      </Style>
+      <Style Selector="^:pointerover /template/ Border#StateLayer">
+        <Setter Property="Opacity" Value="0.08" />
+      </Style>
+      <Style Selector="^:focus-visible /template/ Border#StateLayer">
+        <Setter Property="Opacity" Value="0.1" />
+      </Style>
+      <Style Selector="^:pointerover /template/ Border#Container">
+        <Setter Property="BoxShadow" Value="0 1 2 0 #26000000" />
+      </Style>
+      <Style Selector="^:pressed">
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.PressedButtonCornerRadius}" />
+      </Style>
+      <Style Selector="^:medium:pressed">
+        <Setter Property="CornerRadius" Value="12" />
+      </Style>
+      <Style Selector="^:large:pressed, ^:extralarge:pressed">
+        <Setter Property="CornerRadius" Value="16" />
+      </Style>
+      <Style Selector="^:pressed /template/ Border#StateLayer">
+        <Setter Property="Opacity" Value="0.1" />
+      </Style>
+      <Style Selector="^:pressed /template/ Border#Container">
+        <Setter Property="BoxShadow" Value="none" />
+      </Style>
+      <Style Selector="^:focus-visible /template/ Border#FocusRing">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <Style Selector="^:disabled">
+        <Setter Property="Background" Value="{DynamicResource M3.DisabledContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" />
+      </Style>
+      <Style Selector="^:disabled /template/ Border#StateLayer">
+        <Setter Property="Opacity" Value="0" />
+      </Style>
+      <Style Selector="^:disabled /template/ Border#Container">
+        <Setter Property="BoxShadow" Value="none" />
+      </Style>
+      <Style Selector="^:disabled /template/ Border#FocusRing">
+        <Setter Property="IsVisible" Value="False" />
+      </Style>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type controls:MaterialButton}" TargetType="controls:MaterialButton"
+                  BasedOn="{StaticResource M3.ButtonBase}">
+      <Style Selector="^:tonal:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" />
+      </Style>
+      <Style Selector="^:elevated:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" />
+      </Style>
+      <Style Selector="^:elevated:not(:disabled) /template/ Border#Container">
+        <Setter Property="BoxShadow" Value="0 1 2 0 #26000000" />
+      </Style>
+      <Style Selector="^:elevated:pointerover:not(:pressed):not(:disabled) /template/ Border#Container">
+        <Setter Property="BoxShadow" Value="0 3 6 0 #26000000" />
+      </Style>
+      <Style Selector="^:outlined">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+      </Style>
+      <Style Selector="^:outlined:large">
+        <Setter Property="BorderThickness" Value="2" />
+      </Style>
+      <Style Selector="^:outlined:extralarge">
+        <Setter Property="BorderThickness" Value="3" />
+      </Style>
+      <Style Selector="^:outlined:not(:disabled)">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+      </Style>
+      <Style Selector="^:text:not(:disabled)">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" />
+      </Style>
+      <Style Selector="^:outlined /template/ Border#Container, ^:text /template/ Border#Container">
+        <Setter Property="BoxShadow" Value="none" />
+      </Style>
+      <Style Selector="^:filled:toggle:not(:checked):not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+      </Style>
+      <Style Selector="^:tonal:checked:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.SecondaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryBrush}" />
+      </Style>
+      <Style Selector="^:elevated:checked:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" />
+      </Style>
+      <Style Selector="^:outlined:checked:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.InverseSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
+      </Style>
+      <Style Selector="^:outlined:checked">
+        <Setter Property="BorderThickness" Value="0" />
+      </Style>
+      <Style Selector="^:text:disabled, ^:outlined:disabled:not(:checked)">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type controls:MaterialIconButton}" TargetType="controls:MaterialIconButton"
+                  BasedOn="{StaticResource M3.ButtonBase}">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid Background="Transparent">
+            <Border x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}"
+                    MinWidth="{TemplateBinding ContainerWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+              <Grid>
+                <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
+                        CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False">
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" />
+                    </Transitions>
+                  </Border.Transitions>
+                </Border>
+                <Viewbox x:Name="Icon" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}">
+                  <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                </Viewbox>
+              </Grid>
+            </Border>
+            <Border x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
+                    BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
+                    CornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^ /template/ Border#Container">
+        <Setter Property="BoxShadow" Value="none" />
+      </Style>
+      <Style Selector="^:pointerover /template/ Border#Container, ^:pressed /template/ Border#Container">
+        <Setter Property="BoxShadow" Value="none" />
+      </Style>
+      <Style Selector="^:icon-filled:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" />
+      </Style>
+      <Style Selector="^:icon-filled:toggle:not(:checked):not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+      </Style>
+      <Style Selector="^:icon-tonal:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" />
+      </Style>
+      <Style Selector="^:icon-tonal:checked:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.SecondaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryBrush}" />
+      </Style>
+      <Style Selector="^:icon-standard:checked:not(:disabled)">
+        <Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" />
+      </Style>
+      <Style Selector="^:icon-outlined">
+        <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineVariantBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+      </Style>
+      <Style Selector="^:icon-outlined:large">
+        <Setter Property="BorderThickness" Value="2" />
+      </Style>
+      <Style Selector="^:icon-outlined:extralarge">
+        <Setter Property="BorderThickness" Value="3" />
+      </Style>
+      <Style Selector="^:icon-outlined:checked">
+        <Setter Property="BorderThickness" Value="0" />
+      </Style>
+      <Style Selector="^:icon-outlined:checked:not(:disabled)">
+        <Setter Property="Background" Value="{DynamicResource M3.InverseSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
+      </Style>
+      <Style Selector="^:checked:not(:square):not(:pressed)">
+        <Setter Property="CornerRadius" Value="12" />
+      </Style>
+      <Style Selector="^:checked:not(:square):medium:not(:pressed)">
+        <Setter Property="CornerRadius" Value="16" />
+      </Style>
+      <Style Selector="^:checked:not(:square):large:not(:pressed), ^:checked:not(:square):extralarge:not(:pressed)">
+        <Setter Property="CornerRadius" Value="28" />
+      </Style>
+      <Style Selector="^:checked:square:extrasmall:not(:pressed)">
+        <Setter Property="CornerRadius" Value="16" />
+      </Style>
+      <Style Selector="^:checked:square:small:not(:pressed)">
+        <Setter Property="CornerRadius" Value="20" />
+      </Style>
+      <Style Selector="^:checked:square:medium:not(:pressed)">
+        <Setter Property="CornerRadius" Value="28" />
+      </Style>
+      <Style Selector="^:checked:square:large:not(:pressed)">
+        <Setter Property="CornerRadius" Value="48" />
+      </Style>
+      <Style Selector="^:checked:square:extralarge:not(:pressed)">
+        <Setter Property="CornerRadius" Value="68" />
+      </Style>
+      <Style Selector="^:disabled">
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+      </Style>
+      <Style Selector="^:disabled /template/ Viewbox#Icon">
+        <Setter Property="Opacity" Value="0.38" />
+      </Style>
+      <Style Selector="^:icon-standard:disabled, ^:icon-outlined:disabled:not(:checked)">
+        <Setter Property="Background" Value="Transparent" />
+      </Style>
+    </ControlTheme>
+    </ResourceDictionary>
+  </Styles.Resources>
+</Styles>
