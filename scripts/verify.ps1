@@ -47,7 +47,7 @@ try {
     Copy-SourceTree 'tests/PackageConsumption.Tests'
     Copy-SourceTree 'tests/ReferenceVectors'
     New-Item -ItemType Directory -Force (Join-Path $sandbox 'tests/Avalonia.Material3.Tests') | Out-Null
-    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'ExpressiveButtonScenarioTests.cs', 'SelectionHost.cs', 'SelectionScenarioTests.cs', 'SelectionFormScenarioTests.cs', 'SelectionAdaptationScenarioTests.cs', 'TextFieldScenarioTests.cs') {
+    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'ExpressiveButtonScenarioTests.cs', 'SelectionHost.cs', 'SelectionScenarioTests.cs', 'SelectionFormScenarioTests.cs', 'SelectionAdaptationScenarioTests.cs', 'TextFieldScenarioTests.cs', 'ContentScenarioTests.cs') {
         Copy-Item (Join-Path $root "tests/Avalonia.Material3.Tests/$file") (Join-Path $sandbox 'tests/Avalonia.Material3.Tests')
     }
     $env:NUGET_PACKAGES = Join-Path $sandbox 'packages'
@@ -67,5 +67,12 @@ finally {
     $env:NUGET_PACKAGES = $previousPackages
     Pop-Location
     if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }
-    elseif (Test-Path $sandbox) { Remove-Item $sandbox -Recurse -Force }
+    elseif (Test-Path $sandbox) {
+        # Build-service processes can release collector DLL handles just after dotnet exits.
+        # Retry only this owned sandbox; never shut down another agent's build servers.
+        for ($attempt = 0; $attempt -lt 20; $attempt++) {
+            try { Remove-Item $sandbox -Recurse -Force -ErrorAction Stop; break }
+            catch { if ($attempt -eq 19) { throw }; Start-Sleep -Milliseconds 500 }
+        }
+    }
 }

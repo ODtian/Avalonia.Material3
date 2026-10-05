@@ -1,0 +1,8 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:t="using:Avalonia.Material3.Themes">
+  <!-- Default text uses all five metrics live; Control content remains the original control. -->
+  <t:ContentRoleTemplate x:Key="M3.Content.Title" Role="BodyLarge" />
+  <t:ContentRoleTemplate x:Key="M3.Content.Supporting" Role="BodyMedium" />
+  <t:ContentRoleTemplate x:Key="M3.Content.Label" Role="LabelSmall" />
+</ResourceDictionary>
