@@ -3,6 +3,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.VisualTree;
@@ -25,7 +26,7 @@ public abstract class MaterialContentItem : Button
     public static readonly StyledProperty<object?> TrailingProperty = AvaloniaProperty.Register<MaterialContentItem, object?>(nameof(Trailing));
     public static readonly StyledProperty<IDataTemplate?> TrailingTemplateProperty = AvaloniaProperty.Register<MaterialContentItem, IDataTemplate?>(nameof(TrailingTemplate));
     public static readonly StyledProperty<bool> IsSelectableProperty = AvaloniaProperty.Register<MaterialContentItem, bool>(nameof(IsSelectable));
-    public static readonly StyledProperty<bool> IsSelectedProperty = AvaloniaProperty.Register<MaterialContentItem, bool>(nameof(IsSelected));
+    public static readonly StyledProperty<bool> IsSelectedProperty = AvaloniaProperty.Register<MaterialContentItem, bool>(nameof(IsSelected), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<bool> IsInteractiveProperty = AvaloniaProperty.Register<MaterialContentItem, bool>(nameof(IsInteractive), true);
 
     public static readonly RoutedEvent<RoutedEventArgs> ActivatedEvent = RoutedEvent.Register<MaterialContentItem, RoutedEventArgs>(nameof(Activated), RoutingStrategies.Direct);
@@ -106,7 +107,12 @@ internal class MaterialContentItemAutomationPeer : ButtonAutomationPeer, IToggle
                 RaisePropertyChangedEvent(TogglePatternIdentifiers.ToggleStateProperty, (bool)e.OldValue! ? ToggleState.On : ToggleState.Off, (bool)e.NewValue! ? ToggleState.On : ToggleState.Off);
         };
     }
-    protected override string? GetNameCore() => base.GetNameCore() ?? (_owner.Title is TextBlock text ? text.Text : _owner.Title?.ToString());
+    protected override string? GetNameCore()
+    {
+        if (AutomationProperties.GetName(_owner) is { } name) return name;
+        if (AutomationProperties.GetLabeledBy(_owner) is not null) return base.GetNameCore();
+        return (_owner.Title is TextBlock text ? text.Text : _owner.Title?.ToString()) ?? base.GetNameCore();
+    }
     protected override string? GetHelpTextCore() => base.GetHelpTextCore() ?? _owner.SupportingContent as string;
     protected override AutomationControlType GetAutomationControlTypeCore() => _owner.IsInteractive ? AutomationControlType.Button : AutomationControlType.Group;
     protected override object? GetProviderCore(Type providerType)

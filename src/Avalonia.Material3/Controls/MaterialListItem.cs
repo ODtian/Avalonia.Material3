@@ -4,6 +4,7 @@ using Avalonia.Automation.Provider;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
@@ -21,11 +22,11 @@ public class MaterialListItem : MaterialContentItem
     public static readonly StyledProperty<bool> IsExpressiveProperty = AvaloniaProperty.Register<MaterialListItem, bool>(nameof(IsExpressive));
     public bool IsExpressive { get => GetValue(IsExpressiveProperty); set => SetValue(IsExpressiveProperty, value); }
     public static readonly StyledProperty<bool> IsExpandableProperty = AvaloniaProperty.Register<MaterialListItem, bool>(nameof(IsExpandable));
-    public static readonly StyledProperty<bool> IsExpandedProperty = AvaloniaProperty.Register<MaterialListItem, bool>(nameof(IsExpanded));
+    public static readonly StyledProperty<bool> IsExpandedProperty = AvaloniaProperty.Register<MaterialListItem, bool>(nameof(IsExpanded), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<object?> ExpandedContentProperty = AvaloniaProperty.Register<MaterialListItem, object?>(nameof(ExpandedContent));
     public static readonly StyledProperty<IDataTemplate?> ExpandedContentTemplateProperty = AvaloniaProperty.Register<MaterialListItem, IDataTemplate?>(nameof(ExpandedContentTemplate));
     public static readonly StyledProperty<bool> IsRevealEnabledProperty = AvaloniaProperty.Register<MaterialListItem, bool>(nameof(IsRevealEnabled));
-    public static readonly StyledProperty<bool> IsRevealedProperty = AvaloniaProperty.Register<MaterialListItem, bool>(nameof(IsRevealed));
+    public static readonly StyledProperty<bool> IsRevealedProperty = AvaloniaProperty.Register<MaterialListItem, bool>(nameof(IsRevealed), defaultBindingMode: BindingMode.TwoWay);
     public static readonly StyledProperty<double> RevealWidthProperty = AvaloniaProperty.Register<MaterialListItem, double>(nameof(RevealWidth), 128, validate: value => double.IsFinite(value) && value >= 48);
     public static readonly DirectProperty<MaterialListItem, Thickness> RevealTranslationProperty = AvaloniaProperty.RegisterDirect<MaterialListItem, Thickness>(nameof(RevealTranslation), item => item.RevealTranslation);
     public static readonly DirectProperty<MaterialListItem, bool> AreRevealActionsVisibleProperty = AvaloniaProperty.RegisterDirect<MaterialListItem, bool>(nameof(AreRevealActionsVisible), item => item.AreRevealActionsVisible);

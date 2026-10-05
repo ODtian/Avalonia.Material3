@@ -66,5 +66,12 @@ finally {
     $env:NUGET_PACKAGES = $previousPackages
     Pop-Location
     if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }
-    elseif (Test-Path $sandbox) { Remove-Item $sandbox -Recurse -Force }
+    elseif (Test-Path $sandbox) {
+        # Build-service processes can release collector DLL handles just after dotnet exits.
+        # Retry only this owned sandbox; never shut down another agent's build servers.
+        for ($attempt = 0; $attempt -lt 20; $attempt++) {
+            try { Remove-Item $sandbox -Recurse -Force -ErrorAction Stop; break }
+            catch { if ($attempt -eq 19) { throw }; Start-Sleep -Milliseconds 500 }
+        }
+    }
 }

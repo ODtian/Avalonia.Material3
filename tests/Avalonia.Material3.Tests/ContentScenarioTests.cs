@@ -2,6 +2,8 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using System.Windows.Input;
+using System.ComponentModel;
+using Avalonia.Data;
 using System.Runtime.InteropServices;
 using Avalonia.Platform;
 using Avalonia.Controls;
@@ -261,7 +263,7 @@ public class ContentScenarioTests
     {
         using var host = new ContentHost();
         var action = new MaterialButton { Content = "Open attachment" };
-        var row = new MaterialListItem { Title = "Inbox B", IsSelectable = true, IsExpandable = true, Trailing = action };
+        var row = new MaterialListItem { Title = "Inbox B", Content = "Body is not the item identity", IsSelectable = true, IsExpandable = true, Trailing = action };
         var card = new MaterialCard { Title = "Static information" };
         host.List.Children.Add(row);
         host.List.Children.Add(card);
@@ -598,6 +600,60 @@ public class ContentScenarioTests
         var down = row.GetVisualDescendants().OfType<MaterialButton>().Single(c => AutomationProperties.GetName(c) == "Move item down");
         host.Click(down);
         Assert.Same(row, host.List.Children[1]);
+    }
+
+    [AvaloniaFact]
+    public void Selection_expansion_and_reveal_update_the_bound_item_and_keep_host_updates_live()
+    {
+        using var host = new ContentHost();
+        var item = new BoundItemState();
+        var row = new MaterialListItem { Title = "Bound item B", IsSelectable = true, IsExpandable = true, IsRevealEnabled = true, DataContext = item };
+        row.Bind(MaterialContentItem.IsSelectedProperty, new Binding(nameof(BoundItemState.Selected)));
+        row.Bind(MaterialListItem.IsExpandedProperty, new Binding(nameof(BoundItemState.Expanded)));
+        row.Bind(MaterialListItem.IsRevealedProperty, new Binding(nameof(BoundItemState.Revealed)));
+        host.List.Children.Add(row);
+        host.Render();
+        host.Click(row, new Point(24, 24));
+        Assert.True(item.Selected);
+        row.Focus();
+        host.Window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.Alt);
+        host.Window.KeyReleaseQwerty(PhysicalKey.Enter, RawInputModifiers.Alt);
+        host.Window.KeyPressQwerty(PhysicalKey.ArrowRight, RawInputModifiers.Alt);
+        host.Window.KeyReleaseQwerty(PhysicalKey.ArrowRight, RawInputModifiers.Alt);
+        Assert.True(item.Expanded && item.Revealed);
+        item.Selected = false;
+        item.Expanded = false;
+        item.Revealed = false;
+        host.Render();
+        Assert.False(row.IsSelected || row.IsExpanded || row.IsRevealed);
+    }
+
+    private sealed class BoundItemState : INotifyPropertyChanged
+    {
+        private bool _selected, _expanded, _revealed;
+        public bool Selected { get => _selected; set { _selected = value; PropertyChanged?.Invoke(this, new(nameof(Selected))); } }
+        public bool Expanded { get => _expanded; set { _expanded = value; PropertyChanged?.Invoke(this, new(nameof(Expanded))); } }
+        public bool Revealed { get => _revealed; set { _revealed = value; PropertyChanged?.Invoke(this, new(nameof(Revealed))); } }
+        public event PropertyChangedEventHandler? PropertyChanged;
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Disabled_default_body_and_trailing_text_use_one_foreground_alpha_not_a_whole_item_fade(bool trailing)
+    {
+        using var host = new ContentHost();
+        var row = new MaterialListItem { Title = "A", Content = trailing ? null : "Default text", Trailing = trailing ? "Default text" : null };
+        host.List.Children.Add(row);
+        host.Render();
+        row.IsEnabled = false;
+        host.Render();
+        var text = row.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "Default text");
+        Assert.Equal(0.38, text.Opacity);
+        Assert.Equal(1, row.Opacity);
+        host.Theme.States = new() { DisabledForegroundOpacity = 0.5 };
+        host.Render();
+        Assert.Equal(0.5, text.Opacity);
     }
 
     private static IEnumerable<AutomationPeer> AutomationDescendants(AutomationPeer peer)

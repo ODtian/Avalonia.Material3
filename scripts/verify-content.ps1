@@ -72,5 +72,10 @@ finally {
     $env:NUGET_PACKAGES = $previousPackages
     Pop-Location
     if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }
-    elseif (Test-Path $sandbox) { Remove-Item $sandbox -Recurse -Force }
+    elseif (Test-Path $sandbox) {
+        for ($attempt = 0; $attempt -lt 20; $attempt++) {
+            try { Remove-Item $sandbox -Recurse -Force -ErrorAction Stop; break }
+            catch { if ($attempt -eq 19) { throw }; Start-Sleep -Milliseconds 500 }
+        }
+    }
 }

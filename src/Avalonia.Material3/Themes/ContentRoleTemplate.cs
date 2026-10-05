@@ -3,6 +3,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Material3.Tokens;
 using Avalonia.Media;
+using Avalonia.Styling;
 
 namespace Avalonia.Material3.Themes;
 
@@ -16,6 +17,10 @@ internal sealed class ContentRoleTemplate : IDataTemplate
         if (data is Control control) return control;
         if (data is null) return null;
         var text = new TextBlock { Text = data.ToString(), TextWrapping = TextWrapping.Wrap };
+        text.Styles.Add(new Style(selector => selector.OfType<TextBlock>().Class(":disabled"))
+        {
+            Setters = { new Setter(Visual.OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) }
+        });
         text.Bind(TextBlock.FontFamilyProperty, new DynamicResourceExtension($"M3.{Role}FontFamily"));
         text.Bind(TextBlock.FontSizeProperty, new DynamicResourceExtension($"M3.{Role}FontSize"));
         text.Bind(TextBlock.FontWeightProperty, new DynamicResourceExtension($"M3.{Role}FontWeight"));
