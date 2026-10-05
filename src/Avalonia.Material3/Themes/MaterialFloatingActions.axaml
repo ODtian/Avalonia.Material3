@@ -1,0 +1,179 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Avalonia.Material3.Controls"
+        xmlns:converters="using:Avalonia.Data.Converters">
+  <Styles.Resources>
+    <ControlTheme x:Key="M3.ActionItems" TargetType="ItemsControl">
+      <Setter Property="Template"><ControlTemplate><ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" /></ControlTemplate></Setter>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:MaterialFab}" TargetType="c:MaterialFab">
+      <Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" />
+      <Setter Property="MinHeight" Value="48" />
+      <Setter Property="MinWidth" Value="48" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" />
+      <Setter Property="FocusAdorner" Value="{x:Null}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid Background="Transparent">
+            <c:MaterialShapeBorder x:Name="Container" Margin="5" MinWidth="{TemplateBinding ContainerSize}" MinHeight="{TemplateBinding ContainerSize}"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
+                       ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
+              <Grid>
+                <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False"
+                        CornerRadius="{Binding CornerRadius, ElementName=Container}">
+                  <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
+                </Border>
+                <Viewbox Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}">
+                  <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                </Viewbox>
+              </Grid>
+            </c:MaterialShapeBorder>
+            <c:MaterialShapeBorder x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False" BorderThickness="3"
+                       BorderBrush="{DynamicResource M3.PrimaryBrush}"
+                       ShapeCornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"
+                       ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:small"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" /></Style>
+      <Style Selector="^:medium"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeIncreased}" /></Style>
+      <Style Selector="^:large"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" /></Style>
+      <Style Selector="^:pointerover /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+      <Style Selector="^:pointerover /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
+      <Style Selector="^:focus-visible /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+      <Style Selector="^:focus-visible /template/ Border#FocusRing"><Setter Property="IsVisible" Value="True" /></Style>
+      <Style Selector="^:pressed /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+      <Style Selector="^:pressed /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
+      <Style Selector="^:disabled"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+      <Style Selector="^:disabled /template/ Border#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
+      <Style Selector="^:disabled /template/ Border#Container"><Setter Property="BoxShadow" Value="none" /></Style>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:MaterialExtendedFab}" TargetType="c:MaterialExtendedFab" BasedOn="{StaticResource {x:Type c:MaterialFab}}">
+      <Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" />
+      <Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" />
+      <Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelLargeLetterSpacing}" />
+      <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.LabelLargeLineHeight}" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid Background="Transparent">
+            <c:MaterialShapeBorder x:Name="Container" Margin="5" MinWidth="{TemplateBinding ContainerSize}" MinHeight="{TemplateBinding ContainerSize}"
+                       VerticalAlignment="Center" Background="{TemplateBinding Background}"
+                       ShapeCornerRadius="{TemplateBinding CornerRadius}" ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}"
+                       BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
+              <Grid>
+                <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{Binding CornerRadius, ElementName=Container}">
+                  <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
+                </Border>
+                <DockPanel Margin="{TemplateBinding ContentPadding}" HorizontalSpacing="{TemplateBinding IconSpacing}" HorizontalAlignment="Center">
+                  <Viewbox DockPanel.Dock="Left" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}" VerticalAlignment="Center"
+                           IsVisible="{TemplateBinding Icon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
+                    <ContentPresenter Content="{TemplateBinding Icon}" ContentTemplate="{TemplateBinding IconTemplate}" />
+                  </Viewbox>
+                  <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" VerticalAlignment="Center" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
+                    <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" TextWrapping="Wrap" />
+                  </c:MaterialActionReveal>
+                </DockPanel>
+              </Grid>
+            </c:MaterialShapeBorder>
+            <c:MaterialShapeBorder x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False" BorderThickness="3"
+                       BorderBrush="{DynamicResource M3.PrimaryBrush}"
+                       ShapeCornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"
+                       ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:small"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleMediumFontSize}" /><Setter Property="FontFamily" Value="{DynamicResource M3.TitleMediumFontFamily}" /><Setter Property="FontWeight" Value="{DynamicResource M3.TitleMediumFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleMediumLetterSpacing}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.TitleMediumLineHeight}" /></Style>
+      <Style Selector="^:medium"><Setter Property="FontSize" Value="{DynamicResource M3.TitleLargeFontSize}" /><Setter Property="FontFamily" Value="{DynamicResource M3.TitleLargeFontFamily}" /><Setter Property="FontWeight" Value="{DynamicResource M3.TitleLargeFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleLargeLetterSpacing}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.TitleLargeLineHeight}" /></Style>
+      <Style Selector="^:large"><Setter Property="FontSize" Value="{DynamicResource M3.HeadlineSmallFontSize}" /><Setter Property="FontFamily" Value="{DynamicResource M3.HeadlineSmallFontFamily}" /><Setter Property="FontWeight" Value="{DynamicResource M3.HeadlineSmallFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.HeadlineSmallLetterSpacing}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.HeadlineSmallLineHeight}" /></Style>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:MaterialFabMenuItem}" TargetType="c:MaterialFabMenuItem" BasedOn="{StaticResource M3.ButtonBase}">
+      <Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
+      <Setter Property="Padding" Value="24,16" />
+      <Style Selector="^:medium"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleMediumFontSize}" /></Style>
+      <Style Selector="^ /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
+      <Style Selector="^:pointerover /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
+      <Style Selector="^:pressed"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" /></Style>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:MaterialFabMenu}" TargetType="c:MaterialFabMenu">
+      <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <c:MaterialFabMenuPanel Anchor="{TemplateBinding Anchor}">
+            <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" Orientation="Vertical" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.SlowEffects}">
+              <ScrollViewer>
+                <ItemsControl Theme="{StaticResource M3.ActionItems}" ItemsSource="{TemplateBinding Items}">
+                  <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="4" HorizontalAlignment="Right" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                </ItemsControl>
+              </ScrollViewer>
+            </c:MaterialActionReveal>
+            <c:MaterialExpansionButton x:Name="PART_Toggle" IsExpanded="{TemplateBinding IsExpanded}" HorizontalAlignment="Right" />
+          </c:MaterialFabMenuPanel>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:top"><Setter Property="VerticalAlignment" Value="Top" /></Style>
+      <Style Selector="^:left"><Setter Property="HorizontalAlignment" Value="Left" /></Style>
+      <Style Selector="^:left /template/ StackPanel"><Setter Property="HorizontalAlignment" Value="Left" /></Style>
+      <Style Selector="^:expanded /template/ c|MaterialFab#PART_Toggle"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" /></Style>
+    </ControlTheme>
+    <ControlTheme x:Key="M3.ToolbarToggle" TargetType="c:MaterialFab" BasedOn="{StaticResource {x:Type c:MaterialFab}}">
+      <Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+      <Setter Property="Size" Value="Small" /><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
+      <Style Selector="^:small"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" /></Style>
+      <Style Selector="^ /template/ Border#Container, ^:pointerover /template/ Border#Container, ^:pressed /template/ Border#Container"><Setter Property="BoxShadow" Value="none" /></Style>
+    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:MaterialToolbar}" TargetType="c:MaterialToolbar">
+      <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+      <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" />
+      <Setter Property="Margin" Value="16" /><Setter Property="Padding" Value="8,0" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <c:MaterialToolbarLayoutPanel Orientation="{TemplateBinding Orientation}" FloatingActionPosition="{TemplateBinding FloatingActionPosition}">
+          <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" MinHeight="64" Padding="{TemplateBinding Padding}"
+                  BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
+            <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <c:MaterialToolbarItemsPanel StretchChildIndex="2" Orientation="{TemplateBinding Orientation}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="4">
+                <c:MaterialExpansionButton x:Name="PART_Toggle" Theme="{StaticResource M3.ToolbarToggle}" IsExpanded="{TemplateBinding IsExpanded}" Content="⋯" />
+                <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" Orientation="{TemplateBinding Orientation}" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
+                  <ItemsControl Theme="{StaticResource M3.ActionItems}" ItemsSource="{TemplateBinding LeadingItems}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:MaterialToolbarItemsPanel Spacing="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                  </ItemsControl>
+                </c:MaterialActionReveal>
+                <ItemsControl Theme="{StaticResource M3.ActionItems}" ItemsSource="{TemplateBinding Items}">
+                  <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:MaterialToolbarItemsPanel Spacing="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                </ItemsControl>
+                <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" Orientation="{TemplateBinding Orientation}" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
+                  <ItemsControl Theme="{StaticResource M3.ActionItems}" ItemsSource="{TemplateBinding TrailingItems}">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:MaterialToolbarItemsPanel Spacing="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                  </ItemsControl>
+                </c:MaterialActionReveal>
+              </c:MaterialToolbarItemsPanel>
+            </ScrollViewer>
+          </Border>
+          <ContentPresenter Content="{TemplateBinding FloatingAction}" IsVisible="{TemplateBinding FloatingAction, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
+          </c:MaterialToolbarLayoutPanel>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:vibrant"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
+      <Style Selector="^:vibrant /template/ c|MaterialFab#PART_Toggle"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
+      <Style Selector="^:left"><Setter Property="HorizontalAlignment" Value="Left" /></Style>
+      <Style Selector="^:top"><Setter Property="VerticalAlignment" Value="Top" /></Style>
+      <Style Selector="^:docked"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Margin" Value="0" /><Setter Property="Padding" Value="16,0" /></Style>
+      <Style Selector="^:docked /template/ Border#Surface"><Setter Property="CornerRadius" Value="0" /><Setter Property="BoxShadow" Value="none" /></Style>
+      <Style Selector="^:vertical"><Setter Property="Padding" Value="0,8" /></Style>
+      <Style Selector="^:vertical /template/ Border#Surface"><Setter Property="MinHeight" Value="0" /><Setter Property="MinWidth" Value="64" /></Style>
+      <Style Selector="^:vertical /template/ ScrollViewer#Scroller"><Setter Property="HorizontalScrollBarVisibility" Value="Disabled" /><Setter Property="VerticalScrollBarVisibility" Value="Auto" /></Style>
+      <Style Selector="^:docked:vertical"><Setter Property="HorizontalAlignment" Value="Left" /><Setter Property="VerticalAlignment" Value="Stretch" /><Setter Property="Padding" Value="0,16" /></Style>
+    </ControlTheme>
+  </Styles.Resources>
+  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:not(:disabled):not(:checked)"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
+  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:not(:disabled):checked"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+</Styles>
