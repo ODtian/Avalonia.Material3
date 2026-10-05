@@ -42,7 +42,7 @@
 | Checkbox：二态、三态、错误/禁用 | 待交付 | [M3-06 #5][i5] | [Checkbox][checkbox]、CheckboxTokens |
 | Radio buttons | 待交付 | [M3-06 #5][i5] | [Radio buttons][radio]、RadioButtonTokens |
 | Switch | 待交付 | [M3-06 #5][i5] | [Switch][switch]、SwitchTokens |
-| Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 待交付 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens |
+| Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 已实现并通过真实编辑、包隔离与 Windows UIA 场景；实际读屏、平台中文 IME 候选会话待核验 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens；[公开契约](components/m3-07.md)、[证据与限制](verification/m3-07.md) |
 | Search：search bar、search view、建议/autocomplete | 待交付 | [M3-08 #11][i11] | [Search][search]、SearchBar/SearchView、Filled/OutlinedAutocompleteTokens |
 | Chips：assist、filter、input、suggestion | 待交付 | [M3-08 #11][i11] | [Chips][chips]、Assist/Filter/Input/SuggestionChipTokens |
 | Cards：elevated、filled、outlined、交互 | 待交付 | [M3-09 #7][i7] | [Cards][cards]、Elevated/Filled/OutlinedCardTokens |

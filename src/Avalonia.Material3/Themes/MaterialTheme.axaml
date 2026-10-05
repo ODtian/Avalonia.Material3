@@ -3,6 +3,10 @@
         xmlns:controls="using:Avalonia.Material3.Controls"
         x:Class="Avalonia.Material3.Themes.MaterialTheme">
   <Styles.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/TextField.axaml" />
+      </ResourceDictionary.MergedDictionaries>
     <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
       <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
@@ -96,5 +100,6 @@
         <Setter Property="IsVisible" Value="False" />
       </Style>
     </ControlTheme>
+    </ResourceDictionary>
   </Styles.Resources>
 </Styles>

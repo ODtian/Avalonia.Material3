@@ -12,7 +12,9 @@
     <PackageReference Include="xunit.v3" Version="3.2.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
     <ProjectReference Include="../../samples/Gallery/Gallery.csproj" />
+    <ProjectReference Include="../../samples/TextFieldHost/TextFieldHost.csproj" />
     <ProjectReference Include="../../samples/StandaloneHost/StandaloneHost.csproj" />
+    <Compile Include="../Avalonia.Material3.Tests/TextFieldScenarioTests.cs" Link="TextFieldScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ButtonScenarioTests.cs" Link="ButtonScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ButtonHost.cs" Link="ButtonHost.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ContractScenarioTests.cs" Link="ContractScenarioTests.cs" />
