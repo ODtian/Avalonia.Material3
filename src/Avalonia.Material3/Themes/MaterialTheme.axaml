@@ -2,21 +2,26 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="Avalonia.Material3.Themes.MaterialTheme">
   <Styles.Resources>
-    <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
-      <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
-      <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
-      <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
-      <Setter Property="Template">
-        <ControlTemplate>
-          <ContentPresenter x:Name="PART_ContentPresenter"
-                            Background="{TemplateBinding Background}"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Padding="{TemplateBinding Padding}" />
-        </ControlTemplate>
-      </Setter>
-    </ControlTheme>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sliders.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+      <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+        <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <ContentPresenter x:Name="PART_ContentPresenter"
+                              Background="{TemplateBinding Background}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Padding="{TemplateBinding Padding}" />
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
+    </ResourceDictionary>
   </Styles.Resources>
   <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialButtons.axaml" />
 </Styles>

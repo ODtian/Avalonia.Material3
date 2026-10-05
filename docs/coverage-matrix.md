@@ -49,7 +49,7 @@
 | Lists：一/二/三行、leading/trailing、expanded、reorder、reveal | 待交付 | [M3-09 #7][i7] | [Lists][lists]、List/ExpandedList/ReorderList/RevealListTokens |
 | Badges：点、计数 | 待交付 | [M3-09 #7][i7] | [Badges][badges]、BadgeTokens |
 | Dividers：水平、垂直、inset | 待交付 | [M3-09 #7][i7] | [Dividers][dividers]、DividerTokens |
-| Sliders：单值、范围、连续、离散、标记 | 待交付 | [M3-10 #8][i8] | [Sliders][sliders]、SliderTokens |
+| Sliders：单值、范围、连续、离散、标记 | 场景交付：另含 vertical/centered/RTL、两端点 focus/RangeValue、预览与保存恢复；headless/API 和新包消费通过，真实读屏/硬件与最终展厅集成未认领 | [M3-10 #8][i8] | [Sliders][sliders]、SliderTokens v2_3_5；[公开契约](components/m3-10.md)、[验证记录](verification/m3-10.md) |
 | Progress indicators：线性、圆形、确定/不确定、Expressive 波形 | 待交付 | [M3-11 #12][i12] | [Progress][progress]、Linear/CircularProgressIndicatorTokens |
 | Loading indicator：Expressive 形状循环 | 待交付 | [M3-11 #12][i12] | LoadingIndicatorTokens |
 | Dialogs：basic、全屏；打开/确认/取消/焦点返回 | 待交付 | [M3-12 #13][i13] | [Dialogs][dialogs]、DialogTokens |
