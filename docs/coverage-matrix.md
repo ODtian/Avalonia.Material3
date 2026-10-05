@@ -42,7 +42,7 @@
 | Checkbox：二态、三态、错误/禁用 | 已实现：18 DIP、48 触达、mixed/error/disabled、TwoWay 表单；headless + Windows UIA；人工读屏/移动平台未验收 | [M3-06 #5][i5] | [Checkbox][checkbox]、CheckboxTokens 14_1_0；[契约](components/m3-06.md)、[证据](verification/m3-06.md) |
 | Radio buttons | 已实现：20 DIP、48 触达、互斥/方向键/禁用/宿主错误扩展；headless + Windows UIA；人工读屏未验收 | [M3-06 #5][i5] | [Radio buttons][radio]、RadioButtonTokens v0_117；[M3-06](verification/m3-06.md) |
 | Switch | 已实现：52×32 track、16/24/28 handle、48 触达、图标/拖动/禁用/宿主错误扩展；headless + Windows UIA；物理触摸/人工读屏未验收 | [M3-06 #5][i5] | [Switch][switch]、SwitchTokens v0_210；[M3-06](verification/m3-06.md) |
-| Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 待交付 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens |
+| Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 已实现并通过真实编辑、包隔离与 Windows UIA 场景；实际读屏、平台中文 IME 候选会话待核验 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens；[公开契约](components/m3-07.md)、[证据与限制](verification/m3-07.md) |
 | Search：search bar、search view、建议/autocomplete | 待交付 | [M3-08 #11][i11] | [Search][search]、SearchBar/SearchView、Filled/OutlinedAutocompleteTokens |
 | Chips：assist、filter、input、suggestion | 待交付 | [M3-08 #11][i11] | [Chips][chips]、Assist/Filter/Input/SuggestionChipTokens |
 | Cards：elevated、filled、outlined、交互 | 待交付 | [M3-09 #7][i7] | [Cards][cards]、Elevated/Filled/OutlinedCardTokens |

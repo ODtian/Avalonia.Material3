@@ -1,0 +1,249 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls"
+                    xmlns:themes="using:Avalonia.Material3.Themes">
+  <themes:TextFieldMetricsConverter x:Key="M3.TextField.Metrics" />
+  <themes:TextFieldBrushOpacityConverter x:Key="M3.TextField.BrushOpacity" />
+  <ControlTheme x:Key="M3.TextField.SupportingText" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodySmallFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodySmallFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodySmallFontWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource M3.BodySmallLineHeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodySmallLetterSpacing}" />
+  </ControlTheme>
+  <ControlTheme x:Key="M3.TextField.Action" TargetType="Button">
+    <Setter Property="MinWidth" Value="48" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Padding" Value="12" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="ActionContainer" Background="{TemplateBinding Background}" CornerRadius="24">
+          <Grid>
+            <Border x:Name="ActionStateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
+                    CornerRadius="24" IsHitTestVisible="False" />
+            <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
+                              Padding="{TemplateBinding Padding}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+            <Border x:Name="ActionFocusRing" IsVisible="False" BorderThickness="2" CornerRadius="24"
+                    BorderBrush="{DynamicResource M3.PrimaryBrush}" IsHitTestVisible="False" />
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Border#ActionStateLayer">
+      <Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" />
+    </Style>
+    <Style Selector="^:focus-visible /template/ Border#ActionStateLayer">
+      <Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" />
+    </Style>
+    <Style Selector="^:pressed /template/ Border#ActionStateLayer">
+      <Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" />
+    </Style>
+    <Style Selector="^:focus-visible /template/ Border#ActionFocusRing">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+  </ControlTheme>
+  <ControlTheme x:Key="M3.TextField.ScrollViewer" TargetType="ScrollViewer">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <ScrollContentPresenter x:Name="PART_ContentPresenter" Background="Transparent" />
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialTextField}" TargetType="controls:MaterialTextField">
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="BorderThickness" Value="0,0,0,1" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmallTop}" />
+    <Setter Property="MinWidth" Value="120" />
+    <Setter Property="Padding" Value="{Binding FontSize, RelativeSource={RelativeSource Self}, Converter={StaticResource M3.TextField.Metrics}}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodyLargeFontWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyLargeLetterSpacing}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource M3.PrimaryBrush}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource M3.PrimaryBrush}" />
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource M3.OnPrimaryBrush}" />
+    <Setter Property="PlaceholderForeground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid RowDefinitions="Auto,Auto" Background="Transparent">
+          <Border x:Name="Container" MinHeight="56"
+                  Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+            <Border.Margin>
+              <MultiBinding Converter="{StaticResource M3.TextField.Metrics}">
+                <Binding Path="Variant" RelativeSource="{RelativeSource TemplatedParent}" />
+                <Binding Path="LineHeight" ElementName="OutlinedLabelText" />
+                <Binding Path="Label" RelativeSource="{RelativeSource TemplatedParent}" />
+              </MultiBinding>
+            </Border.Margin>
+            <Grid x:Name="EditorContent" ColumnDefinitions="Auto,*,Auto,Auto">
+            <ContentPresenter x:Name="Leading" Grid.Column="0" Content="{TemplateBinding InnerLeftContent}"
+                              VerticalContentAlignment="Center" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+            <DockPanel Grid.Column="1" x:Name="EditorDock" Margin="{TemplateBinding Padding}">
+              <TextBlock x:Name="FilledLabel" DockPanel.Dock="Top" IsVisible="False"
+                         Text="{TemplateBinding Label}" TextWrapping="Wrap" Theme="{StaticResource M3.TextField.SupportingText}"
+                         Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+              <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                <TextBlock x:Name="Prefix" Text="{TemplateBinding PrefixText}" IsVisible="False" Margin="0,0,4,0"
+                           LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
+                           Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+              <ScrollViewer x:Name="PART_ScrollViewer" Grid.Column="1" Theme="{StaticResource M3.TextField.ScrollViewer}"
+                            HorizontalScrollBarVisibility="{TemplateBinding (ScrollViewer.HorizontalScrollBarVisibility)}"
+                            VerticalScrollBarVisibility="{TemplateBinding (ScrollViewer.VerticalScrollBarVisibility)}"
+                            IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                <Panel>
+                  <TextBlock x:Name="RestingLabel" Text="{TemplateBinding Label}"
+                             LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
+                             Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+                  <Panel x:Name="PlaceholderHost" IsVisible="False">
+                    <TextBlock Text="{TemplateBinding PlaceholderText}" Foreground="{TemplateBinding PlaceholderForeground}"
+                               TextWrapping="{TemplateBinding TextWrapping}" TextAlignment="{TemplateBinding TextAlignment}"
+                               LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}">
+                      <TextBlock.IsVisible>
+                        <MultiBinding Converter="{x:Static BoolConverters.And}">
+                          <Binding ElementName="PART_TextPresenter" Path="PreeditText" Converter="{x:Static StringConverters.IsNullOrEmpty}" />
+                          <Binding RelativeSource="{RelativeSource TemplatedParent}" Path="Text" Converter="{x:Static StringConverters.IsNullOrEmpty}" />
+                        </MultiBinding>
+                      </TextBlock.IsVisible>
+                    </TextBlock>
+                  </Panel>
+                  <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text, Mode=TwoWay}"
+                                 CaretIndex="{TemplateBinding CaretIndex}" CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
+                                 SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}"
+                                 TextAlignment="{TemplateBinding TextAlignment}" TextWrapping="{TemplateBinding TextWrapping}"
+                                 LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
+                                 PasswordChar="{TemplateBinding PasswordChar}" RevealPassword="{TemplateBinding RevealPassword}"
+                                 SelectionBrush="{TemplateBinding SelectionBrush}"
+                                 SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                                 CaretBrush="{TemplateBinding CaretBrush}"
+                                 HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                 VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                </Panel>
+              </ScrollViewer>
+                <TextBlock x:Name="Suffix" Grid.Column="2" Text="{TemplateBinding SuffixText}" IsVisible="False" Margin="4,0,0,0"
+                           LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
+                           Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+              </Grid>
+            </DockPanel>
+            <ContentPresenter x:Name="Trailing" Grid.Column="2" Content="{TemplateBinding InnerRightContent}"
+                              VerticalContentAlignment="Center" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+            <Button x:Name="PART_ClearButton" Grid.Column="3" IsVisible="False" VerticalAlignment="Center"
+                    Theme="{StaticResource M3.TextField.Action}" AutomationProperties.Name="{TemplateBinding ClearButtonLabel}">
+              <PathIcon Width="24" Height="24" Data="M6,4.5 L12,10.5 L18,4.5 L19.5,6 L13.5,12 L19.5,18 L18,19.5 L12,13.5 L6,19.5 L4.5,18 L10.5,12 L4.5,6 Z" />
+            </Button>
+            </Grid>
+          </Border>
+          <!-- Surface-backed notch; outlined fields should be placed on the theme surface. -->
+          <Border x:Name="OutlinedLabel" IsVisible="False" VerticalAlignment="Top" HorizontalAlignment="Left"
+                  Margin="12,0,12,0" Padding="4,0" Background="{DynamicResource M3.SurfaceBrush}">
+            <TextBlock x:Name="OutlinedLabelText" Text="{TemplateBinding Label}" TextTrimming="CharacterEllipsis" Theme="{StaticResource M3.TextField.SupportingText}"
+                       Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+          </Border>
+          <Grid x:Name="SupportingContent" Grid.Row="1" ColumnDefinitions="*,Auto" Margin="16,4,16,0">
+            <TextBlock x:Name="Supporting" Text="{TemplateBinding EffectiveSupportingText}" Theme="{StaticResource M3.TextField.SupportingText}" TextWrapping="Wrap"
+                       Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+            <TextBlock x:Name="Counter" Grid.Column="1" Margin="8,0,0,0" IsVisible="{TemplateBinding ShowCounter}"
+                       Text="{TemplateBinding CounterText}" Theme="{StaticResource M3.TextField.SupportingText}" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+          </Grid>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:focus:prefix /template/ TextBlock#Prefix, ^:not(:empty):prefix /template/ TextBlock#Prefix, ^:focus:suffix /template/ TextBlock#Suffix, ^:not(:empty):suffix /template/ TextBlock#Suffix">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:leading /template/ ContentPresenter#Leading">
+      <Setter Property="Margin" Value="12,0,0,0" />
+    </Style>
+    <Style Selector="^:trailing /template/ ContentPresenter#Trailing">
+      <Setter Property="Margin" Value="0,0,12,0" />
+    </Style>
+    <Style Selector="^:clearable /template/ Button#PART_ClearButton">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:disabled /template/ Button#PART_ClearButton">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:focus /template/ TextBlock#FilledLabel, ^:not(:empty) /template/ TextBlock#FilledLabel">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:focus /template/ TextBlock#RestingLabel, ^:not(:empty) /template/ TextBlock#RestingLabel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:focus /template/ Panel#PlaceholderHost, ^:unlabelled /template/ Panel#PlaceholderHost">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:unlabelled /template/ TextBlock#FilledLabel, ^:unlabelled /template/ TextBlock#RestingLabel, ^:unlabelled /template/ Border#OutlinedLabel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:outlined">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" />
+    </Style>
+    <Style Selector="^:outlined /template/ TextBlock#FilledLabel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:outlined:focus /template/ Border#OutlinedLabel, ^:outlined:not(:empty) /template/ Border#OutlinedLabel">
+      <Setter Property="IsVisible" Value="True" />
+    </Style>
+    <Style Selector="^:outlined:unlabelled /template/ Border#OutlinedLabel">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <Style Selector="^:pointerover">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:outlined:pointerover:not(:focus) /template/ TextBlock#RestingLabel, ^:outlined:pointerover:not(:focus) /template/ TextBlock#OutlinedLabelText">
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:focus">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" />
+      <Setter Property="BorderThickness" Value="0,0,0,2" />
+    </Style>
+    <Style Selector="^:outlined:focus">
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="^:focus /template/ TextBlock#FilledLabel, ^:focus /template/ TextBlock#OutlinedLabelText">
+      <Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" />
+    </Style>
+    <Style Selector="^:invalid">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
+      <Setter Property="CaretBrush" Value="{DynamicResource M3.ErrorBrush}" />
+    </Style>
+    <Style Selector="^:invalid /template/ TextBlock#FilledLabel, ^:invalid /template/ TextBlock#RestingLabel, ^:invalid /template/ TextBlock#OutlinedLabelText, ^:invalid /template/ TextBlock#Supporting, ^:invalid /template/ TextBlock#Counter, ^:invalid /template/ ContentPresenter#Trailing, ^:invalid /template/ Button#PART_ClearButton">
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource M3.ErrorBrush}" />
+    </Style>
+    <Style Selector="^:invalid:pointerover:not(:focus)">
+      <Setter Property="BorderBrush" Value="{DynamicResource M3.OnErrorContainerBrush}" />
+    </Style>
+    <Style Selector="^:invalid:pointerover:not(:focus) /template/ TextBlock#FilledLabel, ^:invalid:pointerover:not(:focus) /template/ TextBlock#RestingLabel, ^:invalid:pointerover:not(:focus) /template/ TextBlock#OutlinedLabelText, ^:invalid:pointerover:not(:focus) /template/ ContentPresenter#Trailing, ^:invalid:pointerover:not(:focus) /template/ Button#PART_ClearButton">
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource M3.OnErrorContainerBrush}" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+      <Setter Property="Background" Value="{Binding Foreground, RelativeSource={RelativeSource Self}, Converter={StaticResource M3.TextField.BrushOpacity}, ConverterParameter=0.04}" />
+      <Setter Property="BorderBrush" Value="{Binding Foreground, RelativeSource={RelativeSource Self}, Converter={StaticResource M3.TextField.BrushOpacity}, ConverterParameter=0.38}" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="^:outlined:disabled">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="{Binding Foreground, RelativeSource={RelativeSource Self}, Converter={StaticResource M3.TextField.BrushOpacity}, ConverterParameter=0.12}" />
+      <Setter Property="BorderThickness" Value="1" />
+    </Style>
+    <Style Selector="^:disabled /template/ Grid#EditorContent, ^:disabled /template/ Grid#SupportingContent, ^:disabled /template/ Border#OutlinedLabel">
+      <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
+    </Style>
+    <Style Selector="^:disabled /template/ TextBlock">
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
