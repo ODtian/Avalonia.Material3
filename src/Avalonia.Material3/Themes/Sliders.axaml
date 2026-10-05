@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls">
+  <!-- Ticket-local fallbacks. MaterialTheme's complete role resources take precedence
+       when M3-02 is installed; these do not introduce another theme input API. -->
+  <ResourceDictionary.ThemeDictionaries>
+    <ResourceDictionary x:Key="Light">
+      <SolidColorBrush x:Key="M3.SecondaryContainerBrush" Color="#E8DEF8" />
+      <SolidColorBrush x:Key="M3.InverseSurfaceBrush" Color="#322F35" />
+      <SolidColorBrush x:Key="M3.InverseOnSurfaceBrush" Color="#F5EFF7" />
+    </ResourceDictionary>
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="M3.SecondaryContainerBrush" Color="#4A4458" />
+      <SolidColorBrush x:Key="M3.InverseSurfaceBrush" Color="#E6E0E9" />
+      <SolidColorBrush x:Key="M3.InverseOnSurfaceBrush" Color="#322F35" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+  <ControlTheme x:Key="{x:Type controls:MaterialSlider}" TargetType="controls:MaterialSlider">
+    <Setter Property="MinHeight" Value="64" />
+    <Setter Property="MinWidth" Value="48" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" />
+    <Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" />
+    <Setter Property="ValueIndicatorBrush" Value="{DynamicResource M3.InverseSurfaceBrush}" />
+    <Setter Property="ValueIndicatorForeground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.FontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <controls:MaterialSliderPresenter x:Name="PART_Surface" />
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+      <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialRangeSlider}" TargetType="controls:MaterialRangeSlider"
+                BasedOn="{StaticResource {x:Type controls:MaterialSlider}}" />
+</ResourceDictionary>
