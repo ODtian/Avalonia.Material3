@@ -10,7 +10,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Material3.Controls;
 
 /// <summary>Shared content slots and independent primary activation for cards and list items.</summary>
-public class MaterialContentItem : Button
+public abstract class MaterialContentItem : Button
 {
     public static readonly StyledProperty<object?> OverlineProperty = AvaloniaProperty.Register<MaterialContentItem, object?>(nameof(Overline));
     public static readonly StyledProperty<IDataTemplate?> OverlineTemplateProperty = AvaloniaProperty.Register<MaterialContentItem, IDataTemplate?>(nameof(OverlineTemplate));
@@ -35,7 +35,7 @@ public class MaterialContentItem : Button
         add => AddHandler(ActivatedEvent, value);
         remove => RemoveHandler(ActivatedEvent, value);
     }
-    public MaterialContentItem() => PseudoClasses.Set(":interactive", IsInteractive);
+    protected MaterialContentItem() => PseudoClasses.Set(":interactive", IsInteractive);
 
     public object? Overline { get => GetValue(OverlineProperty); set => SetValue(OverlineProperty, value); }
     public IDataTemplate? OverlineTemplate { get => GetValue(OverlineTemplateProperty); set => SetValue(OverlineTemplateProperty, value); }
@@ -71,7 +71,7 @@ public class MaterialContentItem : Button
     }
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        if (IsInteractive && !IsNestedInput(e)) base.OnPointerReleased(e);
+        if (IsPressed || (IsInteractive && !IsNestedInput(e))) base.OnPointerReleased(e);
     }
     protected override void OnKeyDown(KeyEventArgs e)
     {
@@ -79,7 +79,7 @@ public class MaterialContentItem : Button
     }
     protected override void OnKeyUp(KeyEventArgs e)
     {
-        if (IsInteractive && !IsNestedInput(e)) base.OnKeyUp(e);
+        if (IsPressed || (IsInteractive && !IsNestedInput(e))) base.OnKeyUp(e);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -116,5 +116,5 @@ internal class MaterialContentItemAutomationPeer : ButtonAutomationPeer, IToggle
         return base.GetProviderCore(providerType);
     }
     public ToggleState ToggleState => _owner.IsSelected ? ToggleState.On : ToggleState.Off;
-    public void Toggle() => Invoke();
+    public void Toggle() { if (_owner.IsSelectable) Invoke(); }
 }

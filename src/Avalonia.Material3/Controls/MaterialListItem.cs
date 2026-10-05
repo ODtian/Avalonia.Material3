@@ -28,7 +28,10 @@ public class MaterialListItem : MaterialContentItem
     public static readonly StyledProperty<bool> IsRevealedProperty = AvaloniaProperty.Register<MaterialListItem, bool>(nameof(IsRevealed));
     public static readonly StyledProperty<double> RevealWidthProperty = AvaloniaProperty.Register<MaterialListItem, double>(nameof(RevealWidth), 128, validate: value => double.IsFinite(value) && value >= 48);
     public static readonly DirectProperty<MaterialListItem, Thickness> RevealTranslationProperty = AvaloniaProperty.RegisterDirect<MaterialListItem, Thickness>(nameof(RevealTranslation), item => item.RevealTranslation);
+    public static readonly DirectProperty<MaterialListItem, bool> AreRevealActionsVisibleProperty = AvaloniaProperty.RegisterDirect<MaterialListItem, bool>(nameof(AreRevealActionsVisible), item => item.AreRevealActionsVisible);
+    private bool _areRevealActionsVisible;
     private Thickness _revealTranslation;
+    public bool AreRevealActionsVisible => _areRevealActionsVisible;
     public double RevealWidth { get => GetValue(RevealWidthProperty); set => SetValue(RevealWidthProperty, value); }
     /// <summary>Layout offset used by the default reveal template. Zero when closed.</summary>
     public Thickness RevealTranslation => _revealTranslation;
@@ -46,11 +49,14 @@ public class MaterialListItem : MaterialContentItem
     private MaterialList? _reorderList;
     private IPointer? _reorderPointer;
     private double _reorderStartY;
+    private bool _reorderMoved;
     private ITransform? _savedTransform;
     public bool IsReordering => _isReordering;
     private Button? _expandButton;
     private Button? _revealButton;
     private Point? _gestureStart;
+    private IPointer? _gesturePointer;
+    private double _gestureStartOffset;
     private bool _cancelPrimary;
     public bool IsRevealEnabled { get => GetValue(IsRevealEnabledProperty); set => SetValue(IsRevealEnabledProperty, value); }
     public bool IsRevealed { get => GetValue(IsRevealedProperty); set => SetValue(IsRevealedProperty, value); }
@@ -112,6 +118,7 @@ public class MaterialListItem : MaterialContentItem
         _reorderList = this.GetVisualAncestors().OfType<MaterialList>().FirstOrDefault();
         if (_reorderList is null || !_reorderList.Children.Contains(this)) return;
         _reorderStartY = e.GetPosition(_reorderList).Y;
+        _reorderMoved = false;
         _savedTransform = RenderTransform;
         _reorderPointer = e.Pointer;
         SetAndRaise(IsReorderingProperty, ref _isReordering, true);
@@ -123,7 +130,9 @@ public class MaterialListItem : MaterialContentItem
     private void ReorderMoved(object? sender, PointerEventArgs e)
     {
         if (!IsReordering || e.Pointer != _reorderPointer || _reorderList is null) return;
-        SetCurrentValue(RenderTransformProperty, new TranslateTransform(0, e.GetPosition(_reorderList).Y - _reorderStartY));
+        var delta = e.GetPosition(_reorderList).Y - _reorderStartY;
+        _reorderMoved |= Math.Abs(delta) > 16;
+        if (_reorderMoved) SetCurrentValue(RenderTransformProperty, new TranslateTransform(0, delta));
         e.Handled = true;
     }
     private void ReorderReleased(object? sender, PointerReleasedEventArgs e)
@@ -132,9 +141,11 @@ public class MaterialListItem : MaterialContentItem
         var list = _reorderList;
         var y = e.GetPosition(list).Y;
         if (list.Children.Count == 0) { EndReorder(); e.Handled = true; return; }
+        var dragged = _reorderMoved || Math.Abs(y - _reorderStartY) > 16;
         var index = list.Children.Select((child, i) => (Distance: Math.Abs(child.Bounds.Center.Y - y), Index: i)).MinBy(candidate => candidate.Distance).Index;
         EndReorder();
-        list.MoveItem(this, index);
+        if (dragged) list.MoveItem(this, index);
+        else ReorderClicked(sender, new RoutedEventArgs());
         e.Handled = true;
     }
     private void ReorderCaptureLost(object? sender, PointerCaptureLostEventArgs e) => EndReorder();
@@ -152,7 +163,7 @@ public class MaterialListItem : MaterialContentItem
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         EndReorder();
-        _gestureStart = null;
+        ResetRevealGesture();
         base.OnDetachedFromVisualTree(e);
     }
     protected override AutomationPeer OnCreateAutomationPeer() => new ListItemPeer(this);
@@ -187,24 +198,53 @@ public class MaterialListItem : MaterialContentItem
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         if (IsEffectivelyEnabled && IsInteractive && IsRevealEnabled && !IsNestedInput(e) && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
             _gestureStart = e.GetPosition(this);
+            _gestureStartOffset = IsRevealed ? -RevealWidth : 0;
+            _gesturePointer = e.Pointer;
+            e.Pointer.Capture(this);
+        }
         base.OnPointerPressed(e);
+    }
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        if (_gestureStart is not { } start || e.Pointer != _gesturePointer) return;
+        var delta = e.GetPosition(this) - start;
+        if (Math.Abs(delta.X) > 16 && Math.Abs(delta.X) > Math.Abs(delta.Y) * 1.5)
+            SetRevealOffset(Math.Clamp(_gestureStartOffset + delta.X, -RevealWidth, 0));
     }
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        if (_gestureStart is { } start && IsEffectivelyEnabled)
+        if (_gestureStart is { } start && e.Pointer == _gesturePointer && IsEffectivelyEnabled)
         {
             var delta = e.GetPosition(this) - start;
             _cancelPrimary = Math.Abs(delta.X) > 16 || Math.Abs(delta.Y) > 16;
-            if (Math.Abs(delta.X) >= 48 && Math.Abs(delta.X) > Math.Abs(delta.Y) * 1.5)
-                SetCurrentValue(IsRevealedProperty, delta.X < 0);
+            if (Math.Abs(delta.X) > 16 && Math.Abs(delta.X) > Math.Abs(delta.Y) * 1.5)
+            {
+                var exposure = Math.Clamp(-_gestureStartOffset - delta.X, 0, RevealWidth);
+                SetCurrentValue(IsRevealedProperty, exposure >= Math.Min(48, RevealWidth / 2));
+            }
         }
         try { base.OnPointerReleased(e); }
-        finally { _gestureStart = null; _cancelPrimary = false; }
+        finally { ResetRevealGesture(); _cancelPrimary = false; }
+    }
+    private void SetRevealOffset(double offset)
+    {
+        SetAndRaise(RevealTranslationProperty, ref _revealTranslation, new(offset, 0, -offset, 0));
+        SetAndRaise(AreRevealActionsVisibleProperty, ref _areRevealActionsVisible, IsRevealed || offset < 0);
+    }
+    private void ResetRevealGesture()
+    {
+        var pointer = _gesturePointer;
+        _gestureStart = null;
+        _gesturePointer = null;
+        SetRevealOffset(IsRevealed ? -RevealWidth : 0);
+        if (pointer?.Captured == this) pointer.Capture(null);
     }
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
-        _gestureStart = null;
+        ResetRevealGesture();
         base.OnPointerCaptureLost(e);
     }
     protected override void OnClick()
@@ -252,12 +292,14 @@ public class MaterialListItem : MaterialContentItem
         base.OnPropertyChanged(change);
         if ((change.Property == IsReorderEnabledProperty && !IsReorderEnabled) || (change.Property == IsEffectivelyEnabledProperty && !IsEffectivelyEnabled))
             EndReorder();
+        if ((change.Property == IsRevealEnabledProperty && !IsRevealEnabled) || (change.Property == IsEffectivelyEnabledProperty && !IsEffectivelyEnabled) || (change.Property == IsInteractiveProperty && !IsInteractive))
+            ResetRevealGesture();
         if (change.Property == IsExpressiveProperty) PseudoClasses.Set(":expressive", IsExpressive);
         if (change.Property == IsExpandedProperty) PseudoClasses.Set(":expanded", IsExpanded);
         if (change.Property == IsRevealedProperty || change.Property == RevealWidthProperty)
         {
             PseudoClasses.Set(":revealed", IsRevealed);
-            SetAndRaise(RevealTranslationProperty, ref _revealTranslation, IsRevealed ? new(-RevealWidth, 0, RevealWidth, 0) : default);
+            SetRevealOffset(IsRevealed ? -RevealWidth : 0);
         }
         if (change.Property == LinesProperty)
         {

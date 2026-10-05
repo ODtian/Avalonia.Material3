@@ -2,6 +2,8 @@ using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using System.Windows.Input;
+using System.Runtime.InteropServices;
+using Avalonia.Platform;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Headless;
@@ -9,6 +11,8 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Material3.Controls;
 using Avalonia.Material3.Themes;
+using Avalonia.Material3.Tokens;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Xunit;
@@ -108,6 +112,9 @@ public class ContentScenarioTests
         host.List.Children.Add(row);
         host.Render();
         Assert.False(detail.GetVisualAncestors().Contains(host.Window) && detail.IsEffectivelyVisible);
+        var expandButton = row.GetVisualDescendants().OfType<MaterialButton>().Single(b => AutomationProperties.GetName(b) == "Toggle expanded content");
+        Assert.Equal("⌄", expandButton.Content);
+        Assert.Equal(Color.Parse("#FEF7FF"), ((ISolidColorBrush)expandButton.Background!).Color);
         host.Window.KeyPressQwerty(PhysicalKey.Tab, RawInputModifiers.None);
         host.Window.KeyReleaseQwerty(PhysicalKey.Tab, RawInputModifiers.None);
         host.Window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.Alt);
@@ -115,6 +122,8 @@ public class ContentScenarioTests
         host.Render();
         Assert.True(row.IsExpanded);
         Assert.True(detail.IsEffectivelyVisible);
+        Assert.Equal("⌃", expandButton.Content);
+        Assert.Equal(Color.Parse("#F3EDF7"), ((ISolidColorBrush)expandButton.Background!).Color);
         Assert.False(row.IsSelected);
         host.Window.KeyPressQwerty(PhysicalKey.Enter, RawInputModifiers.Alt);
         host.Window.KeyReleaseQwerty(PhysicalKey.Enter, RawInputModifiers.Alt);
@@ -144,6 +153,7 @@ public class ContentScenarioTests
         Assert.False(row.IsSelected);
         Assert.Equal("Waiting", result);
         Assert.True(action.IsEffectivelyVisible && action.Bounds.Height >= 48);
+        Assert.Equal(new CornerRadius(16), action.CornerRadius);
         host.Click(action);
         Assert.Equal("Deleted B", result);
         row.Focus();
@@ -261,6 +271,7 @@ public class ContentScenarioTests
         var peer = ControlAutomationPeer.CreatePeerForElement(row)!;
         Assert.Equal("Inbox B", peer.GetName());
         Assert.Equal(AutomationControlType.ListItem, peer.GetAutomationControlType());
+        Assert.Contains(AutomationDescendants(peer), child => child.GetName() == "Open attachment" && child.GetAutomationControlType() == AutomationControlType.Button);
         var toggle = Assert.IsAssignableFrom<IToggleProvider>(peer.GetProvider<IToggleProvider>());
         toggle.Toggle();
         Assert.Equal("Selected Inbox B", result);
@@ -494,6 +505,110 @@ public class ContentScenarioTests
         Assert.False(row.IsRevealed || row.IsSelected || row.IsPressed);
     }
 
+    [AvaloniaFact]
+    public void Content_consumes_full_semantic_color_typography_shape_and_state_inputs_live()
+    {
+        using var host = new ContentHost();
+        var badge = new MaterialBadge { Count = 7 };
+        var row = new MaterialListItem { Title = "Title", SupportingContent = "Supporting", Overline = "Overline", Trailing = badge };
+        var card = new MaterialCard { Title = "Card" };
+        host.List.Children.Add(row);
+        host.List.Children.Add(card);
+        host.Theme.LightColorScheme = MaterialColorScheme.Light with { Error = Colors.Red, SurfaceContainerHighest = Colors.Blue };
+        host.Theme.Shapes = new() { CornerMedium = 18 };
+        host.Theme.Typography = new()
+        {
+            BodyMedium = new(18, 28, 0.3, FontWeight.Bold) { FontFamily = new FontFamily("Arial") },
+            LabelSmall = new(13, 20, 0.7, FontWeight.Bold)
+        };
+        host.Render();
+        Assert.Equal(Colors.Red, ((ISolidColorBrush)badge.Background!).Color);
+        Assert.Equal(Colors.Blue, ((ISolidColorBrush)card.Background!).Color);
+        Assert.Equal(new CornerRadius(18), card.CornerRadius);
+        var supporting = row.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "Supporting");
+        Assert.Equal(18, supporting.FontSize);
+        Assert.Equal(28, supporting.LineHeight);
+        Assert.Equal(0.3, supporting.LetterSpacing);
+        Assert.Equal(FontWeight.Bold, supporting.FontWeight);
+        Assert.Equal(new FontFamily("Arial"), supporting.FontFamily);
+        Assert.Equal(13, badge.FontSize);
+        host.Window.MouseMove(host.At(row));
+        var hovered = host.Capture();
+        host.Theme.States = new() { HoverStateLayerOpacity = 0.5 };
+        Assert.NotEqual(hovered, host.Capture());
+        host.Theme.SeedColor = Color.Parse("#006C4C");
+        host.Render();
+        Assert.NotEqual(Colors.Red, ((ISolidColorBrush)badge.Background!).Color);
+        Assert.NotEqual(Colors.Blue, ((ISolidColorBrush)card.Background!).Color);
+    }
+
+    [AvaloniaFact]
+    public void List_container_clips_its_rows_to_the_live_large_shape_without_an_extra_host_border()
+    {
+        using var host = new ContentHost();
+        host.List.Margin = new Thickness(16);
+        host.List.Children.Add(new MaterialListItem { Title = "Selected", IsSelected = true });
+        host.Render();
+        Assert.Equal(new CornerRadius(16), host.List.CornerRadius);
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(host.At(host.List, new Point(1, 1))));
+        host.Theme.Shapes = new() { CornerLarge = 24 };
+        host.Render();
+        Assert.Equal(new CornerRadius(24), host.List.CornerRadius);
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(host.At(host.List, new Point(1, 1))));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Revoking_primary_interaction_during_a_press_cancels_selection_and_clears_feedback(bool keyboard)
+    {
+        using var host = new ContentHost();
+        var row = new MaterialListItem { Title = "A", IsSelectable = true };
+        host.List.Children.Add(row);
+        host.Render();
+        if (keyboard)
+        {
+            row.Focus();
+            host.Window.KeyPressQwerty(PhysicalKey.Space, RawInputModifiers.None);
+        }
+        else host.Window.MouseDown(host.At(row), MouseButton.Left);
+        Assert.True(row.IsPressed);
+        row.IsInteractive = false;
+        if (keyboard) host.Window.KeyReleaseQwerty(PhysicalKey.Space, RawInputModifiers.None);
+        else host.Window.MouseUp(host.At(row), MouseButton.Left);
+        Assert.False(row.IsSelected || row.IsPressed);
+    }
+
+    [AvaloniaFact]
+    public void Tapping_the_reorder_handle_opens_named_actions_without_moving_or_selecting_the_item()
+    {
+        using var host = new ContentHost();
+        var row = new MaterialListItem { Title = "A", IsReorderEnabled = true, IsSelectable = true };
+        host.List.Children.Add(row);
+        host.List.Children.Add(new MaterialListItem { Title = "B" });
+        host.Render();
+        var handle = row.GetVisualDescendants().OfType<MaterialButton>().Single(c => AutomationProperties.GetName(c) == "Reorder item");
+        var point = host.At(handle);
+        using var contact = host.Window.TouchBegin(point);
+        host.Window.TouchEnd(contact, point);
+        host.Render();
+        Assert.True(row.IsReorderActionsVisible);
+        Assert.False(row.IsReordering || row.IsSelected);
+        Assert.Same(row, host.List.Children[0]);
+        var down = row.GetVisualDescendants().OfType<MaterialButton>().Single(c => AutomationProperties.GetName(c) == "Move item down");
+        host.Click(down);
+        Assert.Same(row, host.List.Children[1]);
+    }
+
+    private static IEnumerable<AutomationPeer> AutomationDescendants(AutomationPeer peer)
+    {
+        foreach (var child in peer.GetChildren())
+        {
+            yield return child;
+            foreach (var descendant in AutomationDescendants(child)) yield return descendant;
+        }
+    }
+
     private sealed class ContentCommand(Action<object?> execute) : ICommand
     {
         public bool CanExecute(object? parameter) => true;
@@ -523,6 +638,17 @@ public class ContentScenarioTests
             using var stream = new MemoryStream();
             frame.Save(stream, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
             return stream.ToArray();
+        }
+        public Color PixelAt(Point point)
+        {
+            using var bitmap = Window.CaptureRenderedFrame()!;
+            using var frame = bitmap.Lock();
+            var offset = (int)(point.Y * Window.RenderScaling) * frame.RowBytes + (int)(point.X * Window.RenderScaling) * 4;
+            var first = Marshal.ReadByte(frame.Address, offset);
+            var green = Marshal.ReadByte(frame.Address, offset + 1);
+            var third = Marshal.ReadByte(frame.Address, offset + 2);
+            var alpha = Marshal.ReadByte(frame.Address, offset + 3);
+            return frame.Format == PixelFormat.Bgra8888 ? Color.FromArgb(alpha, third, green, first) : Color.FromArgb(alpha, first, green, third);
         }
         public Point At(Control control, Point? point = null) => control.TranslatePoint(point ?? new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), Window)!.Value;
         public void Click(Control control, Point? point = null)

@@ -102,6 +102,7 @@ public sealed class ContentHierarchyPage : StackPanel
                 foreach (var other in Rows.Where(other => other != row && other.IsEnabled)) other.IsSelected = false;
             };
         }
+        AutomationProperties.SetName(List, "Content entries / 内容列表");
         List.ItemReordered += (_, e) => Result.Text = $"Reordered {e.Item.Tag}: {e.OldIndex} → {e.NewIndex}";
         Children.Add(List);
         Children.Add(new MaterialDivider());
@@ -110,7 +111,7 @@ public sealed class ContentHierarchyPage : StackPanel
     private MaterialListItem Row(string id, string title, MaterialListLines lines)
     {
         var row = new MaterialListItem { Tag = id, Title = title, Lines = lines, IsSelectable = true, CommandParameter = id };
-        row.Command = new DemoCommand(p => Result.Text = $"Selected {p}");
+        row.Command = new DemoCommand(p => Result.Text = $"{(row.IsSelected ? "Selected" : "Deselected")} {p}");
         AutomationProperties.SetName(row, $"{id}: {title}");
         return row;
     }

@@ -7,6 +7,7 @@ $sandbox = Join-Path ([IO.Path]::GetTempPath()) ('m3-content-consumer-' + [guid]
 $previousPackages = $env:NUGET_PACKAGES
 function Invoke-Dotnet {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
+    $Arguments += '--disable-build-servers'
     & dotnet @Arguments
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments -join ' ') failed ($LASTEXITCODE)." }
 }
@@ -49,9 +50,15 @@ try {
 '@ | Set-Content "$sandbox/NuGet.Config" -Encoding utf8
     Copy-ConsumerTree 'samples'
     Copy-ConsumerTree 'tests/PackageConsumption.Tests'
-    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'ContentScenarioTests.cs') {
-        Copy-Item "$root/tests/Avalonia.Material3.Tests/$file" "$sandbox/tests/Avalonia.Material3.Tests"
-    }
+    Copy-ConsumerTree 'tests/ReferenceVectors'
+    # Supply linked scenario sources without changing the package project's explicit Compile contract.
+    Get-ChildItem "$root/tests/Avalonia.Material3.Tests" -Filter '*.cs' -Recurse -File |
+        Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } | ForEach-Object {
+            $relative = [IO.Path]::GetRelativePath("$root/tests/Avalonia.Material3.Tests", $_.FullName)
+            $destination = Join-Path "$sandbox/tests/Avalonia.Material3.Tests" $relative
+            New-Item -ItemType Directory -Force (Split-Path $destination -Parent) | Out-Null
+            Copy-Item $_.FullName $destination
+        }
     if (Test-Path "$sandbox/src") { throw 'Isolated consumer must not contain library source.' }
     $env:NUGET_PACKAGES = "$sandbox/packages"
     Write-Host "Isolated content package consumer: $sandbox"
