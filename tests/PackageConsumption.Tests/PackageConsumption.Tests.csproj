@@ -16,6 +16,7 @@
     <Compile Include="../Avalonia.Material3.Tests/ButtonScenarioTests.cs" Link="ButtonScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ButtonHost.cs" Link="ButtonHost.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ContractScenarioTests.cs" Link="ContractScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/ExpressiveButtonScenarioTests.cs" Link="ExpressiveButtonScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/SliderScenarioTests.cs" Link="SliderScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ThemeScenarioTests.cs" Link="ThemeScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/TokenReferenceScenarioTests.cs" Link="TokenReferenceScenarioTests.cs" />

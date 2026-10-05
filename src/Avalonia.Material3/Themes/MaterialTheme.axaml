@@ -1,105 +1,27 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:Avalonia.Material3.Controls"
         x:Class="Avalonia.Material3.Themes.MaterialTheme">
   <Styles.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sliders.axaml" />
       </ResourceDictionary.MergedDictionaries>
-    <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
-      <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
-      <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
-      <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
-      <Setter Property="Template">
-        <ControlTemplate>
-          <ContentPresenter x:Name="PART_ContentPresenter"
-                            Background="{TemplateBinding Background}"
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            Padding="{TemplateBinding Padding}" />
-        </ControlTemplate>
-      </Setter>
-    </ControlTheme>
-    <ControlTheme x:Key="{x:Type controls:MaterialButton}" TargetType="controls:MaterialButton">
-      <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
-      <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" />
-      <Setter Property="MinHeight" Value="48" />
-      <Setter Property="Padding" Value="16,8" />
-      <Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" />
-      <Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
-      <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" />
-      <Setter Property="CornerRadius" Value="{DynamicResource M3.ButtonCornerRadius}" />
-      <Setter Property="HorizontalContentAlignment" Value="Center" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
-      <Setter Property="HorizontalAlignment" Value="Left" />
-      <Setter Property="FocusAdorner" Value="{x:Null}" />
-      <Setter Property="Template">
-        <ControlTemplate>
-          <Grid Background="Transparent">
-            <Border x:Name="Container" Margin="5" MinHeight="40"
-                    Background="{TemplateBinding Background}"
-                    CornerRadius="{TemplateBinding CornerRadius}">
-              <Grid>
-                <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
-                        CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False">
-                  <Border.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" />
-                    </Transitions>
-                  </Border.Transitions>
-                </Border>
-                <ContentPresenter x:Name="PART_ContentPresenter"
-                                  Content="{TemplateBinding Content}"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                  Padding="{TemplateBinding Padding}"
-                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                  RecognizesAccessKey="True" />
-              </Grid>
-            </Border>
-            <Border x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
-                    BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
-                    CornerRadius="{DynamicResource M3.ButtonFocusCornerRadius}" />
-          </Grid>
-        </ControlTemplate>
-      </Setter>
-      <Style Selector="^:pointerover /template/ Border#StateLayer">
-        <Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" />
-      </Style>
-      <Style Selector="^:pointerover /template/ Border#Container">
-        <Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" />
-      </Style>
-      <Style Selector="^:pressed">
-        <Setter Property="CornerRadius" Value="{DynamicResource M3.PressedButtonCornerRadius}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Border#StateLayer">
-        <Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" />
-      </Style>
-      <Style Selector="^:pressed /template/ Border#Container">
-        <Setter Property="BoxShadow" Value="none" />
-      </Style>
-      <Style Selector="^:pressed /template/ Border#FocusRing">
-        <Setter Property="CornerRadius" Value="{DynamicResource M3.PressedButtonFocusCornerRadius}" />
-      </Style>
-      <Style Selector="^:focus-visible /template/ Border#FocusRing">
-        <Setter Property="IsVisible" Value="True" />
-      </Style>
-      <Style Selector="^:disabled">
-        <Setter Property="Background" Value="{DynamicResource M3.DisabledContainerBrush}" />
-        <Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" />
-      </Style>
-      <Style Selector="^:disabled /template/ Border#StateLayer">
-        <Setter Property="Opacity" Value="0" />
-      </Style>
-      <Style Selector="^:disabled /template/ Border#Container">
-        <Setter Property="BoxShadow" Value="none" />
-      </Style>
-      <Style Selector="^:disabled /template/ Border#FocusRing">
-        <Setter Property="IsVisible" Value="False" />
-      </Style>
-    </ControlTheme>
+      <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+        <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <ContentPresenter x:Name="PART_ContentPresenter"
+                              Background="{TemplateBinding Background}"
+                              Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Padding="{TemplateBinding Padding}" />
+          </ControlTemplate>
+        </Setter>
+      </ControlTheme>
     </ResourceDictionary>
   </Styles.Resources>
+  <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialButtons.axaml" />
 </Styles>
