@@ -6,6 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Avalonia.Material3/Avalonia.Material3.csproj" />
+    <EmbeddedResource Include="../ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
+    <EmbeddedResource Include="../ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />
+    <Compile Include="../../samples/Gallery/Pages/ThemeTokensPage.cs" Link="ThemeTokensPage.cs" />
     <PackageReference Include="Avalonia.Headless.XUnit" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />

@@ -5,9 +5,9 @@
 - 规范观察日期：**2026-10-04**；母规格 1.0；本矩阵基线 1。
 - 规范入口：[Material 3 标准组件][components]、[Material 3 Expressive / Compose][expressive]。
 - 可复现令牌参考：[AndroidX 固定提交 `11ece46a49d485c7644e53cb0684a611d7a0ec10`][tokens]。
-  ButtonSmall / FilledButton 的生成版本为 `v0_11_0`；颜色、字阶和状态为 `v0_210`。
+  ButtonSmall / FilledButton 的生成版本为 `v0_11_0`；颜色与状态为 `v0_210`；TypeScale/Elevation/Motion 为 `v0_103`，Shape 为 `14_1_0`，标准/Expressive spring 为 `v0_14_0`。
 - 对照实现：[Material Components Android 固定提交 `60ff09436d5d477a4b9d02940f31eb01e1250620`][android-buttons]。
-- 色彩算法参考：[Material Color Utilities][mcu]；算法实现与固定版本／向量在 M3-02 交付，不将本票的默认调色板冒充动态算法。
+- 色彩算法参考：[Material Color Utilities][mcu]；M3-02 固定 Google MCU npm 0.3.0 / `6bda88814da380664aaecc163ecdb8ac8caebb0a` 为独立 oracle，C# HCT 端依赖 MaterialColorUtilities 0.3.0；CorePalette.of + 本基线角色 tone 映射，不冒充较新的动态对比解析器。
 - 框架：Avalonia **12.1.3**（稳定版）；目标框架 **net10.0**；SDK **10.0.112**；包 **0.1.0-preview.1**。
 
 本表是完整交付清单，不是“全部完成”的声明。`初始` 表示仅交付本票明确的子集，`待交付` 必须由归属票据补上场景、状态、输入与无障碍证据。后续规范更新须更改基线并审查此表；不得静默跟随上游主分支。
@@ -16,13 +16,13 @@
 
 | 能力 | 本票状态 / 交付范围 | 后续归属 | 来源 / 证据 |
 | --- | --- | --- | --- |
-| 语义色彩角色、明暗主题 | 初始：Primary、OnPrimary、Surface、OnSurface、OnSurfaceVariant、Outline | [M3-02 #3][i3] | ColorLightTokens、ColorDarkTokens、PaletteTokens；`Existing_button_follows_host_light_dark_and_light_changes` |
-| 种子色、动态色、完整方案及对比度 | 待交付 | [M3-02 #3][i3] | [MCU][mcu] |
-| 字体、标准与强调字阶、混排、字体尺度 | 初始：宿主字体、尺度、14/500 按钮标签与 16 正文字号；完整字阶、行高、字距及强调角色待交付 | [M3-02 #3][i3] | TypeScaleTokens；`Host_updates_initial_design_tokens_on_existing_content` |
-| 形状尺度、形态变化 | 初始：小按钮 20 圆角、按下 8 圆角、宿主覆盖 | [M3-02 #3][i3]、[M3-03 #4][i4] | [ButtonSmallTokens][small-button]、ShapeTokens |
-| 海拔与阴影 | 初始：filled button 常态 0、悬停 1 的基础阴影；完整体系待交付 | [M3-02 #3][i3] | FilledButtonTokens、ElevationTokens |
-| 状态层 | 初始：悬停 0.08、按下 0.10；禁用容器 0.10、标签 0.38 | [M3-02 #3][i3]、[M3-03 #4][i4] | StateTokens、FilledButtonTokens；指针与禁用场景 |
-| 动效、Expressive 弹簧、减少动效 | 初始：100 ms 状态层过渡及 ReduceMotion；完整弹簧方案与形状动画待交付 | [M3-02 #3][i3]、[M3-03 #4][i4] | MotionTokens、ExpressiveMotionTokens |
+| 语义色彩角色、明暗主题 | 令牌已交付：49 角色及 Color/Brush 资源；保留六角色构造与默认值 | [M3-02 #3][i3] | ColorLightTokens、ColorDarkTokens、PaletteTokens；[M3-02 证据](verification/m3-02.md) |
+| 种子色、动态色、完整方案及对比度 | 已交付：HCT/CorePalette.of、平台六调色板或角色方案输入、运行时优先级与恢复；默认对比度、WCAG 测量，不宣称自适应对比解析器 | [M3-02 #3][i3] | 16 完整角色方案、HCT 边界独立向量及真实输入；[契约](components/m3-02.md) |
+| 字体、标准与强调字阶、混排、字体尺度 | 令牌已交付：30 角色的字体/字号/行高/字距/字重；100/150/200% 混排布局 headless 证据，真实平台字形与字体许可由宿主验收 | [M3-02 #3][i3] | TypeScaleTokens v0_103；全量独立参考资源向量；[M3-02](verification/m3-02.md) |
+| 形状尺度、形态变化 | 完整圆角尺度与边缘令牌已交付；保留按钮常态/按下覆盖，组件形态动画归各组件票 | [M3-02 #3][i3]、[M3-03 #4][i4] | ShapeTokens 14_1_0；[契约与 Full/RTL 边界](components/m3-02.md) |
+| 海拔与阴影 | 令牌已交付：0/1/3/6/8/12 DIP、可覆盖 Avalonia 阴影投影；不宣称与 Android 阴影像素相同 | [M3-02 #3][i3] | ElevationTokens v0_103；[M3-02](verification/m3-02.md) |
+| 状态层 | 完整 hover/focus/press/drag 与禁用 alpha 输入已交付；初始按钮实时消费 hover/press/disabled，其他控件状态归各组件票 | [M3-02 #3][i3]、[M3-03 #4][i4] | StateTokens v0_210、FilledButtonTokens；真实指针场景 |
+| 动效、Expressive 弹簧、减少动效 | 令牌已交付：16 时长、10 easing、标准与 Expressive 各 6 spring 对；减少动效将有效时长归零/弹簧标为瞬时。组件 spring 驱动与形变播放不在令牌完成声明内 | [M3-02 #3][i3]、[M3-03 #4][i4]及各组件票 | MotionTokens v0_103、Standard/ExpressiveMotionTokens v0_14_0；[M3-02](verification/m3-02.md) |
 | 密度、尺寸、窗口适配 | 初始：40 单位视觉高度、至少 48 单位触达；字体放大可增长 | [M3-19 #20][i20]及各组件票 | ButtonSmallTokens；触摸场景 |
 | 鼠标、触摸、键盘、焦点与无障碍 | 初始按钮：点击、取消、Tab、Enter/Space、可见焦点、Button peer 的名称/角色/禁用语义 | [M3-19 #20][i20]及各组件票 | `ButtonScenarioTests`、`ContractScenarioTests`；真实 Windows UI Automation |
 | 模板、属性、内容插槽与命令 | 初始按钮：Avalonia 公开契约与 ContentTemplate/CommandParameter | [M3-19 #20][i20]及各组件票 | `Host_content_template_and_command_work_without_replacing_input_behavior` |
