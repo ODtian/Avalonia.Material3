@@ -70,6 +70,107 @@ public class ExpressiveButtonScenarioTests
         Assert.Equal(ToggleState.On, peer.GetProvider<IToggleProvider>()!.ToggleState);
     }
 
+    [AvaloniaTheory]
+    [InlineData(MaterialButtonSize.ExtraSmall, 19, 26, 0.3, FontWeight.Bold)]
+    [InlineData(MaterialButtonSize.Small, 19, 26, 0.3, FontWeight.Bold)]
+    [InlineData(MaterialButtonSize.Medium, 21, 30, 0.4, FontWeight.SemiBold)]
+    [InlineData(MaterialButtonSize.Large, 29, 38, 0.5, FontWeight.Light)]
+    [InlineData(MaterialButtonSize.ExtraLarge, 37, 46, 0.6, FontWeight.Black)]
+    public void Size_specific_type_roles_consume_all_host_metrics_and_scale_live(
+        MaterialButtonSize size, double fontSize, double lineHeight, double tracking, FontWeight weight)
+    {
+        using var host = new ButtonHost();
+        host.Button.Size = size;
+        var family = new FontFamily("Arial");
+        host.Theme.Typography = new Avalonia.Material3.Tokens.MaterialTypography
+        {
+            LabelLarge = new(19, 26, 0.3, FontWeight.Bold) { FontFamily = family },
+            TitleMedium = new(21, 30, 0.4, FontWeight.SemiBold) { FontFamily = family },
+            HeadlineSmall = new(29, 38, 0.5, FontWeight.Light) { FontFamily = family },
+            HeadlineLarge = new(37, 46, 0.6, FontWeight.Black) { FontFamily = family }
+        };
+        host.Capture();
+        Assert.Equal(family, host.Button.FontFamily);
+        Assert.Equal(fontSize, host.Button.FontSize);
+        Assert.Equal(lineHeight, TextBlock.GetLineHeight(host.Button));
+        Assert.Equal(tracking, host.Button.LetterSpacing);
+        Assert.Equal(weight, host.Button.FontWeight);
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 };
+        host.Capture();
+        Assert.Equal(fontSize * 2, host.Button.FontSize);
+        Assert.Equal(lineHeight * 2, TextBlock.GetLineHeight(host.Button));
+        Assert.Equal(tracking * 2, host.Button.LetterSpacing);
+        Assert.Equal(weight, host.Button.FontWeight);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Existing_tonal_recipes_use_full_platform_roles_in_both_modes_and_selected_state(bool icon)
+    {
+        using var host = new ButtonHost();
+        MaterialButton button = icon
+            ? new MaterialIconButton { Content = "★", IconVariant = MaterialIconButtonVariant.Tonal, IsToggle = true }
+            : new MaterialButton { Content = "Choose", Variant = MaterialButtonVariant.Tonal, IsToggle = true };
+        host.Window.Content = new StackPanel { Margin = new Thickness(24), Children = { button } };
+        host.Theme.DynamicColors = new(
+            Avalonia.Material3.Tokens.MaterialColorScheme.Light with { SecondaryContainer = Color.Parse("#CCDDCC"), OnSecondaryContainer = Color.Parse("#113311"), Secondary = Color.Parse("#225522"), OnSecondary = Color.Parse("#FFFFFF") },
+            Avalonia.Material3.Tokens.MaterialColorScheme.Dark with { SecondaryContainer = Color.Parse("#334433"), OnSecondaryContainer = Color.Parse("#DDFFDD"), Secondary = Color.Parse("#AAEEAA"), OnSecondary = Color.Parse("#112211") });
+        host.Capture();
+        Assert.Equal(Color.Parse("#CCDDCC"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Background).Color);
+        Assert.Equal(Color.Parse("#113311"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Foreground).Color);
+        button.IsChecked = true;
+        Assert.Equal(Color.Parse("#225522"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Background).Color);
+        host.Window.RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Dark;
+        host.Capture();
+        Assert.Equal(Color.Parse("#AAEEAA"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Background).Color);
+        Assert.Equal(Color.Parse("#112211"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Foreground).Color);
+        button.IsChecked = false;
+        Assert.Equal(Color.Parse("#334433"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Background).Color);
+        Assert.Equal(Color.Parse("#DDFFDD"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Foreground).Color);
+        host.Theme.DynamicColors = null;
+        Assert.Equal(Color.Parse("#4A4458"), Assert.IsAssignableFrom<ISolidColorBrush>(button.Background).Color);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialButtonSize.ExtraSmall, 18, 4)]
+    [InlineData(MaterialButtonSize.Small, 18, 4)]
+    [InlineData(MaterialButtonSize.Medium, 22, 18)]
+    [InlineData(MaterialButtonSize.Large, 34, 22)]
+    [InlineData(MaterialButtonSize.ExtraLarge, 34, 22)]
+    public void Action_and_icon_shapes_consume_live_host_shape_tokens(MaterialButtonSize size, double square, double pressed)
+    {
+        using var host = new ButtonHost();
+        host.Theme.Shapes = new Avalonia.Material3.Tokens.MaterialShapes
+        {
+            CornerSmall = 6, CornerMedium = 18, CornerLarge = 22, CornerExtraLarge = 34, CornerFull = 41,
+            ButtonCornerRadius = 17, PressedButtonCornerRadius = 4
+        };
+        foreach (var icon in new[] { false, true })
+        {
+            MaterialButton button = icon ? new MaterialIconButton { Content = "★" } : new MaterialButton { Content = "Action" };
+            button.Size = size;
+            button.Shape = MaterialButtonShape.Square;
+            host.Window.Content = new StackPanel { Margin = new Thickness(24), Children = { button } };
+            host.Capture();
+            Assert.Equal(new CornerRadius(square), button.CornerRadius);
+            var center = button.TranslatePoint(new Point(button.Bounds.Width / 2, button.Bounds.Height / 2), host.Window)!.Value;
+            host.Window.MouseDown(center, MouseButton.Left);
+            Assert.Equal(new CornerRadius(icon && size is MaterialButtonSize.ExtraSmall or MaterialButtonSize.Small ? 6 : pressed), button.CornerRadius);
+            host.Window.MouseUp(center, MouseButton.Left);
+            button.Shape = MaterialButtonShape.Round;
+            Assert.Equal(new CornerRadius(!icon && size == MaterialButtonSize.Small ? 17 : 41), button.CornerRadius);
+            if (icon)
+            {
+                button.IsToggle = true;
+                button.IsChecked = true;
+                Assert.Equal(new CornerRadius(square), button.CornerRadius);
+                button.Shape = MaterialButtonShape.Square;
+                Assert.Equal(new CornerRadius(41), button.CornerRadius);
+            }
+        }
+    }
+
     [AvaloniaFact]
     public void Native_automation_can_query_provider_availability_without_accessing_the_UI_thread()
     {
@@ -250,7 +351,7 @@ public class ExpressiveButtonScenarioTests
         button.IsChecked = true;
         Assert.Equal(new CornerRadius(squareRadius), button.CornerRadius);
         button.Shape = MaterialButtonShape.Square;
-        Assert.Equal(new CornerRadius(button.ContainerHeight / 2), button.CornerRadius);
+        Assert.Equal(new CornerRadius(9999), button.CornerRadius); // CornerFull is clamped to the actual visual bounds.
         button.IsChecked = false;
         Assert.Equal(new CornerRadius(squareRadius), button.CornerRadius);
         button.WidthMode = MaterialIconButtonWidth.Default;
@@ -378,7 +479,7 @@ public class ExpressiveButtonScenarioTests
         Assert.Equal(icon, host.Button.IconSize);
         Assert.Equal(gap, host.Button.IconSpacing);
         Assert.Equal(padding, host.Button.Padding.Left);
-        Assert.Equal(new CornerRadius(radius), host.Button.CornerRadius);
+        Assert.Equal(new CornerRadius(size == MaterialButtonSize.Small ? radius : 9999), host.Button.CornerRadius);
         Assert.True(host.Button.Bounds.Height >= Math.Max(48, height + 10));
         host.Window.MouseDown(host.Center, MouseButton.Left);
         Assert.Equal(new CornerRadius(size switch { MaterialButtonSize.Medium => 12, MaterialButtonSize.Large or MaterialButtonSize.ExtraLarge => 16, _ => 8 }), host.Button.CornerRadius);

@@ -9,6 +9,8 @@ using System;
 using System.Runtime.InteropServices;
 public static class ButtonsSmokeWindow {
     [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr window);
+    [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
+    [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extraInfo);
 }
 '@
 function Wait-For([scriptblock]$condition, [string]$description) {
@@ -59,6 +61,11 @@ try {
     Save-Window $window 'm3-03-desktop-light.png'
     $action.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     Wait-For { $result.Current.Name -eq 'Action completed (1): confirmed' } 'command feedback' | Out-Null
+    $rect = $action.Current.BoundingRectangle
+    [ButtonsSmokeWindow]::SetCursorPos([int]($rect.X + $rect.Width / 2), [int]($rect.Y + $rect.Height / 2)) | Out-Null
+    [ButtonsSmokeWindow]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero)
+    [ButtonsSmokeWindow]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero)
+    Wait-For { $result.Current.Name -eq 'Action completed (2): confirmed' } 'native mouse command feedback' | Out-Null
     $toggle.Toggle()
     Wait-For { $toggle.Current.ToggleState -eq [System.Windows.Automation.ToggleState]::On -and $result.Current.Name -eq 'Favorite: selected' } 'UIA selected state and feedback' | Out-Null
     $action.SetFocus()
@@ -71,12 +78,19 @@ try {
     $disable.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     Wait-For { -not $action.Current.IsEnabled -and -not $favorite.Current.IsEnabled } 'disabled action and icon semantics' | Out-Null
     if ($toggle.Current.ToggleState -ne [System.Windows.Automation.ToggleState]::On) { throw 'Disabling lost selection.' }
+    $blocked = $false
+    try { $action.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke() }
+    catch {
+        if ($_.Exception.InnerException -is [System.Windows.Automation.ElementNotEnabledException]) { $blocked = $true }
+        else { throw }
+    }
+    if (-not $blocked -or $result.Current.Name -ne 'Favorite: selected') { throw 'Disabled automation invoked the action.' }
     $disable.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     $theme.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     Save-Window $window 'm3-03-desktop-dark-selected.png'
     $font.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
     Save-Window $window 'm3-03-desktop-dark-font200.png'
-    Write-Host 'PASS Windows desktop: package host, real UIA name/role/Toggle/disabled state, Invoke command result, Tab/Space/Enter and light/dark/font screenshots.'
+    Write-Host 'PASS Windows desktop: package host, real UIA name/role/Toggle/disabled state and blocked Invoke, Invoke/native mouse command result, Tab/Space/Enter and light/dark/font screenshots.'
 }
 finally {
     if (-not $process.HasExited) {

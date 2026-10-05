@@ -5,31 +5,6 @@
         xmlns:converters="using:Avalonia.Data.Converters">
   <Styles.Resources>
     <ResourceDictionary>
-      <ResourceDictionary.ThemeDictionaries>
-        <ResourceDictionary x:Key="Light">
-          <SolidColorBrush x:Key="M3.SecondaryBrush" Color="#625B71" />
-          <SolidColorBrush x:Key="M3.OnSecondaryBrush" Color="#FFFFFF" />
-          <SolidColorBrush x:Key="M3.SecondaryContainerBrush" Color="#E8DEF8" />
-          <SolidColorBrush x:Key="M3.OnSecondaryContainerBrush" Color="#1D192B" />
-          <SolidColorBrush x:Key="M3.SurfaceContainerBrush" Color="#F3EDF7" />
-          <SolidColorBrush x:Key="M3.SurfaceContainerLowBrush" Color="#F7F2FA" />
-          <SolidColorBrush x:Key="M3.OutlineVariantBrush" Color="#CAC4D0" />
-          <SolidColorBrush x:Key="M3.InverseSurfaceBrush" Color="#322F35" />
-          <SolidColorBrush x:Key="M3.InverseOnSurfaceBrush" Color="#F5EFF7" />
-        </ResourceDictionary>
-        <ResourceDictionary x:Key="Dark">
-          <SolidColorBrush x:Key="M3.SecondaryBrush" Color="#CCC2DC" />
-          <SolidColorBrush x:Key="M3.OnSecondaryBrush" Color="#332D41" />
-          <SolidColorBrush x:Key="M3.SecondaryContainerBrush" Color="#4A4458" />
-          <SolidColorBrush x:Key="M3.OnSecondaryContainerBrush" Color="#E8DEF8" />
-          <SolidColorBrush x:Key="M3.SurfaceContainerBrush" Color="#211F26" />
-          <SolidColorBrush x:Key="M3.SurfaceContainerLowBrush" Color="#1D1B20" />
-          <SolidColorBrush x:Key="M3.OutlineVariantBrush" Color="#49454F" />
-          <SolidColorBrush x:Key="M3.InverseSurfaceBrush" Color="#E6E0E9" />
-          <SolidColorBrush x:Key="M3.InverseOnSurfaceBrush" Color="#322F35" />
-        </ResourceDictionary>
-      </ResourceDictionary.ThemeDictionaries>
-    <themes:ButtonFontSizeConverter x:Key="M3.ButtonFontSizeConverter" />
     <themes:ButtonFocusCornerRadiusConverter x:Key="M3.ButtonFocusCornerRadiusConverter" />
     <!-- Component-local recipes; semantic resources are supplied by MaterialTheme. -->
     <ControlTheme x:Key="M3.ButtonBase" TargetType="controls:MaterialButton">
@@ -38,33 +13,11 @@
       <Setter Property="MinHeight" Value="48" />
       <Setter Property="MinWidth" Value="48" />
       <Setter Property="Padding" Value="16,8" />
-      <Setter Property="FontFamily" Value="{DynamicResource M3.FontFamily}" />
-      <Setter Property="ThemeLabelFontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
-      <Setter Property="FontSize">
-        <Setter.Value>
-          <MultiBinding Converter="{StaticResource M3.ButtonFontSizeConverter}">
-            <Binding Path="ThemeLabelFontSize" RelativeSource="{RelativeSource Self}" />
-            <Binding Path="Size" RelativeSource="{RelativeSource Self}" />
-          </MultiBinding>
-        </Setter.Value>
-      </Setter>
-      <Setter Property="FontWeight" Value="Medium" />
-      <Setter Property="LetterSpacing">
-        <Setter.Value>
-          <MultiBinding Converter="{StaticResource M3.ButtonFontSizeConverter}" ConverterParameter="Tracking">
-            <Binding Path="ThemeLabelFontSize" RelativeSource="{RelativeSource Self}" />
-            <Binding Path="Size" RelativeSource="{RelativeSource Self}" />
-          </MultiBinding>
-        </Setter.Value>
-      </Setter>
-      <Setter Property="TextBlock.LineHeight">
-        <Setter.Value>
-          <MultiBinding Converter="{StaticResource M3.ButtonFontSizeConverter}" ConverterParameter="LineHeight">
-            <Binding Path="ThemeLabelFontSize" RelativeSource="{RelativeSource Self}" />
-            <Binding Path="Size" RelativeSource="{RelativeSource Self}" />
-          </MultiBinding>
-        </Setter.Value>
-      </Setter>
+      <Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" />
+      <Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" />
+      <Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelLargeLetterSpacing}" />
+      <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.LabelLargeLineHeight}" />
       <Setter Property="CornerRadius" Value="{DynamicResource M3.ButtonCornerRadius}" />
       <Setter Property="HorizontalContentAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -111,51 +64,64 @@
       </Setter>
       <Style Selector="^:extrasmall">
         <Setter Property="Padding" Value="16,6" />
-        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
       </Style>
       <Style Selector="^:medium">
         <Setter Property="Padding" Value="24,16" />
-        <Setter Property="CornerRadius" Value="28" />
+        <Setter Property="FontFamily" Value="{DynamicResource M3.TitleMediumFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource M3.TitleMediumFontSize}" />
+        <Setter Property="FontWeight" Value="{DynamicResource M3.TitleMediumFontWeight}" />
+        <Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleMediumLetterSpacing}" />
+        <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.TitleMediumLineHeight}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
       </Style>
       <Style Selector="^:large">
         <Setter Property="Padding" Value="48,32" />
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="CornerRadius" Value="48" />
+        <Setter Property="FontFamily" Value="{DynamicResource M3.HeadlineSmallFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource M3.HeadlineSmallFontSize}" />
+        <Setter Property="FontWeight" Value="{DynamicResource M3.HeadlineSmallFontWeight}" />
+        <Setter Property="LetterSpacing" Value="{DynamicResource M3.HeadlineSmallLetterSpacing}" />
+        <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.HeadlineSmallLineHeight}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
       </Style>
       <Style Selector="^:extralarge">
         <Setter Property="Padding" Value="64,48" />
-        <Setter Property="FontWeight" Value="Normal" />
-        <Setter Property="CornerRadius" Value="68" />
+        <Setter Property="FontFamily" Value="{DynamicResource M3.HeadlineLargeFontFamily}" />
+        <Setter Property="FontSize" Value="{DynamicResource M3.HeadlineLargeFontSize}" />
+        <Setter Property="FontWeight" Value="{DynamicResource M3.HeadlineLargeFontWeight}" />
+        <Setter Property="LetterSpacing" Value="{DynamicResource M3.HeadlineLargeLetterSpacing}" />
+        <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.HeadlineLargeLineHeight}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
       </Style>
       <Style Selector="^:square">
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" />
       </Style>
       <Style Selector="^:square:medium">
-        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" />
       </Style>
       <Style Selector="^:square:large, ^:square:extralarge">
-        <Setter Property="CornerRadius" Value="28" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
       </Style>
       <Style Selector="^:pointerover /template/ Border#StateLayer">
-        <Setter Property="Opacity" Value="0.08" />
+        <Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" />
       </Style>
       <Style Selector="^:focus-visible /template/ Border#StateLayer">
-        <Setter Property="Opacity" Value="0.1" />
+        <Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" />
       </Style>
       <Style Selector="^:pointerover /template/ Border#Container">
-        <Setter Property="BoxShadow" Value="0 1 2 0 #26000000" />
+        <Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" />
       </Style>
       <Style Selector="^:pressed">
         <Setter Property="CornerRadius" Value="{DynamicResource M3.PressedButtonCornerRadius}" />
       </Style>
       <Style Selector="^:medium:pressed">
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" />
       </Style>
       <Style Selector="^:large:pressed, ^:extralarge:pressed">
-        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" />
       </Style>
       <Style Selector="^:pressed /template/ Border#StateLayer">
-        <Setter Property="Opacity" Value="0.1" />
+        <Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" />
       </Style>
       <Style Selector="^:pressed /template/ Border#Container">
         <Setter Property="BoxShadow" Value="none" />
@@ -188,10 +154,10 @@
         <Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" />
       </Style>
       <Style Selector="^:elevated:not(:disabled) /template/ Border#Container">
-        <Setter Property="BoxShadow" Value="0 1 2 0 #26000000" />
+        <Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" />
       </Style>
       <Style Selector="^:elevated:pointerover:not(:pressed):not(:disabled) /template/ Border#Container">
-        <Setter Property="BoxShadow" Value="0 3 6 0 #26000000" />
+        <Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" />
       </Style>
       <Style Selector="^:outlined">
         <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineVariantBrush}" />
@@ -313,35 +279,26 @@
         <Setter Property="Background" Value="{DynamicResource M3.InverseSurfaceBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
       </Style>
+      <Style Selector="^:not(:square):not(:checked):not(:pressed), ^:checked:square:not(:pressed)">
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
+      </Style>
+      <Style Selector="^:pressed:extrasmall, ^:pressed:small">
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerSmall}" />
+      </Style>
       <Style Selector="^:checked:not(:square):not(:pressed)">
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" />
       </Style>
       <Style Selector="^:checked:not(:square):medium:not(:pressed)">
-        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" />
       </Style>
       <Style Selector="^:checked:not(:square):large:not(:pressed), ^:checked:not(:square):extralarge:not(:pressed)">
-        <Setter Property="CornerRadius" Value="28" />
-      </Style>
-      <Style Selector="^:checked:square:extrasmall:not(:pressed)">
-        <Setter Property="CornerRadius" Value="16" />
-      </Style>
-      <Style Selector="^:checked:square:small:not(:pressed)">
-        <Setter Property="CornerRadius" Value="20" />
-      </Style>
-      <Style Selector="^:checked:square:medium:not(:pressed)">
-        <Setter Property="CornerRadius" Value="28" />
-      </Style>
-      <Style Selector="^:checked:square:large:not(:pressed)">
-        <Setter Property="CornerRadius" Value="48" />
-      </Style>
-      <Style Selector="^:checked:square:extralarge:not(:pressed)">
-        <Setter Property="CornerRadius" Value="68" />
+        <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
       </Style>
       <Style Selector="^:disabled">
         <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       </Style>
       <Style Selector="^:disabled /template/ Viewbox#Icon">
-        <Setter Property="Opacity" Value="0.38" />
+        <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
       </Style>
       <Style Selector="^:icon-standard:disabled, ^:icon-outlined:disabled:not(:checked)">
         <Setter Property="Background" Value="Transparent" />

@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Automation;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -15,6 +16,33 @@ namespace PackageConsumption.Tests;
 
 public class ExpressiveButtonsGalleryTests
 {
+    [AvaloniaFact]
+    public void Published_gallery_scrolls_to_icon_sizes_and_the_mixed_language_long_label_action()
+    {
+        var page = new ExpressiveButtonsPage();
+        var viewer = new ScrollViewer { Content = page };
+        var window = new Window { Width = 800, Height = 600, RequestedThemeVariant = ThemeVariant.Light, Content = viewer };
+        window.Show();
+        try
+        {
+            using var initial = window.CaptureRenderedFrame();
+            window.MouseWheel(new Point(400, 300), new Vector(0, -12));
+            using var scrolled = window.CaptureRenderedFrame();
+            Assert.True(viewer.Offset.Y > 0);
+            viewer.ScrollToEnd();
+            using var bottom = window.CaptureRenderedFrame();
+            var longLabel = page.GetLogicalDescendants().OfType<MaterialButton>()
+                .Single(button => AutomationProperties.GetName(button) == "Save changes and continue");
+            var point = longLabel.TranslatePoint(new Point(longLabel.Bounds.Width / 2, longLabel.Bounds.Height / 2), window)!.Value;
+            Assert.InRange(point.Y, 0, 600);
+            window.MouseDown(point, MouseButton.Left);
+            window.MouseUp(point, MouseButton.Left);
+            Assert.Equal("Save changes and continue: completed", page.Result.Text);
+            SaveFrame(window, "m3-03-gallery-icons-and-long-label.png");
+        }
+        finally { window.Close(); }
+    }
+
     [AvaloniaTheory]
     [InlineData(320)]
     [InlineData(1100)]

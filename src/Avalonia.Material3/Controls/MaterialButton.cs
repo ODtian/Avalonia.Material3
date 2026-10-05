@@ -4,7 +4,7 @@ using Avalonia.Automation.Peers;
 
 namespace Avalonia.Material3.Controls;
 
-/// <summary>A Material filled button with Avalonia's content, command, input and automation behavior.</summary>
+/// <summary>A Material Expressive action button preserving Avalonia Button content, command, input and automation behavior.</summary>
 public class MaterialButton : Button
 {
     public static readonly StyledProperty<object?> LeadingIconProperty =
@@ -23,12 +23,6 @@ public class MaterialButton : Button
     public static readonly StyledProperty<MaterialButtonShape> ShapeProperty =
         AvaloniaProperty.Register<MaterialButton, MaterialButtonShape>(nameof(Shape), validate: value => Enum.IsDefined(value));
     public MaterialButtonShape Shape { get => GetValue(ShapeProperty); set => SetValue(ShapeProperty, value); }
-
-    /// <summary>Theme label-large size used to scale the size-specific text style. Normally supplied by MaterialTheme.</summary>
-    public static readonly StyledProperty<double> ThemeLabelFontSizeProperty =
-        AvaloniaProperty.Register<MaterialButton, double>(nameof(ThemeLabelFontSize), 14,
-            validate: value => double.IsFinite(value) && value > 0);
-    public double ThemeLabelFontSize { get => GetValue(ThemeLabelFontSizeProperty); set => SetValue(ThemeLabelFontSizeProperty, value); }
 
     public static readonly StyledProperty<MaterialButtonVariant> VariantProperty =
         AvaloniaProperty.Register<MaterialButton, MaterialButtonVariant>(nameof(Variant),

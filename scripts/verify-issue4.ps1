@@ -28,6 +28,7 @@ try {
     foreach ($file in 'Directory.Build.props', 'global.json', 'NuGet.Config') { Copy-Item (Join-Path $root $file) $sandbox }
     Copy-ConsumerTree 'samples'
     Copy-ConsumerTree 'tests/PackageConsumption.Tests'
+    Copy-ConsumerTree 'tests/ReferenceVectors'
     Copy-ConsumerTree 'tests/Avalonia.Material3.Tests'
     $env:NUGET_PACKAGES = Join-Path $sandbox 'packages'
     $env:M3_ISSUE4_SCREENSHOTS = Join-Path $root 'artifacts/screenshots/issue4'
