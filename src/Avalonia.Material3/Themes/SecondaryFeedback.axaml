@@ -1,0 +1,188 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls"
+                    xmlns:themes="using:Avalonia.Material3.Themes"
+                    xmlns:converters="using:Avalonia.Data.Converters">
+  <themes:FeedbackContentTemplate x:Key="M3.Menu.Label" Role="BodyLarge" />
+  <themes:FeedbackContentTemplate x:Key="M3.Menu.LegacyLabel" Role="LabelLarge" />
+  <themes:FeedbackContentTemplate x:Key="M3.Feedback.Message" Role="BodyMedium" />
+  <themes:FeedbackContentTemplate x:Key="M3.Feedback.Action" Role="LabelLarge" />
+  <themes:FeedbackContentTemplate x:Key="M3.Tooltip.Plain" Role="BodySmall" />
+  <ControlTheme x:Key="{x:Type controls:MaterialTooltip}" TargetType="controls:MaterialTooltip">
+    <Setter Property="Background" Value="{DynamicResource M3.InverseSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="MinWidth" Value="40" /><Setter Property="MinHeight" Value="24" /><Setter Property="MaxWidth" Value="200" />
+    <Setter Property="Padding" Value="8,4" />
+    <Setter Property="ContentTemplate" Value="{StaticResource M3.Tooltip.Plain}" />
+    <Setter Property="ActionTemplate" Value="{StaticResource M3.Feedback.Action}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+              <controls:MaterialTooltipPanel Variant="{TemplateBinding Variant}">
+                <TextBlock x:Name="Subhead" Text="{TemplateBinding Title}" TextWrapping="Wrap" IsVisible="False"
+                           FontFamily="{DynamicResource M3.TitleSmallFontFamily}" FontSize="{DynamicResource M3.TitleSmallFontSize}"
+                           FontWeight="{DynamicResource M3.TitleSmallFontWeight}" LineHeight="{DynamicResource M3.TitleSmallLineHeight}" LetterSpacing="{DynamicResource M3.TitleSmallLetterSpacing}" />
+                <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+                <controls:MaterialButton x:Name="PART_ActionButton" Variant="Text" Content="{TemplateBinding ActionContent}" ContentTemplate="{TemplateBinding ActionTemplate}"
+                                         IsEnabled="{TemplateBinding CanInvokeAction}" HorizontalAlignment="Left"
+                                         IsVisible="{TemplateBinding ActionContent, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
+              </controls:MaterialTooltipPanel>
+            </ScrollViewer>
+          </Border>
+          <Path x:Name="CaretBottom" Data="M 0,0 L 8,8 L 16,0 Z" Fill="{TemplateBinding Background}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-8" IsVisible="False" IsHitTestVisible="False" />
+          <Path x:Name="CaretTop" Data="M 0,8 L 8,0 L 16,8 Z" Fill="{TemplateBinding Background}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-8,0,0" IsVisible="False" IsHitTestVisible="False" />
+          <Path x:Name="CaretLeft" Data="M 8,0 L 0,8 L 8,16 Z" Fill="{TemplateBinding Background}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-8,0,0,0" IsVisible="False" IsHitTestVisible="False" />
+          <Path x:Name="CaretRight" Data="M 0,0 L 8,8 L 0,16 Z" Fill="{TemplateBinding Background}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,-8,0" IsVisible="False" IsHitTestVisible="False" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:rich">
+      <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+      <Setter Property="CornerRadius" Value="12" /><Setter Property="MaxWidth" Value="320" /><Setter Property="Padding" Value="16,0" />
+      <Setter Property="ContentTemplate" Value="{StaticResource M3.Feedback.Message}" />
+    </Style>
+    <Style Selector="^:rich /template/ Border#Surface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
+    <Style Selector="^:rich /template/ TextBlock#Subhead"><Setter Property="IsVisible" Value="{Binding Title, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static converters:ObjectConverters.IsNotNull}}" /></Style>
+    <Style Selector="^:caret:caret-top /template/ Path#CaretTop"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:caret:caret-bottom /template/ Path#CaretBottom"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:caret:caret-left /template/ Path#CaretLeft"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:caret:caret-right /template/ Path#CaretRight"><Setter Property="IsVisible" Value="True" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialSnackbar}" TargetType="controls:MaterialSnackbar">
+    <Setter Property="Background" Value="{DynamicResource M3.InverseSurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="MaxWidth" Value="600" />
+    <Setter Property="ContentTemplate" Value="{StaticResource M3.Feedback.Message}" />
+    <Setter Property="ActionTemplate" Value="{StaticResource M3.Feedback.Action}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <controls:MaterialFeedbackPanel ActionOnNewLine="{TemplateBinding ActionOnNewLine}" Margin="16,0,8,0">
+              <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="0,14,8,14" VerticalContentAlignment="Center" />
+              <controls:MaterialButton x:Name="PART_ActionButton" Variant="Text" Content="{TemplateBinding ActionContent}" ContentTemplate="{TemplateBinding ActionTemplate}"
+                                       Foreground="{DynamicResource M3.InversePrimaryBrush}" IsEnabled="{TemplateBinding CanInvokeAction}"
+                                       IsVisible="{TemplateBinding ActionContent, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
+              <controls:MaterialIconButton x:Name="PART_DismissButton" Content="×" AutomationProperties.Name="{TemplateBinding DismissText}" Foreground="{DynamicResource M3.InverseOnSurfaceBrush}" />
+            </controls:MaterialFeedbackPanel>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialMenu}" TargetType="controls:MaterialMenu">
+    <Setter Property="MinWidth" Value="112" />
+    <Setter Property="MaxWidth" Value="280" />
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}"
+                BoxShadow="{DynamicResource M3.Elevation.Shadow2}">
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Setter Property="Padding" Value="0,8" />
+    <Style Selector="^:vibrant"><Setter Property="Background" Value="{DynamicResource M3.TertiaryContainerBrush}" /></Style>
+    <Style Selector="^:segmented"><Setter Property="CornerRadius" Value="16" /><Setter Property="Padding" Value="4" /></Style>
+    <Style Selector="^:legacy"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialMenuGroup}" TargetType="controls:MaterialMenuGroup">
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="Margin" Value="0,1" />
+    <Setter Property="Padding" Value="4" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+          <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:vibrant"><Setter Property="Background" Value="{DynamicResource M3.TertiaryContainerBrush}" /></Style>
+    <Style Selector="^:first"><Setter Property="CornerRadius" Value="16,16,8,8" /></Style>
+    <Style Selector="^:last"><Setter Property="CornerRadius" Value="8,8,16,16" /></Style>
+    <Style Selector="^:standalone"><Setter Property="CornerRadius" Value="16" /></Style>
+    <Style Selector="^:inactive"><Setter Property="CornerRadius" Value="8" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialMenuItem}" TargetType="controls:MaterialMenuItem">
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Padding" Value="16,12,10,12" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="CornerRadius" Value="4" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="IconForeground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="MinWidth" Value="48" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="ContentTemplate" Value="{StaticResource M3.Menu.Label}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" />
+          <Border x:Name="State" Background="{TemplateBinding Foreground}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" IsHitTestVisible="False">
+            <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
+          </Border>
+          <Border x:Name="Focus" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="2" CornerRadius="{TemplateBinding CornerRadius}" IsVisible="False" IsHitTestVisible="False" />
+          <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" Margin="{TemplateBinding Padding}">
+            <TextBlock x:Name="Check" Text="✓" Width="20" Margin="0,0,12,0" VerticalAlignment="Center" IsVisible="False" />
+            <Viewbox Grid.Column="1" Width="20" Height="20" Margin="0,0,12,0" IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
+              <ContentPresenter Content="{TemplateBinding LeadingIcon}" Foreground="{TemplateBinding IconForeground}" />
+            </Viewbox>
+            <StackPanel Grid.Column="2">
+              <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                VerticalContentAlignment="Center" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" />
+              <TextBlock Text="{TemplateBinding SupportingText}" TextWrapping="Wrap" Foreground="{TemplateBinding SecondaryForeground}"
+                         IsVisible="{TemplateBinding SupportingText, Converter={x:Static converters:ObjectConverters.IsNotNull}}"
+                         FontFamily="{DynamicResource M3.BodyMediumFontFamily}" FontSize="{DynamicResource M3.BodyMediumFontSize}"
+                         FontWeight="{DynamicResource M3.BodyMediumFontWeight}" LineHeight="{DynamicResource M3.BodyMediumLineHeight}" LetterSpacing="{DynamicResource M3.BodyMediumLetterSpacing}" />
+            </StackPanel>
+            <TextBlock Grid.Column="3" Text="{TemplateBinding TrailingText}" TextWrapping="Wrap" Margin="12,0,0,0" VerticalAlignment="Center"
+                       Foreground="{TemplateBinding SecondaryForeground}" IsVisible="{TemplateBinding TrailingText, Converter={x:Static converters:ObjectConverters.IsNotNull}}"
+                       FontFamily="{DynamicResource M3.LabelSmallFontFamily}" FontSize="{DynamicResource M3.LabelSmallFontSize}"
+                       FontWeight="{DynamicResource M3.LabelSmallFontWeight}" LineHeight="{DynamicResource M3.LabelSmallLineHeight}" LetterSpacing="{DynamicResource M3.LabelSmallLetterSpacing}" />
+            <Viewbox Grid.Column="4" Width="20" Height="20" Margin="12,0,0,0" IsVisible="{TemplateBinding TrailingIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
+              <ContentPresenter Content="{TemplateBinding TrailingIcon}" Foreground="{TemplateBinding IconForeground}" />
+            </Viewbox>
+            <TextBlock Grid.Column="5" x:Name="Arrow" Text="›" FontSize="20" Margin="12,0,0,0" VerticalAlignment="Center" IsVisible="False" />
+          </Grid>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.State.HoverOpacity}" /></Style>
+    <Style Selector="^:focus /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.State.FocusOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.State.PressedOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="IconForeground" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:segmented"><Setter Property="Padding" Value="16,8" /></Style>
+    <Style Selector="^:segmented:first"><Setter Property="CornerRadius" Value="12,12,4,4" /></Style>
+    <Style Selector="^:segmented:last"><Setter Property="CornerRadius" Value="4,4,12,12" /></Style>
+    <Style Selector="^:segmented:standalone"><Setter Property="CornerRadius" Value="16" /></Style>
+    <Style Selector="^:horizontal"><Setter Property="Padding" Value="12,6" /></Style>
+    <Style Selector="^:icon-only"><Setter Property="Padding" Value="16" /><Setter Property="HorizontalContentAlignment" Value="Center" /></Style>
+    <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.TertiaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /><Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /><Setter Property="IconForeground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /><Setter Property="CornerRadius" Value="12" /></Style>
+    <Style Selector="^:vibrant"><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /><Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /><Setter Property="IconForeground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /></Style>
+    <Style Selector="^:vibrant:pointerover"><Setter Property="IconForeground" Value="{DynamicResource M3.TertiaryBrush}" /></Style>
+    <Style Selector="^:vibrant:focus"><Setter Property="IconForeground" Value="{DynamicResource M3.TertiaryBrush}" /></Style>
+    <Style Selector="^:vibrant:pressed"><Setter Property="IconForeground" Value="{DynamicResource M3.TertiaryBrush}" /></Style>
+    <Style Selector="^:vibrant:checked"><Setter Property="Background" Value="{DynamicResource M3.TertiaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryBrush}" /><Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnTertiaryBrush}" /><Setter Property="IconForeground" Value="{DynamicResource M3.OnTertiaryBrush}" /></Style>
+    <Style Selector="^:legacy"><Setter Property="Padding" Value="12" /><Setter Property="ContentTemplate" Value="{StaticResource M3.Menu.LegacyLabel}" /></Style>
+    <Style Selector="^:legacy:checked"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /><Setter Property="IconForeground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /><Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
+    <Style Selector="^:horizontal:pointerover"><Setter Property="CornerRadius" Value="12" /></Style>
+    <Style Selector="^:horizontal:focus"><Setter Property="CornerRadius" Value="12" /></Style>
+    <Style Selector="^:horizontal:pressed"><Setter Property="CornerRadius" Value="12" /></Style>
+    <Style Selector="^:horizontal:checked"><Setter Property="CornerRadius" Value="9999" /></Style>
+    <Style Selector="^:submenu /template/ TextBlock#Arrow"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:checked /template/ TextBlock#Check"><Setter Property="IsVisible" Value="True" /></Style>
+  </ControlTheme>
+</ResourceDictionary>

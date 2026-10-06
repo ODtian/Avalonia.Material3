@@ -13,7 +13,9 @@ internal sealed class MaterialOverlayLayer(MaterialOverlayHost host, MaterialOve
     public void UpdateAnchor()
     {
         if (Container.FlowDirection != host.FlowDirection) { Container.FlowDirection = host.FlowDirection; InvalidateArrange(); }
-        var bounds = options.Anchor?.TransformToVisual(this) is { } transform ? new Rect(options.Anchor.Bounds.Size).TransformToAABB(transform) : (Rect?)null;
+        var bounds = options.Anchor?.TransformToVisual(this) is { } transform ?
+            (options.AnchorPoint is { } point ? new Rect(point, new Size()).TransformToAABB(transform) :
+                new Rect(options.Anchor.Bounds.Size).TransformToAABB(transform)) : (Rect?)null;
         if (bounds != _anchorBounds) { _anchorBounds = bounds; InvalidateArrange(); }
     }
     protected override Size MeasureOverride(Size availableSize)
@@ -33,6 +35,8 @@ internal sealed class MaterialOverlayLayer(MaterialOverlayHost host, MaterialOve
         var h = Math.Min(Container.DesiredSize.Height, height);
         var x = m.Left + (width - w) / 2;
         var y = m.Top + (height - h) / 2;
+        var offsetX = options.Offset.X;
+        var offsetY = options.Offset.Y;
         var rtl = host.FlowDirection == FlowDirection.RightToLeft;
         switch (options.Placement)
         {
@@ -45,12 +49,29 @@ internal sealed class MaterialOverlayLayer(MaterialOverlayHost host, MaterialOve
                 {
                     x = rtl ? anchor.Right - w : anchor.Left;
                     y = anchor.Bottom;
-                    if (y + h + options.Offset.Y > finalSize.Height - m.Bottom) y = anchor.Top - h;
+                    var position = options.AnchorPosition;
+                    if (position == MaterialOverlayAnchorPosition.Start) position = rtl ? MaterialOverlayAnchorPosition.Right : MaterialOverlayAnchorPosition.Left;
+                    if (position == MaterialOverlayAnchorPosition.End) position = rtl ? MaterialOverlayAnchorPosition.Left : MaterialOverlayAnchorPosition.Right;
+                    if (position == MaterialOverlayAnchorPosition.Above)
+                    {
+                        y = anchor.Top - h;
+                        if (y + offsetY < m.Top) { y = anchor.Bottom; offsetY = Math.Abs(offsetY); }
+                    }
+                    else if (position is MaterialOverlayAnchorPosition.Left or MaterialOverlayAnchorPosition.Right)
+                    {
+                        y = anchor.Top;
+                        x = position == MaterialOverlayAnchorPosition.Left ? anchor.Left - w : anchor.Right;
+                        if (x + offsetX < m.Left) { x = anchor.Right; offsetX = Math.Abs(offsetX); }
+                        if (x + w + offsetX > finalSize.Width - m.Right) { x = anchor.Left - w; offsetX = -Math.Abs(offsetX); }
+                    }
+                    else if (y + h + offsetY > finalSize.Height - m.Bottom) { y = anchor.Top - h; offsetY = -Math.Abs(offsetY); }
+                    if (position is MaterialOverlayAnchorPosition.Above or MaterialOverlayAnchorPosition.Below &&
+                        x + w + options.Offset.X > finalSize.Width - m.Right) x = anchor.Right - w;
                 }
                 break;
         }
-        x = Math.Clamp(x + options.Offset.X, m.Left, m.Left + width - w);
-        y = Math.Clamp(y + options.Offset.Y, m.Top, m.Top + height - h);
+        x = Math.Clamp(x + offsetX, m.Left, m.Left + width - w);
+        y = Math.Clamp(y + offsetY, m.Top, m.Top + height - h);
         Container.Arrange(new Rect(x, y, w, h));
         return finalSize;
     }
