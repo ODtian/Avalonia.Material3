@@ -86,9 +86,12 @@ public class MaterialButton : Button
         if (!IsEffectivelyEnabled)
             return;
         if (IsToggle)
-            SetCurrentValue(IsCheckedProperty, !IsChecked);
+            CommitToggleSelection();
         base.OnClick();
     }
+
+    /// <summary>Commits toggle selection before Click/Command; specialized selection containers may retain a required choice.</summary>
+    protected virtual void CommitToggleSelection() => SetCurrentValue(IsCheckedProperty, !IsChecked);
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

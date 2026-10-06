@@ -1,0 +1,65 @@
+<Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:c="using:Avalonia.Material3.Controls" xmlns:conv="using:Avalonia.Data.Converters">
+  <Styles.Resources>
+    <ControlTheme x:Key="{x:Type c:MaterialSplitButtonPart}" TargetType="c:MaterialSplitButtonPart" BasedOn="{StaticResource {x:Type c:MaterialButton}}">
+      <Setter Property="Padding" Value="16,8,12,8" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Grid Background="Transparent">
+            <c:MaterialShapeBorder x:Name="Container" Margin="0,5" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Stretch"
+                     Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                     ShapeCornerRadius="{TemplateBinding SplitCornerRadius}" ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
+              <Grid>
+                <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False">
+                  <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
+                </Border>
+                <DockPanel x:Name="MainContent" HorizontalAlignment="Center" Margin="{TemplateBinding EffectivePadding}" HorizontalSpacing="{TemplateBinding IconSpacing}">
+                  <Viewbox DockPanel.Dock="Left" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}" VerticalAlignment="Center"
+                           IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                    <ContentPresenter Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}" />
+                  </Viewbox>
+                  <Viewbox DockPanel.Dock="Right" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}" VerticalAlignment="Center"
+                           IsVisible="{TemplateBinding TrailingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
+                    <ContentPresenter Content="{TemplateBinding TrailingIcon}" ContentTemplate="{TemplateBinding TrailingIconTemplate}" />
+                  </Viewbox>
+                  <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                     TextWrapping="Wrap" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" RecognizesAccessKey="True"
+                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="Center" />
+                </DockPanel>
+                <Viewbox x:Name="SecondaryContent" Margin="{TemplateBinding EffectivePadding}" Width="{TemplateBinding SecondaryContentSize}" Height="{TemplateBinding SecondaryContentSize}" IsVisible="False">
+                  <Viewbox.RenderTransform>
+                    <RotateTransform Angle="{Binding SecondaryRotation, RelativeSource={RelativeSource TemplatedParent}}">
+                      <RotateTransform.Transitions><Transitions><DoubleTransition Property="Angle" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></RotateTransform.Transitions>
+                    </RotateTransform>
+                  </Viewbox.RenderTransform>
+                  <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </Viewbox>
+              </Grid>
+            </c:MaterialShapeBorder>
+            <c:MaterialShapeBorder x:Name="FocusRing" Margin="-5,0" IsVisible="False" IsHitTestVisible="False" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
+                  ShapeCornerRadius="{TemplateBinding SplitCornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}" ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
+          </Grid>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:extrasmall"><Setter Property="Padding" Value="12,6,10,6" /></Style>
+      <Style Selector="^:extrasmall /template/ Border#Container"><Setter Property="Margin" Value="0,8" /></Style>
+      <Style Selector="^:medium"><Setter Property="Padding" Value="24,16" /></Style>
+      <Style Selector="^:large"><Setter Property="Padding" Value="48,32" /></Style>
+      <Style Selector="^:extralarge"><Setter Property="Padding" Value="64,48" /></Style>
+      <Style Selector="^:secondary"><Setter Property="Padding" Value="13,0" /></Style>
+      <Style Selector="^:secondary:medium"><Setter Property="Padding" Value="15,0" /></Style>
+      <Style Selector="^:secondary:large"><Setter Property="Padding" Value="29,0" /></Style>
+      <Style Selector="^:secondary:extralarge"><Setter Property="Padding" Value="43,0" /></Style>
+      <Style Selector="^:secondary-icon /template/ DockPanel#MainContent"><Setter Property="IsVisible" Value="False" /></Style>
+      <Style Selector="^:secondary-icon /template/ Viewbox#SecondaryContent"><Setter Property="IsVisible" Value="True" /></Style>
+      <!-- Split selection morphs shape and adds a state layer; it does not change the action recipe. -->
+      <Style Selector="^:secondary:filled:not(:disabled)"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
+      <Style Selector="^:secondary:tonal:not(:disabled)"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
+      <Style Selector="^:secondary:elevated:not(:disabled)"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
+      <Style Selector="^:secondary:outlined:not(:disabled)"><Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" /></Style>
+      <Style Selector="^:secondary:outlined"><Setter Property="BorderThickness" Value="1" /></Style>
+      <Style Selector="^:secondary:outlined:large"><Setter Property="BorderThickness" Value="2" /></Style>
+      <Style Selector="^:secondary:outlined:extralarge"><Setter Property="BorderThickness" Value="3" /></Style>
+      <Style Selector="^:secondary:checked:not(:disabled) /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    </ControlTheme>
+  </Styles.Resources>
+</Styles>
