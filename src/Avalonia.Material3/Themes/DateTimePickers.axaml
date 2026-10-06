@@ -1,0 +1,211 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:Avalonia.Material3.Controls">
+  <ControlTheme x:Key="{x:Type c:MaterialCalendarDay}" TargetType="c:MaterialCalendarDay">
+    <Setter Property="MinWidth" Value="48" /><Setter Property="MinHeight" Value="48" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodyLargeFontWeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyLargeLetterSpacing}" />
+    <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid Background="Transparent">
+          <Border x:Name="Circle" MinWidth="40" MinHeight="40" Margin="4" CornerRadius="999"
+                  Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                              HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                              Foreground="{TemplateBinding Foreground}" Padding="4,0" />
+          </Border>
+          <Border x:Name="State" Margin="4" CornerRadius="999" Background="{TemplateBinding Foreground}"
+                  Opacity="0" IsHitTestVisible="False" />
+          <Border x:Name="Focus" Margin="1" CornerRadius="999" BorderBrush="{DynamicResource M3.SecondaryBrush}"
+                  BorderThickness="2" IsVisible="False" IsHitTestVisible="False" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:in-range"><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
+    <Style Selector="^:today"><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="BorderThickness" Value="1" /></Style>
+    <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
+    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type c:MaterialCalendarYear}" TargetType="c:MaterialCalendarYear">
+    <Setter Property="MinWidth" Value="72" /><Setter Property="MinHeight" Value="48" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodyLargeFontWeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyLargeLetterSpacing}" />
+    <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Margin="4,6" MinHeight="36" CornerRadius="999" Background="{TemplateBinding Background}"
+                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+          <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                            Foreground="{TemplateBinding Foreground}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
+    <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
+    <Style Selector="^:pointerover"><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="1" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type c:MaterialDatePicker}" TargetType="c:MaterialDatePicker">
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
+    <Setter Property="MaxWidth" Value="360" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+          <ContentPresenter Content="{TemplateBinding Surface}" />
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type c:MaterialTimeInputField}" TargetType="c:MaterialTimeInputField">
+    <Setter Property="MinWidth" Value="96" />
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerSmall}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.DisplayMediumFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.DisplayMediumFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.DisplayMediumFontWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource M3.DisplayMediumLineHeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.DisplayMediumLetterSpacing}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource M3.PrimaryBrush}" />
+    <Setter Property="SelectionForegroundBrush" Value="{DynamicResource M3.OnPrimaryBrush}" />
+    <Setter Property="CaretBrush" Value="{DynamicResource M3.PrimaryBrush}" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel Spacing="7">
+          <Border x:Name="Field" MinHeight="72" Padding="8" CornerRadius="{TemplateBinding CornerRadius}"
+                  Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}">
+            <ScrollViewer x:Name="PART_ScrollViewer" Theme="{StaticResource M3.TextField.ScrollViewer}"
+                          HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled">
+              <TextPresenter x:Name="PART_TextPresenter" Text="{TemplateBinding Text, Mode=TwoWay}"
+                             CaretIndex="{TemplateBinding CaretIndex}" CaretBlinkInterval="{TemplateBinding CaretBlinkInterval}"
+                             SelectionStart="{TemplateBinding SelectionStart}" SelectionEnd="{TemplateBinding SelectionEnd}"
+                             SelectionBrush="{TemplateBinding SelectionBrush}" SelectionForegroundBrush="{TemplateBinding SelectionForegroundBrush}"
+                             CaretBrush="{TemplateBinding CaretBrush}" TextAlignment="Center"
+                             LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </ScrollViewer>
+          </Border>
+          <TextBlock Text="{TemplateBinding Label}" TextWrapping="Wrap" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}"
+                     FontFamily="{DynamicResource M3.BodySmallFontFamily}" FontSize="{DynamicResource M3.BodySmallFontSize}"
+                     FontWeight="{DynamicResource M3.BodySmallFontWeight}" LineHeight="{DynamicResource M3.BodySmallLineHeight}"
+                     LetterSpacing="{DynamicResource M3.BodySmallLetterSpacing}" />
+          <TextBlock Text="{TemplateBinding EffectiveSupportingText}" TextWrapping="Wrap" Foreground="{DynamicResource M3.ErrorBrush}"
+                     FontFamily="{DynamicResource M3.BodySmallFontFamily}" FontSize="{DynamicResource M3.BodySmallFontSize}"
+                     FontWeight="{DynamicResource M3.BodySmallFontWeight}" LineHeight="{DynamicResource M3.BodySmallLineHeight}"
+                     LetterSpacing="{DynamicResource M3.BodySmallLetterSpacing}" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:focus"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
+    <Style Selector="^:invalid"><Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type c:MaterialTimeSelector}" TargetType="c:MaterialTimeSelector">
+    <Setter Property="MinWidth" Value="96" /><Setter Property="MinHeight" Value="80" />
+    <Setter Property="Padding" Value="8" />
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerSmall}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.DisplayLargeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.DisplayLargeFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.DisplayLargeFontWeight}" />
+    <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.DisplayLargeLineHeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.DisplayLargeLetterSpacing}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}"
+                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+          <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}"
+                            LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" />
+        </Border>
+          <Border x:Name="State" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
+    <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /><Setter Property="Padding" Value="6" /></Style>
+    <Style Selector="^:pointerover"><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="1" /></Style>
+    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type c:MaterialTimePeriodButton}" TargetType="c:MaterialTimePeriodButton">
+    <Setter Property="MinWidth" Value="52" /><Setter Property="MinHeight" Value="48" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerSmall}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.TitleMediumFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleMediumFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.TitleMediumFontWeight}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.TitleMediumLineHeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleMediumLetterSpacing}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="8,4"
+                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+          <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
+        </Border>
+          <Border x:Name="State" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.TertiaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /></Style>
+    <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
+    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type c:MaterialClockNumber}" TargetType="c:MaterialClockNumber">
+    <Setter Property="MinWidth" Value="48" /><Setter Property="MinHeight" Value="48" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodyLargeFontWeight}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyLargeLetterSpacing}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+        <Border Background="Transparent" CornerRadius="999" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+          <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
+        </Border>
+          <Border x:Name="State" CornerRadius="999" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
+    <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
+    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type c:MaterialTimePicker}" TargetType="c:MaterialTimePicker">
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
+    <Setter Property="MaxWidth" Value="Infinity" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <ContentPresenter Content="{TemplateBinding Surface}" />
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+</ResourceDictionary>
