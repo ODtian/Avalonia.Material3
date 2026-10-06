@@ -601,7 +601,7 @@ public class TextFieldScenarioTests
 
 internal sealed class TextFieldHost : IDisposable
 {
-    public MaterialTheme Theme { get; } = new();
+    public MaterialTheme Theme { get; } = new() { Motion = new MaterialMotion { ReduceMotion = true } };
     public MaterialTextField Field { get; }
     public MaterialButton Next { get; } = new() { Content = "Next" };
     public Window Window { get; }
@@ -648,7 +648,8 @@ internal sealed class TextFieldHost : IDisposable
     }
 
     public string[] VisibleText() => Window.GetVisualDescendants().OfType<TextBlock>()
-        .Where(text => text.IsEffectivelyVisible && text.Opacity > 0 && text.Bounds.Width > 0)
+        .Where(text => text.IsEffectivelyVisible && text.Opacity > 0 && text.Bounds.Width > 0 &&
+            text.GetVisualAncestors().OfType<Control>().All(ancestor => ancestor.Opacity > 0))
         .Select(text => text.Text ?? string.Empty).ToArray();
 
     public void Dispose()

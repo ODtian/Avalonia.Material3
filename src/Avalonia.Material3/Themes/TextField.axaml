@@ -92,7 +92,7 @@
                 </MultiBinding>
               </Grid.Margin>
               <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
-                <TextBlock x:Name="Prefix" Text="{TemplateBinding PrefixText}" Opacity="0" IsHitTestVisible="False" Margin="0,0,4,0"
+                <TextBlock x:Name="Prefix" Text="{TemplateBinding PrefixText}" Opacity="0" IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw" Margin="0,0,4,0"
                            LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                            Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
               <ScrollViewer x:Name="PART_ScrollViewer" Grid.Column="1" Theme="{StaticResource M3.TextField.ScrollViewer}"
@@ -101,7 +101,7 @@
                             IsScrollChainingEnabled="{TemplateBinding (ScrollViewer.IsScrollChainingEnabled)}"
                             VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
                 <Panel>
-                  <Panel x:Name="PlaceholderHost" IsVisible="False">
+                  <Panel x:Name="PlaceholderHost" Opacity="0" IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw">
                     <TextBlock Text="{TemplateBinding PlaceholderText}" Foreground="{TemplateBinding PlaceholderForeground}"
                                TextWrapping="{TemplateBinding TextWrapping}" TextAlignment="{TemplateBinding TextAlignment}"
                                LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}">
@@ -126,7 +126,7 @@
                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                 </Panel>
               </ScrollViewer>
-                <TextBlock x:Name="Suffix" Grid.Column="2" Text="{TemplateBinding SuffixText}" Opacity="0" IsHitTestVisible="False" Margin="4,0,0,0"
+                <TextBlock x:Name="Suffix" Grid.Column="2" Text="{TemplateBinding SuffixText}" Opacity="0" IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw" Margin="4,0,0,0"
                            LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                            Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
               </Grid>
@@ -189,7 +189,7 @@
       <Setter Property="IsVisible" Value="False" />
     </Style>
     <Style Selector="^:focus /template/ Panel#PlaceholderHost, ^:unlabelled /template/ Panel#PlaceholderHost">
-      <Setter Property="IsVisible" Value="True" />
+      <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="^:unlabelled /template/ TextBlock#FloatingLabel, ^:unlabelled /template/ TextBlock#RestingLabel">
       <Setter Property="IsVisible" Value="False" />
