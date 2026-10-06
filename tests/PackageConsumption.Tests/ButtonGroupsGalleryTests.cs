@@ -91,7 +91,7 @@ public class ButtonGroupsGalleryTests
         var columns = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 12, Margin = new Thickness(16) };
         foreach (var variant in new[] { MaterialButtonVariant.Filled, MaterialButtonVariant.Tonal, MaterialButtonVariant.Elevated, MaterialButtonVariant.Outlined })
         {
-            var column = new StackPanel { Width = 350, Spacing = 8 };
+            var column = new StackPanel { Width = 390, Spacing = 8 };
             column.Children.Add(new TextBlock { Text = variant.ToString() });
             foreach (var size in Enum.GetValues<MaterialButtonSize>())
             {
@@ -102,7 +102,7 @@ public class ButtonGroupsGalleryTests
             }
             columns.Children.Add(column);
         }
-        var window = new Window { Width = 1480, Height = 570, RequestedThemeVariant = dark ? ThemeVariant.Dark : ThemeVariant.Light, Content = columns };
+        var window = new Window { Width = 1650, Height = 570, RequestedThemeVariant = dark ? ThemeVariant.Dark : ThemeVariant.Light, Content = columns };
         window.Show();
         try
         {

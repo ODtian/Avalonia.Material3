@@ -338,6 +338,23 @@ public class ButtonGroupMatrixScenarioTests
         Assert.True(group.OverflowButton.Bounds.Height >= 48);
     }
 
+    [AvaloniaFact]
+    public void Narrow_XL_split_preserves_space_for_a_readable_label_and_icons_without_overwriting_pinned_padding()
+    {
+        using var host = new ButtonHost();
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 };
+        var split = new MaterialSplitButton { Size = MaterialButtonSize.ExtraLarge };
+        split.MainButton.Content = "XL"; split.MainButton.LeadingIcon = "+";
+        host.Window.Content = new StackPanel { Margin = new Thickness(16), Children = { split } };
+        host.Capture();
+        Assert.Equal(64, split.MainButton.Padding.Left);
+        var labelSpace = split.MainButton.Bounds.Width - split.MainButton.EffectivePadding.Left - split.MainButton.EffectivePadding.Right - split.MainButton.IconSize - split.MainButton.IconSpacing;
+        Assert.True(labelSpace >= split.MainButton.FontSize - 1);
+        var secondarySpace = split.SecondaryButton.Bounds.Width - split.SecondaryButton.EffectivePadding.Left - split.SecondaryButton.EffectivePadding.Right;
+        Assert.True(secondarySpace >= split.SecondaryButton.SecondaryContentSize - 1);
+        host.Window.Width = 1100; host.Capture(); Assert.Equal(split.MainButton.Padding, split.MainButton.EffectivePadding);
+    }
+
     private static void Click(ButtonHost host, Control button)
     {
         host.Capture(); var p = button.TranslatePoint(new Point(button.Bounds.Width / 2, button.Bounds.Height / 2), host.Window)!.Value;

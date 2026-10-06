@@ -67,7 +67,7 @@ public class MaterialSplitButton : Panel
     }
     protected override Size MeasureOverride(Size availableSize)
     {
-        SecondaryButton.Measure(new Size(Math.Max(48, availableSize.Width - 12 - Math.Max(48, MainButton.Padding.Left + MainButton.Padding.Right + 16)), double.PositiveInfinity));
+        SecondaryButton.Measure(new Size(Math.Max(48, availableSize.Width - 12 - MainButton.MinimumReadableWidth), double.PositiveInfinity));
         MainButton.Measure(new Size(Math.Max(48, availableSize.Width - SecondaryButton.DesiredSize.Width - 12), double.PositiveInfinity));
         return new Size(MainButton.DesiredSize.Width + SecondaryButton.DesiredSize.Width + 12, Math.Max(MainButton.DesiredSize.Height, SecondaryButton.DesiredSize.Height));
     }

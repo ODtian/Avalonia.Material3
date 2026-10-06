@@ -5,6 +5,22 @@ namespace Avalonia.Material3.Controls;
 
 public partial class MaterialSplitButtonPart
 {
+    public static readonly DirectProperty<MaterialSplitButtonPart, Thickness> EffectivePaddingProperty =
+        AvaloniaProperty.RegisterDirect<MaterialSplitButtonPart, Thickness>(nameof(EffectivePadding), button => button.EffectivePadding);
+    private Thickness _effectivePadding;
+    /// <summary>Pinned padding, reduced horizontally only when finite width would otherwise leave no readable content area.</summary>
+    public Thickness EffectivePadding => _effectivePadding;
+    internal double MinimumReadableWidth => Math.Max(48, RequiredContentWidth + 16);
+    private double RequiredContentWidth => IsSecondary && UseIconContent ? SecondaryContentSize : Math.Max(16, FontSize)
+        + (LeadingIcon is null ? 0 : IconSize + IconSpacing) + (TrailingIcon is null ? 0 : IconSize + IconSpacing);
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var horizontal = Padding.Left + Padding.Right;
+        var scale = horizontal > 0 && double.IsFinite(availableSize.Width)
+            ? Math.Clamp((availableSize.Width - BorderThickness.Left - BorderThickness.Right - RequiredContentWidth) / horizontal, 0, 1) : 1;
+        SetAndRaise(EffectivePaddingProperty, ref _effectivePadding, new Thickness(Padding.Left * scale, Padding.Top, Padding.Right * scale, Padding.Bottom));
+        return base.MeasureOverride(availableSize);
+    }
     public static readonly DirectProperty<MaterialSplitButtonPart, double> SharedContainerHeightProperty =
         AvaloniaProperty.RegisterDirect<MaterialSplitButtonPart, double>(nameof(SharedContainerHeight), button => button.SharedContainerHeight);
     private double _sharedContainerHeight;

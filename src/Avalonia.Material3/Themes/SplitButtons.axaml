@@ -12,7 +12,7 @@
                 <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False">
                   <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
                 </Border>
-                <DockPanel x:Name="MainContent" HorizontalAlignment="Center" Margin="{TemplateBinding Padding}" HorizontalSpacing="{TemplateBinding IconSpacing}">
+                <DockPanel x:Name="MainContent" HorizontalAlignment="Center" Margin="{TemplateBinding EffectivePadding}" HorizontalSpacing="{TemplateBinding IconSpacing}">
                   <Viewbox DockPanel.Dock="Left" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}" VerticalAlignment="Center"
                            IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
                     <ContentPresenter Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}" />
@@ -25,7 +25,7 @@
                      TextWrapping="Wrap" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" RecognizesAccessKey="True"
                      HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="Center" />
                 </DockPanel>
-                <Viewbox x:Name="SecondaryContent" Margin="{TemplateBinding Padding}" Width="{TemplateBinding SecondaryContentSize}" Height="{TemplateBinding SecondaryContentSize}" IsVisible="False">
+                <Viewbox x:Name="SecondaryContent" Margin="{TemplateBinding EffectivePadding}" Width="{TemplateBinding SecondaryContentSize}" Height="{TemplateBinding SecondaryContentSize}" IsVisible="False">
                   <Viewbox.RenderTransform>
                     <RotateTransform Angle="{Binding SecondaryRotation, RelativeSource={RelativeSource TemplatedParent}}">
                       <RotateTransform.Transitions><Transitions><DoubleTransition Property="Angle" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></RotateTransform.Transitions>
