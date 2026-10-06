@@ -1,0 +1,109 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls"
+                    xmlns:themes="using:Avalonia.Material3.Themes"
+                    xmlns:converters="using:Avalonia.Data.Converters">
+  <themes:ContentRoleTemplate x:Key="M3.Sheet.Body" Role="BodyLarge" />
+  <ControlTheme x:Key="{x:Type controls:MaterialSheetHost}" TargetType="controls:MaterialSheetHost">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <controls:MaterialSheetHostPanel FlowDirection="LeftToRight">
+          <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" FlowDirection="{TemplateBinding FlowDirection}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+          <ContentPresenter Content="{TemplateBinding Sheet}" FlowDirection="{TemplateBinding FlowDirection}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        </controls:MaterialSheetHostPanel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="M3.Sheet" TargetType="controls:MaterialSheet">
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLargeTop}" />
+    <Setter Property="SpatialSpring" Value="{DynamicResource M3.Motion.DefaultSpatial}" />
+    <Setter Property="ContentTemplate" Value="{StaticResource M3.Sheet.Body}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodyLargeFontWeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyLargeLetterSpacing}" />
+    <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
+    <Setter Property="ClipToBounds" Value="True" />
+    <Setter Property="MaxWidth" Value="640" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Top" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="SheetSurface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                BoxShadow="{DynamicResource M3.Elevation.Shadow1}">
+          <ScrollViewer x:Name="SheetShell" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+            <Grid x:Name="SheetLayout" RowDefinitions="Auto,Auto,*,Auto">
+              <controls:MaterialSheetDragHandle Sheet="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
+              <StackPanel x:Name="SheetHeader" Grid.Row="1" Margin="16,0">
+                <TextBlock Text="{TemplateBinding Title}" TextWrapping="Wrap" Margin="0,0,0,16"
+                           IsVisible="{TemplateBinding Title, Converter={x:Static converters:ObjectConverters.IsNotNull}}"
+                           FontFamily="{DynamicResource M3.TitleLargeFontFamily}" FontSize="{DynamicResource M3.TitleLargeFontSize}"
+                           FontWeight="{DynamicResource M3.TitleLargeFontWeight}" LineHeight="{DynamicResource M3.TitleLargeLineHeight}"
+                           LetterSpacing="{DynamicResource M3.TitleLargeLetterSpacing}" />
+                <ContentPresenter Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" />
+              </StackPanel>
+              <ScrollViewer x:Name="PART_BodyScroll" Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="16,0,16,16"
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" />
+              </ScrollViewer>
+              <ContentPresenter x:Name="SheetActions" Grid.Row="3" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}" Margin="16,0,16,8" />
+            </Grid>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:compact-height /template/ ScrollViewer#SheetShell"><Setter Property="VerticalScrollBarVisibility" Value="Auto" /></Style>
+    <Style Selector="^:compact-height /template/ ScrollViewer#PART_BodyScroll"><Setter Property="MaxHeight" Value="160" /></Style>
+    <Style Selector="^:hidden /template/ Border"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:empty-extent /template/ Border"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:side /template/ Border#SheetSurface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
+    <Style Selector="^:side:modal /template/ Border#SheetSurface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialSheetDragHandle}" TargetType="controls:MaterialSheetDragHandle">
+    <Setter Property="Focusable" Value="True" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="MinWidth" Value="48" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid Background="Transparent">
+          <Border x:Name="Focus" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="2" CornerRadius="8" Margin="4" IsVisible="False" />
+          <Border x:Name="State" Background="{DynamicResource M3.OnSurfaceBrush}" Opacity="0" CornerRadius="8" Margin="4" />
+          <Border x:Name="Marker" Width="32" Height="4" CornerRadius="2" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource M3.OnSurfaceVariantBrush}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:focus /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:dragging /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
+    <Style Selector="^:disabled /template/ Border#Marker"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
+    <Style Selector="^:vertical"><Setter Property="MinHeight" Value="56" /></Style>
+    <Style Selector="^:vertical /template/ Border#Marker">
+      <Setter Property="Width" Value="4" /><Setter Property="Height" Value="48" />
+      <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
+      <Setter Property="Background" Value="{DynamicResource M3.OutlineBrush}" />
+    </Style>
+    <Style Selector="^:vertical:pressed /template/ Border#Marker, ^:vertical:dragging /template/ Border#Marker">
+      <Setter Property="Width" Value="12" /><Setter Property="Height" Value="52" />
+      <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" />
+      <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialBottomSheet}" TargetType="controls:MaterialBottomSheet" BasedOn="{StaticResource M3.Sheet}" />
+  <ControlTheme x:Key="{x:Type controls:MaterialSideSheet}" TargetType="controls:MaterialSideSheet" BasedOn="{StaticResource M3.Sheet}">
+    <Setter Property="MaxWidth" Value="Infinity" />
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="0" />
+    <Style Selector="^:modal">
+      <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" />
+      <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeStart}" />
+    </Style>
+    <Style Selector="^:modal:left"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeEnd}" /></Style>
+    <Style Selector="^:detached"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
+  </ControlTheme>
+</ResourceDictionary>

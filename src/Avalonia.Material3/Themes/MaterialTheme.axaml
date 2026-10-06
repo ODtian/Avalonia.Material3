@@ -13,6 +13,8 @@
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/ProgressIndicators.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/CarouselRefresh.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Dialogs.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sheets.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/DateTimePickers.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Navigation.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/AppChrome.axaml" />
       </ResourceDictionary.MergedDictionaries>
