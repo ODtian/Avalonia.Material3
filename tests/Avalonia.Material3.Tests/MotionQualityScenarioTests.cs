@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Material3.Controls;
 using Avalonia.Material3.Tokens;
@@ -59,6 +60,51 @@ public class MotionQualityScenarioTests
             Assert.Equal(edge.Y, next.Y, 4);
         }
         Assert.True(previous > 200, "The test must expose actual expanded actions, not an invisible zero-size projection.");
+    }
+
+    [AvaloniaFact]
+    public async Task Press_width_motion_does_not_snap_the_corner_before_its_effects_transition()
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 600;
+        var first = new MaterialGroupButton { Content = "First long action" };
+        var group = new MaterialButtonGroup { Children = { first, new MaterialGroupButton { Content = "Second long action" } } };
+        host.Window.Content = new StackPanel { Children = { group } };
+        host.Capture();
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultEffects = new(1, 100) } };
+        var center = first.TranslatePoint(new Point(first.Bounds.Width / 2, first.Bounds.Height / 2), host.Window)!.Value;
+        host.Window.MouseDown(center, Avalonia.Input.MouseButton.Left);
+        await Task.Delay(65);
+        host.Capture();
+        // Independent round-corner mask: (2,3) is outside the original 20-DIP corner,
+        // but inside the pressed 8-DIP corner. A slow effects curve must not already show the latter.
+        var corner = first.TranslatePoint(new Point(2, 8), host.Window)!.Value;
+        Assert.Equal(Color.Parse("#FEF7FF"), host.PixelAt(corner));
+        host.Window.MouseUp(center, Avalonia.Input.MouseButton.Left);
+    }
+
+    [AvaloniaFact]
+    public async Task Whole_toolbar_keeps_its_cross_axis_and_FAB_center_while_the_surface_closes()
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 600;
+        var fab = new MaterialFab { Content = "Action" };
+        var toolbar = new MaterialToolbar { FloatingAction = fab, CollapseBehavior = MaterialToolbarCollapseBehavior.WholeToolbar };
+        toolbar.Items.Add(new MaterialIconButton { Content = "Action" });
+        host.Window.Content = new Grid { Children = { toolbar } };
+        host.Capture();
+        var cross = toolbar.Bounds.Height;
+        var center = fab.TranslatePoint(new Point(fab.Bounds.Width / 2, fab.Bounds.Height / 2), host.Window)!.Value;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { FastSpatial = new(1, 100) } };
+        toolbar.IsExpanded = false;
+        for (var i = 0; i < 20; i++)
+        {
+            await Task.Delay(15);
+            host.Capture();
+            Assert.Equal(cross, toolbar.Bounds.Height, 4);
+            var next = fab.TranslatePoint(new Point(fab.Bounds.Width / 2, fab.Bounds.Height / 2), host.Window)!.Value;
+            Assert.InRange(Math.Abs(next.Y - center.Y), 0, .5);
+        }
     }
 
     private static Point ActiveInkCenter(ButtonHost host, Control graphic)

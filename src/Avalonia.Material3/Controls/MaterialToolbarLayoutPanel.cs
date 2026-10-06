@@ -10,6 +10,8 @@ internal sealed class MaterialToolbarLayoutPanel : Panel
     public Orientation Orientation { get => GetValue(OrientationProperty); set => SetValue(OrientationProperty, value); }
     public MaterialToolbarFabPosition FloatingActionPosition { get => GetValue(FloatingActionPositionProperty); set => SetValue(FloatingActionPositionProperty, value); }
     private bool Horizontal => Orientation == Orientation.Horizontal;
+    private double _stableCross;
+    private double FabCrossReservation => TemplatedParent is MaterialToolbar { CollapseBehavior: MaterialToolbarCollapseBehavior.WholeToolbar, FloatingAction.Size: MaterialFabSize.Standard } ? 90 : 0;
     private double RevealGap => !Children[1].IsVisible ? 0 : Children[0] is MaterialActionReveal reveal ? 4 * reveal.RevealFraction : Children[0].IsVisible ? 4 : 0;
     static MaterialToolbarLayoutPanel() => AffectsMeasure<MaterialToolbarLayoutPanel>(OrientationProperty, FloatingActionPositionProperty);
     protected override Size MeasureOverride(Size availableSize)
@@ -20,7 +22,10 @@ internal sealed class MaterialToolbarLayoutPanel : Panel
         var gap = RevealGap;
         Children[0].Measure(Horizontal ? new Size(Math.Max(0, availableSize.Width - fab.Width - gap), availableSize.Height) : new Size(availableSize.Width, Math.Max(0, availableSize.Height - fab.Height - gap)));
         var body = Children[0].DesiredSize;
-        return Horizontal ? new Size(body.Width + fab.Width + gap, Math.Max(body.Height, fab.Height)) : new Size(Math.Max(body.Width, fab.Width), body.Height + fab.Height + gap);
+        var cross = Math.Max(FabCrossReservation, Horizontal ? Math.Max(body.Height, fab.Height) : Math.Max(body.Width, fab.Width));
+        if (Children[0] is MaterialActionReveal { IsRevealing: true } || !Children[0].IsVisible) cross = Math.Max(cross, _stableCross);
+        else _stableCross = cross;
+        return Horizontal ? new Size(body.Width + fab.Width + gap, cross) : new Size(cross, body.Height + fab.Height + gap);
     }
     protected override Size ArrangeOverride(Size finalSize)
     {

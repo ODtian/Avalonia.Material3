@@ -111,7 +111,7 @@
       <Setter Property="Template">
         <ControlTemplate>
           <c:MaterialFabMenuPanel Anchor="{TemplateBinding Anchor}">
-            <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" Orientation="Vertical" RevealFromEnd="True" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.SlowEffects}">
+            <c:MaterialActionReveal x:Name="MenuReveal" IsExpanded="{TemplateBinding IsExpanded}" Orientation="Vertical" RevealFromEnd="True" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.SlowEffects}">
               <ScrollViewer>
                 <ItemsControl Theme="{StaticResource M3.ActionItems}" ItemsSource="{TemplateBinding Items}">
                   <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="4" HorizontalAlignment="Right" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>

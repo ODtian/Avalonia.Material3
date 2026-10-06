@@ -74,13 +74,14 @@ internal sealed class MaterialActionReveal : Decorator
     }
     private void Complete()
     {
+        var wasMoving = _frames?.IsRunning == true;
         _frames?.SetRunning(false);
         _extent = _alpha = _target;
         Opacity = _alpha;
         IsVisible = _target > 0;
         IsEnabled = IsHitTestVisible = IsExpanded;
         InvalidateMeasure();
-        Settled?.Invoke();
+        if (wasMoving) Settled?.Invoke();
     }
     private bool Advance(MaterialFrame frame)
     {
