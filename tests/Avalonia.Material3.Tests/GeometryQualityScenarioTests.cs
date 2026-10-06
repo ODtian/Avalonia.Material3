@@ -1,0 +1,92 @@
+using System.Runtime.InteropServices;
+using Avalonia.Automation.Peers;
+using Avalonia.Automation.Provider;
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Material3.Controls;
+using Avalonia.Material3.Themes;
+using Avalonia.Material3.Tokens;
+using Avalonia.Media;
+using Avalonia.Platform;
+using Avalonia.VisualTree;
+using Xunit;
+
+namespace Avalonia.Material3.Tests;
+
+// Oracles: coverage pin AndroidX 11ece46a, Slider.kt 2428–2669.
+// Native device DPI is recorded separately; this fixture honestly asserts its actual RenderScaling.
+public class GeometryQualityScenarioTests
+{
+    [AvaloniaFact]
+    public void Discrete_slider_marks_thumbs_targets_and_pointer_values_share_the_inset_cap_domain()
+    {
+        var slider = new MaterialRangeSlider { Width = 320, Height = 64, Step = 25,
+            LowerValue = 25, UpperValue = 75, ShowMarks = true, ValueLabelVisibility = SliderValueLabelVisibility.Never };
+        using var host = new GeometryHost(slider, 320, 64);
+        Assert.Equal(1, host.Window.RenderScaling);
+        // Literal320-DIP fixture: outer edges24/296; cap centers32/288; interior thumbs96/224.
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(32, 32));
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(288, 32));
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(95, 15));
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(223, 15));
+        Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(160, 32)); // active tick, not label foreground
+        Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(297, 32)); // no orphan stop outside rounded cap
+        var endpoints = ControlAutomationPeer.CreatePeerForElement(slider)!.GetChildren()!;
+        Assert.Equal(96, Assert.IsAssignableFrom<ControlAutomationPeer>(endpoints[0]).Owner.Bounds.Center.X);
+        Assert.Equal(224, Assert.IsAssignableFrom<ControlAutomationPeer>(endpoints[1]).Owner.Bounds.Center.X);
+        host.Window.MouseDown(new Point(224, 32), MouseButton.Left);
+        host.Window.MouseUp(new Point(224, 32), MouseButton.Left);
+        Assert.Equal(75, slider.UpperValue);
+        Assert.Equal(75, endpoints[1].GetProvider<IRangeValueProvider>()!.Value);
+    }
+
+    [AvaloniaFact]
+    public void Dense_discrete_pointer_inverse_selects_the_value_at_its_painted_interior_thumb()
+    {
+        var slider = new MaterialSlider { Width = 320, Height = 64, Step = 1, Value = 10,
+            ValueLabelVisibility = SliderValueLabelVisibility.Never };
+        using var host = new GeometryHost(slider, 320, 64);
+        host.Window.MouseDown(new Point(57.6, 32), MouseButton.Left);
+        host.Window.MouseUp(new Point(57.6, 32), MouseButton.Left);
+        Assert.Equal(10, slider.Value); // fixed oracle32 + .10*256, not control-position readback
+    }
+
+    [AvaloniaFact]
+    public void Nonoverlapping_range_labels_on_the_same_side_remain_over_their_handles()
+    {
+        var slider = new MaterialRangeSlider { Width = 360, Height = 100, LowerValue = 20, UpperValue = 40,
+            ValueLabelVisibility = SliderValueLabelVisibility.Always };
+        using var host = new GeometryHost(slider, 360, 100);
+        Assert.Equal(Color.Parse("#322F35"), host.Pixel(86.4, 30));
+        Assert.Equal(Color.Parse("#322F35"), host.Pixel(148.8, 30));
+        Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(196, 30));
+    }
+}
+
+internal sealed class GeometryHost : IDisposable
+{
+    public MaterialTheme Theme { get; } = new() { Motion = new MaterialMotion { ReduceMotion = true } };
+    public Window Window { get; }
+    public GeometryHost(Control content, double width, double height)
+    {
+        Application.Current!.Styles.Add(Theme);
+        Window = new Window { Width = width, Height = height, RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light,
+            Background = new SolidColorBrush(Color.Parse("#FEF7FF")), Content = content };
+        Window.Show(); Render();
+    }
+    public void Render() { using var frame = Window.CaptureRenderedFrame(); }
+    public Color Pixel(double x, double y)
+    {
+        using var bitmap = Window.CaptureRenderedFrame()!;
+        using var frame = bitmap.Lock();
+        var offset = (int)(y * Window.RenderScaling) * frame.RowBytes + (int)(x * Window.RenderScaling) * 4;
+        var first = Marshal.ReadByte(frame.Address, offset);
+        var green = Marshal.ReadByte(frame.Address, offset + 1);
+        var third = Marshal.ReadByte(frame.Address, offset + 2);
+        return frame.Format == PixelFormat.Bgra8888 ? Color.FromRgb(third, green, first) : Color.FromRgb(first, green, third);
+    }
+    public void Dispose() { Window.Close(); Application.Current!.Styles.Remove(Theme); }
+}
