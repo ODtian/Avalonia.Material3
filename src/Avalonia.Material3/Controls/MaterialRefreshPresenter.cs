@@ -75,7 +75,8 @@ public sealed class MaterialRefreshPresenter : Panel
         {
             var width = child.Width;
             var height = child.Height;
-            child.Arrange(new Rect((finalSize.Width - width) / 2, (Refresh?.DistanceFraction ?? 0) * (Refresh?.Threshold ?? 80) - height, width, height));
+            var offset = Math.Min((Refresh?.DistanceFraction ?? 0) * (Refresh?.Threshold ?? 80), finalSize.Height);
+            child.Arrange(new Rect((finalSize.Width - width) / 2, offset - height, width, height));
         }
         return finalSize;
     }

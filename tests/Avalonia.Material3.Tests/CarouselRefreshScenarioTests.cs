@@ -507,6 +507,32 @@ public class CarouselRefreshScenarioTests
             Assert.Equal(largestMask, currentMask.Bounds.Width);
         }
     }
+
+    [AvaloniaFact]
+    public void A_host_localized_empty_message_updates_both_visible_and_accessible_collection_feedback()
+    {
+        var carousel = new MaterialCarousel { Height = 200 };
+        using var host = new BrowseHost(carousel);
+        var peer = ControlAutomationPeer.CreatePeerForElement(carousel)!;
+        carousel.EmptyText = "暂无图片 / No photographs yet";
+        host.Render();
+        Assert.Equal("暂无图片 / No photographs yet", peer.GetItemStatus());
+        Assert.Contains(carousel.GetVisualDescendants().OfType<TextBlock>(), text => text.Text == carousel.EmptyText);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Busy_feedback_remains_inside_a_minimum_height_viewport(bool expressive)
+    {
+        var refresh = new MaterialPullToRefresh { IsExpressive = expressive, Status = MaterialProgressStatus.Running, Height = 48 };
+        using var host = new BrowseHost(refresh);
+        Control indicator = expressive
+            ? refresh.GetVisualDescendants().OfType<MaterialLoadingIndicator>().Single()
+            : refresh.GetVisualDescendants().OfType<Border>().Single(border => border.Bounds.Size == new Size(40, 40));
+        Assert.InRange(indicator.Bounds.Top, 0, 48);
+        Assert.InRange(indicator.Bounds.Bottom, 0, 48);
+    }
 }
 
 public sealed class BrowseModel : INotifyPropertyChanged

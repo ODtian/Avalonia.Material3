@@ -125,6 +125,7 @@ public sealed class MaterialCarousel : TemplatedControl
             CancelGesture();
             PresentationChanged?.Invoke();
         }
+        if (change.Property == EmptyTextProperty) DescribePosition();
         if (change.Property == ItemTemplateProperty || change.Property == EmptyTextProperty) PresentationChanged?.Invoke();
     }
     private void ItemsChanged(object? sender, NotifyCollectionChangedEventArgs e) => ReloadItems();
