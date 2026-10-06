@@ -119,8 +119,8 @@ internal sealed class MaterialProgressPresenter : Control
             if (end <= start || brush is null) return;
             start = Math.Clamp(start, 2, width - 2);
             end = Math.Clamp(end, 2, width - 2);
-            var rtl = indicator.FlowDirection == FlowDirection.RightToLeft;
-            Point Position(double x) => new(rtl ? width - x : x, y + (active && indicator.IsExpressive
+            // Logical geometry is mirrored once by Avalonia, including active/gap/track/stop.
+            Point Position(double x) => new(x, y + (active && indicator.IsExpressive
                 ? 3 * indicator.WaveAmplitude * Math.Sin(Math.Tau * (x / (indicator.EffectiveIndeterminate ? 20 : 40) - indicator.Elapsed)) : 0));
             var path = new StreamGeometry();
             using (var drawing = path.Open())
@@ -137,7 +137,7 @@ internal sealed class MaterialProgressPresenter : Control
             var progress = indicator.EffectiveValue;
             Line(progress * width + Math.Min(progress * width, 8), width, indicator.TrackBrush);
             Line(0, progress * width, indicator.Foreground, true);
-            context.DrawEllipse(indicator.Foreground, null, new Point(indicator.FlowDirection == FlowDirection.RightToLeft ? 2 : width - 2, y), 2, 2);
+            context.DrawEllipse(indicator.Foreground, null, new Point(width - 2, y), 2, 2);
             return;
         }
         var t = indicator.Elapsed * 1000 % 1750;

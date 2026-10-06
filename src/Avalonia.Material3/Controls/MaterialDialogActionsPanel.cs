@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using Avalonia.Media;
 
 namespace Avalonia.Material3.Controls;
 
@@ -25,19 +24,19 @@ internal sealed class MaterialDialogActionsPanel : Panel
             foreach (var child in visible.Reverse())
             {
                 var w = Math.Min(finalSize.Width, child.DesiredSize.Width);
-                child.Arrange(new Rect(FlowDirection == FlowDirection.RightToLeft ? 0 : finalSize.Width - w, y, w, child.DesiredSize.Height));
+                child.Arrange(new Rect(finalSize.Width - w, y, w, child.DesiredSize.Height));
                 y += child.DesiredSize.Height + 8;
             }
         }
         else
         {
             var width = visible.Sum(child => child.DesiredSize.Width) + Math.Max(0, visible.Length - 1) * 8;
-            var x = FlowDirection == FlowDirection.RightToLeft ? width : finalSize.Width - width;
+            // Arrange logical cancel→confirm at the logical end; Avalonia owns physical RTL mirroring.
+            var x = finalSize.Width - width;
             foreach (var child in visible)
             {
-                if (FlowDirection == FlowDirection.RightToLeft) x -= child.DesiredSize.Width;
                 child.Arrange(new Rect(x, 0, child.DesiredSize.Width, finalSize.Height));
-                x += FlowDirection == FlowDirection.RightToLeft ? -8 : child.DesiredSize.Width + 8;
+                x += child.DesiredSize.Width + 8;
             }
         }
         return finalSize;

@@ -91,10 +91,13 @@ public class ProgressMatrixScenarioTests
     {
         var indicator = new MaterialLinearProgressIndicator { Value = .25, FlowDirection = FlowDirection.RightToLeft, AnimationTime = TimeSpan.Zero };
         using var host = new ProgressHost(indicator);
-        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(220, 2));
-        Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(176, 2));
-        Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(100, 2));
-        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(2, 2));
+        // Expected offsets are physical-window left/right, independent of the mirrored owner's coordinates.
+        var physical = ReviewPhysicalScenarioTests.Physical(indicator, host.Window);
+        Color At(double x) => ReviewPhysicalScenarioTests.Pixel(host.Window, new(physical.Left + x, physical.Top + 2));
+        Assert.Equal(Color.Parse("#6750A4"), At(220));
+        Assert.Equal(Color.Parse("#FEF7FF"), At(176));
+        Assert.Equal(Color.Parse("#E8DEF8"), At(100));
+        Assert.Equal(Color.Parse("#6750A4"), At(2));
     }
 
     [AvaloniaFact]

@@ -1,9 +1,17 @@
 #requires -Version 7.2
-param([switch]$DesktopSmoke, [switch]$KeepSandbox, [string]$BaselinePackage)
+param([switch]$DesktopSmoke, [switch]$KeepSandbox, [string]$BaselinePackage, [string]$Manifest)
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot/consumer.ps1"
 $root = Split-Path $PSScriptRoot -Parent
-$run = Join-Path $root ('artifacts/release-' + [guid]::NewGuid().ToString('N'))
+# An existing exact-HEAD gate may be reused by component entrypoints/publishing, never a stale/global pack.
+if ($Manifest) {
+    $verified = Get-VerifiedConsumerManifest $root $Manifest
+    if ($DesktopSmoke) { throw 'Use component/published smoke with the verified manifest, not -DesktopSmoke reuse.' }
+    Write-Host "PASS revalidated source/package/Ordinal/exact artifact gate: $Manifest"
+    Write-Output $verified
+    return
+}
+$run = Join-Path $root ('artifacts/r-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 $sandbox = Join-Path $run 'consumer'
 $oldPackages = $env:NUGET_PACKAGES
 New-Item -ItemType Directory -Force "$run/packages", "$run/results" | Out-Null
@@ -35,6 +43,7 @@ try {
         }
     }
     Write-Host "PASS source/package exact identity parity: $run/manifest.json"
+    Write-Output ([pscustomobject]@{ manifest="$run/manifest.json"; sandbox=$sandbox })
 }
 finally {
     $env:NUGET_PACKAGES = $oldPackages

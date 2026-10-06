@@ -201,8 +201,7 @@ public sealed class MaterialCarouselPresenter : Panel
         }
         for (var i = start - 1; i >= 0; i--) result[i] = new Rect((i - start) * (48 + gap), 0, 48, height);
         for (var i = start + widths.Length; i < count; i++) result[i] = new Rect(x + (i - start - widths.Length) * (48 + gap), 0, 48, height);
-        if (owner.FlowDirection == FlowDirection.RightToLeft)
-            for (var i = 0; i < count; i++) result[i] = new Rect(width - result[i].Right, 0, result[i].Width, height);
+        // Like Uncontained, arrange logical rectangles; Avalonia mirrors all horizontal forms once.
         return result;
     }
 }

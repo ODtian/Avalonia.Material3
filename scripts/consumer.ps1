@@ -92,7 +92,22 @@ function Assert-ScenarioParity([string]$Source, [string]$Package, [string]$Outpu
     $extras = @($packageNames | Where-Object { !$shared.Contains($_) })
     $allowed = [Collections.Generic.HashSet[string]]::new([string[]](Get-Content $ExpectedExtras), [StringComparer]::Ordinal)
     if (!$allowed.SetEquals([string[]]$extras)) { throw 'Package-only fixture identity differs from reviewed PackageOnlyScenarios.txt.' }
-    @{ comparer='Ordinal'; shared=$sourceNames; packageOnly=$extras } | ConvertTo-Json -Depth 4 | Set-Content $Output -Encoding utf8
+    if ($Output) { @{ comparer='Ordinal'; shared=$sourceNames; packageOnly=$extras } | ConvertTo-Json -Depth 4 | Set-Content $Output -Encoding utf8 }
+}
+function Get-VerifiedConsumerManifest([string]$Root, [string]$Manifest) {
+    $Manifest = [IO.Path]::GetFullPath($Manifest)
+    $record = Get-Content $Manifest -Raw | ConvertFrom-Json
+    $commit = (git -C $Root rev-parse HEAD).Trim()
+    $version = [string](([xml](Get-Content "$Root/Directory.Build.props" -Raw)).Project.PropertyGroup.Material3Version)
+    if ($record.commit -cne $commit -or $record.version -cne $version) { throw 'Stale selected consumer manifest commit/version.' }
+    & git -C $Root diff --quiet HEAD
+    if ($LASTEXITCODE -ne 0) { throw 'Consumer manifest requires a clean producer tree.' }
+    Assert-PackageIdentity $record.package $version $commit
+    Assert-ConsumerAssets $record.sandbox $version $record.package $record.sha256
+    $run = Split-Path $Manifest -Parent
+    Assert-ScenarioParity "$run/results/source.trx" "$run/results/package.trx" $null "$Root/tests/PackageOnlyScenarios.txt"
+    $record | Add-Member -NotePropertyName manifest -NotePropertyValue $Manifest -Force
+    return $record
 }
 function Write-PublishedInventory([string]$Directory, [string]$ManifestPath) {
     $files = @(Get-ChildItem $Directory -File -Recurse)

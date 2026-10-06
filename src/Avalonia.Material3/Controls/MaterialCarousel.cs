@@ -195,8 +195,8 @@ public sealed class MaterialCarousel : TemplatedControl
         var primary = vertical ? delta.Y : delta.X;
         var cross = vertical ? delta.X : delta.Y;
         if (Math.Abs(primary) < 12 || Math.Abs(primary) < Math.Abs(cross) * 1.5) return;
-        var sign = !vertical && FlowDirection == FlowDirection.RightToLeft ? 1 : -1;
-        var movement = sign * primary / Math.Max(48, vertical ? Bounds.Height : Math.Min(PreferredItemWidth, Bounds.Width));
+        // Owner-local coordinates already cross Avalonia's RTL mirror: logical negative means forward.
+        var movement = -primary / Math.Max(48, vertical ? Bounds.Height : Math.Min(PreferredItemWidth, Bounds.Width));
         _dragFraction = Layout == MaterialCarouselLayout.Uncontained ? movement : Math.Clamp(movement, -1, 1);
         if (Layout != MaterialCarouselLayout.Uncontained && (!CanMoveNext && _dragFraction > 0 || !CanMovePrevious && _dragFraction < 0)) _dragFraction = 0;
         _animating = false;

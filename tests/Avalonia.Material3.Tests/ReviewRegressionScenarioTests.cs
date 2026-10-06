@@ -22,6 +22,49 @@ namespace Avalonia.Material3.Tests;
 // Automatically shared with fresh package consumption by ScenarioInventory.props.
 public class ReviewRegressionScenarioTests
 {
+    [AvaloniaFact]
+    public void Culture_revalidates_retained_native_date_and_preserves_caret_and_undo()
+    {
+        using var host = new DialogHost();
+        var picker = new MaterialDatePicker { Mode = MaterialDatePickerMode.Input, Culture = CultureInfo.GetCultureInfo("en-US") };
+        picker.Show(host.Overlay); host.Render();
+        picker.StartInput.Focus(); host.Window.KeyTextInput("31/12/2023"); host.Render();
+        picker.StartInput.CaretIndex = 10;
+        host.Key(PhysicalKey.Backspace); host.Window.KeyTextInput("4"); host.Render();
+        Assert.False(picker.IsValid); Assert.Null(picker.SelectedDate);
+        Assert.True(picker.StartInput.CanUndo, "Native input did not establish an initial Undo snapshot.");
+        picker.StartInput.CaretIndex = 5;
+        picker.Culture = CultureInfo.GetCultureInfo("en-GB"); host.Render();
+        Assert.Equal("31/12/2024", picker.StartInput.Text);
+        Assert.Equal(5, picker.StartInput.CaretIndex);
+        Assert.Equal(new DateOnly(2024, 12, 31), picker.SelectedDate); Assert.True(picker.IsValid);
+        Assert.True(picker.StartInput.CanUndo);
+        picker.StartInput.Focus();
+        host.Key(PhysicalKey.Z, RawInputModifiers.Control);
+        Assert.Equal("31/12/202", picker.StartInput.Text); Assert.Null(picker.SelectedDate);
+        host.Key(PhysicalKey.Z, RawInputModifiers.Control);
+        Assert.Equal("31/12/2023", picker.StartInput.Text); Assert.Equal(new DateOnly(2023, 12, 31), picker.SelectedDate);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Material_setting_in_carousel_item_keeps_its_horizontal_drag_without_browsing(bool range)
+    {
+        var carousel = new MaterialCarousel { Height = 160, ItemsSource = Enumerable.Range(0, 4).Select(i => new MaterialCarouselItem { Title = "Setting " + i }),
+            ItemTemplate = new FuncDataTemplate<MaterialCarouselItem>((_, _) => range
+                ? new MaterialRangeSlider { LowerValue = 20, UpperValue = 80, ValueLabelVisibility = SliderValueLabelVisibility.Never }
+                : new MaterialSlider { Value = 20, ValueLabelVisibility = SliderValueLabelVisibility.Never }) };
+        using var host = new BrowseHost(carousel);
+        var slider = carousel.GetVisualDescendants().OfType<MaterialSlider>().First();
+        var box = ReviewPhysicalScenarioTests.Physical(slider, host.Window);
+        var start = new Point(box.Left + 24 + .2 * (box.Width - 48), box.Bottom - 32);
+        var end = new Point(box.Left + 24 + .6 * (box.Width - 48), box.Bottom - 32);
+        host.Window.MouseDown(start, MouseButton.Left); host.Window.MouseMove(end); host.Window.MouseUp(end, MouseButton.Left);
+        Assert.Equal(0, carousel.CurrentIndex);
+        Assert.InRange(range ? ((MaterialRangeSlider)slider).LowerValue : slider.Value, 59, 61);
+    }
+
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]

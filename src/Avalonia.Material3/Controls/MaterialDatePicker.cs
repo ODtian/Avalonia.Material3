@@ -95,8 +95,10 @@ public class MaterialDatePicker : TemplatedControl
     /// <summary>Endpoint selection policy. Interior range dates are not validated as application business rules.</summary>
     public Func<DateOnly, bool>? SelectableDate { get => GetValue(SelectableDateProperty); set => SetValue(SelectableDateProperty, value); }
     public Control Surface { get; }
-    public MaterialTextField StartInput { get; } = new() { Variant = MaterialTextFieldVariant.Outlined };
-    public MaterialTextField EndInput { get; } = new() { Variant = MaterialTextFieldVariant.Outlined };
+    // Establish local Text priority before native editing. Default-value coercion during error-style
+    // reevaluation otherwise clears TextBox's Undo stack even though the visible string is unchanged.
+    public MaterialTextField StartInput { get; } = new() { Variant = MaterialTextFieldVariant.Outlined, Text = "" };
+    public MaterialTextField EndInput { get; } = new() { Variant = MaterialTextFieldVariant.Outlined, Text = "" };
     public bool IsValid => _isValid;
     public string? ValidationMessage => _validationMessage;
     public MaterialOverlaySession? Session => _dialog?.Session;
@@ -148,8 +150,11 @@ public class MaterialDatePicker : TemplatedControl
         _updating = true;
         try
         {
-            StartInput.SetCurrentValue(TextBox.TextProperty, SelectedDate?.ToString(Pattern, DateCulture) ?? "");
-            EndInput.SetCurrentValue(TextBox.TextProperty, RangeEnd?.ToString(Pattern, DateCulture) ?? "");
+            var start = SelectedDate?.ToString(Pattern, DateCulture) ?? "";
+            var end = RangeEnd?.ToString(Pattern, DateCulture) ?? "";
+            // Native TextBox programmatic assignments reset Undo even for an equal string.
+            if (StartInput.Text != start) StartInput.SetCurrentValue(TextBox.TextProperty, start);
+            if (EndInput.Text != end) EndInput.SetCurrentValue(TextBox.TextProperty, end);
         }
         finally { _updating = false; }
     }

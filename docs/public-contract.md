@@ -54,6 +54,6 @@ Avalonia 基类的 Content/ContentTemplate、命令/参数、局部样式优先�
 
 ## 构建 / API / 发布兼容
 
-`verify.ps1` 为唯一共享场景/fixture/copy/身份门禁；`tests/ScenarioInventory.props` 声明编译/资源集，两个 bootstrap 不共享。source/package 的同名场景使用 Ordinal 身份比较，另有明确包应用 fixture。`verify-theme.ps1` 委托同一入口。API/resource 文本冻结在 `tests/ReferenceVectors/public-api.txt` / `resource-keys.txt`；SDK binary baseline 检查与旧编译消费者补充构造、XAML、资源与行为证据。
+`verify.ps1` 为唯一共享场景/fixture/copy/身份门禁；`tests/ScenarioInventory.props` 声明编译/资源集，两个 bootstrap 不共享。source/package 的同名场景使用 Ordinal 身份比较，另有明确包应用 fixture。所有保留的组件 verifier（含 `verify-theme.ps1`）委托同一入口，保留各票 DesktopSmoke/evidence。可用 `-Manifest` 重验证当前 clean HEAD 的确切候选，复用其隔离缓存而不逐票再次复制／打包；stale commit/version/hash/资产或失败 TRX 仍被拒绝。API/resource 文本冻结在 `tests/ReferenceVectors/public-api.txt` / `resource-keys.txt`；SDK binary baseline 检查与旧编译消费者补充构造、XAML、资源与行为证据。
 
 库实际启用 IsAotCompatible/trim/AOT 分析器；发布脚本以严格 IL 警告策略构建包-only Windows x64 NativeAOT 与 full-trim managed Gallery/独立宿主，必须运行 **published** executables。分析器/编译成功不是其他平台或读屏验收。实际命令、诊断、哈希/commit 和未满足项目见最终记录。版本/兼容政策：[升级](upgrade.md)，分发/授权：[发布](release.md)。

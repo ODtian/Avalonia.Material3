@@ -88,7 +88,8 @@ public class MaterialSlider : TemplatedControl
         var fraction = Orientation == Orientation.Horizontal
             ? (point.X - 24) / Math.Max(1, Bounds.Width - 48)
             : (Bounds.Height - 24 - point.Y) / Math.Max(1, Bounds.Height - 48);
-        return Math.Clamp(IsReversed ? 1 - fraction : fraction, 0, 1);
+        // Pointer coordinates are already logical: Avalonia mirrors the LTR/RTL visual boundary.
+        return Math.Clamp(ReverseDirection ? 1 - fraction : fraction, 0, 1);
     }
 
     private MaterialSliderPresenter? _presenter;

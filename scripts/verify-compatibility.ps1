@@ -4,16 +4,19 @@ $ErrorActionPreference='Stop'
 . "$PSScriptRoot/consumer.ps1"
 $root=Split-Path $PSScriptRoot -Parent
 $Manifest=[IO.Path]::GetFullPath($Manifest)
-$m=Get-Content $Manifest -Raw | ConvertFrom-Json
+$m=Get-VerifiedConsumerManifest $root $Manifest
 $hash='C52D2E60A9E508ACF7EA1915EFBD5A84E7508AD39D8662453793759AC44174B6'
 $run=Join-Path (Split-Path $Manifest -Parent) 'compatibility'
 $consumer=Join-Path $run 'consumer'
 $oldPackages=$env:NUGET_PACKAGES
 try {
     New-PackageConsumer $root $consumer $BaselinePackage $hash
-    $env:NUGET_PACKAGES="$consumer/packages"
+    # Reuse official dependencies and distinct version directories in the same fresh candidate cache.
+    # Initial preview.1 is still separately restored from its immutable hash-checked archive.
+    $env:NUGET_PACKAGES="$($m.sandbox)/packages"
     $project="$consumer/tests/CompatibilityClient/CompatibilityClient.csproj"
     Invoke-CheckedDotnet @('build', $project, '-c', 'Release', '-p:Material3Version=0.1.0-preview.1', '-o', "$run/old-client") | Tee-Object "$run/old-build.log"
+    if ((Get-FileHash "$env:NUGET_PACKAGES/avalonia.material3/0.1.0-preview.1/avalonia.material3.0.1.0-preview.1.nupkg" -Algorithm SHA256).Hash -cne $hash) { throw 'Restored initial baseline differs from immutable archive.' }
     & dotnet "$run/old-client/CompatibilityClient.dll" | Tee-Object "$run/old-runtime.log"
     if ($LASTEXITCODE -ne 0) { throw 'Initial binary fixture failed.' }
     $clientHash=(Get-FileHash "$run/old-client/CompatibilityClient.dll" -Algorithm SHA256).Hash
@@ -35,4 +38,4 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Source/XAML rebuilt compatibility failed.' }
     @{ baselinePackage=$BaselinePackage; baselineHash=$hash; newVersion=$m.version; newHash=$m.sha256; oldClientSha256=$clientHash; upgrade='old compiled client unchanged; only M3 assembly replaced; constructor/deconstruct/with/compiled-XAML/theme resources'; appM11='BLOCKED; this fixture is NOT App'; commit=$m.commit } | ConvertTo-Json | Set-Content "$run/compatibility.json" -Encoding utf8
     Write-Host "PASS compatibility: $run/compatibility.json"
-} finally { $env:NUGET_PACKAGES=$oldPackages; Stop-ConsumerCollectors $consumer }
+} finally { $env:NUGET_PACKAGES=$oldPackages; Stop-ConsumerCollectors $consumer; Stop-ConsumerCollectors $m.sandbox }
