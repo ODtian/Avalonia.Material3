@@ -17,15 +17,19 @@
         <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
         <Setter Property="Template">
           <ControlTemplate>
-            <ContentPresenter x:Name="PART_ContentPresenter"
-                              Background="{TemplateBinding Background}"
-                              Content="{TemplateBinding Content}"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Padding="{TemplateBinding Padding}" />
+            <VisualLayerManager x:Name="PART_VisualLayerManager" EnableOverlayLayer="True" EnableAdornerLayer="True">
+              <ContentPresenter x:Name="PART_ContentPresenter"
+                                Background="{TemplateBinding Background}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}" />
+            </VisualLayerManager>
           </ControlTemplate>
         </Setter>
       </ControlTheme>
     </ResourceDictionary>
   </Styles.Resources>
   <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialButtons.axaml" />
+  <StyleInclude Source="avares://Avalonia.Material3/Themes/ButtonGroups.axaml" />
+  <StyleInclude Source="avares://Avalonia.Material3/Themes/SplitButtons.axaml" />
 </Styles>

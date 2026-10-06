@@ -36,9 +36,9 @@
 | Icon buttons：standard、filled、tonal、outlined；toggle、尺寸/宽度/形状 | 已交付：四种配色、五档尺寸 × 三档宽度、round/square 选中翻转；真实输入、自动化、明暗/字体与包展厅；平台限制见证据 | [M3-03 #4][i4] | [Icon buttons][icon-buttons]、各尺寸 IconButtonTokens；[契约](components/m3-03.md)、[证据与限制](verification/m3-03.md) |
 | FAB：标准、small/medium/large、扩展 FAB、FAB menu | 待交付 | [M3-04 #9][i9] | [FAB][fab]、[Extended FAB][extended-fab]、FabMenuBaselineTokens |
 | Toolbars：docked、floating、水平/垂直、展开与收起 | 待交付 | [M3-04 #9][i9] | DockedToolbarTokens、FloatingToolbarTokens |
-| Button groups：connected、非连接分组、选择与形变 | 待交付 | [M3-05 #10][i10] | ButtonGroupSmallTokens、ConnectedButtonGroupSmallTokens |
-| Segmented buttons：单选、多选 | 待交付 | [M3-05 #10][i10] | [Segmented buttons][segmented]、OutlinedSegmentedButtonTokens |
-| Split buttons：主操作、次级入口、全部尺寸 | 待交付 | [M3-05 #10][i10] | SplitButtonXSmall/Small/Medium/Large/XLargeTokens |
+| Button groups：connected、非连接分组、选择与形变 | 已交付：action/single/multiple、连接形变/RTL/vertical、自适应 reflow、非连接宽度弹簧与 overflow；真实输入、UIA、包展厅；明确长文案/动效投影边界 | [M3-05 #10][i10] | ButtonGroupSmallTokens、ConnectedButtonGroupSmallTokens；[契约](components/m3-05.md)、[证据与限制](verification/m3-05.md) |
+| Segmented buttons：单选、多选 | 已交付：outlined、等宽/共享边框、选中图标、required/empty、多选、焦点/键盘与 Selection 关系；生成令牌与 Compose disabled-outline 差异明确记录 | [M3-05 #10][i10] | [Segmented buttons][segmented]、OutlinedSegmentedButtonTokens；[契约](components/m3-05.md)、[证据](verification/m3-05.md) |
+| Split buttons：主操作、次级入口、全部尺寸 | 已交付：Filled/Tonal/Elevated/Outlined × XS/S/M/L/XL、独立主/次 Command、checkable/plain、icon/text、ExpandCollapse/焦点返回与长文案共同高度；人工读屏/平台/AOT 等未认领 | [M3-05 #10][i10] | SplitButtonXSmall/Small/Medium/Large/XLargeTokens；[契约](components/m3-05.md)、[证据与限制](verification/m3-05.md) |
 | Checkbox：二态、三态、错误/禁用 | 已实现：18 DIP、48 触达、mixed/error/disabled、TwoWay 表单；headless + Windows UIA；人工读屏/移动平台未验收 | [M3-06 #5][i5] | [Checkbox][checkbox]、CheckboxTokens 14_1_0；[契约](components/m3-06.md)、[证据](verification/m3-06.md) |
 | Radio buttons | 已实现：20 DIP、48 触达、互斥/方向键/禁用/宿主错误扩展；headless + Windows UIA；人工读屏未验收 | [M3-06 #5][i5] | [Radio buttons][radio]、RadioButtonTokens v0_117；[M3-06](verification/m3-06.md) |
 | Switch | 已实现：52×32 track、16/24/28 handle、48 触达、图标/拖动/禁用/宿主错误扩展；headless + Windows UIA；物理触摸/人工读屏未验收 | [M3-06 #5][i5] | [Switch][switch]、SwitchTokens v0_210；[M3-06](verification/m3-06.md) |
