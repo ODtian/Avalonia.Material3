@@ -15,6 +15,20 @@ namespace Avalonia.Material3.Tests;
 public class SheetScenarioTests
 {
     [AvaloniaFact]
+    public void Handle_press_feedback_is_observable_before_drag_and_cancel_clears_it()
+    {
+        using var host = new SheetTestHost();
+        var sheet = new MaterialSideSheet();
+        sheet.Show(host.Overlay); host.Render();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        host.Window.MouseDown(host.Center(handle), MouseButton.Left); host.Render();
+        Assert.True(handle.IsPressed); Assert.False(sheet.IsDragging);
+        sheet.CancelDrag(); host.Render();
+        Assert.False(handle.IsPressed); Assert.Equal(256, sheet.VisibleExtent);
+        host.Window.MouseUp(host.Center(handle), MouseButton.Left);
+    }
+
+    [AvaloniaFact]
     public void Ordinary_padding_and_content_alignment_are_consumable_without_replacing_the_template()
     {
         using var host = new SheetTestHost();

@@ -35,8 +35,9 @@ function Focus-Name { try { [System.Windows.Automation.AutomationElement]::Focus
 function Focus-InSheet($sheet) {
     $current = [System.Windows.Automation.AutomationElement]::FocusedElement
     $walker = [System.Windows.Automation.TreeWalker]::ControlViewWalker
+    $sheetId = [string]::Join(',', $sheet.GetRuntimeId())
     for ($depth = 0; $current -and $depth -lt 64; $depth++) {
-        if ([System.Windows.Automation.AutomationElement]::Compare($current, $sheet)) { return $true }
+        if ([string]::Join(',', $current.GetRuntimeId()) -eq $sheetId) { return $true }
         $current = $walker.GetParent($current)
     }
     return $false

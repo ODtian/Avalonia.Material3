@@ -8,9 +8,19 @@ using Avalonia.Controls.Metadata;
 namespace Avalonia.Material3.Controls;
 
 /// <summary>Named, keyboard reachable gesture affordance. The owner sheet allocates handle pointer input.</summary>
-[PseudoClasses(":vertical", ":dragging")]
+[PseudoClasses(":vertical", ":dragging", ":pressed")]
 public class MaterialSheetDragHandle : TemplatedControl
 {
+    public static readonly DirectProperty<MaterialSheetDragHandle, bool> IsPressedProperty =
+        AvaloniaProperty.RegisterDirect<MaterialSheetDragHandle, bool>(nameof(IsPressed), handle => handle.IsPressed);
+    private bool _isPressed;
+    public bool IsPressed => _isPressed;
+    public MaterialSheetDragHandle() => LostFocus += (_, _) => SetPressed(false);
+    internal void SetPressed(bool pressed)
+    {
+        SetAndRaise(IsPressedProperty, ref _isPressed, pressed);
+        PseudoClasses.Set(":pressed", pressed);
+    }
     public static readonly StyledProperty<MaterialSheet?> SheetProperty =
         AvaloniaProperty.Register<MaterialSheetDragHandle, MaterialSheet?>(nameof(Sheet));
     public MaterialSheet? Sheet { get => GetValue(SheetProperty); set => SetValue(SheetProperty, value); }
@@ -38,6 +48,7 @@ public class MaterialSheetDragHandle : TemplatedControl
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        SetPressed(false);
         if (Sheet is { } sheet) sheet.PropertyChanged -= SheetChanged;
         base.OnDetachedFromVisualTree(e);
     }
@@ -47,6 +58,7 @@ public class MaterialSheetDragHandle : TemplatedControl
     {
         base.OnKeyDown(e);
         if (Sheet is not { } sheet || !IsEffectivelyEnabled || e.Handled) return;
+        if (e.Key is Key.Space or Key.Enter) SetPressed(true);
         switch (e.Key)
         {
             case Key.Up: case Key.Home: sheet.Expand(); break;
@@ -63,5 +75,10 @@ public class MaterialSheetDragHandle : TemplatedControl
             default: return;
         }
         e.Handled = true;
+    }
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+        if (e.Key is Key.Space or Key.Enter) SetPressed(false);
     }
 }

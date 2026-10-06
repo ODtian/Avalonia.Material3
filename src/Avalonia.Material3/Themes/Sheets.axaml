@@ -77,15 +77,18 @@
       </ControlTemplate>
     </Setter>
     <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:focus /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
     <Style Selector="^:dragging /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
+    <Style Selector="^:disabled /template/ Border#Marker"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     <Style Selector="^:vertical"><Setter Property="MinHeight" Value="56" /></Style>
     <Style Selector="^:vertical /template/ Border#Marker">
       <Setter Property="Width" Value="4" /><Setter Property="Height" Value="48" />
       <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
       <Setter Property="Background" Value="{DynamicResource M3.OutlineBrush}" />
     </Style>
-    <Style Selector="^:vertical:dragging /template/ Border#Marker">
+    <Style Selector="^:vertical:pressed /template/ Border#Marker, ^:vertical:dragging /template/ Border#Marker">
       <Setter Property="Width" Value="12" /><Setter Property="Height" Value="52" />
       <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" />
       <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />

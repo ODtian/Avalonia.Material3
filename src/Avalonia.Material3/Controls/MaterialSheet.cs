@@ -265,7 +265,9 @@ public abstract class MaterialSheet : ContentControl
         if (!IsEffectivelyEnabled || e.Source is not Visual source ||
             e.Pointer.Type == PointerType.Mouse && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         var path = source.GetVisualAncestors().Prepend(source).TakeWhile(visual => visual != this).ToArray();
+        if (path.OfType<MaterialSheet>().Any()) return; // Nested public surfaces own their own input.
         _pressedHandle = path.OfType<MaterialSheetDragHandle>().FirstOrDefault();
+        if (_pressedHandle is { } targetHandle && targetHandle.Sheet != this) { _pressedHandle = null; return; }
         var handle = _pressedHandle is not null;
         _bodyGesture = !handle;
         _gestureScroll = null;
@@ -280,6 +282,7 @@ public abstract class MaterialSheet : ContentControl
         _dragExtent = VisibleExtent;
         _sheetTravel = _velocity = 0; _lastTimestamp = e.Timestamp;
         _pressedHandle?.Focus(NavigationMethod.Pointer);
+        _pressedHandle?.SetPressed(true);
         if (handle) e.Handled = true;
     }
     private double Axis(Vector delta) => IsSide ? delta.X * (IsPhysicalLeft ? -1 : 1) : delta.Y;
@@ -360,6 +363,7 @@ public abstract class MaterialSheet : ContentControl
         var pointer = _pointer;
         _pointer = null;
         _gestureScroll = null;
+        _pressedHandle?.SetPressed(false);
         _pressedHandle = null;
         SetAndRaise(IsDraggingProperty, ref _isDragging, false);
         PseudoClasses.Set(":dragging", false);
