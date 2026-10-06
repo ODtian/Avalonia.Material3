@@ -102,7 +102,7 @@ public class MaterialSwitch : ToggleSwitch
             PseudoClasses.Set(":error", IsError);
         else if (change.Property == OffIconProperty)
             PseudoClasses.Set(":off-icon", OffIcon is not null);
-        if (change.Property == IsPressedProperty || change.Property == IsEnabledProperty)
+        if (change.Property == IsPressedProperty || change.Property == IsEffectivelyEnabledProperty)
             UpdateMotion();
     }
 

@@ -190,6 +190,9 @@ internal sealed class MaterialTextFieldDecoration : Panel
         var floatY = field.Variant == MaterialTextFieldVariant.Outlined ? 0 : field.Padding.Top;
         var y = restY + (floatY - restY) * p;
         var size = resting.FontSize + (floating.FontSize - resting.FontSize) * p;
+        // Only animated decorative glyphs bypass baseline snapping; native editor text keeps host policy.
+        TextOptions.SetBaselinePixelAlignment(resting, BaselinePixelAlignment.Unaligned);
+        TextOptions.SetBaselinePixelAlignment(floating, BaselinePixelAlignment.Unaligned);
         resting.RenderTransformOrigin = RelativePoint.TopLeft;
         floating.RenderTransformOrigin = RelativePoint.TopLeft;
         resting.RenderTransform = _restTransform;
