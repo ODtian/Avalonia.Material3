@@ -33,6 +33,8 @@
     <Compile Include="../Avalonia.Material3.Tests/CarouselGalleryScenarioTests.cs" Link="CarouselGalleryScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ProgressMatrixScenarioTests.cs" Link="ProgressMatrixScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ProgressGalleryScenarioTests.cs" Link="ProgressGalleryScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/DialogScenarioTests.cs" Link="DialogScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/DialogGalleryScenarioTests.cs" Link="DialogGalleryScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ThemeScenarioTests.cs" Link="ThemeScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/TokenReferenceScenarioTests.cs" Link="TokenReferenceScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ThemeGalleryScenarioTests.cs" Link="ThemeGalleryScenarioTests.cs" />
