@@ -1,6 +1,8 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:c="using:Avalonia.Material3.Controls">
+                    xmlns:c="using:Avalonia.Material3.Controls"
+                    xmlns:themes="using:Avalonia.Material3.Themes">
+  <themes:ClockNumberTextTemplate x:Key="M3.ClockNumber.Text" />
   <ControlTheme x:Key="{x:Type c:MaterialCalendarDay}" TargetType="c:MaterialCalendarDay">
     <Setter Property="MinWidth" Value="48" /><Setter Property="MinHeight" Value="48" />
     <Setter Property="Background" Value="Transparent" />
@@ -154,17 +156,19 @@
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerSmall}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderThickness" Value="0" />
     <Setter Property="FontFamily" Value="{DynamicResource M3.TitleMediumFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleMediumFontSize}" />
     <Setter Property="FontWeight" Value="{DynamicResource M3.TitleMediumFontWeight}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.TitleMediumLineHeight}" />
     <Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleMediumLetterSpacing}" />
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="8,4"
-                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-          <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
+        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="8,4">
+          <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
         </Border>
+          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
           <Border x:Name="State" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
         </Grid>
       </ControlTemplate>
@@ -176,6 +180,7 @@
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialClockNumber}" TargetType="c:MaterialClockNumber">
+    <Setter Property="ContentTemplate" Value="{StaticResource M3.ClockNumber.Text}" />
     <Setter Property="MinWidth" Value="48" /><Setter Property="MinHeight" Value="48" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
@@ -185,9 +190,11 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-        <Border Background="Transparent" CornerRadius="999" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-          <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
+        <Border Background="Transparent" CornerRadius="999">
+          <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
         </Border>
+          <Border CornerRadius="999" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
           <Border x:Name="State" CornerRadius="999" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
         </Grid>
       </ControlTemplate>

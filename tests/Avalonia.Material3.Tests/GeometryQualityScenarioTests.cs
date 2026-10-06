@@ -129,6 +129,56 @@ public class GeometryQualityScenarioTests
         var dial = GeometryHost.Box(picker.GetVisualDescendants().OfType<MaterialClockDial>().Single(), host.Window);
         Assert.Equal(36, dial.Top - hour.Bottom);
     }
+
+    [AvaloniaFact]
+    public void Legacy_tertiary_period_faces_join_under_one_outline_with_separate_48_dip_native_targets()
+    {
+        var picker = new MaterialTimePicker { SelectedTime = new(7, 7) };
+        using var host = new GeometryHost(picker, 400, 680);
+        var periods = picker.GetVisualDescendants().OfType<MaterialTimePeriodButton>().ToArray();
+        var am = GeometryHost.Box(periods[0], host.Window);
+        var pm = GeometryHost.Box(periods[1], host.Window);
+        Assert.True(am.Height >= 48 && pm.Height >= 48);
+        Assert.Equal(am.Bottom, pm.Top);
+        Assert.Equal(Color.Parse("#FFD8E4"), host.Pixel(am.Left + 2, am.Bottom - 2));
+        host.Window.MouseDown(pm.Center, MouseButton.Left); host.Window.MouseUp(pm.Center, MouseButton.Left);
+        Assert.Equal(new TimeOnly(19, 7), picker.SelectedTime);
+        host.Render();
+        Assert.Equal(am, GeometryHost.Box(periods[0], host.Window));
+        Assert.Equal(pm, GeometryHost.Box(periods[1], host.Window));
+    }
+
+    [AvaloniaFact]
+    public void Minute_07_keeps_its_true_angle_and_recolors_only_the_numeral_ink_inside_the_selector()
+    {
+        var dial = new MaterialClockDial { Value = 0, ActivePart = MaterialTimePickerPart.Minute };
+        using var host = new GeometryHost(dial, 256, 256);
+        var ordinaryNumeral = host.Region(164, 27, 31, 30); //05 wholly outside the00 bubble
+        dial.Value = 7; host.Render();
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(209, 53)); // inside07 bubble, outside05 bubble
+        Assert.Equal(Color.Parse("#E6E0E9"), host.Pixel(177, 20)); // outside07 bubble (not snapped to05)
+        var selectedInk = 0; var unselectedInk = 0;
+        var pixels = host.Region(164, 27, 31, 30);
+        for (var y = 27; y < 57; y++)
+        for (var x = 164; x < 195; x++)
+        {
+            var dx = x + .5 - 195.582191242245; var dy = y + .5 - 52.9423726267832;
+            var color = pixels[x - 164, y - 27];
+            if (dx * dx + dy * dy < 22 * 22 && color == Color.Parse("#FFFFFF")) selectedInk++;
+            if (dx * dx + dy * dy > 25 * 25 && ordinaryNumeral[x - 164, y - 27] == Color.Parse("#1D1B20"))
+            {
+                Assert.Equal(Color.Parse("#1D1B20"), color); // all outside numeral ink retains its normal role
+                unselectedInk++;
+            }
+        }
+        Assert.True(selectedInk > 4, $"No OnPrimary numeral ink within the07 selector ({selectedInk}).");
+        Assert.True(unselectedInk > 0, "The ordinary numeral fixture must contain outside solid ink; exact area is font dependent.");
+        var five = dial.GetVisualDescendants().OfType<MaterialClockNumber>().Single(n => n.Value == 5);
+        Assert.False(five.IsChecked); // overlap isn't semantic selection
+        var point = GeometryHost.Box(five, host.Window).Center;
+        host.Window.MouseDown(point, MouseButton.Left); host.Window.MouseUp(point, MouseButton.Left);
+        Assert.Equal(5, five.Value); // still a native action (ValueSelected exercised by existing picker suite)
+    }
 }
 
 internal sealed class GeometryHost : IDisposable
@@ -153,6 +203,21 @@ internal sealed class GeometryHost : IDisposable
         var green = Marshal.ReadByte(frame.Address, offset + 1);
         var third = Marshal.ReadByte(frame.Address, offset + 2);
         return frame.Format == PixelFormat.Bgra8888 ? Color.FromRgb(third, green, first) : Color.FromRgb(first, green, third);
+    }
+    public Color[,] Region(int left, int top, int width, int height)
+    {
+        using var bitmap = Window.CaptureRenderedFrame()!;
+        using var frame = bitmap.Lock();
+        var colors = new Color[width, height];
+        for (var y = 0; y < height; y++)
+        for (var x = 0; x < width; x++)
+        {
+            var offset = (int)((top + y) * Window.RenderScaling) * frame.RowBytes + (int)((left + x) * Window.RenderScaling) * 4;
+            var first = Marshal.ReadByte(frame.Address, offset); var green = Marshal.ReadByte(frame.Address, offset + 1);
+            var third = Marshal.ReadByte(frame.Address, offset + 2);
+            colors[x, y] = frame.Format == PixelFormat.Bgra8888 ? Color.FromRgb(third, green, first) : Color.FromRgb(first, green, third);
+        }
+        return colors;
     }
     public void Dispose() { Window.Close(); Application.Current!.Styles.Remove(Theme); }
 }

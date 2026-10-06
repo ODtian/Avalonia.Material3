@@ -65,7 +65,7 @@ public class MaterialTimePicker : TemplatedControl
     private readonly Grid _clockSelectors;
     private readonly WrapPanel _adjust;
     private readonly Grid _fields;
-    private readonly UniformGrid _period = new() { Columns = 2, MinWidth = 216, HorizontalAlignment = HorizontalAlignment.Center };
+    private readonly MaterialTimePeriodPanel _period;
     private MaterialDialog? _dialog;
     public TimeOnly? SelectedTime { get => GetValue(SelectedTimeProperty); set => SetValue(SelectedTimeProperty, value); }
     public MaterialTimePickerMode Mode { get => GetValue(ModeProperty); set => SetValue(ModeProperty, value); }
@@ -92,7 +92,7 @@ public class MaterialTimePicker : TemplatedControl
         _mode = MaterialPickerSupport.Action(Labels.InputMode, () => SetCurrentValue(ModeProperty, Mode == MaterialTimePickerMode.Clock ? MaterialTimePickerMode.Input : MaterialTimePickerMode.Clock));
         _am = new MaterialTimePeriodButton { Content = "AM" }; _am.Click += (_, _) => SetPeriod(false);
         _pmButton = new MaterialTimePeriodButton { Content = "PM" }; _pmButton.Click += (_, _) => SetPeriod(true);
-        _period.Children.Add(_am); _period.Children.Add(_pmButton);
+        _period = new MaterialTimePeriodPanel(_am, _pmButton) { MinWidth = 52, HorizontalAlignment = HorizontalAlignment.Center };
         var separator = Separator(72);
         _hourSelector.Click += (_, _) =>
         {
