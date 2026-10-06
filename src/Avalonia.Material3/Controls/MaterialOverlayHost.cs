@@ -24,6 +24,7 @@ public class MaterialOverlayHost : ContentControl
     private TopLevel? _root;
     private bool _redirectingFocus;
     private bool _detaching;
+    private bool _committingAction;
     private MaterialOverlaySession? _outsidePress;
     public MaterialOverlayHost() => LayoutUpdated += (_, _) =>
     {
@@ -78,6 +79,7 @@ public class MaterialOverlayHost : ContentControl
         options ??= new();
         Dispatcher.UIThread.VerifyAccess();
         ArgumentNullException.ThrowIfNull(content);
+        if (_committingAction) throw new InvalidOperationException("A committing overlay action cannot change the presentation stack.");
         if (_detaching || TopLevel.GetTopLevel(this) is null) throw new InvalidOperationException("Attach the overlay host before showing content.");
         options.Validate();
         if (options.Placement == MaterialOverlayPlacement.Anchor && (options.Anchor is null || !this.IsVisualAncestorOf(options.Anchor)))
@@ -122,14 +124,22 @@ public class MaterialOverlayHost : ContentControl
         (target ?? session.Layer.Container).Focus(NavigationMethod.Tab);
     }
 
-    internal bool Finish(MaterialOverlaySession session, MaterialOverlayResult result)
+    internal bool IsTop(MaterialOverlaySession session) => _sessions.Count > 0 && _sessions[^1] == session;
+    internal bool Finish(MaterialOverlaySession session, MaterialOverlayResult result, Action? action = null)
     {
         Dispatcher.UIThread.VerifyAccess();
-        if (_sessions.Count == 0 || _sessions[^1] != session) return false;
         var forced = result.Reason is MaterialOverlayCloseReason.HostDetached or MaterialOverlayCloseReason.AnchorDetached;
+        if ((_committingAction && !forced) || _sessions.Count == 0 || _sessions[^1] != session) return false;
         if (!forced && !session.CanFinish(result)) return false;
         // A closing callback may itself complete the presentation.
         if (!session.IsOpen || _sessions.Count == 0 || _sessions[^1] != session) return false;
+        if (action is not null)
+        {
+            _committingAction = true;
+            try { action(); }
+            finally { _committingAction = false; }
+            if (!session.IsOpen || _sessions.Count == 0 || _sessions[^1] != session) return false;
+        }
         var oldCount = OpenCount;
         _sessions.RemoveAt(_sessions.Count - 1);
         try

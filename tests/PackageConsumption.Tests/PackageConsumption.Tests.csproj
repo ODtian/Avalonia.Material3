@@ -48,6 +48,9 @@
     <Compile Include="../Avalonia.Material3.Tests/DateTimePickerScenarioTests.cs" Link="DateTimePickerScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/DateTimePickerGalleryScenarioTests.cs" Link="DateTimePickerGalleryScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/DialogGalleryScenarioTests.cs" Link="DialogGalleryScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/SecondaryFeedbackScenarioTests.cs" Link="SecondaryFeedbackScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/SecondaryFeedbackGalleryTests.cs" Link="SecondaryFeedbackGalleryTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/SecondaryFeedbackAdaptationTests.cs" Link="SecondaryFeedbackAdaptationTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ThemeScenarioTests.cs" Link="ThemeScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/TokenReferenceScenarioTests.cs" Link="TokenReferenceScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ThemeGalleryScenarioTests.cs" Link="ThemeGalleryScenarioTests.cs" />

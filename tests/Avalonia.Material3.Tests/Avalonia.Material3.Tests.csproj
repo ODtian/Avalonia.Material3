@@ -13,6 +13,7 @@
     <Compile Include="../../samples/Gallery/Pages/SearchChipsPage.cs" Link="SearchChipsPage.cs" />
     <Compile Include="../../samples/Gallery/Pages/CarouselRefreshPage.cs" Link="CarouselRefreshPage.cs" />
     <Compile Include="../../samples/Gallery/Pages/DialogsPage.cs" Link="DialogsPage.cs" />
+    <Compile Include="../../samples/Gallery/Pages/SecondaryFeedbackPage.cs" Link="SecondaryFeedbackPage.cs" />
     <Compile Include="../../samples/Gallery/Pages/SheetsPage.cs" Link="SheetsPage.cs" />
     <Compile Include="../PackageConsumption.Tests/SheetScenarioTests.cs" Link="SheetScenarioTests.cs" />
     <Compile Include="../PackageConsumption.Tests/SheetGalleryScenarioTests.cs" Link="SheetGalleryScenarioTests.cs" />

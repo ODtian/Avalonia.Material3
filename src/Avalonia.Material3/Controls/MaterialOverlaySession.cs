@@ -32,7 +32,16 @@ public sealed class MaterialOverlaySession
     public Control Content { get; }
     public Task<MaterialOverlayResult> Completion => _completion.Task;
     public bool IsOpen => !_completion.Task.IsCompleted;
+    /// <summary>Only the top session may run presentation actions or close normally.</summary>
+    public bool IsTop => IsOpen && _host.IsTop(this);
     public bool Close(object? value = null) => _host.Finish(this, new(MaterialOverlayCloseReason.Confirmed, value));
+    /// <summary>Runs a synchronous host action only after top-session and Closing approval, before committing.
+    /// If the action throws the presentation remains open. The action must not mutate the overlay stack.</summary>
+    public bool Close(object? value, Action action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+        return _host.Finish(this, new(MaterialOverlayCloseReason.Confirmed, value), action);
+    }
     public bool Dismiss(MaterialOverlayCloseReason reason = MaterialOverlayCloseReason.Cancelled)
     {
         if (reason is MaterialOverlayCloseReason.Confirmed or MaterialOverlayCloseReason.HostDetached or MaterialOverlayCloseReason.AnchorDetached || !Enum.IsDefined(reason))
