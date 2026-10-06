@@ -8,6 +8,7 @@
     <ProjectReference Include="../../src/Avalonia.Material3/Avalonia.Material3.csproj" />
     <Compile Include="../../samples/Gallery/Pages/SelectionFormPage.cs" Link="SelectionFormPage.cs" />
     <Compile Include="../../samples/Gallery/Pages/ProgressFeedbackPage.cs" Link="ProgressFeedbackPage.cs" />
+    <Compile Include="../../samples/Gallery/Pages/DialogsPage.cs" Link="DialogsPage.cs" />
     <EmbeddedResource Include="../ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
     <EmbeddedResource Include="../ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />
     <Compile Include="../../samples/Gallery/Pages/ThemeTokensPage.cs" Link="ThemeTokensPage.cs" />
