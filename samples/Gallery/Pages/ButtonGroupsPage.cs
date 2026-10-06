@@ -18,6 +18,7 @@ public sealed class ButtonGroupsPage : StackPanel
     public MaterialSegmentedButtonGroup TimeRange { get; } = new();
     public MaterialButtonGroup MediaTypes { get; } = new() { Variant = MaterialButtonGroupVariant.Connected, SelectionMode = MaterialGroupSelectionMode.Multiple };
     public MaterialSplitButton PrimarySplit { get; } = new();
+    public MaterialButtonGroup OverflowActions { get; } = new();
     public TextBlock SelectionResult { get; } = new() { Text = "Range: Day" };
     public TextBlock ActionResult { get; } = new() { Text = "Saved: 0" };
     public MaterialButton DisableButton { get; } = new() { Content = "Enable / disable main" };
@@ -116,7 +117,7 @@ public sealed class ButtonGroupsPage : StackPanel
         var change = new MaterialButton { Content = "Add / remove dynamic option", ContentTemplate = wrappingLabel };
         change.Click += (_, _) => { if (dynamic.Children.Count == 2) dynamic.Children.Add(Option("Added at runtime — dynamically chosen content")); else dynamic.Children.RemoveAt(2); };
         Children.Add(change); Children.Add(dynamic);
-        var overflow = new MaterialButtonGroup();
+        var overflow = OverflowActions;
         foreach (var label in new[] { "Create a new document", "Duplicate current document", "Export mixed 中文 content" })
         { var button = Option(label); button.Command = PrimarySplit.MainButton.Command; overflow.Children.Add(button); }
         Children.Add(overflow);

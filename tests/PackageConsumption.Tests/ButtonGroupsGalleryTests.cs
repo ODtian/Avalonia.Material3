@@ -73,6 +73,12 @@ public class ButtonGroupsGalleryTests
             }
             viewer.ScrollToEnd(); Save(window, $"m3-05-gallery-{width}-bottom.png");
             Assert.True(viewer.Offset.Y > 0);
+            if (width == 320)
+            {
+                Assert.NotEmpty(page.OverflowActions.OverflowItems);
+                Assert.True(page.OverflowActions.OverflowButton.IsVisible);
+                Assert.True(page.OverflowActions.Bounds.Height >= 48);
+            }
         }
         finally { window.Close(); theme.Typography = original; }
     }

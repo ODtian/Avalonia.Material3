@@ -54,7 +54,7 @@ try {
         & powershell.exe -NoProfile -File (Join-Path $PSScriptRoot 'windows-button-groups-smoke.ps1') -Executable (Join-Path $sandbox 'samples/ButtonGroupsHost/bin/Release/net10.0/ButtonGroupsHost.exe') -Screenshots $env:M3_ISSUE10_SCREENSHOTS
         if ($LASTEXITCODE -ne 0) { throw 'Native button groups smoke failed.' }
     }
-    Write-Host 'PASS: source suite, fresh versioned package suite, compiled ButtonGroupsPage and ButtonGroupsHost.'
+    Write-Host 'Verified source/package/gallery/host; completing isolated sandbox cleanup.'
 }
 finally {
     $env:NUGET_PACKAGES = $previousPackages
@@ -63,9 +63,10 @@ finally {
     Pop-Location
     if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }
     elseif (Test-Path $sandbox) {
-        for ($attempt = 0; $attempt -lt 20; $attempt++) {
+        for ($attempt = 0; $attempt -lt 240; $attempt++) {
             try { Remove-Item $sandbox -Recurse -Force; break }
-            catch { if ($attempt -eq 19) { throw }; Start-Sleep -Milliseconds 500 }
+            catch { if ($attempt -eq 239) { throw }; Start-Sleep -Milliseconds 500 }
         }
     }
 }
+Write-Host 'PASS: source suite, fresh versioned package suite, compiled ButtonGroupsPage and ButtonGroupsHost; cleanup completed (or sandbox explicitly retained).'

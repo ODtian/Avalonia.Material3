@@ -319,6 +319,25 @@ public class ButtonGroupMatrixScenarioTests
         Assert.Equal(0, changes);
     }
 
+    [AvaloniaFact]
+    public void Overflow_stays_measured_across_repeated_nested_scrolling_layout_at_two_hundred_percent()
+    {
+        using var host = new ButtonHost();
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 };
+        var group = new MaterialButtonGroup { Children =
+        {
+            new MaterialGroupButton { Content = "Create a new document" },
+            new MaterialGroupButton { Content = "Duplicate current document" },
+            new MaterialGroupButton { Content = "Export mixed 中文 content" }
+        } };
+        host.Window.Content = new ScrollViewer { Content = new StackPanel { Margin = new Thickness(16), Children = { group } } };
+        for (var i = 0; i < 5; i++) host.Capture();
+        Assert.NotEmpty(group.OverflowItems);
+        Assert.True(group.OverflowButton.IsVisible);
+        Assert.True(group.Bounds.Height >= 48);
+        Assert.True(group.OverflowButton.Bounds.Height >= 48);
+    }
+
     private static void Click(ButtonHost host, Control button)
     {
         host.Capture(); var p = button.TranslatePoint(new Point(button.Bounds.Width / 2, button.Bounds.Height / 2), host.Window)!.Value;

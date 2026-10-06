@@ -249,7 +249,11 @@ public partial class MaterialButtonGroup : Panel
         double rowWidth = 0;
         foreach (var child in Children.Where(child => child.IsVisible))
         {
-            child.Measure(new Size(availableWidth, double.PositiveInfinity)); _naturalSizes[child] = child.DesiredSize;
+            if (!_overflowed.Contains(child))
+            {
+                child.Measure(new Size(availableWidth, double.PositiveInfinity));
+                _naturalSizes[child] = child.DesiredSize;
+            }
             if (row.Count > 0 && (Orientation == Avalonia.Layout.Orientation.Vertical || rowWidth + Spacing + NaturalSize(child).Width > availableWidth))
             {
                 _rows.Add(row); row = []; rowWidth = 0;
