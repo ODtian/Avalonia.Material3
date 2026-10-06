@@ -30,6 +30,9 @@
 集成分支：`integration/m3-spec-1`。后续本规格票据从此分支的最新提交继续；本批不合并到 `main`。
 
 - [M3-01 / #2 — 主题按钮从控件包到独立宿主](https://github.com/ODtian/Avalonia.Material3/issues/2)：初始包 `0.1.0-preview.1`，见[验证记录](verification/m3-01.md)和[公开消费契约](public-contract.md)。
+- **#3–#19：组件功能、完整包展厅场景、公开契约与审查修复已集成**，候选包 `0.1.0-preview.2`。716 源码 / 740 隔离包场景通过；两轴复核库内未解决问题均为 0。
+- **#20：M3-local 发布和兼容验证完成，整体验收仍为 partial**。真实 App M11、人工/设备/Android 与公共分发条件不由示例或 UIA 替代；#1/#20 保持开放。
+- 最终提交、候选包来源和哈希、四宿主原生验证及重试记录见[集成交付与验收状态](verification/spec-1-integration.md)。
 
 ## 历史 M3-01 完成后的初始前沿
 
