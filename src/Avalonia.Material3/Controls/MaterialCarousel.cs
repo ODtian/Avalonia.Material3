@@ -177,7 +177,7 @@ public sealed class MaterialCarousel : TemplatedControl
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
-        if (!IsEffectivelyEnabled || _pointer is not null || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || IsNestedInteractive(e.Source)) return;
+        if (!IsEffectivelyEnabled || _pointer is not null || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || MaterialGestureOwnership.IsInteractive(e.Source)) return;
         _start = e.GetPosition(this);
         _gestureInitialPosition = Layout == MaterialCarouselLayout.Uncontained ? _presentationPosition : CurrentIndex;
         _pointer = e.Pointer;
@@ -186,7 +186,6 @@ public sealed class MaterialCarousel : TemplatedControl
         e.Pointer.Capture(this);
         Focus();
     }
-    internal static bool IsNestedInteractive(object? source) => source is Visual visual && visual.GetSelfAndVisualAncestors().OfType<Control>().Any(c => c is Button or TextBox or Slider);
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);

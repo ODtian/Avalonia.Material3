@@ -171,18 +171,26 @@ public class MaterialListItem : MaterialContentItem
     private sealed class ListItemPeer : MaterialContentItemAutomationPeer, IExpandCollapseProvider
     {
         private readonly MaterialListItem _owner;
+        private volatile bool _expandable;
+        private volatile bool _expanded;
         public ListItemPeer(MaterialListItem owner) : base(owner)
         {
             _owner = owner;
+            _expandable = owner.IsExpandable;
+            _expanded = owner.IsExpanded;
             owner.PropertyChanged += (_, e) =>
             {
+                if (e.Property == IsExpandableProperty) _expandable = owner.IsExpandable;
                 if (e.Property == IsExpandedProperty)
+                {
+                    _expanded = owner.IsExpanded;
                     RaisePropertyChangedEvent(ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty, (bool)e.OldValue! ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed, (bool)e.NewValue! ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed);
+                }
             };
         }
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.ListItem;
-        protected override object? GetProviderCore(Type providerType) => providerType == typeof(IExpandCollapseProvider) && !_owner.IsExpandable ? null : base.GetProviderCore(providerType);
-        public ExpandCollapseState ExpandCollapseState => _owner.IsExpanded ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
+        protected override object? GetProviderCore(Type providerType) => providerType == typeof(IExpandCollapseProvider) && !_expandable ? null : base.GetProviderCore(providerType);
+        public ExpandCollapseState ExpandCollapseState => _expanded ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
         public bool ShowsMenu => false;
         public void Expand() { EnsureEnabled(); if (_owner.IsExpandable) _owner.SetCurrentValue(IsExpandedProperty, true); }
         public void Collapse() { EnsureEnabled(); if (_owner.IsExpandable) _owner.SetCurrentValue(IsExpandedProperty, false); }

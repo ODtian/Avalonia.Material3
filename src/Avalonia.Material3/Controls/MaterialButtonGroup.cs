@@ -137,6 +137,11 @@ public partial class MaterialButtonGroup : Panel
         }
         if (args.Property == MaterialButton.IsCheckedProperty)
             Reconcile(sender as MaterialGroupButton);
+        // Availability can create a required choice, but never activates/replaces an existing choice.
+        if (args.Property == IsEffectivelyEnabledProperty &&
+            SelectionMode == MaterialGroupSelectionMode.Single && !AllowEmptySelection &&
+            !Buttons.Any(button => button.IsChecked))
+            Reconcile();
         if (args.Property == MaterialButton.IsPressedProperty && Variant == MaterialButtonGroupVariant.Unconnected && this is not MaterialSegmentedButtonGroup)
         {
             if (sender is MaterialGroupButton { IsPressed: true } button) _expanding = button;
