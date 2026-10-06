@@ -80,7 +80,7 @@ internal sealed class MaterialProgressPresenter : Control
             var cycle = indicator.Elapsed / .65;
             var index = (int)(Math.Floor(cycle) % 7);
             var time = (cycle - Math.Floor(cycle)) * .65;
-            morph = indicator.ReducedMotion ? 0 : SpringResponse(time, indicator.MotionSpring);
+            morph = indicator.ReducedMotion ? 0 : MaterialSpringResponse.Evaluate(time, indicator.MotionSpring);
             rotation = (Math.Floor(cycle) % 4 + 1 + morph) * Math.PI / 2 + (indicator.Elapsed % 4.666) / 4.666 * Math.Tau;
             from = MaterialLoadingShapes.Cycle[index];
             to = MaterialLoadingShapes.Cycle[(index + 1) % 7];
@@ -109,24 +109,6 @@ internal sealed class MaterialProgressPresenter : Control
         context.DrawGeometry(indicator.IsContained ? indicator.ContainedForeground : indicator.Foreground, null, path);
     }
 
-    private static double SpringResponse(double time, Avalonia.Material3.Tokens.MaterialSpring spring)
-    {
-        if (spring.IsInstant) return 1;
-        var omega = Math.Sqrt(spring.Stiffness);
-        var damping = spring.DampingRatio;
-        if (Math.Abs(damping - 1) < 1e-7) return 1 - (1 + omega * time) * Math.Exp(-omega * time);
-        if (damping < 1)
-        {
-            var ratio = Math.Sqrt(1 - damping * damping);
-            var phase = omega * ratio * time;
-            return 1 - Math.Exp(-damping * omega * time) * (Math.Cos(phase) + damping / ratio * Math.Sin(phase));
-        }
-        var root = Math.Sqrt(damping * damping - 1);
-        var first = -omega * (damping - root);
-        var second = -omega * (damping + root);
-        return 1 + (second * Math.Exp(first * time) - first * Math.Exp(second * time)) / (first - second);
-    }
-
     private void DrawLinear(DrawingContext context, MaterialProgressIndicator indicator)
     {
         var width = Bounds.Width;
@@ -137,8 +119,8 @@ internal sealed class MaterialProgressPresenter : Control
             if (end <= start || brush is null) return;
             start = Math.Clamp(start, 2, width - 2);
             end = Math.Clamp(end, 2, width - 2);
-            var rtl = indicator.FlowDirection == FlowDirection.RightToLeft;
-            Point Position(double x) => new(rtl ? width - x : x, y + (active && indicator.IsExpressive
+            // Logical geometry is mirrored once by Avalonia, including active/gap/track/stop.
+            Point Position(double x) => new(x, y + (active && indicator.IsExpressive
                 ? 3 * indicator.WaveAmplitude * Math.Sin(Math.Tau * (x / (indicator.EffectiveIndeterminate ? 20 : 40) - indicator.Elapsed)) : 0));
             var path = new StreamGeometry();
             using (var drawing = path.Open())
@@ -155,7 +137,7 @@ internal sealed class MaterialProgressPresenter : Control
             var progress = indicator.EffectiveValue;
             Line(progress * width + Math.Min(progress * width, 8), width, indicator.TrackBrush);
             Line(0, progress * width, indicator.Foreground, true);
-            context.DrawEllipse(indicator.Foreground, null, new Point(indicator.FlowDirection == FlowDirection.RightToLeft ? 2 : width - 2, y), 2, 2);
+            context.DrawEllipse(indicator.Foreground, null, new Point(width - 2, y), 2, 2);
             return;
         }
         var t = indicator.Elapsed * 1000 % 1750;

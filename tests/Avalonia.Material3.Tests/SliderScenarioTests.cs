@@ -180,8 +180,11 @@ public class SliderScenarioTests
         Assert.Equal(30, slider.LowerValue);
         slider.FlowDirection = FlowDirection.RightToLeft;
         host.Capture();
-        host.Window.MouseDown(host.At(0.1), MouseButton.Left);
-        host.Window.MouseUp(host.At(0.1), MouseButton.Left);
+        // Independent physical-left input, not owner-local TranslatePoint (which already mirrors RTL).
+        var physical = new Rect(slider.Bounds.Size).TransformToAABB(slider.TransformToVisual(host.Window)!.Value);
+        var left = new Point(physical.Left + 24 + .1 * (physical.Width - 48), physical.Bottom - 32);
+        host.Window.MouseDown(left, MouseButton.Left);
+        host.Window.MouseUp(left, MouseButton.Left);
         Assert.Equal(90, slider.UpperValue);
         host.Window.KeyPressQwerty(PhysicalKey.ArrowRight, RawInputModifiers.None);
         Assert.Equal(80, slider.UpperValue);

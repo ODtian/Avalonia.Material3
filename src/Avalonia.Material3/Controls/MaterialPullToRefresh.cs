@@ -63,7 +63,7 @@ public sealed class MaterialPullToRefresh : ContentControl
     }
     private void Pressed(object? sender, PointerPressedEventArgs e)
     {
-        if (!CanRequest || !IsAtStart || _pointer is not null || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || MaterialCarousel.IsNestedInteractive(e.Source)) return;
+        if (!CanRequest || !IsAtStart || _pointer is not null || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || MaterialGestureOwnership.IsInteractive(e.Source)) return;
         var source = e.Source as Visual;
         if (source?.GetSelfAndVisualAncestors().OfType<ScrollViewer>().FirstOrDefault() is { Offset.Y: > 0 }) return;
         _pointer = e.Pointer;

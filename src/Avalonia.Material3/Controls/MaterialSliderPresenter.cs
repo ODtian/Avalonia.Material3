@@ -37,7 +37,7 @@ public sealed class MaterialSliderPresenter : Control
     private double LabelSpace => _owner is { ValueLabelVisibility: not SliderValueLabelVisibility.Never } ? _owner.FontSize * 1.5 + 24 : 0;
     private double TrackY => Breadth - 32;
     private double Position(double value) => 24 + _owner!.Fraction(value) * Math.Max(0, Length - 48);
-    private double PhysicalPosition(double value) => _owner!.IsReversed ? Length - Position(value) : Position(value);
+    private double PhysicalPosition(double value) => _owner!.ReverseDirection ? Length - Position(value) : Position(value);
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -54,7 +54,7 @@ public sealed class MaterialSliderPresenter : Control
             for (var i = 0; i < 2; i++)
             {
                 var position = 24 + range.Fraction(i == 0 ? range.LowerValue : range.UpperValue) * Math.Max(0, length - 48);
-                if (range.IsReversed) position = length - position;
+                if (range.ReverseDirection) position = length - position;
                 var center = Vertical ? new Point(breadth - 32, length - position) : new Point(position, breadth - 32);
                 _endpoints[i].Arrange(new Rect(center.X - 24, center.Y - 24, 48, 48));
             }
@@ -68,8 +68,8 @@ public sealed class MaterialSliderPresenter : Control
         if (_owner is not { } owner) return;
         context.DrawRectangle(Brushes.Transparent, null, new Rect(Bounds.Size));
         var transform = Vertical
-            ? (owner.IsReversed ? new Matrix(0, 1, 1, 0, 0, 0) : new Matrix(0, -1, 1, 0, 0, Bounds.Height))
-            : (owner.IsReversed ? new Matrix(-1, 0, 0, 1, Bounds.Width, 0) : Matrix.Identity);
+            ? (owner.ReverseDirection ? new Matrix(0, 1, 1, 0, 0, 0) : new Matrix(0, -1, 1, 0, 0, Bounds.Height))
+            : (owner.ReverseDirection ? new Matrix(-1, 0, 0, 1, Bounds.Width, 0) : Matrix.Identity);
         using (context.PushTransform(transform)) DrawTrack(context);
 
         var showLabel = owner.ValueLabelVisibility == SliderValueLabelVisibility.Always ||
@@ -189,7 +189,7 @@ public sealed class MaterialSliderPresenter : Control
         else if (upper.HasValue)
         {
             // Separate coincident endpoint labels instead of drawing one on top of the other.
-            var trailing = upper.Value ^ owner.IsReversed;
+            var trailing = upper.Value ^ owner.ReverseDirection;
             x = trailing ? Math.Max(x, Bounds.Width / 2) : Math.Min(x, Math.Max(0, Bounds.Width / 2 - width));
             x = Math.Clamp(x, 0, Math.Max(0, Bounds.Width - width));
         }

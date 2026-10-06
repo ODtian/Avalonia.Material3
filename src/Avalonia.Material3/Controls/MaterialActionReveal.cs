@@ -82,8 +82,8 @@ internal sealed class MaterialActionReveal : Decorator
         var target = IsExpanded ? 1.0 : 0.0;
         var seconds = _elapsed.Elapsed.TotalSeconds;
         static double Mix(double from, double to, double fraction) => Math.Clamp(from + (to - from) * fraction, 0, 1);
-        var spatial = Response(seconds, SpatialSpring);
-        var effects = Response(seconds, EffectsSpring);
+        var spatial = MaterialSpringResponse.Evaluate(seconds, SpatialSpring);
+        var effects = MaterialSpringResponse.Evaluate(seconds, EffectsSpring);
         if (!double.IsFinite(spatial) || !double.IsFinite(effects)) { Snap(); return; }
         _extent = Mix(_fromExtent, target, spatial);
         _alpha = Mix(_fromAlpha, target, effects);
@@ -91,22 +91,6 @@ internal sealed class MaterialActionReveal : Decorator
         if (seconds >= 10 || (Math.Abs(_extent - target) < 0.001 && Math.Abs(_alpha - target) < 0.001)) { Snap(); return; }
         Opacity = _alpha;
         InvalidateMeasure();
-    }
-    private static double Response(double time, MaterialSpring spring)
-    {
-        if (spring.IsInstant) return 1;
-        var omega = Math.Sqrt(spring.Stiffness);
-        var damping = spring.DampingRatio;
-        if (Math.Abs(damping - 1) < 1e-7) return 1 - (1 + omega * time) * Math.Exp(-omega * time);
-        if (damping < 1)
-        {
-            var root = Math.Sqrt(1 - damping * damping);
-            return 1 - Math.Exp(-damping * omega * time) * (Math.Cos(omega * root * time) + damping / root * Math.Sin(omega * root * time));
-        }
-        var ratio = Math.Sqrt(damping * damping - 1);
-        var first = -omega * (damping - ratio);
-        var second = -omega * (damping + ratio);
-        return 1 + (second * Math.Exp(first * time) - first * Math.Exp(second * time)) / (first - second);
     }
     protected override Size MeasureOverride(Size availableSize)
     {

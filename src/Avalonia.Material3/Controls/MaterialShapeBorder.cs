@@ -74,7 +74,7 @@ internal sealed class MaterialShapeBorder : Border
     private void Advance()
     {
         var time = _elapsed.Elapsed.TotalSeconds;
-        var progress = Response(time, _activeSpring);
+        var progress = MaterialSpringResponse.Evaluate(time, _activeSpring);
         var amplitude = Math.Max(Math.Max(Math.Abs(_from.TopLeft - _target.TopLeft), Math.Abs(_from.TopRight - _target.TopRight)),
             Math.Max(Math.Abs(_from.BottomRight - _target.BottomRight), Math.Abs(_from.BottomLeft - _target.BottomLeft)));
         var speed = time > _previousTime ? Math.Abs(progress - _previousProgress) / (time - _previousTime) * amplitude : double.PositiveInfinity;
@@ -90,25 +90,6 @@ internal sealed class MaterialShapeBorder : Border
             Mix(_from.BottomRight, _target.BottomRight, progress), Mix(_from.BottomLeft, _target.BottomLeft, progress))));
         _previousProgress = progress;
         _previousTime = time;
-    }
-
-    // Closed-form unit-mass step response; the pinned DefaultEffects pair is critically damped (1,1600).
-    private static double Response(double time, MaterialSpring spring)
-    {
-        var omega = Math.Sqrt(spring.Stiffness);
-        var damping = spring.DampingRatio;
-        if (Math.Abs(damping - 1) < 1e-7)
-            return 1 - (1 + omega * time) * Math.Exp(-omega * time);
-        if (damping < 1)
-        {
-            var ratio = Math.Sqrt(1 - damping * damping);
-            var phase = omega * ratio * time;
-            return 1 - Math.Exp(-damping * omega * time) * (Math.Cos(phase) + damping / ratio * Math.Sin(phase));
-        }
-        var root = Math.Sqrt(damping * damping - 1);
-        var first = -omega * (damping - root);
-        var second = -omega * (damping + root);
-        return 1 + (second * Math.Exp(first * time) - first * Math.Exp(second * time)) / (first - second);
     }
 
     private CornerRadius Resolve(CornerRadius radius)

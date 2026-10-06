@@ -4,7 +4,7 @@ $ErrorActionPreference='Stop'
 . "$PSScriptRoot/consumer.ps1"
 $root=Split-Path $PSScriptRoot -Parent
 $Manifest=[IO.Path]::GetFullPath($Manifest)
-$inputManifest=Get-Content $Manifest -Raw | ConvertFrom-Json
+$inputManifest=Get-VerifiedConsumerManifest $root $Manifest
 $commit=(git -C $root rev-parse HEAD).Trim()
 if ($inputManifest.commit -cne $commit) { throw 'Stale manifest: package commit is not selected HEAD.' }
 $version=[string](([xml](Get-Content "$root/Directory.Build.props" -Raw)).Project.PropertyGroup.Material3Version)
@@ -13,10 +13,11 @@ Assert-PackageIdentity $inputManifest.package $version $commit
 # MSVC14 link.exe cannot open >MAX_PATH runtime .lib paths. Keep the isolated cache
 # beneath the assigned worktree but short; no system long-path/toolchain settings are changed.
 $run=Join-Path $root ('artifacts/p-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
-$consumer=Join-Path $run 'consumer'
+# Reuse the exact candidate's isolated source-free consumer/cache; do not clone gigabytes per gate.
+$consumer=$inputManifest.sandbox
 $oldPackages=$env:NUGET_PACKAGES
 try {
-    New-PackageConsumer $root $consumer $inputManifest.package $inputManifest.sha256
+    New-Item -ItemType Directory -Force $run | Out-Null
     $env:NUGET_PACKAGES="$consumer/packages"
     $outputs=@()
     foreach ($mode in 'aot','trimmed-managed') {
