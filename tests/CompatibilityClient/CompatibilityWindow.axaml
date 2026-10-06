@@ -1,5 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:m3="using:Avalonia.Material3.Controls" x:Class="CompatibilityWindow"
+        xmlns:m3="using:Avalonia.Material3.Controls" x:Class="CompatFixture.CompatibilityWindow"
         Width="500" Height="300" RequestedThemeVariant="Light">
   <m3:MaterialButton Name="InitialButton" Content="Old compiled XAML consumer" />
 </Window>

@@ -130,4 +130,22 @@ public class GalleryReleaseScenarioTests
         }
         finally { window.Close(); Application.Current.Styles.Remove(theme); }
     }
+
+    [AvaloniaTheory]
+    [InlineData("ThemeTokens")]
+    [InlineData("FloatingActions")]
+    [InlineData("CarouselRefresh")]
+    public void Page_owned_viewport_receives_the_finite_body_instead_of_nested_unbounded_scrolling(string route)
+    {
+        var theme = new MaterialTheme(); Application.Current!.Styles.Add(theme);
+        var shell = new GalleryShell(theme);
+        var window = new Window { Width = 320, Height = 500, Content = shell };
+        try
+        {
+            window.Show(); shell.Navigate(route);
+            using var frame = window.CaptureRenderedFrame();
+            Assert.InRange(shell.CurrentPage!.Bounds.Height, 1, 330);
+        }
+        finally { window.Close(); Application.Current.Styles.Remove(theme); }
+    }
 }

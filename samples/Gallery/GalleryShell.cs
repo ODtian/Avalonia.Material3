@@ -35,9 +35,9 @@ public sealed class GalleryShell : UserControl
         _theme = theme;
         Pages = new Page[]
         {
-            new("ThemeTokens", () => new ThemeTokensPage(theme)),
+            new("ThemeTokens", () => new ThemeTokensPage(theme), true),
             new("ExpressiveButtons", () => new ExpressiveButtonsPage()),
-            new("FloatingActions", () => new FloatingActionsPage(theme)),
+            new("FloatingActions", () => new FloatingActionsPage(theme), true),
             new("ButtonGroups", () => new ButtonGroupsPage(theme)),
             new("SelectionForm", () => new SelectionFormPage(theme)),
             new("TextFields", () => new TextFieldsPage(theme)),
@@ -51,7 +51,7 @@ public sealed class GalleryShell : UserControl
             new("ContentNavigation", () => new ContentNavigationPage(theme), true),
             new("AppChrome", () => new AppChromePage(theme, Overlay), true),
             new("DateTimePickers", () => new DateTimePickersPage(theme, Overlay), true),
-            new("CarouselRefresh", () => new CarouselRefreshPage())
+            new("CarouselRefresh", () => new CarouselRefreshPage(), true)
         };
         AutomationProperties.SetAutomationId(ActionButton, "ActionButton");
         AutomationProperties.SetAutomationId(ThemeButton, "ThemeButton");

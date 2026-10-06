@@ -11,19 +11,19 @@ Push-Location $root
 try {
     $version = [string](([xml](Get-Content Directory.Build.props -Raw)).Project.PropertyGroup.Material3Version)
     $commit = (git rev-parse HEAD).Trim()
-    Invoke-CheckedDotnet test tests/Avalonia.Material3.Tests -c Release --logger 'trx;LogFileName=source.trx' --results-directory "$run/results"
-    $packArgs = @('pack', 'src/Avalonia.Material3/Avalonia.Material3.csproj', '-c', 'Release', '-o', "$run/packages", "-p:RepositoryCommit=$commit")
+    Invoke-CheckedDotnet test tests/Avalonia.Material3.Tests -c Release --logger 'trx;LogFileName=source.trx' --results-directory "$run/results" | Tee-Object "$run/source.log"
+    $packArgs = @('pack', 'src/Avalonia.Material3/Avalonia.Material3.csproj', '-c', 'Release', '-o', "$run/packages", "-p:RepositoryCommit=$commit", "-bl:$run/package-api.binlog")
     if ($BaselinePackage) {
         if ((Get-FileHash $BaselinePackage -Algorithm SHA256).Hash -ne 'C52D2E60A9E508ACF7EA1915EFBD5A84E7508AD39D8662453793759AC44174B6') { throw 'Immutable preview.1 baseline hash mismatch.' }
         $packArgs += '-p:EnablePackageValidation=true', "-p:PackageValidationBaselinePath=$BaselinePackage", '-p:ApiCompatEnableRuleCannotChangeParameterName=true'
     }
-    Invoke-CheckedDotnet @packArgs
+    Invoke-CheckedDotnet @packArgs | Tee-Object "$run/package-api.log"
     $package = "$run/packages/Avalonia.Material3.$version.nupkg"
     $hash = (Get-FileHash $package -Algorithm SHA256).Hash
     Assert-PackageIdentity $package $version $commit
     New-PackageConsumer $root $sandbox $package $hash
     $env:NUGET_PACKAGES = "$sandbox/packages"
-    Invoke-CheckedDotnet test "$sandbox/tests/PackageConsumption.Tests" -c Release --logger 'trx;LogFileName=package.trx' --results-directory "$run/results"
+    Invoke-CheckedDotnet test "$sandbox/tests/PackageConsumption.Tests" -c Release --logger 'trx;LogFileName=package.trx' --results-directory "$run/results" | Tee-Object "$run/package.log"
     Assert-ConsumerAssets $sandbox $version $package $hash
     Assert-ScenarioParity "$run/results/source.trx" "$run/results/package.trx" "$run/scenarios.json" "$root/tests/PackageOnlyScenarios.txt"
     @{ commit=$commit; version=$version; package=$package; sha256=$hash; sandbox=$sandbox; sdk=(& dotnet --version); scenarioManifest="$run/scenarios.json"; baseline=$BaselinePackage } | ConvertTo-Json | Set-Content "$run/manifest.json" -Encoding utf8

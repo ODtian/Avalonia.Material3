@@ -16,7 +16,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <StackPanel>
-          <controls:MaterialProgressPresenter Width="{TemplateBinding GraphicWidth}" Height="{TemplateBinding GraphicHeight}" HorizontalAlignment="Left" Indicator="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
+          <controls:MaterialProgressPresenter x:DataType="controls:MaterialProgressIndicator" Width="{TemplateBinding GraphicWidth}" Height="{TemplateBinding GraphicHeight}" HorizontalAlignment="Left" Indicator="{CompiledBinding RelativeSource={RelativeSource TemplatedParent}}" />
           <TextBlock x:Name="StatusText" IsVisible="False" Text="{TemplateBinding StatusDescription}" TextWrapping="Wrap"
                      LineHeight="{DynamicResource M3.BodyMediumLineHeight}" LetterSpacing="{DynamicResource M3.BodyMediumLetterSpacing}"
                      Foreground="{DynamicResource M3.OnSurfaceBrush}" />
@@ -53,7 +53,7 @@
     <Setter Property="ContainerBrush" Value="{DynamicResource M3.PrimaryContainerBrush}" />
     <Setter Property="ContainedForeground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" />
     <Setter Property="ContainerCornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
-    <Setter Property="MotionSpring" Value="{DynamicResource M3.Motion.SlowSpatial}" />
+    <Setter Property="MotionSpring" Value="{DynamicResource M3.Motion.LoadingMorph}" />
     <Style Selector="^:disabled">
       <Setter Property="ContainerBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
       <Setter Property="ContainedForeground" Value="{DynamicResource M3.DisabledForegroundBrush}" />

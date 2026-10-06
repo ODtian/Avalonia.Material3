@@ -11,7 +11,7 @@
       <ControlTemplate>
         <Grid ClipToBounds="True">
           <Border Background="{TemplateBinding Background}">
-            <c:MaterialCarouselPresenter Carousel="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
+            <c:MaterialCarouselPresenter x:DataType="c:MaterialCarousel" Carousel="{CompiledBinding RelativeSource={RelativeSource TemplatedParent}}" />
           </Border>
           <Border Name="FocusRing" IsHitTestVisible="False" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="2" CornerRadius="{TemplateBinding CornerRadius}" IsVisible="False" />
         </Grid>
@@ -31,7 +31,7 @@
         <Grid RowDefinitions="*,Auto" Background="Transparent">
           <Grid ClipToBounds="True">
             <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
-            <c:MaterialRefreshPresenter IsHitTestVisible="False" Refresh="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
+            <c:MaterialRefreshPresenter x:DataType="c:MaterialPullToRefresh" IsHitTestVisible="False" Refresh="{CompiledBinding RelativeSource={RelativeSource TemplatedParent}}" />
             <Border Name="RefreshFocusRing" IsVisible="False" IsHitTestVisible="False" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="2" />
           </Grid>
           <TextBlock Name="Result" Grid.Row="1" IsVisible="False" Text="{TemplateBinding StatusDescription}" TextWrapping="Wrap"

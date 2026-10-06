@@ -39,10 +39,10 @@ public class SelectionFormPage : StackPanel
         // An explicit unique group keeps two independently hosted forms from sharing radio selection.
         var group = "delivery-" + Guid.NewGuid().ToString("N");
         Email.GroupName = Post.GroupName = group;
-        Notifications.Bind(ToggleButton.IsCheckedProperty, new Binding { Path = nameof(Form.Notifications), Mode = BindingMode.TwoWay, Source = Form });
-        Email.Bind(ToggleButton.IsCheckedProperty, new Binding { Path = nameof(Form.EmailSelected), Mode = BindingMode.TwoWay, Source = Form });
-        Post.Bind(ToggleButton.IsCheckedProperty, new Binding { Path = nameof(Form.PostSelected), Mode = BindingMode.TwoWay, Source = Form });
-        AutoSave.Bind(ToggleButton.IsCheckedProperty, new Binding { Path = nameof(Form.AutoSave), Mode = BindingMode.TwoWay, Source = Form });
+        Notifications.Bind(ToggleButton.IsCheckedProperty, CompiledBinding.Create<SelectionFormModel, bool?>(form => form.Notifications, source: Form, mode: BindingMode.TwoWay));
+        Email.Bind(ToggleButton.IsCheckedProperty, CompiledBinding.Create<SelectionFormModel, bool?>(form => form.EmailSelected, source: Form, mode: BindingMode.TwoWay));
+        Post.Bind(ToggleButton.IsCheckedProperty, CompiledBinding.Create<SelectionFormModel, bool?>(form => form.PostSelected, source: Form, mode: BindingMode.TwoWay));
+        AutoSave.Bind(ToggleButton.IsCheckedProperty, CompiledBinding.Create<SelectionFormModel, bool>(form => form.AutoSave, source: Form, mode: BindingMode.TwoWay));
         AutomationProperties.SetName(Notifications, "Notifications");
         AutomationProperties.SetName(Email, "Delivery by email");
         AutomationProperties.SetName(Post, "Delivery by post");

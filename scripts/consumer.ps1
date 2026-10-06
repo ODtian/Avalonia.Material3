@@ -1,7 +1,8 @@
 # Shared authoritative copying, exact-package and restore-provenance gate. Dot-source from verifiers.
 $ErrorActionPreference = 'Stop'
 function Invoke-CheckedDotnet {
-    param([Parameter(ValueFromRemainingArguments=$true)][string[]]$Arguments)
+    # A simple forwarding function avoids PowerShell common-parameter capture of dotnet -o.
+    $Arguments = [string[]]@($args | ForEach-Object { $_ })
     & dotnet @Arguments --disable-build-servers -p:UseSharedCompilation=false
     if ($LASTEXITCODE -ne 0) { throw "dotnet failed ($LASTEXITCODE): $($Arguments -join ' ')" }
 }
@@ -43,12 +44,17 @@ function New-PackageConsumer([string]$Root, [string]$Destination, [string]$Packa
     if (Test-Path "$Destination/src") { throw 'Library source copied into consumer.' }
     # Gallery/Standalone are independent. Ticket-specific wrappers may reference Gallery only.
     # Reject library source or any other/transitive repo reference, including imported props.
-    foreach ($project in Get-ChildItem "$Destination/samples" -Filter '*.csproj' -Recurse) {
+    $projects = @(Get-ChildItem "$Destination/samples" -Filter '*.csproj' -Recurse) +
+        @(Get-Item "$Destination/tests/PackageConsumption.Tests/PackageConsumption.Tests.csproj")
+    foreach ($project in $projects) {
         $json = (& dotnet msbuild $project.FullName -nologo '-getItem:ProjectReference' | Out-String) | ConvertFrom-Json
         if ($LASTEXITCODE -ne 0) { throw "Cannot evaluate project references: $($project.Name)" }
+        $allowed = if ($project.BaseName -eq 'PackageConsumption.Tests') {
+            @('Gallery','StandaloneHost','TextFieldHost')
+        } elseif ($project.BaseName -in 'Gallery','StandaloneHost') { @() } else { @('Gallery') }
+        $allowedPaths = @($allowed | ForEach-Object { [IO.Path]::GetFullPath("$Destination/samples/$_/$_.csproj") })
         foreach ($reference in $json.Items.ProjectReference) {
-            if ($project.BaseName -in 'Gallery','StandaloneHost' -or
-                $reference.FullPath -ne [IO.Path]::GetFullPath("$Destination/samples/Gallery/Gallery.csproj")) {
+            if ($reference.FullPath -notin $allowedPaths) {
                 throw "Forbidden consumer ProjectReference: $($project.Name) -> $($reference.FullPath)"
             }
         }
@@ -56,7 +62,9 @@ function New-PackageConsumer([string]$Root, [string]$Destination, [string]$Packa
 }
 function Assert-ConsumerAssets([string]$Destination, [string]$Version, [string]$Package, [string]$Hash) {
     if ((Get-FileHash $Package -Algorithm SHA256).Hash -cne $Hash) { throw 'Selected package changed during verification.' }
-    foreach ($assets in Get-ChildItem "$Destination/samples", "$Destination/tests/PackageConsumption.Tests" -Filter project.assets.json -Recurse) {
+    $assetFiles = @(Get-ChildItem "$Destination/samples", "$Destination/tests/PackageConsumption.Tests" -Filter project.assets.json -Recurse)
+    if ($assetFiles.Count -eq 0) { throw 'Consumer has no restored asset graph.' }
+    foreach ($assets in $assetFiles) {
         $data = Get-Content $assets.FullName -Raw | ConvertFrom-Json -AsHashtable
         $key = 'Avalonia.Material3/' + $Version
         if (!$data.libraries.ContainsKey($key) -or $data.libraries[$key].type -ne 'package') { throw "M3 is not the selected versioned package: $($assets.FullName)" }
@@ -77,8 +85,8 @@ function Get-ScenarioNames([string]$Trx) {
 }
 function Assert-ScenarioParity([string]$Source, [string]$Package, [string]$Output, [string]$ExpectedExtras) {
     $sourceNames = Get-ScenarioNames $Source; $packageNames = Get-ScenarioNames $Package
-    $shared = [Collections.Generic.HashSet[string]]::new($sourceNames, [StringComparer]::Ordinal)
-    $actual = [Collections.Generic.HashSet[string]]::new($packageNames, [StringComparer]::Ordinal)
+    $shared = [Collections.Generic.HashSet[string]]::new([string[]]$sourceNames, [StringComparer]::Ordinal)
+    $actual = [Collections.Generic.HashSet[string]]::new([string[]]$packageNames, [StringComparer]::Ordinal)
     if ($shared.Count -ne $sourceNames.Count -or $actual.Count -ne $packageNames.Count) { throw 'Duplicate scenario identities.' }
     foreach ($name in $sourceNames) { if (!$actual.Contains($name)) { throw "Missing package scenario: $name" } }
     $extras = @($packageNames | Where-Object { !$shared.Contains($_) })

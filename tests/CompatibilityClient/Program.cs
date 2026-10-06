@@ -16,7 +16,7 @@ if (primary != Colors.Red || surface != Colors.Black || outline != Colors.Teal |
 var theme = new MaterialTheme { Typography = new MaterialTypography { Scale = 1.5 },
     Shapes = new MaterialShapes { ButtonCornerRadius = 20 }, Motion = new MaterialMotion { ReduceMotion = true } };
 Application.Current!.Styles.Add(theme);
-var window = new CompatibilityWindow();
+var window = new CompatFixture.CompatibilityWindow();
 window.Show();
 var button = window.FindControl<MaterialButton>("InitialButton")!;
 if (button.Background is not ISolidColorBrush { Color: var light } || light != Color.Parse("#6750A4"))
@@ -27,7 +27,10 @@ if (button.Background is not ISolidColorBrush { Color: var dark } || dark != Col
 window.Close();
 Console.WriteLine("PASS immutable-old compiled client: ctor/deconstruct/with, compiled XAML, theme/resources.");
 
-public partial class CompatibilityWindow : Window
+namespace CompatFixture
 {
-    public CompatibilityWindow() => AvaloniaXamlLoader.Load(this);
+    public partial class CompatibilityWindow : Window
+    {
+        public CompatibilityWindow() => AvaloniaXamlLoader.Load(this);
+    }
 }

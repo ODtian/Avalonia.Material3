@@ -184,6 +184,7 @@ M3.Motion.EasingStandardAccelerate
 M3.Motion.EasingStandardDecelerate
 M3.Motion.FastEffects
 M3.Motion.FastSpatial
+M3.Motion.LoadingMorph
 M3.Motion.SlowEffects
 M3.Motion.SlowSpatial
 M3.OnBackgroundBrush
