@@ -52,7 +52,7 @@
 | Sliders：单值、范围、连续、离散、标记 | 场景交付：另含 vertical/centered/RTL、两端点 focus/RangeValue、预览与保存恢复；headless/API 和新包消费通过，真实读屏/硬件与最终展厅集成未认领 | [M3-10 #8][i8] | [Sliders][sliders]、SliderTokens v2_3_5；[公开契约](components/m3-10.md)、[验证记录](verification/m3-10.md) |
 | Progress indicators：线性、圆形、确定/不确定、Expressive 波形 | 已交付真实轨道/间隙/stop/波形、宿主值与结果、暂停/减少动效/可控时间、只读 ProgressBar/RangeValue 与 Windows UIA；不声称 Compose PathMeasure 像素/帧等价 | [M3-11 #12][i12] | [Progress][progress]、Linear/CircularProgressIndicatorTokens v0_7_0；[契约](components/m3-11.md)、[证据与投影边界](verification/m3-11.md) |
 | Loading indicator：Expressive 形状循环 | 已交付锁定七种圆角形状的连续循环及进度驱动 circle→soft-burst、contained/uncontained、宿主状态和结果、新包展厅；形状对应/弹簧为明确的 Avalonia/#3 令牌投影，非上游 Morph 引擎复刻 | [M3-11 #12][i12] | LoadingIndicatorTokens v0_7_0、锁定 LoadingIndicator/MaterialShapes；[契约](components/m3-11.md)、[证据](verification/m3-11.md) |
-| Dialogs：basic、全屏；打开/确认/取消/焦点返回 | 待交付 | [M3-12 #13][i13] | [Dialogs][dialogs]、DialogTokens |
+| Dialogs：basic、全屏；打开/确认/取消/焦点返回 | 已交付：Material 表面/操作、原生编辑与验证结果、LIFO 通用 modal/modeless/anchor/edge 消费契约、焦点/取消/长内容自适应、包展厅及 Windows UIA/输入；人工读屏/跨平台/AOT 限制见证据 | [M3-12 #13][i13] | [Dialogs][dialogs]、锁定 DialogTokens / AlertDialog / ScrimTokens；[契约](components/m3-12.md)、[证据](verification/m3-12.md) |
 | Menus：标准、vibrant、segmented、子菜单、锚定/上下文 | 待交付 | [M3-13 #15][i15] | [Menus][menus]、Menu/StandardMenu/VibrantMenu/SegmentedMenuTokens |
 | Tooltips：plain、rich | 待交付 | [M3-13 #15][i15] | [Tooltips][tooltips]、Plain/RichTooltipTokens |
 | Snackbar：消息、行动、消失 | 待交付 | [M3-13 #15][i15] | [Snackbar][snackbar]、SnackbarTokens |
