@@ -96,6 +96,7 @@ public class MaterialTimePicker : TemplatedControl
         var separator = MaterialPickerSupport.Text("DisplayLarge"); separator.Text = ":"; separator.Margin = new Thickness(4, 4, 4, 0); separator.VerticalAlignment = VerticalAlignment.Top;
         _hourSelector.Click += (_, _) => SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Hour);
         _minuteSelector.Click += (_, _) => SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Minute);
+        _hourSelector.VerticalAlignment = _minuteSelector.VerticalAlignment = VerticalAlignment.Top;
         var clockSeparator = MaterialPickerSupport.Text("DisplayLarge"); clockSeparator.Text = ":"; clockSeparator.Margin = new Thickness(4, 0);
         _clockSelectors = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,Auto"), Children = { _hourSelector, clockSeparator, _minuteSelector } };
         Grid.SetColumn(clockSeparator, 1); Grid.SetColumn(_minuteSelector, 2);
@@ -189,6 +190,7 @@ public class MaterialTimePicker : TemplatedControl
         _clock.IsVisible = Mode == MaterialTimePickerMode.Clock;
         AutomationProperties.SetName(_adjust.Children[0], Labels.DecreaseTime); AutomationProperties.SetName(_adjust.Children[1], Labels.IncreaseTime);
         var horizontal = Layout == MaterialTimePickerLayout.Horizontal;
+        _clock.RowDefinitions[2].Height = horizontal ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
         Grid.SetRow(_dial, horizontal ? 0 : 1); Grid.SetColumn(_dial, horizontal ? 1 : 0); Grid.SetRowSpan(_dial, horizontal ? 3 : 1);
         Grid.SetRow(_adjust, 2);
         _dial.Margin = horizontal ? new Thickness(24, 0, 0, 0) : new Thickness(0, 24, 0, 24);
