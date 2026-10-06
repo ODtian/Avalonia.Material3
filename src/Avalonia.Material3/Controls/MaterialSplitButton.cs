@@ -77,16 +77,9 @@ public class MaterialSplitButton : Panel
         var mainWidth = Math.Max(48, finalSize.Width - secondaryWidth - 12);
         var height = Math.Max(MainButton.DesiredSize.Height, SecondaryButton.DesiredSize.Height);
         MainButton.SetSharedHeight(height); SecondaryButton.SetSharedHeight(height);
-        if (FlowDirection == Avalonia.Media.FlowDirection.RightToLeft)
-        {
-            SecondaryButton.Arrange(new Rect(5, 0, secondaryWidth, height));
-            MainButton.Arrange(new Rect(secondaryWidth + 7, 0, mainWidth, height));
-        }
-        else
-        {
-            MainButton.Arrange(new Rect(5, 0, mainWidth, height));
-            SecondaryButton.Arrange(new Rect(mainWidth + 7, 0, secondaryWidth, height));
-        }
+        // Avalonia mirrors at the flow-direction boundary, including asymmetric shapes and slots.
+        MainButton.Arrange(new Rect(5, 0, mainWidth, height));
+        SecondaryButton.Arrange(new Rect(mainWidth + 7, 0, secondaryWidth, height));
         return finalSize;
     }
     protected override AutomationPeer OnCreateAutomationPeer() => new SplitGroupPeer(this);

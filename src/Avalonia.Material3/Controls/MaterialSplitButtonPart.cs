@@ -84,7 +84,6 @@ public partial class MaterialSplitButtonPart
         // instead of letting a vertical capsule curve under readable multi-line content.
         var full = SharedContainerHeight > ContainerHeight + .01 ? Math.Min(_corners["Full"], ContainerHeight / 2) : _corners["Full"];
         var leading = !IsSecondary;
-        if (FlowDirection == FlowDirection.RightToLeft) leading = !leading;
         var target = IsSecondary && IsChecked && !IsPressed ? new CornerRadius(full) : leading ? new CornerRadius(full, inner, inner, full) : new CornerRadius(inner, full, full, inner);
         SetAndRaise(SplitCornerRadiusProperty, ref _splitCornerRadius, target);
     }

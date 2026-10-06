@@ -355,6 +355,30 @@ public class ButtonGroupMatrixScenarioTests
         host.Window.Width = 1100; host.Capture(); Assert.Equal(split.MainButton.Padding, split.MainButton.EffectivePadding);
     }
 
+    [AvaloniaFact]
+    public void RTL_horizontal_arrows_follow_the_actual_visual_direction_across_three_options()
+    {
+        using var host = new ButtonHost();
+        var a = new MaterialGroupButton { Content = "Start" };
+        var b = new MaterialGroupButton { Content = "Middle" };
+        var c = new MaterialGroupButton { Content = "End" };
+        var group = new MaterialButtonGroup { Variant = MaterialButtonGroupVariant.Connected, FlowDirection = FlowDirection.RightToLeft, Children = { a, b, c } };
+        host.Window.Content = group; host.Capture();
+        Assert.True(a.TranslatePoint(new Point(0, 0), host.Window)!.Value.X > c.TranslatePoint(new Point(0, 0), host.Window)!.Value.X);
+        a.Focus(NavigationMethod.Tab);
+        host.Window.KeyPress(Key.Left, RawInputModifiers.None, PhysicalKey.ArrowLeft, null);
+        Assert.True(b.IsFocused);
+        host.Window.KeyPress(Key.Right, RawInputModifiers.None, PhysicalKey.ArrowRight, null);
+        Assert.True(a.IsFocused);
+        var split = new MaterialSplitButton { FlowDirection = FlowDirection.RightToLeft };
+        split.MainButton.Content = "Save";
+        var actions = 0; split.MainButton.Click += (_, _) => actions++;
+        host.Window.Content = split; host.Capture();
+        Assert.True(split.MainButton.TranslatePoint(new Point(0, 0), host.Window)!.Value.X > split.SecondaryButton.TranslatePoint(new Point(0, 0), host.Window)!.Value.X);
+        Click(host, split.MainButton); Assert.Equal(1, actions);
+        Click(host, split.SecondaryButton); Assert.True(split.IsExpanded); Assert.Equal(1, actions);
+    }
+
     private static void Click(ButtonHost host, Control button)
     {
         host.Capture(); var p = button.TranslatePoint(new Point(button.Bounds.Width / 2, button.Bounds.Height / 2), host.Window)!.Value;

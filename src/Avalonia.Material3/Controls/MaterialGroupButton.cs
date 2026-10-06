@@ -80,7 +80,6 @@ public class MaterialGroupButton : MaterialButton
             target = new CornerRadius(first ? full : inner, first ? full : inner, last ? full : inner, last ? full : inner);
         else
         {
-            if (Group.FlowDirection == FlowDirection.RightToLeft) (first, last) = (last, first);
             target = new CornerRadius(first ? full : inner, last ? full : inner, last ? full : inner, first ? full : inner);
         }
         SetAndRaise(GroupCornerRadiusProperty, ref _groupCornerRadius, target);

@@ -210,7 +210,9 @@ public partial class MaterialButtonGroup : Panel
         var buttons = Buttons.Where(button => button.IsEffectivelyEnabled && button.IsVisible && !_overflowed.Contains(button)).ToArray();
         var index = Array.FindIndex(buttons, button => button.IsFocused);
         if (index < 0 || buttons.Length == 0) return;
-        var next = e.Key switch
+        var key = FlowDirection == Avalonia.Media.FlowDirection.RightToLeft && Orientation == Avalonia.Layout.Orientation.Horizontal
+            ? e.Key switch { Key.Right => Key.Left, Key.Left => Key.Right, _ => e.Key } : e.Key;
+        var next = key switch
         {
             Key.Home => 0, Key.End => buttons.Length - 1,
             Key.Right or Key.Down => (index + 1) % buttons.Length,
@@ -294,7 +296,8 @@ public partial class MaterialButtonGroup : Panel
             foreach (var child in row)
             {
                 var width = Orientation == Avalonia.Layout.Orientation.Vertical ? finalSize.Width - 10 : widths[row.IndexOf(child)];
-                var x = FlowDirection == Avalonia.Media.FlowDirection.RightToLeft ? finalSize.Width - offset - width : offset;
+                // Avalonia mirrors the group at the LTR/RTL boundary. Keep layout/shape coordinates logical.
+                var x = offset;
                 child.Arrange(new Rect(x, y, width, height));
                 offset += width + Spacing;
                 if (child is MaterialGroupButton button)

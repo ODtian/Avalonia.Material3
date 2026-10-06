@@ -86,7 +86,7 @@ public class ButtonGroupScenarioTests
         group.FlowDirection = Avalonia.Media.FlowDirection.RightToLeft;
         first.IsChecked = false;
         host.Capture();
-        Assert.Equal(new CornerRadius(8, 9999, 9999, 8), first.GroupCornerRadius);
+        Assert.Equal(new CornerRadius(9999, 8, 8, 9999), first.GroupCornerRadius); // Logical target; Avalonia mirrors it visually.
     }
 
     [AvaloniaFact]
