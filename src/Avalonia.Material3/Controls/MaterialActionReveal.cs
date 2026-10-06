@@ -10,6 +10,8 @@ namespace Avalonia.Material3.Controls;
 internal sealed class MaterialActionReveal : Decorator
 {
     public static readonly StyledProperty<bool> IsExpandedProperty = AvaloniaProperty.Register<MaterialActionReveal, bool>(nameof(IsExpanded), true);
+    public static readonly StyledProperty<bool> RevealFromEndProperty = AvaloniaProperty.Register<MaterialActionReveal, bool>(nameof(RevealFromEnd));
+    public bool RevealFromEnd { get => GetValue(RevealFromEndProperty); set => SetValue(RevealFromEndProperty, value); }
     public static readonly StyledProperty<Orientation> OrientationProperty = AvaloniaProperty.Register<MaterialActionReveal, Orientation>(nameof(Orientation));
     public static readonly StyledProperty<MaterialSpring> SpatialSpringProperty = AvaloniaProperty.Register<MaterialActionReveal, MaterialSpring>(nameof(SpatialSpring), new(1, 1400), validate: value => value is { IsValid: true });
     public static readonly StyledProperty<MaterialSpring> EffectsSpringProperty = AvaloniaProperty.Register<MaterialActionReveal, MaterialSpring>(nameof(EffectsSpring), new(1, 3800), validate: value => value is { IsValid: true });
@@ -63,7 +65,7 @@ internal sealed class MaterialActionReveal : Decorator
                 _timer.Start();
             }
         }
-        if (change.Property == OrientationProperty) InvalidateMeasure();
+        if (change.Property == OrientationProperty || change.Property == RevealFromEndProperty) InvalidateMeasure();
     }
     private void Snap()
     {
@@ -111,8 +113,11 @@ internal sealed class MaterialActionReveal : Decorator
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
-        Child?.Arrange(new Rect(0, 0, Orientation == Orientation.Horizontal ? Math.Max(finalSize.Width, _fullSize.Width) : finalSize.Width,
-            Orientation == Orientation.Vertical ? Math.Max(finalSize.Height, _fullSize.Height) : finalSize.Height));
+        var width = Orientation == Orientation.Horizontal ? Math.Max(finalSize.Width, _fullSize.Width) : finalSize.Width;
+        var height = Orientation == Orientation.Vertical ? Math.Max(finalSize.Height, _fullSize.Height) : finalSize.Height;
+        // Bottom-anchored menus emerge nearest the trigger first, not from the far end of the list.
+        Child?.Arrange(new Rect(RevealFromEnd && Orientation == Orientation.Horizontal ? finalSize.Width - width : 0,
+            RevealFromEnd && Orientation == Orientation.Vertical ? finalSize.Height - height : 0, width, height));
         return finalSize;
     }
 }

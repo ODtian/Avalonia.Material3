@@ -39,15 +39,31 @@ internal sealed class MaterialExpansionAutomationPeer : ControlAutomationPeer, I
 
 internal sealed class MaterialExpansionButton : MaterialFab
 {
-    internal IMaterialExpansion? Expansion { get; set; }
+    private IMaterialExpansion? _expansion;
+    internal IMaterialExpansion? Expansion
+    {
+        get => _expansion;
+        set
+        {
+            var oldContainer = ContainerSize;
+            _expansion = value;
+            RaisePropertyChanged(ContainerSizeProperty, oldContainer, ContainerSize);
+        }
+    }
     public static readonly StyledProperty<bool> IsExpandedProperty = AvaloniaProperty.Register<MaterialExpansionButton, bool>(nameof(IsExpanded));
     public bool IsExpanded { get => GetValue(IsExpandedProperty); set => SetValue(IsExpandedProperty, value); }
+    protected override double GetContainerSize(MaterialFabSize size) => Expansion is MaterialFabMenu && IsExpanded ? 56 : base.GetContainerSize(size);
     protected override double GetIconSize(MaterialFabSize size) => IsExpanded ? 20 : base.GetIconSize(size);
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == IsExpandedProperty)
-            RaisePropertyChanged(IconSizeProperty, IsExpanded ? 24 : 20, IconSize);
+        {
+            var oldExpanded = change.GetOldValue<bool>();
+            RaisePropertyChanged(IconSizeProperty, oldExpanded ? 20 : base.GetIconSize(PresentedSize), IconSize);
+            if (Expansion is MaterialFabMenu)
+                RaisePropertyChanged(ContainerSizeProperty, oldExpanded ? 56 : base.GetContainerSize(PresentedSize), ContainerSize);
+        }
     }
     protected override AutomationPeer OnCreateAutomationPeer() => new ExpansionButtonPeer(this);
     private sealed class ExpansionButtonPeer : ButtonAutomationPeer, IExpandCollapseProvider

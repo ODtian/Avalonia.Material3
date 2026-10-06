@@ -17,8 +17,9 @@
       <Setter Property="FocusAdorner" Value="{x:Null}" />
       <Setter Property="Template">
         <ControlTemplate>
+          <c:MaterialFabGeometryPresenter x:Name="Geometry" TargetExtent="{TemplateBinding ContainerSize}" TargetIconSize="{TemplateBinding IconSize}" Spring="{DynamicResource M3.Motion.FastSpatial}">
           <Grid Background="Transparent">
-            <c:MaterialShapeBorder x:Name="Container" Margin="5" MinWidth="{TemplateBinding ContainerSize}" MinHeight="{TemplateBinding ContainerSize}"
+            <c:MaterialShapeBorder x:Name="Container" Margin="5" MinWidth="{Binding Extent, ElementName=Geometry}" MinHeight="{Binding Extent, ElementName=Geometry}"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                        ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
@@ -27,7 +28,7 @@
                         CornerRadius="{Binding CornerRadius, ElementName=Container}">
                   <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
                 </Border>
-                <Viewbox Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}">
+                <Viewbox Width="{Binding IconExtent, ElementName=Geometry}" Height="{Binding IconExtent, ElementName=Geometry}">
                   <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
                 </Viewbox>
@@ -38,6 +39,7 @@
                        ShapeCornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"
                        ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
           </Grid>
+          </c:MaterialFabGeometryPresenter>
         </ControlTemplate>
       </Setter>
       <Style Selector="^:small"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" /></Style>
@@ -102,27 +104,29 @@
       <Style Selector="^ /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
       <Style Selector="^:pointerover /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
       <Style Selector="^:pressed"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" /></Style>
+      <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="TextWrapping" Value="Wrap" /></Style>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialFabMenu}" TargetType="c:MaterialFabMenu">
-      <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" />
+      <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" /><Setter Property="Margin" Value="16" />
       <Setter Property="Template">
         <ControlTemplate>
           <c:MaterialFabMenuPanel Anchor="{TemplateBinding Anchor}">
-            <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" Orientation="Vertical" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.SlowEffects}">
+            <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" Orientation="Vertical" RevealFromEnd="True" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.SlowEffects}">
               <ScrollViewer>
                 <ItemsControl Theme="{StaticResource M3.ActionItems}" ItemsSource="{TemplateBinding Items}">
                   <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="4" HorizontalAlignment="Right" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                 </ItemsControl>
               </ScrollViewer>
             </c:MaterialActionReveal>
-            <c:MaterialExpansionButton x:Name="PART_Toggle" IsExpanded="{TemplateBinding IsExpanded}" HorizontalAlignment="Right" />
+            <c:MaterialExpansionButton x:Name="PART_Toggle" Size="{TemplateBinding TriggerSize}" IsExpanded="{TemplateBinding IsExpanded}" HorizontalAlignment="Right" />
           </c:MaterialFabMenuPanel>
         </ControlTemplate>
       </Setter>
       <Style Selector="^:top"><Setter Property="VerticalAlignment" Value="Top" /></Style>
+      <Style Selector="^:top /template/ c|MaterialActionReveal"><Setter Property="RevealFromEnd" Value="False" /></Style>
       <Style Selector="^:left"><Setter Property="HorizontalAlignment" Value="Left" /></Style>
       <Style Selector="^:left /template/ StackPanel"><Setter Property="HorizontalAlignment" Value="Left" /></Style>
-      <Style Selector="^:expanded /template/ c|MaterialFab#PART_Toggle"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" /></Style>
+      <Style Selector="^:expanded /template/ c|MaterialFab#PART_Toggle"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" /><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
     </ControlTheme>
     <ControlTheme x:Key="M3.ToolbarToggle" TargetType="c:MaterialFab" BasedOn="{StaticResource {x:Type c:MaterialFab}}">
       <Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
@@ -133,12 +137,13 @@
     <ControlTheme x:Key="{x:Type c:MaterialToolbar}" TargetType="c:MaterialToolbar">
       <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" />
-      <Setter Property="Margin" Value="16" /><Setter Property="Padding" Value="8,0" />
+      <Setter Property="Margin" Value="16" /><Setter Property="Padding" Value="8" />
       <Setter Property="Template">
         <ControlTemplate>
           <c:MaterialToolbarLayoutPanel Orientation="{TemplateBinding Orientation}" FloatingActionPosition="{TemplateBinding FloatingActionPosition}">
+          <c:MaterialActionReveal IsExpanded="{TemplateBinding SurfaceIsExpanded}" Orientation="{TemplateBinding Orientation}" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
           <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" MinHeight="64" Padding="{TemplateBinding Padding}"
-                  BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
+                  BoxShadow="{DynamicResource M3.Elevation.Shadow0}">
             <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
               <c:MaterialToolbarItemsPanel StretchChildIndex="2" Orientation="{TemplateBinding Orientation}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="4">
                 <c:MaterialExpansionButton x:Name="PART_Toggle" Theme="{StaticResource M3.ToolbarToggle}" IsExpanded="{TemplateBinding IsExpanded}" Content="⋯" />
@@ -158,6 +163,7 @@
               </c:MaterialToolbarItemsPanel>
             </ScrollViewer>
           </Border>
+          </c:MaterialActionReveal>
           <ContentPresenter Content="{TemplateBinding FloatingAction}" IsVisible="{TemplateBinding FloatingAction, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
           </c:MaterialToolbarLayoutPanel>
         </ControlTemplate>
@@ -168,7 +174,7 @@
       <Style Selector="^:top"><Setter Property="VerticalAlignment" Value="Top" /></Style>
       <Style Selector="^:docked"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Margin" Value="0" /><Setter Property="Padding" Value="16,0" /></Style>
       <Style Selector="^:docked /template/ Border#Surface"><Setter Property="CornerRadius" Value="0" /><Setter Property="BoxShadow" Value="none" /></Style>
-      <Style Selector="^:vertical"><Setter Property="Padding" Value="0,8" /></Style>
+      <Style Selector="^:with-fab:not(:docked) /template/ Border#Surface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
       <Style Selector="^:vertical /template/ Border#Surface"><Setter Property="MinHeight" Value="0" /><Setter Property="MinWidth" Value="64" /></Style>
       <Style Selector="^:vertical /template/ ScrollViewer#Scroller"><Setter Property="HorizontalScrollBarVisibility" Value="Disabled" /><Setter Property="VerticalScrollBarVisibility" Value="Auto" /></Style>
       <Style Selector="^:docked:vertical"><Setter Property="HorizontalAlignment" Value="Left" /><Setter Property="VerticalAlignment" Value="Stretch" /><Setter Property="Padding" Value="0,16" /></Style>

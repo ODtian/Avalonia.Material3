@@ -53,6 +53,10 @@ public sealed class FloatingActionsApplication : Application
         var toolbar = new MaterialToolbar { Variant = MaterialToolbarVariant.Docked, Color = MaterialToolbarColor.Vibrant };
         AutomationProperties.SetName(toolbar, "Editing toolbar");
         AutomationProperties.SetAutomationId(toolbar, "floating-native-toolbar");
+        toolbar.FloatingAction = new MaterialFab { Content = "+" };
+        toolbar.CollapseBehavior = MaterialToolbarCollapseBehavior.WholeToolbar;
+        AutomationProperties.SetName(toolbar.FloatingAction, "Editing disclosure");
+        AutomationProperties.SetAutomationId(toolbar.FloatingAction, "floating-native-toolbar-fab");
         toolbar.Items.Add(new MaterialIconButton { Content = "★", IsToggle = true });
         toolbar.LeadingItems.Add(new MaterialIconButton { Content = "↶" });
         toolbar.TrailingItems.Add(new MaterialIconButton { Content = "▣" });

@@ -7,12 +7,173 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Material3.Tests;
 
 public class FloatingActionScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(MaterialFabSize.Standard, 56, 24)]
+    [InlineData(MaterialFabSize.Small, 40, 24)]
+    [InlineData(MaterialFabSize.Medium, 80, 28)]
+    [InlineData(MaterialFabSize.Large, 96, 36)]
+    public void Menu_trigger_size_and_primary_close_recipe_round_trip_without_overwriting_host_input(MaterialFabSize size, double extent, double icon)
+    {
+        using var host = new ButtonHost();
+        host.Window.Height = 500;
+        var menu = new MaterialFabMenu { TriggerSize = size };
+        menu.Items.Add(new MaterialFabMenuItem { Content = "Create" });
+        host.Window.Content = new Grid { Children = { menu } };
+        host.Capture();
+        var toggle = menu.GetVisualDescendants().OfType<MaterialFab>().Single();
+        Assert.Equal(extent, toggle.ContainerSize);
+        Assert.Equal(icon, toggle.IconSize);
+        menu.IsExpanded = true;
+        host.Capture();
+        Assert.Equal(56, toggle.ContainerSize);
+        Assert.Equal(20, toggle.IconSize);
+        Assert.Equal(Color.Parse("#6750A4"), ((ISolidColorBrush)toggle.Background!).Color);
+        Assert.Equal(Color.Parse("#FFFFFF"), ((ISolidColorBrush)toggle.Foreground!).Color);
+        menu.IsExpanded = false;
+        host.Capture();
+        Assert.Equal(size, menu.TriggerSize);
+        Assert.Equal(extent, toggle.ContainerSize);
+        Assert.Equal(Color.Parse("#EADDFF"), ((ISolidColorBrush)toggle.Background!).Color);
+    }
+
+    [AvaloniaFact]
+    public async Task Whole_toolbar_FAB_size_really_animates_and_runtime_reduce_motion_snaps()
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 600;
+        var fab = new MaterialFab { Content = "+" };
+        var toolbar = new MaterialToolbar { FloatingAction = fab, CollapseBehavior = MaterialToolbarCollapseBehavior.WholeToolbar };
+        toolbar.Items.Add(new MaterialIconButton { Content = "★" });
+        host.Window.Content = new Grid { Children = { toolbar } };
+        host.Theme.Motion = new Avalonia.Material3.Tokens.MaterialMotion { Springs = Avalonia.Material3.Tokens.MaterialSpringScheme.Expressive with { FastSpatial = new(1, 100) } };
+        host.Capture();
+        Assert.Equal(66, fab.Bounds.Width);
+        toolbar.IsExpanded = false;
+        await Task.Delay(60);
+        host.Capture();
+        Assert.Equal(80, fab.ContainerSize);
+        Assert.InRange(fab.Bounds.Width, 66.01, 89.99);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
+        host.Capture();
+        Assert.Equal(90, fab.Bounds.Width);
+        toolbar.IsExpanded = true;
+        host.Capture();
+        Assert.Equal(66, fab.Bounds.Width);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(Avalonia.Layout.Orientation.Horizontal)]
+    [InlineData(Avalonia.Layout.Orientation.Vertical)]
+    public void Whole_floating_toolbar_collapses_to_a_resized_disclosure_FAB_and_restores_actions(Avalonia.Layout.Orientation orientation)
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 600;
+        host.Window.Height = 600;
+        var fab = new MaterialFab { Content = "+" };
+        var toolbar = new MaterialToolbar { Orientation = orientation, FloatingAction = fab, CollapseBehavior = MaterialToolbarCollapseBehavior.WholeToolbar };
+        var action = new MaterialIconButton { Content = "★" };
+        toolbar.Items.Add(action);
+        host.Window.Content = new Grid { Children = { toolbar } };
+        host.Capture();
+        Assert.Equal(56, fab.ContainerSize);
+        action.Focus(NavigationMethod.Tab);
+        toolbar.IsExpanded = false;
+        host.Capture();
+        Assert.Equal(80, fab.ContainerSize);
+        Assert.Equal(28, fab.IconSize);
+        Assert.Equal(MaterialFabSize.Standard, fab.Size); // Host input is retained, not overwritten.
+        Assert.False(action.IsEffectivelyVisible);
+        Assert.True(fab.IsFocused);
+        var peer = ControlAutomationPeer.CreatePeerForElement(fab)!;
+        Assert.Equal(ExpandCollapseState.Collapsed, peer.GetProvider<IExpandCollapseProvider>()!.ExpandCollapseState);
+        var count = 0;
+        fab.Click += (_, _) => count++;
+        var center = fab.TranslatePoint(new Point(fab.Bounds.Width / 2, fab.Bounds.Height / 2), host.Window)!.Value;
+        host.Window.MouseDown(center, MouseButton.Left);
+        host.Window.MouseUp(center, MouseButton.Left);
+        host.Capture();
+        Assert.True(toolbar.IsExpanded);
+        Assert.Equal(0, count); // Collapsed activation is disclosure, not an accidental primary action.
+        Assert.Equal(56, fab.ContainerSize);
+        Assert.True(action.IsEffectivelyVisible);
+        peer.GetProvider<IInvokeProvider>()!.Invoke();
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        Assert.Equal(1, count);
+        toolbar.FloatingAction = null;
+        Assert.Null(peer.GetProvider<IExpandCollapseProvider>());
+    }
+
+    [AvaloniaFact]
+    public void Menu_long_labels_wrap_and_keyboard_scrolls_overflow_without_moving_the_trigger()
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 320;
+        host.Window.Height = 360;
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 };
+        var menu = new MaterialFabMenu();
+        menu.Items.Add(new MaterialFabMenuItem { Content = "Create a new shared document 新建共享文档 with a longer label", LeadingIcon = "+" });
+        for (var i = 1; i < 10; i++) menu.Items.Add(new MaterialFabMenuItem { Content = "Action " + i, LeadingIcon = "+" });
+        host.Window.Content = new Grid { Children = { menu } };
+        host.Capture();
+        var toggle = menu.GetVisualDescendants().OfType<MaterialFab>().Single();
+        var anchor = toggle.TranslatePoint(default, host.Window)!.Value;
+        menu.IsExpanded = true;
+        host.Capture();
+        Assert.True(menu.Items[0].Bounds.Height > 90);
+        Assert.True(menu.Bounds.Width <= 320 && menu.Bounds.Height <= 360);
+        Assert.Equal(anchor, toggle.TranslatePoint(default, host.Window)!.Value);
+        host.Window.KeyPressQwerty(PhysicalKey.End, RawInputModifiers.None);
+        host.Capture();
+        var last = menu.Items[^1];
+        Assert.True(last.IsFocused);
+        var center = last.TranslatePoint(new Point(last.Bounds.Width / 2, last.Bounds.Height / 2), host.Window)!.Value;
+        var hit = host.Window.InputHitTest(center) as Visual;
+        Assert.True(hit is not null && (hit == last || last.IsVisualAncestorOf(hit)));
+    }
+
+    [AvaloniaFact]
+    public async Task Bottom_menu_reveals_nearest_actions_first_and_closing_actions_are_not_invokable()
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 500;
+        host.Window.Height = 500;
+        var menu = new MaterialFabMenu();
+        for (var i = 0; i < 3; i++) menu.Items.Add(new MaterialFabMenuItem { Content = "Create " + i });
+        host.Window.Content = new Grid { Children = { menu } };
+        host.Theme.Motion = new Avalonia.Material3.Tokens.MaterialMotion
+        {
+            Springs = Avalonia.Material3.Tokens.MaterialSpringScheme.Expressive with { FastSpatial = new(1, 100), SlowEffects = new(1, 100) }
+        };
+        host.Capture();
+        menu.IsExpanded = true;
+        await Task.Delay(110);
+        host.Capture();
+        Assert.InRange(menu.Bounds.Height, 70, 230);
+        var nearest = menu.Items[^1];
+        var center = nearest.TranslatePoint(new Point(nearest.Bounds.Width / 2, nearest.Bounds.Height / 2), host.Window)!.Value;
+        Assert.True(center.Y >= menu.TranslatePoint(default, host.Window)!.Value.Y);
+        Assert.True(center.Y <= host.Window.Height);
+        var hit = host.Window.InputHitTest(center) as Visual;
+        Assert.True(hit is not null && (hit == nearest || nearest.IsVisualAncestorOf(hit)));
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
+        host.Capture();
+        var invoke = ControlAutomationPeer.CreatePeerForElement(nearest)!.GetProvider<IInvokeProvider>()!;
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = false };
+        menu.IsExpanded = false;
+        Assert.False(nearest.IsEffectivelyEnabled);
+        Assert.Throws<ElementNotEnabledException>(() => invoke.Invoke());
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
+        host.Capture();
+        Assert.False(nearest.IsEffectivelyVisible);
+    }
+
     [AvaloniaFact]
     public void Long_mixed_extended_labels_wrap_at_200_percent_in_a_narrow_host_without_shrinking_the_icon()
     {

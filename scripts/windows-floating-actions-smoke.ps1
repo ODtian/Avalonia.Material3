@@ -75,6 +75,12 @@ try {
     $toolbarExpansion = $toolbar.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern)
     $toolbarExpansion.Collapse()
     Wait-For { $toolbarExpansion.Current.ExpandCollapseState -eq [System.Windows.Automation.ExpandCollapseState]::Collapsed } 'toolbar collapse' | Out-Null
+    $toolbarFab = Wait-For { Find-Id $window 'floating-native-toolbar-fab' } 'hosted toolbar FAB'
+    $fabExpansion = $toolbarFab.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern)
+    if ($fabExpansion.Current.ExpandCollapseState -ne [System.Windows.Automation.ExpandCollapseState]::Collapsed -or $toolbarFab.Current.BoundingRectangle.Width -lt 80) { throw 'Toolbar did not collapse to its enlarged disclosure FAB.' }
+    $toolbarFab.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    Wait-For { $toolbarExpansion.Current.ExpandCollapseState -eq [System.Windows.Automation.ExpandCollapseState]::Expanded } 'hosted FAB Invoke reopens toolbar' | Out-Null
+    $fabExpansion.Collapse()
     $toolbarExpansion.Expand()
     Wait-For { $toolbarExpansion.Current.ExpandCollapseState -eq [System.Windows.Automation.ExpandCollapseState]::Expanded } 'toolbar expansion' | Out-Null
     $disable.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()

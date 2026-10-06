@@ -78,7 +78,12 @@ public sealed class FloatingActionsPage : UserControl
             anchors.Children.Add(Action(anchor.ToString(), "floating-anchor-" + anchor, () => PreviewMenu.Anchor = anchor));
         anchors.Children.Add(Action("LTR / RTL", "floating-rtl", () => PreviewMenu.FlowDirection = PreviewMenu.FlowDirection == FlowDirection.LeftToRight ? FlowDirection.RightToLeft : FlowDirection.LeftToRight));
         panel.Children.Add(anchors);
+        var triggerSizes = new WrapPanel { ItemSpacing = 8, LineSpacing = 8 };
+        foreach (var size in Enum.GetValues<MaterialFabSize>())
+            triggerSizes.Children.Add(Action("Menu " + size, "floating-menu-size-" + size, () => PreviewMenu.TriggerSize = size));
+        panel.Children.Add(triggerSizes);
         panel.Children.Add(Heading("Docked / floating × horizontal / vertical × standard / vibrant"));
+        panel.Children.Add(new TextBlock { Text = "Docked and standard floating previews collapse leading/trailing slots. Vibrant floating previews collapse the whole surface to a 56→80 DIP disclosure FAB. Activate the collapsed FAB to reopen; activation while expanded executes its primary action.", TextWrapping = TextWrapping.Wrap });
         var toolbars = new List<MaterialToolbar>();
         foreach (var variant in Enum.GetValues<MaterialToolbarVariant>())
         foreach (var orientation in Enum.GetValues<Orientation>())
@@ -94,6 +99,7 @@ public sealed class FloatingActionsPage : UserControl
             {
                 toolbar.FloatingAction = new MaterialFab { Content = "+", Command = new ResultCommand(_ => Result.Text = "Toolbar primary action completed") };
                 toolbar.FloatingActionPosition = color == MaterialToolbarColor.Standard ? MaterialToolbarFabPosition.Start : MaterialToolbarFabPosition.End;
+                toolbar.CollapseBehavior = color == MaterialToolbarColor.Standard ? MaterialToolbarCollapseBehavior.ExpansionSlots : MaterialToolbarCollapseBehavior.WholeToolbar;
                 AutomationProperties.SetName(toolbar.FloatingAction, "Toolbar create action");
             }
             toolbars.Add(toolbar);

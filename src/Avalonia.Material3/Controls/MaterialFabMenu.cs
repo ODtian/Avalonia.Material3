@@ -21,6 +21,8 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
     public static readonly DirectProperty<MaterialFabMenu, AvaloniaList<MaterialFabMenuItem>> ItemsProperty = AvaloniaProperty.RegisterDirect<MaterialFabMenu, AvaloniaList<MaterialFabMenuItem>>(nameof(Items), control => control.Items);
     public AvaloniaList<MaterialFabMenuItem> Items { get; } = new();
     public static readonly StyledProperty<MaterialActionAnchor> AnchorProperty = AvaloniaProperty.Register<MaterialFabMenu, MaterialActionAnchor>(nameof(Anchor), validate: value => Enum.IsDefined(value));
+    public static readonly StyledProperty<MaterialFabSize> TriggerSizeProperty = AvaloniaProperty.Register<MaterialFabMenu, MaterialFabSize>(nameof(TriggerSize), validate: value => Enum.IsDefined(value));
+    public MaterialFabSize TriggerSize { get => GetValue(TriggerSizeProperty); set => SetValue(TriggerSizeProperty, value); }
     public static readonly StyledProperty<object?> ToggleIconProperty = AvaloniaProperty.Register<MaterialFabMenu, object?>(nameof(ToggleIcon), "+");
     public static readonly StyledProperty<object?> CloseIconProperty = AvaloniaProperty.Register<MaterialFabMenu, object?>(nameof(CloseIcon), "×");
     public static readonly StyledProperty<IDataTemplate?> ToggleIconTemplateProperty = AvaloniaProperty.Register<MaterialFabMenu, IDataTemplate?>(nameof(ToggleIconTemplate));
