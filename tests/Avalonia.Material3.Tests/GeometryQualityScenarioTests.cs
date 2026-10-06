@@ -90,6 +90,20 @@ public class GeometryQualityScenarioTests
         picker.RangeEnd = picker.SelectedDate; host.Render();
         Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(start.Left + (rtl ? 14 : 34), start.Top + 5));
     }
+
+    [AvaloniaFact]
+    public void Side_handle_hover_and_focus_do_not_paint_a_full_width_header_bar()
+    {
+        var handle = new MaterialSheetDragHandle { Sheet = new MaterialSideSheet() };
+        using var host = new GeometryHost(handle, 256, 56);
+        var outside = host.Pixel(32, 28);
+        host.Window.MouseMove(new Point(128, 28)); host.Render();
+        Assert.Equal(outside, host.Pixel(32, 28));
+        Assert.Equal(new Size(256, 56), handle.Bounds.Size); // wider transparent gesture allocation retained
+        handle.Focus(NavigationMethod.Tab); host.Render();
+        Assert.Equal(outside, host.Pixel(32, 28));
+        Assert.NotEqual(outside, host.Pixel(128, 28)); // actual centered4×48 marker remains visible
+    }
 }
 
 internal sealed class GeometryHost : IDisposable
