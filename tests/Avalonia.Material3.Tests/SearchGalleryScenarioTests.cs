@@ -58,7 +58,7 @@ public class SearchGalleryScenarioTests
     public void Fresh_public_host_renders_all_search_forms_and_chip_purposes_with_visible_candidates(bool dark)
     {
         var panel = new StackPanel { Spacing = 8 };
-        using var host = new SearchScenarioHost(panel, 800, 1200);
+        using var host = new SearchScenarioHost(panel, 800, 1500);
         host.Window.RequestedThemeVariant = dark ? Avalonia.Styling.ThemeVariant.Dark : Avalonia.Styling.ThemeVariant.Light;
         var searches = new List<MaterialSearch>();
         foreach (var mode in Enum.GetValues<MaterialSearchMode>())
@@ -69,7 +69,7 @@ public class SearchGalleryScenarioTests
             panel.Children.Add(search);
         }
         panel.Children.Add(new TextBlock { Text = "Full-screen view / 全屏搜索" });
-        var full = new MaterialSearch { Mode = MaterialSearchMode.View, ViewPresentation = MaterialSearchViewPresentation.FullScreen, Height = 180, Candidates = new[] { new MaterialSearchToken("a", "Atlas / 图集") } };
+        var full = new MaterialSearch { Mode = MaterialSearchMode.View, ViewPresentation = MaterialSearchViewPresentation.FullScreen, Height = 240, Candidates = new[] { new MaterialSearchToken("a", "Atlas / 图集") } };
         panel.Children.Add(full);
         foreach (var variant in Enum.GetValues<MaterialChipVariant>())
         {

@@ -38,7 +38,12 @@ public sealed class SearchChipsPage : StackPanel
         AddHeading("Search and editable query chips / 搜索与词条", true);
         AddText("Native selection, undo and IME remain in the editor. Choosing, adding, selecting or removing tokens is NOT a search request.");
         var controls = new WrapPanel { Orientation = Orientation.Horizontal };
-        foreach (var button in new[] { ThemeButton, FontButton, ErrorButton, EnabledButton, ModeButton }) controls.Children.Add(button);
+        foreach (var button in new[] { ThemeButton, FontButton, ErrorButton, EnabledButton, ModeButton })
+        {
+            button.MaxWidth = 260;
+            button.ContentTemplate = new FuncDataTemplate<object>((content, _) => new TextBlock { Text = content?.ToString(), TextWrapping = TextWrapping.Wrap });
+            controls.Children.Add(button);
+        }
         Children.Add(controls);
         Id(ThemeButton, "ThemeButton"); Id(FontButton, "FontButton"); Id(ErrorButton, "ErrorButton"); Id(EnabledButton, "EnabledButton"); Id(ModeButton, "ModeButton");
         ThemeButton.Click += (_, _) =>
@@ -62,7 +67,7 @@ public sealed class SearchChipsPage : StackPanel
             if (args.Property == MaterialSearch.TextProperty)
                 QuerySearch.Candidates = string.IsNullOrWhiteSpace(QuerySearch.Text) ? Catalog : Catalog.Where(token => token.Label.Contains(QuerySearch.Text, StringComparison.OrdinalIgnoreCase)).ToArray();
         };
-        QuerySearch.GotFocus += (_, _) => QuerySearch.Editor?.BringIntoView();
+        QuerySearch.GotFocus += (_, args) => { if (ReferenceEquals(args.Source, QuerySearch.Editor)) QuerySearch.BringIntoView(); };
         QuerySearch.QuerySubmitted += (_, args) =>
         {
             LastQuery = args;
