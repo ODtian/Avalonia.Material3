@@ -10,6 +10,8 @@
     <Compile Include="../../samples/Gallery/Pages/AppChromePage.cs" Link="AppChromePage.cs" />
     <Compile Include="../../samples/Gallery/Pages/SelectionFormPage.cs" Link="SelectionFormPage.cs" />
     <Compile Include="../../samples/Gallery/Pages/ProgressFeedbackPage.cs" Link="ProgressFeedbackPage.cs" />
+    <Compile Include="../../samples/Gallery/Pages/SearchChipsPage.cs" Link="SearchChipsPage.cs" />
+    <Compile Include="../../samples/Gallery/Pages/CarouselRefreshPage.cs" Link="CarouselRefreshPage.cs" />
     <Compile Include="../../samples/Gallery/Pages/DialogsPage.cs" Link="DialogsPage.cs" />
     <EmbeddedResource Include="../ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
     <EmbeddedResource Include="../ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />

@@ -43,8 +43,8 @@
 | Radio buttons | 已实现：20 DIP、48 触达、互斥/方向键/禁用/宿主错误扩展；headless + Windows UIA；人工读屏未验收 | [M3-06 #5][i5] | [Radio buttons][radio]、RadioButtonTokens v0_117；[M3-06](verification/m3-06.md) |
 | Switch | 已实现：52×32 track、16/24/28 handle、48 触达、图标/拖动/禁用/宿主错误扩展；headless + Windows UIA；物理触摸/人工读屏未验收 | [M3-06 #5][i5] | [Switch][switch]、SwitchTokens v0_210；[M3-06](verification/m3-06.md) |
 | Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 已实现并通过真实编辑、包隔离与 Windows UIA 场景；实际读屏、平台中文 IME 候选会话待核验 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens；[公开契约](components/m3-07.md)、[证据与限制](verification/m3-07.md) |
-| Search：search bar、search view、建议/autocomplete | 待交付 | [M3-08 #11][i11] | [Search][search]、SearchBar/SearchView、Filled/OutlinedAutocompleteTokens |
-| Chips：assist、filter、input、suggestion | 待交付 | [M3-08 #11][i11] | [Chips][chips]、Assist/Filter/Input/SuggestionChipTokens |
+| Search：search bar、search view、建议/autocomplete | 已实现：bar、docked/full-screen view、filled/outlined autocomplete、原生编辑/公开候选与校验/词条编辑/显式意图；source + 新包展厅 + Windows UIA/键鼠；inline dropdown/宿主全屏布局是明确投影，人工读屏/平台中文候选/移动端未验 | [M3-08 #11][i11] | [Search][search]、SearchBar/SearchView、Filled/OutlinedAutocompleteTokens；[契约](components/m3-08.md)、[证据与边界](verification/m3-08.md) |
+| Chips：assist、filter、input、suggestion | 已实现：四用途、flat/elevated、选择、独立删除、avatar/图标、32 visual/48 target、全量 live LabelLarge 与状态；长混排/200%/键盘/Toggle/Invoke 与新包验证；人工读屏/物理触摸未验 | [M3-08 #11][i11] | [Chips][chips]、Assist/Filter/Input/SuggestionChipTokens 7_0_1；[契约](components/m3-08.md)、[证据](verification/m3-08.md) |
 | Cards：elevated、filled、outlined、交互 | 已交付：三变体、独立插槽/操作、选择与拖动态；真实平台及穷尽视觉一致性未验 | [M3-09 #7][i7] | [Cards][cards]、Elevated/Filled/OutlinedCardTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
 | Lists：一/二/三行、leading/trailing、expanded、reorder、reveal | 已交付：最小行高/变量高度、完整插槽、真实展开/排序/行动底层 reveal；手势适配契约与证据分别记录 | [M3-09 #7][i7] | [Lists][lists]、List/ExpandedList/ReorderList/RevealListTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
 | Badges：点、计数 | 已交付：点/计数/上限/零值、完整计数自动化语义及字体尺度 | [M3-09 #7][i7] | [Badges][badges]、BadgeTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
@@ -66,8 +66,8 @@
 | Navigation drawer：standard、modal | 已实现持久/可关闭标准布局占位与模态 Overlay、选择/焦点/否决/返回/拖动/RTL/生命周期；人工读屏与移动平台不认领 | [M3-16 #17][i17] | [Navigation drawer][navigation-drawer]、NavigationDrawerTokens；[契约](components/m3-16.md)、[证据](verification/m3-16.md) |
 | Date pickers：modal、docked、单日/范围、date input | 待交付 | [M3-17 #18][i18] | [Date pickers][date-pickers]、DatePickerModal/DateInputModalTokens |
 | Time pickers：钟面、键盘输入、12/24 小时 | 待交付 | [M3-17 #18][i18] | [Time pickers][time-pickers]、TimePicker/TimeInputTokens |
-| Carousel：multi-browse、uncontained、hero、full-screen | 待交付 | [M3-18 #19][i19] | [Carousel][carousel] |
-| Pull-to-refresh：手势、指示器、内容更新 | 待交付 | [M3-18 #19][i19] | [Expressive Compose][expressive] |
+| Carousel：multi-browse、uncontained、hero、full-screen | 已实现四种实际图片布局/掩膜、触摸/鼠标/键盘、宿主项目/位置/加载错误恢复、窗口连续性、Scroll 自动化、新包展厅；布局/惯性/动效明确为 Avalonia 投影，非上游算法等价 | [M3-18 #19][i19] | [Carousel][carousel]、锁定 Carousel.kt；[公开契约](components/m3-18.md)、[证据与限制](verification/m3-18.md) |
+| Pull-to-refresh：手势、指示器、内容更新 | 已实现真实阈值/抵抗/释放/取消/忙态手势，standard/Expressive 反馈、宿主结果与错误恢复、F5/Invoke；读屏人工/移动硬件与 Compose nested-scroll/物理等价未认领 | [M3-18 #19][i19] | 锁定 PullToRefresh.kt；[公开契约](components/m3-18.md)、[验证](verification/m3-18.md) |
 | 完整展厅、包文档、宿主矩阵、API/版本兼容、AOT/裁剪及发布 | 初始展厅与本地包已交付；完整验收待交付 | [M3-19 #20][i20] | [验证记录](verification/m3-01.md)、[消费契约](public-contract.md) |
 
 [components]: https://m3.material.io/components
