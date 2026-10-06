@@ -15,6 +15,32 @@ namespace Avalonia.Material3.Tests;
 public class SheetScenarioTests
 {
     [AvaloniaFact]
+    public void Ordinary_padding_and_content_alignment_are_consumable_without_replacing_the_template()
+    {
+        using var host = new SheetTestHost();
+        var content = new Border();
+        var sheet = new MaterialBottomSheet { ExpandedExtent = 600, Content = content, Padding = new Thickness(20) };
+        sheet.Show(host.Overlay); host.Render();
+        Assert.Equal(568, content.Bounds.Width);
+        Assert.Equal(new Thickness(20), sheet.Padding);
+    }
+
+    [AvaloniaFact]
+    public void Nondismissible_standard_side_does_not_invent_a_partial_drag_boundary()
+    {
+        using var host = new SheetTestHost();
+        var sheet = new MaterialSideSheet { AllowDismiss = false };
+        host.Overlay.Content = new MaterialSheetHost { Content = new Border(), Sheet = sheet };
+        sheet.Expand(); host.Render();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var start = host.Center(handle);
+        host.Window.MouseDown(start, MouseButton.Left); host.Window.MouseMove(start + new Vector(150, 0)); host.Render();
+        Assert.Equal(256, sheet.VisibleExtent);
+        host.Window.MouseUp(start + new Vector(150, 0), MouseButton.Left); host.Render();
+        Assert.Equal(MaterialSheetState.Expanded, sheet.State);
+    }
+
+    [AvaloniaFact]
     public void Host_replacement_template_uses_the_public_layout_adapter_and_preserves_live_reservation()
     {
         using var host = new SheetTestHost();
@@ -402,11 +428,12 @@ public class SheetScenarioTests
     }
 
     [AvaloniaTheory]
-    [InlineData(600, 400, 200)]
-    [InlineData(300, 500, 500)]
-    public void Modal_detents_use_the_pinned_deterministic_partial_anchor_and_back_returns_focus(double contentHeight, double partialOffset, double expandedOffset)
+    [InlineData(600, 400, 200, 800)]
+    [InlineData(300, 500, 500, 800)]
+    [InlineData(600, 200, 0, 400)]
+    public void Modal_detents_use_the_pinned_deterministic_partial_anchor_and_back_returns_focus(double contentHeight, double partialOffset, double expandedOffset, int hostHeight)
     {
-        using var host = new SheetTestHost(); host.Entry.Focus();
+        using var host = new SheetTestHost(height: hostHeight); host.Entry.Focus();
         var sheet = new MaterialBottomSheet { ExpandedExtent = contentHeight, Content = "Modal information" };
         var session = sheet.Show(host.Overlay); host.Render();
         Assert.Equal(partialOffset, sheet.Offset);

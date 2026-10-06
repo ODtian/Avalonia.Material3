@@ -56,8 +56,8 @@
 | Menus：标准、vibrant、segmented、子菜单、锚定/上下文 | 待交付 | [M3-13 #15][i15] | [Menus][menus]、Menu/StandardMenu/VibrantMenu/SegmentedMenuTokens |
 | Tooltips：plain、rich | 待交付 | [M3-13 #15][i15] | [Tooltips][tooltips]、Plain/RichTooltipTokens |
 | Snackbar：消息、行动、消失 | 待交付 | [M3-13 #15][i15] | [Snackbar][snackbar]、SnackbarTokens |
-| Bottom sheets：standard、modal、drag handle | 待交付 | [M3-14 #16][i16] | [Bottom sheets][bottom-sheets]、SheetBottom/DragHandle/ScrimTokens |
-| Side sheets：standard、modal | 待交付 | [M3-14 #16][i16] | [Side sheets][side-sheets] |
+| Bottom sheets：standard、modal、drag handle | 已交付：真实 peek/可见常驻布局、确定性 partial/expanded/hidden detents、有限边界、拖动/子滚动分配、取消/焦点/返回/弹簧与减少动效、公开模板/包展厅及 Windows UIA；物理触摸/人工读屏/跨平台/AOT 与上游帧像素等价未认领 | [M3-14 #16][i16] | [Bottom sheets][bottom-sheets]、锁定 SheetBottom/DragHandle/ScrimTokens 与新 BottomSheet 锚点路径；[契约](components/m3-14.md)、[证据及投影限制](verification/m3-14.md) |
+| Side sheets：standard、modal | 已交付：256 DIP、真实 coplanar 布局、逻辑边缘/RTL、detached 16 间距、水平 handle 与原生垂直内容滚动、Expanded/Hidden、模态返回/焦点、包及原生输入/自动化；平台限制见证据 | [M3-14 #16][i16] | [Side sheets][side-sheets]；Compose 无该令牌，使用锁定 Material Components Android side tokens v34.0.0；[契约](components/m3-14.md)、[证据](verification/m3-14.md) |
 | Navigation bar：水平/垂直 item、选中、徽标 | 已实现：两种 item 布局、实际内容、徽标/事件/绑定、输入与选择自动化；验收证据和平台限制见组件记录 | [M3-15 #14][i14] | [Navigation bar][navigation-bar]、NavigationBar*Tokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
 | Navigation rail：collapsed、expanded、水平/垂直 item | 已实现：非 modal rail 四组合、96/80 和 220..360 DIP、实际内容及 resize 保留焦点/选择；不认领人工读屏/其他平台 | [M3-15 #14][i14] | [Navigation rail][navigation-rail]、NavigationRail*Tokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
 | Tabs：primary、secondary、固定/滚动 | 已实现：四组合、真实页面/插槽、单 Tab stop/方向键/滚动、主题与字体混排；投影边界与 package/Windows 记录见证据 | [M3-15 #14][i14] | [Tabs][tabs]、Primary/SecondaryNavigationTabTokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |

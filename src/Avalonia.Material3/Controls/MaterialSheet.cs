@@ -234,6 +234,7 @@ public abstract class MaterialSheet : ContentControl
         if (change.Property == ExpandedExtentProperty || change.Property == PeekExtentProperty || change.Property == IsPartialEnabledProperty ||
             change.Property == MinimumExtentProperty || change.Property == MaximumExtentProperty || change.Property == AvailableSizeProperty)
         {
+            if (change.Property == IsPartialEnabledProperty) { CancelDrag(); StopMotion(); }
             if (!IsPartialEnabled && State == MaterialSheetState.PartiallyExpanded) SetState(MaterialSheetState.Expanded);
             InvalidateMeasure();
         }
@@ -242,6 +243,7 @@ public abstract class MaterialSheet : ContentControl
             CancelDrag(); StopMotion(); UpdatePseudoClasses(); InvalidateMeasure();
         }
         if (change.Property == IsDraggableProperty || change.Property == IsEnabledProperty) { if (!IsDraggable || !IsEffectivelyEnabled) CancelDrag(); }
+        if (change.Property == AllowDismissProperty) CancelDrag();
         if (change.Property.Name == nameof(IsEffectivelyEnabled) && !IsEffectivelyEnabled) CancelDrag();
         if (change.Property == ContentProperty || change.Property == ScrollSourceProperty) CancelDrag();
         if (change.Property == SpatialSpringProperty && SpatialSpring.IsInstant) { StopMotion(); InvalidateMeasure(); }
@@ -281,6 +283,7 @@ public abstract class MaterialSheet : ContentControl
         if (handle) e.Handled = true;
     }
     private double Axis(Vector delta) => IsSide ? delta.X * (IsPhysicalLeft ? -1 : 1) : delta.Y;
+    private double MinimumDragExtent => IsModal || AllowDismiss ? 0 : IsSide ? _expanded : _partial;
     private void HandlePointerMoved(object? sender, PointerEventArgs e)
     {
         if (_pointer != e.Pointer || !IsDraggable) return;
@@ -307,13 +310,13 @@ public abstract class MaterialSheet : ContentControl
                 scroll.Offset = new Vector(scroll.Offset.X, scroll.Offset.Y - consumed);
                 delta -= consumed;
             }
-            var next = Math.Clamp(_dragExtent - delta, IsModal || AllowDismiss ? 0 : _partial, _expanded);
+            var next = Math.Clamp(_dragExtent - delta, MinimumDragExtent, _expanded);
             var leftover = delta - (_dragExtent - next);
             _dragExtent = next;
             if (leftover < 0)
                 scroll.Offset = new Vector(scroll.Offset.X, Math.Min(Math.Max(0, scroll.Extent.Height - scroll.Viewport.Height), scroll.Offset.Y - leftover));
         }
-        else _dragExtent = Math.Clamp(_dragExtent - delta, IsModal || AllowDismiss ? 0 : _partial, _expanded);
+        else _dragExtent = Math.Clamp(_dragExtent - delta, MinimumDragExtent, _expanded);
         var sheetDelta = previousExtent - _dragExtent;
         _sheetTravel += sheetDelta;
         _velocity = e.Timestamp > _lastTimestamp ? sheetDelta * 1000 / (e.Timestamp - _lastTimestamp) : 0;

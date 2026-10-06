@@ -32,6 +32,15 @@ function Has-Result([string]$reason) {
     return $result -and $result.Current.ItemStatus -eq $reason
 }
 function Focus-Name { try { [System.Windows.Automation.AutomationElement]::FocusedElement.Current.Name } catch { $null } }
+function Focus-InSheet($sheet) {
+    $current = [System.Windows.Automation.AutomationElement]::FocusedElement
+    $walker = [System.Windows.Automation.TreeWalker]::ControlViewWalker
+    for ($depth = 0; $current -and $depth -lt 64; $depth++) {
+        if ([System.Windows.Automation.AutomationElement]::Compare($current, $sheet)) { return $true }
+        $current = $walker.GetParent($current)
+    }
+    return $false
+}
 function Keys([string]$text) { [System.Windows.Forms.SendKeys]::SendWait($text); Start-Sleep -Milliseconds 150 }
 function Mouse-Drag($control, [double]$dx, [double]$dy) {
     $rect = $control.Current.BoundingRectangle
@@ -95,7 +104,7 @@ try {
     $handle.SetFocus()
     for ($i = 0; $i -lt 12; $i++) {
         Keys '{TAB}'
-        if ((Focus-Name) -eq 'Open modal bottom' -or (Focus-Name) -eq 'Underlying host editor') { throw 'Tab escaped the modal sheet.' }
+        if (-not (Focus-InSheet $sheet)) { throw "Native Tab focus escaped the sheet: $(Focus-Name)" }
     }
     Save-Window $window 'm3-14-desktop-modal-bottom-edit.png'
     Invoke-Control (Find-Name $sheet 'Nested dialog')

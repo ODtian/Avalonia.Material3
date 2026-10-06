@@ -27,9 +27,13 @@
     <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
     <Setter Property="ClipToBounds" Value="True" />
     <Setter Property="MaxWidth" Value="640" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Top" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border x:Name="SheetSurface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BoxShadow="{DynamicResource M3.Elevation.Shadow1}">
+        <Border x:Name="SheetSurface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
+                Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                BoxShadow="{DynamicResource M3.Elevation.Shadow1}">
           <ScrollViewer x:Name="SheetShell" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
             <Grid x:Name="SheetLayout" RowDefinitions="Auto,Auto,*,Auto">
               <controls:MaterialSheetDragHandle Sheet="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
@@ -43,7 +47,8 @@
               </StackPanel>
               <ScrollViewer x:Name="PART_BodyScroll" Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                 <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="16,0,16,16"
-                                  HorizontalContentAlignment="Stretch" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" />
+                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" />
               </ScrollViewer>
               <ContentPresenter x:Name="SheetActions" Grid.Row="3" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}" Margin="16,0,16,8" />
             </Grid>
