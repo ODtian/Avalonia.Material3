@@ -15,6 +15,9 @@
     <ProjectReference Include="../../samples/TextFieldHost/TextFieldHost.csproj" />
     <ProjectReference Include="../../samples/StandaloneHost/StandaloneHost.csproj" />
     <Compile Include="../Avalonia.Material3.Tests/TextFieldScenarioTests.cs" Link="TextFieldScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/SearchChipScenarioTests.cs" Link="SearchChipScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/SearchGalleryScenarioTests.cs" Link="SearchGalleryScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/SearchAdaptationScenarioTests.cs" Link="SearchAdaptationScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ButtonScenarioTests.cs" Link="ButtonScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ButtonHost.cs" Link="ButtonHost.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ContractScenarioTests.cs" Link="ContractScenarioTests.cs" />
