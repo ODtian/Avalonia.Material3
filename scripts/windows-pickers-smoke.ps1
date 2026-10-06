@@ -60,6 +60,7 @@ try {
     if ($start.Current.ControlType -ne [System.Windows.Automation.ControlType]::Edit) { throw 'Date editor is not native Edit.' }
     Edit $start '02/29/2023'
     if ((Find-Name $window 'OK').Current.IsEnabled) { throw 'Invalid leap date allowed confirmation.' }
+    if ($start.Current.HelpText -notmatch 'valid date') { throw 'Native date error was not exposed as HelpText.' }
     $start.SetFocus(); Keys '^a'; Keys '02/28/2024'; Keys '{ENTER}'
     Wait-For { (Value $start) -eq '02/28/2024' } 'native typing/preedit commit' | Out-Null
     if (-not (Find-Name $window 'OK')) { throw 'Editor Enter submitted the form.' }
@@ -78,6 +79,10 @@ try {
     if ((Find-Name $window 'OK').Current.IsEnabled) { throw 'Reversed range allowed confirmation.' }
     Edit $end '03/02/2024'; Invoke-Action (Find-Name $window 'OK')
     Wait-For { (Find-Id $window 'PickerResult').Current.Name -eq 'Confirmed range: 2024-02-29..2024-03-02' } 'range result' | Out-Null
+    Invoke-Action (Find-Id $window 'DateSingleEntry')
+    Mouse-Click (Wait-For { Find-Name $window 'Enter date' } 'visible calendar/input mode action')
+    Wait-For { Find-Id $window 'DateStartInput' } 'mode switch native editor' | Out-Null
+    Invoke-Action (Find-Name $window 'Cancel')
     Invoke-Action (Find-Id $window 'Clock24Entry')
     Toggle-Action (Wait-For { Find-Name $window '23 Hour' } 'inner 24h hour action')
     $zero = Wait-For { Find-Name $window '0 Minute' } 'minute dial'
@@ -85,10 +90,15 @@ try {
     Save-Window 'm3-17-desktop-clock24.png'
     Invoke-Action (Find-Name $window 'OK')
     Wait-For { (Find-Id $window 'PickerResult').Current.Name -eq 'Confirmed time: 23:59' } 'clock native keyboard result' | Out-Null
+    Invoke-Action (Find-Id $window 'Clock12Entry')
+    Toggle-Action (Wait-For { Find-Name $window '12 Hour' } '12h analog action')
+    Toggle-Action (Find-Name $window 'AM'); Invoke-Action (Find-Name $window 'OK')
+    Wait-For { (Find-Id $window 'PickerResult').Current.Name -eq 'Confirmed time: 00:59' } '12h clock period result' | Out-Null
     Invoke-Action (Find-Id $window 'Time24Entry')
     $hour = Wait-For { Find-Id $window 'TimeHourInput' } 'native time hour'
     Edit $hour '99'
     if ((Find-Name $window 'OK').Current.IsEnabled) { throw 'Invalid hour allowed confirmation.' }
+    if ($hour.Current.HelpText -notmatch 'valid hour') { throw 'Native hour error was not exposed as HelpText.' }
     $hour.SetFocus(); Keys '^a'; Keys '23'; Keys '{ENTER}'
     $minute = Find-Id $window 'TimeMinuteInput'; $minute.SetFocus(); Keys '^a'; Keys '59'; Keys '{ENTER}'
     Wait-For { (Value $minute) -eq '59' } 'native minute commit' | Out-Null

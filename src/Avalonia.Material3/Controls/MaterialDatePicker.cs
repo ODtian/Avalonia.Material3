@@ -63,10 +63,11 @@ public class MaterialDatePicker : TemplatedControl
     private readonly TextBlock _title = MaterialPickerSupport.Text("LabelLarge", "OnSurfaceVariant");
     private readonly TextBlock _headline = MaterialPickerSupport.Text("HeadlineLarge", "OnSurfaceVariant");
     private readonly TextBlock _error = MaterialPickerSupport.Text("BodySmall", "Error");
+    private readonly Grid _header;
     private readonly MaterialIconButton _mode;
-    private readonly PathIcon _keyboardIcon = new() { Width = 24, Height = 24,
+    private readonly Avalonia.Controls.Shapes.Path _keyboardIcon = new() { Width = 24, Height = 24, Stretch = Media.Stretch.Uniform,
         Data = Media.Geometry.Parse("M2,4 L22,4 L22,20 L2,20 Z M4,6 L4,18 L20,18 L20,6 Z M6,8 L8,8 L8,10 L6,10 Z M10,8 L12,8 L12,10 L10,10 Z M14,8 L16,8 L16,10 L14,10 Z M6,12 L8,12 L8,14 L6,14 Z M10,12 L12,12 L12,14 L10,14 Z M14,12 L18,12 L18,14 L14,14 Z") };
-    private readonly PathIcon _calendarIcon = new() { Width = 24, Height = 24,
+    private readonly Avalonia.Controls.Shapes.Path _calendarIcon = new() { Width = 24, Height = 24, Stretch = Media.Stretch.Uniform,
         Data = Media.Geometry.Parse("M3,4 L6,4 L6,2 L8,2 L8,4 L16,4 L16,2 L18,2 L18,4 L21,4 L21,22 L3,22 Z M5,10 L5,20 L19,20 L19,10 Z M7,12 L11,12 L11,16 L7,16 Z") };
     private readonly StackPanel _inputs;
     private readonly StackPanel _calendar = new() { Spacing = 4, Margin = new Thickness(12, 0, 12, 12) };
@@ -108,6 +109,8 @@ public class MaterialDatePicker : TemplatedControl
     public MaterialDatePicker()
     {
         _mode = new MaterialIconButton();
+        MaterialPickerSupport.Resource(_keyboardIcon, Avalonia.Controls.Shapes.Shape.FillProperty, "OnSurfaceVariantBrush");
+        MaterialPickerSupport.Resource(_calendarIcon, Avalonia.Controls.Shapes.Shape.FillProperty, "OnSurfaceVariantBrush");
         _mode.Click += (_, _) => SetCurrentValue(ModeProperty,
             Mode == MaterialDatePickerMode.Calendar ? MaterialDatePickerMode.Input : MaterialDatePickerMode.Calendar);
         _inputs = new StackPanel { Spacing = 16, Margin = new Thickness(24, 10, 24, 24), Children = { StartInput, EndInput } };
@@ -122,14 +125,14 @@ public class MaterialDatePicker : TemplatedControl
             VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, Content = new StackPanel { Children = { _week, _days } } };
         _calendar.Children.Add(navigation); _calendar.Children.Add(_calendarScroll);
         _calendar.Children.Add(new ScrollViewer { Content = _years, MaxHeight = 288, IsVisible = false });
-        var header = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto"), ColumnDefinitions = new ColumnDefinitions("*,Auto"),
+        _header = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto"), ColumnDefinitions = new ColumnDefinitions("*,Auto"),
             Margin = new Thickness(24, 16, 12, 12), MinHeight = 92 };
         Grid.SetColumnSpan(_title, 2); Grid.SetRow(_headline, 1); Grid.SetRow(_mode, 1); Grid.SetColumn(_mode, 1);
         _headline.Margin = new Thickness(0, 8, 8, 0);
-        header.Children.Add(_title); header.Children.Add(_headline); header.Children.Add(_mode);
+        _header.Children.Add(_title); _header.Children.Add(_headline); _header.Children.Add(_mode);
         Surface = new StackPanel { Spacing = 8, Children =
         {
-            header, _calendar, _inputs, _error
+            _header, _calendar, _inputs, _error
         }};
         _error.Margin = new Thickness(24, 0, 24, 12);
         AutomationProperties.SetLiveSetting(_error, AutomationLiveSetting.Polite);
@@ -169,6 +172,7 @@ public class MaterialDatePicker : TemplatedControl
     {
         if (!_ready) return;
         _title.Text = Labels.Title;
+        _header.MinHeight = SelectionMode == MaterialDateSelectionMode.Range ? 100 : 92;
         _headline.Text = SelectedDate?.ToString(DisplayFormat, DateCulture) ?? Labels.Title;
         if (SelectionMode == MaterialDateSelectionMode.Range)
             _headline.Text += " – " + (RangeEnd?.ToString(DisplayFormat, DateCulture) ?? Labels.EndDate);

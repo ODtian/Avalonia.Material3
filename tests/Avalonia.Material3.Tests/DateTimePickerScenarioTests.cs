@@ -18,6 +18,45 @@ namespace Avalonia.Material3.Tests;
 public class DateTimePickerScenarioTests
 {
     [AvaloniaFact]
+    public void Calendar_mode_action_is_a_visible_touch_target_and_switches_to_native_editor_focus()
+    {
+        using var host = new DialogHost();
+        var picker = new MaterialDatePicker { SelectedDate = new(2024, 2, 29), DisplayMonth = new(2024, 2, 1) };
+        var session = picker.Show(host.Overlay); host.Render();
+        var action = picker.GetVisualDescendants().OfType<MaterialIconButton>().Single(b => ControlAutomationPeer.CreatePeerForElement(b).GetName() == "Enter date");
+        action.BringIntoView(); host.Render();
+        Assert.True(action.IsEffectivelyVisible);
+        Assert.True(action.Bounds.Width >= 48); Assert.True(action.Bounds.Height >= 48);
+        var icon = Assert.IsAssignableFrom<Control>(action.Content);
+        Assert.True(icon.Bounds.Width >= 20); Assert.True(icon.Bounds.Height >= 20);
+        var brush = icon is Avalonia.Controls.Shapes.Shape shape ? shape.Fill : ((PathIcon)icon).Foreground;
+        Assert.NotNull(brush);
+        Assert.Equal(Color.Parse("#49454F"), ((ISolidColorBrush)brush).Color);
+        using (var frame = host.Window.CaptureRenderedFrame())
+        using (var pixels = new MemoryStream())
+        {
+            frame!.Save(pixels, Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+            pixels.Position = 0;
+            using var bitmap = SkiaSharp.SKBitmap.Decode(pixels);
+            var top = icon.TranslatePoint(default, host.Window)!.Value;
+            var ink = 0;
+            for (var y = (int)top.Y; y < top.Y + icon.Bounds.Height; y++)
+                for (var x = (int)top.X; x < top.X + icon.Bounds.Width; x++)
+                {
+                    var color = bitmap.GetPixel(x, y);
+                    if (color.Red == 0x49 && color.Green == 0x45 && color.Blue == 0x4f) ink++;
+                }
+            Assert.True(ink > 10, "The mode action needs actual rendered semantic icon ink, not just a named empty target.");
+        }
+        var point = host.Center(action);
+        using var touch = host.Window.TouchBegin(point); host.Render(); host.Window.TouchEnd(touch, point); host.Render();
+        Assert.Equal(MaterialDatePickerMode.Input, picker.Mode);
+        Assert.True(picker.StartInput.IsFocused);
+        Assert.Equal(new DateOnly(2024, 2, 29), picker.SelectedDate);
+        Assert.True(session.IsOpen);
+    }
+
+    [AvaloniaFact]
     public void Public_template_surface_keeps_native_editing_and_live_semantic_theme_and_type_metrics()
     {
         using var host = new DialogHost();
