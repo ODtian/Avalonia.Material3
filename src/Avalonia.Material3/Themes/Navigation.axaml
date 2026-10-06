@@ -36,10 +36,13 @@
     <Setter Property="Template"><ControlTemplate>
       <Grid Background="Transparent">
         <Grid x:Name="Group" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" VerticalAlignment="Center">
-          <Border x:Name="Indicator" Grid.ColumnSpan="2" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Width="56" MinHeight="32" HorizontalAlignment="Center">
-            <Border x:Name="StateLayer" Background="{DynamicResource M3.OnSecondaryContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Opacity="0" IsHitTestVisible="False">
-              <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-            </Border>
+          <Border x:Name="Indicator" Grid.ColumnSpan="2" Background="Transparent" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Width="56" MinHeight="32" HorizontalAlignment="Center">
+            <Grid>
+              <controls:MaterialNavigationSelectionPresenter IsSelected="{TemplateBinding IsSelected}" Brush="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" />
+              <Border x:Name="StateLayer" Background="{DynamicResource M3.OnSecondaryContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Opacity="0" IsHitTestVisible="False">
+                <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
+              </Border>
+            </Grid>
           </Border>
           <controls:MaterialNavigationIconPanel x:Name="IconFrame" Grid.ColumnSpan="2" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Viewbox x:Name="Icon" Width="24" Height="24">
@@ -51,7 +54,8 @@
           <ContentPresenter x:Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="2" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="4,4,4,0"
                             LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
         </Grid>
-        <Border x:Name="TabIndicator" Height="3" CornerRadius="3,3,0,0" Background="{DynamicResource M3.PrimaryBrush}" Width="{Binding Bounds.Width, ElementName=PART_ContentPresenter}" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="False" IsHitTestVisible="False" />
+        <controls:MaterialNavigationSelectionPresenter x:Name="TabIndicator" Height="3" CornerRadius="3,3,0,0" Brush="{DynamicResource M3.PrimaryBrush}"
+             IsSelected="{TemplateBinding IsSelected}" Width="{Binding Bounds.Width, ElementName=PART_ContentPresenter}" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="False" />
         <Border x:Name="FocusRing" Margin="2" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3" CornerRadius="{DynamicResource M3.Shape.CornerSmall}" IsVisible="False" IsHitTestVisible="False" />
       </Grid>
     </ControlTemplate></Setter>
@@ -91,8 +95,8 @@
     <Style Selector="^:secondary:selected /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:tabs:pointerover:not(:selected), ^:tabs:focus-visible:not(:selected), ^:tabs:pressed:not(:selected)"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:tabs:pointerover:not(:selected) /template/ Viewbox#Icon ContentPresenter, ^:tabs:focus-visible:not(:selected) /template/ Viewbox#Icon ContentPresenter, ^:tabs:pressed:not(:selected) /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:tabs:selected /template/ Border#TabIndicator"><Setter Property="IsVisible" Value="True" /></Style>
-    <Style Selector="^:secondary /template/ Border#TabIndicator"><Setter Property="Width" Value="NaN" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Height" Value="2" /><Setter Property="CornerRadius" Value="0" /></Style>
+    <Style Selector="^:tabs /template/ controls|MaterialNavigationSelectionPresenter#TabIndicator"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:secondary /template/ controls|MaterialNavigationSelectionPresenter#TabIndicator"><Setter Property="Width" Value="NaN" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Height" Value="2" /><Setter Property="CornerRadius" Value="0" /></Style>
     <Style Selector="^:pointerover /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:focus-visible /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>

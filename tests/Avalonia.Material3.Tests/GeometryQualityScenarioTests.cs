@@ -204,6 +204,36 @@ public class GeometryQualityScenarioTests
         Assert.True(countBox.Top >= itemBox.Top && countBox.Right <= itemBox.Right);
         Assert.Equal(12, countBox.Left - anchor.Left);
     }
+
+    [AvaloniaFact]
+    public async Task Navigation_selection_commits_immediately_but_paints_intermediate_indicator_frames_in_a_fixed_header()
+    {
+        var first = new MaterialNavigationItem { Content = "First", PageContent = new TextBlock { Text = "First page" } };
+        var second = new MaterialNavigationItem { Content = "Second", PageContent = new TextBlock { Text = "Second page" } };
+        var tabs = new MaterialTabs { Items = { first, second } };
+        using var host = new GeometryHost(tabs, 320, 200);
+        host.Theme.Motion = new MaterialMotion { StateLayerDuration = TimeSpan.FromMilliseconds(400) };
+        host.Render();
+        var header = GeometryHost.Box(second, host.Window);
+        tabs.SelectedIndex = 1;
+        Assert.Same(second.PageContent, tabs.SelectedContent);
+        Assert.True(second.IsSelected);
+        var immediate = host.Pixel(header.Center.X, header.Bottom - 1);
+        Assert.NotEqual(Color.Parse("#6750A4"), immediate);
+        var intermediate = false;
+        for (var i = 0; i < 35; i++)
+        {
+            await Task.Delay(16); host.Render();
+            Assert.Equal(header, GeometryHost.Box(second, host.Window));
+            var color = host.Pixel(header.Center.X, header.Bottom - 1);
+            if (color != Color.Parse("#6750A4") && color != Color.Parse("#FEF7FF")) intermediate = true;
+        }
+        Assert.True(intermediate, "Selection must render intermediate underline alpha/width, not just final semantic state.");
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(header.Center.X, header.Bottom - 1));
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true };
+        tabs.SelectedIndex = 0; host.Render();
+        Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(header.Center.X, header.Bottom - 1));
+    }
 }
 
 internal sealed class GeometryHost : IDisposable
