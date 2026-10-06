@@ -113,7 +113,7 @@ public abstract class MaterialProgressIndicator : TemplatedControl
         if (change.Property == StatusProperty && Status == MaterialProgressStatus.Running && change.OldValue is MaterialProgressStatus old && old != MaterialProgressStatus.Paused)
             _elapsed = 0;
         if (change.Property == StatusProperty || change.Property == IsVisibleProperty || change.Property == IsEffectivelyEnabledProperty
-            || change.Property == MotionSpringProperty || change.Property == MotionDurationProperty || change.Property == ValueProperty
+            || change.Property == MotionSpringProperty || change.Property == MotionDurationProperty
             || change.Property == IsIndeterminateProperty || change.Property == IsExpressiveProperty)
             _lastTime = AnimationTime?.TotalSeconds ?? _clock.Elapsed.TotalSeconds;
         if (ReducedMotion) _elapsed = 0;
