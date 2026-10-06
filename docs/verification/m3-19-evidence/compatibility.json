@@ -1,0 +1,10 @@
+{
+  "baselinePackage": "F:/PixivYou/analysis/m3-spec-1-orchestration/baseline/Avalonia.Material3.0.1.0-preview.1.nupkg",
+  "baselineHash": "C52D2E60A9E508ACF7EA1915EFBD5A84E7508AD39D8662453793759AC44174B6",
+  "newVersion": "0.1.0-preview.2",
+  "upgrade": "old compiled client unchanged; only M3 assembly replaced; constructor/deconstruct/with/compiled-XAML/theme resources",
+  "oldClientSha256": "0FEEA0F95A21DD14032538DD04CEF7FDD7CB05AF85B820588D98C1C04593897A",
+  "commit": "3d888d565bb6cbf5e1fb405c0761a22761212277",
+  "appM11": "BLOCKED; this fixture is NOT App",
+  "newHash": "24D89B369395F5DAF838D80EDFB5EF7EFF9A50417EC1AF68E60EAE4CD72E2FB4"
+}

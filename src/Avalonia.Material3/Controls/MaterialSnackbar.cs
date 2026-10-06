@@ -114,13 +114,13 @@ public class MaterialSnackbar : ContentControl
         {
             _action.Click += ActionClick;
             // A local binding keeps the inverse recipe above the shared Button :text style trigger.
-            _actionForeground = _action.Bind(Button.ForegroundProperty, new Binding(nameof(ActionForeground)) { Source = this });
+            _actionForeground = _action.Bind(Button.ForegroundProperty, this.GetObservable(ActionForegroundProperty));
             _action.Background = Brushes.Transparent;
         }
         if (_dismiss is not null)
         {
             _dismiss.Click += DismissClick;
-            _dismissForeground = _dismiss.Bind(Button.ForegroundProperty, new Binding(nameof(Foreground)) { Source = this });
+            _dismissForeground = _dismiss.Bind(Button.ForegroundProperty, this.GetObservable(ForegroundProperty));
         }
         RefreshAction();
     }

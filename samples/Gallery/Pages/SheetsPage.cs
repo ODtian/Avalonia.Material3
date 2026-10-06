@@ -14,16 +14,17 @@ public sealed class SheetsPage : UserControl
 {
     private readonly MaterialTheme _theme;
     private Size? _declaredAvailable;
-    public MaterialOverlayHost Overlay { get; } = new();
+    public MaterialOverlayHost Overlay { get; }
     public MaterialSheetHost Layout { get; } = new();
     public MaterialBottomSheet StandardBottom { get; }
     public MaterialSideSheet StandardSide { get; }
     public MaterialSheet? LastModal { get; private set; }
     public TextBlock Result { get; } = new() { Text = "No modal result", TextWrapping = TextWrapping.Wrap };
 
-    public SheetsPage(MaterialTheme theme)
+    public SheetsPage(MaterialTheme theme, MaterialOverlayHost? windowOverlayHost = null)
     {
         _theme = theme;
+        Overlay = windowOverlayHost ?? new MaterialOverlayHost();
         AutomationProperties.SetName(Result, "Sheet result");
         AutomationProperties.SetLiveSetting(Result, AutomationLiveSetting.Polite);
         StandardBottom = new MaterialBottomSheet { Title = "Standard bottom information", ExpandedExtent = 560, Content = InformationBody("Standard bottom") };
@@ -56,8 +57,8 @@ public sealed class SheetsPage : UserControl
         AutomationProperties.SetName(mainScroll, "Sheet main content");
         Layout.Content = mainScroll;
         Layout.Sheet = StandardBottom;
-        Overlay.Content = Layout;
-        Content = Overlay;
+        if (windowOverlayHost is null) { Overlay.Content = Layout; Content = Overlay; }
+        else Content = Layout;
     }
 
     private StackPanel InformationBody(string prefix)

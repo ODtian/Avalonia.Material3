@@ -90,11 +90,11 @@ public partial class MaterialButtonGroup
                 Variant = MaterialButtonVariant.Text, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch,
                 ContentTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<object>((value, _) => new TextBlock { Text = value?.ToString(), TextWrapping = TextWrapping.Wrap })
             };
-            entry.Bind(IsEnabledProperty, new Binding(nameof(IsEffectivelyEnabled)) { Source = original });
-            entry.Bind(MaterialButton.IsToggleProperty, new Binding(nameof(MaterialButton.IsToggle)) { Source = original });
-            entry.Bind(MaterialButton.IsCheckedProperty, new Binding(nameof(MaterialButton.IsChecked)) { Source = original, Mode = BindingMode.OneWay });
+            entry.Bind(IsEnabledProperty, original.GetObservable(IsEffectivelyEnabledProperty));
+            entry.Bind(MaterialButton.IsToggleProperty, original.GetObservable(MaterialButton.IsToggleProperty));
+            entry.Bind(MaterialButton.IsCheckedProperty, original.GetObservable(MaterialButton.IsCheckedProperty));
             if (original.Content is string)
-                entry.Bind(MaterialButton.ContentProperty, new Binding(nameof(MaterialButton.Content)) { Source = original });
+                entry.Bind(MaterialButton.ContentProperty, original.GetObservable(MaterialButton.ContentProperty));
             entry.LeadingIcon = original.IsToggle && original.IsChecked ? "✓" : null;
             entry.Click += (_, _) => { original.ActivateFromOverflow(); CloseOverflow(); };
             _overflowEntries.Add(entry); panel.Children.Add(entry);

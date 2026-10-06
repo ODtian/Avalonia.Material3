@@ -205,7 +205,7 @@ public class MaterialTooltip : ContentControl
             anchor.PointerCaptureLost += CaptureLost;
             UpdateRoot();
             if (AutomationProperties.GetHelpText(anchor) is null && tip.Content is string)
-                _description = anchor.Bind(AutomationProperties.HelpTextProperty, new Binding(nameof(Content)) { Source = tip });
+                _description = anchor.Bind(AutomationProperties.HelpTextProperty, tip.GetObservable(ContentProperty));
         }
         private bool CanShow => !_disposed && !_tip._returningFocus && _tip.EnableUserInput && _anchor.IsEffectivelyVisible &&
             (_anchor.IsEffectivelyEnabled || _tip.ShowOnDisabled) && TopLevel.GetTopLevel(_host) is not null;

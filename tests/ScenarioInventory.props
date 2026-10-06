@@ -1,0 +1,19 @@
+<Project>
+  <!-- Single shared set. The source bootstrap and package-only sample fixtures are not shared. -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'PackageConsumption.Tests'">
+    <Compile Include="$(MSBuildThisFileDirectory)Avalonia.Material3.Tests/**/*.cs"
+             Exclude="$(MSBuildThisFileDirectory)Avalonia.Material3.Tests/TestApplication.cs;$(MSBuildThisFileDirectory)Avalonia.Material3.Tests/bin/**;$(MSBuildThisFileDirectory)Avalonia.Material3.Tests/obj/**"
+             Link="Shared/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'Avalonia.Material3.Tests'">
+    <Compile Include="$(MSBuildThisFileDirectory)../samples/Gallery/Pages/*.cs" Link="Gallery/Pages/%(Filename)%(Extension)" />
+    <Compile Include="$(MSBuildThisFileDirectory)../samples/Gallery/GalleryShell.cs" Link="Gallery/GalleryShell.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PackageConsumption.Tests/Sheet*ScenarioTests.cs" Link="Shared/%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/public-api.txt" LogicalName="M3.PublicApi.txt" Condition="Exists('$(MSBuildThisFileDirectory)ReferenceVectors/public-api.txt')" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/resource-keys.txt" LogicalName="M3.ResourceKeys.txt" Condition="Exists('$(MSBuildThisFileDirectory)ReferenceVectors/resource-keys.txt')" />
+  </ItemGroup>
+</Project>

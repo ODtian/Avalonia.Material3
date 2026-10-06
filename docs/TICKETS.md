@@ -31,9 +31,9 @@
 
 - [M3-01 / #2 — 主题按钮从控件包到独立宿主](https://github.com/ODtian/Avalonia.Material3/issues/2)：初始包 `0.1.0-preview.1`，见[验证记录](verification/m3-01.md)和[公开消费契约](public-contract.md)。
 
-## M3-01 完成后的就绪前沿
+## 历史 M3-01 完成后的初始前沿
 
-本批只执行 #2；以下票据等待后续授权开始：
+以下是 #2 后的历史任务前沿。用户已授权推进整个 spec；#3–#19 功能已集成，#20 负责 M3-local 发布/端到端证据，实际验收与外部未满足条件见 [M3-19](verification/m3-19.md)，不是全部票据自动关闭：
 
 - [M3-02 / #3 — 种子色与动态主题驱动完整色彩方案](https://github.com/ODtian/Avalonia.Material3/issues/3)
 - [M3-03 / #4 — 标准按钮与图标按钮完成操作反馈](https://github.com/ODtian/Avalonia.Material3/issues/4)
@@ -45,4 +45,4 @@
 ## 推进规则
 
 后续根据 GitHub 原生 blocked-by 关系和实际完成状态选择可开始任务。App 消费对应能力的 M3 版本化包，跨仓库依赖使用完整 Issue 链接。
-当前阶段由主代理直接推进，各任务结果与验收记录写入对应仓库和 Issue。
+当前阶段由主代理按任务图调度独立分支/worktree，实施、串行合并与两轴审查分离。协调者负责集成/push/tracker/发布；子代理只交付本票实现与真实证据。literal App M11 缺少可执行消费者时，不关闭 #1/#20 全部验收。

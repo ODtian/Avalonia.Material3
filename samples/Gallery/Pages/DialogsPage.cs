@@ -12,7 +12,7 @@ namespace Gallery.Pages;
 /// <summary>Package-only dialog/overlay consumption demo. No application-specific domain state.</summary>
 public sealed class DialogsPage : UserControl
 {
-    public MaterialOverlayHost Overlay { get; } = new() { Name = "DialogOverlay" };
+    public MaterialOverlayHost Overlay { get; }
     public MaterialButton BasicButton { get; } = Action("Edit basic", "BasicEntry");
     public MaterialButton FullScreenButton { get; } = Action("Edit full screen", "FullScreenEntry");
     public MaterialButton LongButton { get; } = Action("Long content", "LongEntry");
@@ -23,8 +23,9 @@ public sealed class DialogsPage : UserControl
     public MaterialTextField? Editor { get; private set; }
     public MaterialOverlaySession? LastSession { get; private set; }
 
-    public DialogsPage(MaterialTheme theme)
+    public DialogsPage(MaterialTheme theme, MaterialOverlayHost? windowOverlayHost = null)
     {
+        Overlay = windowOverlayHost ?? new MaterialOverlayHost { Name = "DialogOverlay" };
         var mode = Action("Light / dark", "DialogTheme");
         var font = Action("100 / 200% text", "DialogFont");
         var back = Action("Host back", "DialogBack");
@@ -58,7 +59,7 @@ public sealed class DialogsPage : UserControl
         };
         AutomationProperties.SetLiveSetting(Result, AutomationLiveSetting.Polite);
         var entries = new WrapPanel { Children = { BasicButton, FullScreenButton, LongButton, NestedButton, PopupButton } };
-        Overlay.Content = new ScrollViewer { Content = new StackPanel
+        var pageContent = new ScrollViewer { Content = new StackPanel
         {
             Margin = new Thickness(24), Spacing = 16, Children =
             {
@@ -68,7 +69,8 @@ public sealed class DialogsPage : UserControl
                 new TextBlock { Text = "Keyboard: Tab / Shift+Tab stay in a modal, Enter/Space activate the focused action. A native editor owns its text and IME; Enter does not implicitly save an editing form. Long content is independently scrollable. Theme/font buttons apply on the next presentation; window resizing also applies while open.", TextWrapping = Avalonia.Media.TextWrapping.Wrap }
             }
         } };
-        Content = Overlay;
+        if (windowOverlayHost is null) { Overlay.Content = pageContent; Content = Overlay; }
+        else Content = pageContent;
     }
     private void Edit(MaterialDialogMode mode, Control entry)
     {

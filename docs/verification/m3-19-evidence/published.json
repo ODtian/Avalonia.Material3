@@ -1,0 +1,84 @@
+{
+  "version": "0.1.0-preview.2",
+  "packageSha256": "24D89B369395F5DAF838D80EDFB5EF7EFF9A50417EC1AF68E60EAE4CD72E2FB4",
+  "sdk": "10.0.112",
+  "nativeSmoke": true,
+  "completion": "AOT two hosts passed initial full publisher; managed Gallery retried after focus/preedit timing precondition fix; managed Standalone separately published with identical strict args in same exact-package sandbox and passed. Failed records retained.",
+  "commit": "3d888d565bb6cbf5e1fb405c0761a22761212277",
+  "outputs": [
+    {
+      "executable": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\p-26feda74\\aot\\Gallery\\Gallery.exe",
+      "sha256": "23AEA79D90F80CFE9312A778CD9D51EFFA8032C7AA0409DB8506783CD61947B3",
+      "directoryBytes": 210850856.0,
+      "coldStartMs": [
+        1242.1408000000001,
+        902.1141,
+        900.5729,
+        872.9501,
+        872.1939
+      ],
+      "host": "Gallery",
+      "bytes": 17341952,
+      "nativeEvidence": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20/artifacts/p-26feda74/native-Gallery-aot/native.json",
+      "mode": "aot",
+      "files": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\p-26feda74\\Gallery-aot-files.json",
+      "inventorySha256": "2B088A851F9C84E25B5C9335BC0B1049EBC8A6F7BBA9D88B26E03BA25E9DEBF9"
+    },
+    {
+      "executable": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\p-26feda74\\aot\\StandaloneHost\\StandaloneHost.exe",
+      "sha256": "B84B56D006472358DFE06270A9FA686BCFC788C37FABAAB27F7DE3AA925A18A5",
+      "directoryBytes": 210874920.0,
+      "coldStartMs": [
+        1157.3355000000001,
+        986.8228,
+        914.4995,
+        1195.6200000000001,
+        980.8805000000001
+      ],
+      "host": "StandaloneHost",
+      "bytes": 17341440,
+      "nativeEvidence": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20/artifacts/p-26feda74/native-StandaloneHost-aot/native.json",
+      "mode": "aot",
+      "files": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\p-26feda74\\StandaloneHost-aot-files.json",
+      "inventorySha256": "3C0EE5F2CF759AF7D76C01EDB9F20E526DDD0255E54CA828F373ED8E3F23132A"
+    },
+    {
+      "executable": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\p-26feda74\\trimmed-managed\\Gallery\\Gallery.exe",
+      "sha256": "2D6FD47FD39D05EFFCCACDF536DB3C5FC6A9BBB71CF56D586431F4EFCFFE6889",
+      "directoryBytes": 150448587.0,
+      "coldStartMs": [
+        3376.5603,
+        3489.9198,
+        3330.6035,
+        3249.9141,
+        3298.2893000000004
+      ],
+      "host": "Gallery",
+      "bytes": 162304,
+      "nativeEvidence": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20/artifacts/p-26feda74/native-Gallery-trimmed-managed-focus-retry/native.json",
+      "mode": "trimmed-managed",
+      "files": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\p-26feda74\\Gallery-trimmed-managed-files.json",
+      "inventorySha256": "2A65840254892AFD60BEF42E2413FB356D0DCC5B7083D1E3093625E192406396"
+    },
+    {
+      "executable": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\p-26feda74\\trimmed-managed\\StandaloneHost\\StandaloneHost.exe",
+      "sha256": "FD1C79508D2CF14B0E75708ADAD1DB3CA7079993D70FCE730EC9564C095CDE31",
+      "directoryBytes": 150448816.0,
+      "coldStartMs": [
+        3432.4909000000002,
+        3258.8453,
+        3322.5254,
+        3222.4976,
+        3284.0864
+      ],
+      "host": "StandaloneHost",
+      "bytes": 162304,
+      "nativeEvidence": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20/artifacts/p-26feda74/native-StandaloneHost-trimmed-managed/native.json",
+      "mode": "trimmed-managed",
+      "files": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\p-26feda74\\StandaloneHost-trimmed-managed-files.json",
+      "inventorySha256": "33FA34D60329A5B311FAB80149B963AE093EFEFC4D2367817E0841D3EDD81EC8"
+    }
+  ],
+  "rid": "win-x64",
+  "strictIlWarnings": true
+}

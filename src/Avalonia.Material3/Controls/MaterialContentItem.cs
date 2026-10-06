@@ -98,13 +98,23 @@ public abstract class MaterialContentItem : Button
 internal class MaterialContentItemAutomationPeer : ButtonAutomationPeer, IToggleProvider
 {
     private readonly MaterialContentItem _owner;
+    // Native pattern discovery runs off-thread; do not read UI-affine StyledProperties there.
+    private volatile bool _interactive;
+    private volatile bool _selectable;
+    private volatile bool _selected;
     public MaterialContentItemAutomationPeer(MaterialContentItem owner) : base(owner)
     {
         _owner = owner;
+        _interactive = owner.IsInteractive; _selectable = owner.IsSelectable; _selected = owner.IsSelected;
         owner.PropertyChanged += (_, e) =>
         {
+            if (e.Property == MaterialContentItem.IsInteractiveProperty) _interactive = owner.IsInteractive;
+            if (e.Property == MaterialContentItem.IsSelectableProperty) _selectable = owner.IsSelectable;
             if (e.Property == MaterialContentItem.IsSelectedProperty)
+            {
+                _selected = owner.IsSelected;
                 RaisePropertyChangedEvent(TogglePatternIdentifiers.ToggleStateProperty, (bool)e.OldValue! ? ToggleState.On : ToggleState.Off, (bool)e.NewValue! ? ToggleState.On : ToggleState.Off);
+            }
         };
     }
     protected override string? GetNameCore()
@@ -114,13 +124,13 @@ internal class MaterialContentItemAutomationPeer : ButtonAutomationPeer, IToggle
         return (_owner.Title is TextBlock text ? text.Text : _owner.Title?.ToString()) ?? base.GetNameCore();
     }
     protected override string? GetHelpTextCore() => base.GetHelpTextCore() ?? _owner.SupportingContent as string;
-    protected override AutomationControlType GetAutomationControlTypeCore() => _owner.IsInteractive ? AutomationControlType.Button : AutomationControlType.Group;
+    protected override AutomationControlType GetAutomationControlTypeCore() => _interactive ? AutomationControlType.Button : AutomationControlType.Group;
     protected override object? GetProviderCore(Type providerType)
     {
-        if (providerType == typeof(IInvokeProvider) && !_owner.IsInteractive) return null;
-        if (providerType == typeof(IToggleProvider) && (!_owner.IsInteractive || !_owner.IsSelectable)) return null;
+        if (providerType == typeof(IInvokeProvider) && !_interactive) return null;
+        if (providerType == typeof(IToggleProvider) && (!_interactive || !_selectable)) return null;
         return base.GetProviderCore(providerType);
     }
-    public ToggleState ToggleState => _owner.IsSelected ? ToggleState.On : ToggleState.Off;
-    public void Toggle() { if (_owner.IsSelectable) Invoke(); }
+    public ToggleState ToggleState => _selected ? ToggleState.On : ToggleState.Off;
+    public void Toggle() { if (_selectable) Invoke(); }
 }

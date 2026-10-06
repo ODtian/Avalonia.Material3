@@ -159,6 +159,8 @@ public class MaterialTheme : Styles
     {
         Resources["M3.StateLayerDuration"] = Motion.ReduceMotion ? TimeSpan.Zero : Motion.StateLayerDuration;
         Resources["M3.ReduceMotion"] = Motion.ReduceMotion;
+        // Pinned LoadingIndicator component-local morph spring, not the scheme's SlowSpatial pair.
+        Resources["M3.Motion.LoadingMorph"] = new MaterialSpring(0.6, 200) { IsInstant = Motion.ReduceMotion };
         foreach (var duration in Motion.GetDurations())
             Resources[$"M3.Motion.{duration.Key}"] = Motion.ReduceMotion ? TimeSpan.Zero : duration.Value;
         foreach (var easing in Motion.GetEasings()) Resources[$"M3.Motion.{easing.Key}"] = easing.Value.ToEasing();

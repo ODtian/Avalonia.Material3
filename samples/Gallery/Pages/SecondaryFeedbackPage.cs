@@ -23,7 +23,7 @@ public sealed class SecondaryFeedbackPage : UserControl
     public MaterialSnackbar Snackbar { get; }
     public MaterialTooltip PlainTooltip { get; }
     public MaterialTooltip RichTooltip { get; }
-    public SecondaryFeedbackPage(MaterialTheme theme)
+    public SecondaryFeedbackPage(MaterialTheme theme, MaterialOverlayHost? windowOverlayHost = null)
     {
         AutomationProperties.SetAutomationId(Result, "FeedbackResult");
         var standard = Entry("Standard menu", "MenuStandard");
@@ -50,8 +50,9 @@ public sealed class SecondaryFeedbackPage : UserControl
                 snackbarEntry, timed, themeEntry, font, rtl, back
             }
         };
-        Overlay = new MaterialOverlayHost { Content = new ScrollViewer { Content = panel, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled } };
-        Content = Overlay;
+        var pageContent = new ScrollViewer { Content = panel, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
+        Overlay = windowOverlayHost ?? new MaterialOverlayHost { Content = pageContent };
+        Content = windowOverlayHost is null ? Overlay : pageContent;
         Snackbar = new MaterialSnackbar
         {
             Content = "Changes saved / 更改已保存", ActionContent = "Undo", ActionResult = "undo",

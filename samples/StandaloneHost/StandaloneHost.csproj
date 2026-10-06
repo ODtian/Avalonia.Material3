@@ -4,6 +4,8 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Gallery/GalleryShell.cs" Link="GalleryShell.cs" />
+    <Compile Include="../Gallery/Pages/*.cs" Link="Pages/%(Filename)%(Extension)" />
     <PackageReference Include="Avalonia.Material3" Version="$(Material3Version)" />
     <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
   </ItemGroup>

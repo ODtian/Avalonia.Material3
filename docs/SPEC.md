@@ -66,7 +66,7 @@ Status: ready-for-agent
 - 包消费是 App → M3 的版本契约；开发期可使用本地包源，发布期使用明确的包版本及变更记录。
 - App 的 Native AOT 与 GC 选择通过宿主验证，M3 自身提供 AOT、裁剪及公开 API 兼容证据。
 - 跨仓库任务使用完整 GitHub Issue 链接与版本需求表达阻塞关系。
-- 当前阶段由主代理直接完成工作。
+- 当前阶段由主代理按票据依赖图调度独立 worktree 子代理，结果统一合并到 `integration/m3-spec-1`；验收证据与未满足项分别记录，main 不在本批修改。
 
 ## Testing Decisions
 
