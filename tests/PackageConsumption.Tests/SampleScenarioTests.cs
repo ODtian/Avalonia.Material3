@@ -1,3 +1,4 @@
+extern alias standalone;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
@@ -17,7 +18,7 @@ public class SampleScenarioTests
     [InlineData(true)]
     public void Package_consumer_starts_runs_action_and_switches_theme_with_keyboard(bool gallery)
     {
-        Window window = gallery ? new Gallery.MainWindow() : new StandaloneHost.MainWindow();
+        Window window = gallery ? new Gallery.MainWindow() : new standalone::StandaloneHost.MainWindow();
         window.Show();
         try
         {

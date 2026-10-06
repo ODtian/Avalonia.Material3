@@ -1,37 +1,43 @@
 # Avalonia Material 3 Expressive
 
-独立、通用、版本化的 Material 3 Expressive 控件库。当前交付 **M3-01 / Issue #2**：一个完整基础 filled button 场景、初始主题令牌、包消费者与展厅；**不是完整组件库**。
+独立、通用、版本化的 Material 3 Expressive 控件库。**0.1.0-preview.2** 集成完整锁定组件清单：设计令牌、按钮/FAB/工具栏/分组、选择/输入/搜索/Chips、内容/导航、进度/加载、共享 overlay/对话框/菜单/提示/面板、应用栏/抽屉、日期时间与 Carousel/刷新。17 个页面由静态工厂显式注册，Gallery 与独立包宿主访问相同完整展厅。
 
-- .NET SDK **10.0.112** / net10.0
-- Avalonia **12.1.3** 稳定版
-- 本地 NuGet 包 **Avalonia.Material3 0.1.0-preview.1**
+这是**本地预览候选**，不是已发布到 nuget.org 的声明；也不等于母规格全部验收。真实 App 升级、人工读屏、物理移动设备及 Android 验收仍有明确外部条件，见[最终证据与支持矩阵](docs/verification/m3-19.md)。各组件的 Avalonia 投影边界仍适用，不宣称 Compose 内部物理/帧像素等价。
+
+- .NET SDK **10.0.112** / net10.0；Avalonia **12.1.3**
+- 本地包 **Avalonia.Material3 0.1.0-preview.2**；包消费者不引用库源码
+- `Directory.Build.props` 是唯一版本来源；历史 preview.1 记录不改写
 
 ## 构建、验证、运行
 
-需要 .NET SDK 和 PowerShell 7.2+：
-
 ```powershell
-pwsh ./scripts/verify.ps1
-# 交互式 Windows 桌面：额外执行真实宿主 UI Automation 验证
-pwsh ./scripts/verify.ps1 -DesktopSmoke
+pwsh ./scripts/verify.ps1 -KeepSandbox
+# 输出 artifacts/release-<unique>/manifest.json：确切包/hash、全新缓存、场景身份清单
+# 可提供不可变旧包路径，启用 SDK API/package 基线检查
+pwsh ./scripts/verify.ps1 -KeepSandbox -BaselinePackage <archived-preview.1.nupkg>
 
-# 运行展厅或独立包宿主
-# 首次启动前先打包；两个应用都只引用版本化包，不引用库项目。
+# package-only Windows x64 NativeAOT + full-trim managed，各两个完整宿主
+pwsh ./scripts/publish-release.ps1 -Manifest <manifest.json>
+# 在交互式桌面上串行运行已发布二进制 UIA/键鼠/多次进程冷启动
+pwsh ./scripts/publish-release.ps1 -Manifest <manifest.json> -NativeSmoke
+pwsh ./scripts/verify-compatibility.ps1 -Manifest <manifest.json> -BaselinePackage <archived-preview.1.nupkg>
+
+# 开发期首次先打包。改包内容须更新版本或使用隔离脚本，勿重用常用缓存同版本。
 dotnet pack src/Avalonia.Material3/Avalonia.Material3.csproj -c Release -o artifacts/packages
 dotnet run --project samples/Gallery -c Release
 dotnet run --project samples/StandaloneHost -c Release
 ```
 
-验证脚本在全新目录和 NuGet 缓存中恢复本地包、构建两个宿主并执行输入/主题场景；默认清理临时目录。结果与包在 `artifacts/`，不进入 Git。源码解决方案 `Avalonia.Material3.slnx` 仅包含库和源码场景测试，避免打包前循环恢复消费者。
+NativeSmoke 操作真实桌面焦点/键盘，不能并行运行。发布门禁不添加整程序集保留根或全局 IL 告警抑制。独立 SDK 兼容 fixture 验证旧编译客户端，不冒充实际 App。
 
 ## 文档
 
-- [公开消费契约与主题输入](docs/public-contract.md)
-- [锁定规范与完整覆盖矩阵](docs/coverage-matrix.md)
-- [M3-01 验证证据](docs/verification/m3-01.md)
-- [场景测试边界](docs/testing.md)
-- [产品与实施规格](docs/SPEC.md)
-- [实施票据索引](docs/TICKETS.md)
-- [领域词汇](GLOSSARY.md)、[架构决策](docs/adr/)、[GitHub Issues 工作约定](docs/agents/issue-tracker.md)
+- [公开契约、安装与组件索引](docs/public-contract.md)
+- [锁定规范、逐项组件证据](docs/coverage-matrix.md)
+- [最终本地验收 / 平台矩阵 / 未满足项](docs/verification/m3-19.md)
+- [升级与回滚](docs/upgrade.md)、[发布过程](docs/release.md)、[变更记录](CHANGELOG.md)
+- [场景测试边界](docs/testing.md)、[规格](docs/SPEC.md)、[票据图](docs/TICKETS.md)
+- [历史初始契约](docs/compatibility/preview1-contract.md)、[M3-01 历史验证](docs/verification/m3-01.md)
+- [第三方归属](THIRD-PARTY-NOTICES.md)、[领域词汇](GLOSSARY.md)、[ADR](docs/adr/)
 
-通用设计系统不包含 Pixiv 业务。消费方 [MaterixivYou](https://github.com/ODtian/MaterixivYou) 通过明确包版本采用公开契约。母规格 [#1](https://github.com/ODtian/Avalonia.Material3/issues/1) 的后续组件、动态配色、AOT/裁剪及发布任务仍未完成。
+通用设计系统不包含 Pixiv 业务。实际消费方 [MaterixivYou](https://github.com/ODtian/MaterixivYou) 通过版本化包采用公开契约；其 docs-only 基线不是可执行消费方，M11 不能由本仓库样例替代。

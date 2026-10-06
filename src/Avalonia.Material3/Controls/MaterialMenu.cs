@@ -410,7 +410,7 @@ public class MaterialMenuGroup : ItemsControl
         ItemsPanel = new FuncTemplate<Panel?>(() =>
         {
             var panel = new MaterialMenuGroupPanel();
-            panel.Bind(MaterialMenuGroupPanel.OrientationProperty, new Binding(nameof(Orientation)) { Source = this });
+            panel.Bind(MaterialMenuGroupPanel.OrientationProperty, this.GetObservable(OrientationProperty));
             return panel;
         });
     }

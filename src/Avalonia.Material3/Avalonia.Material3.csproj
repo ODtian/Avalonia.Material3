@@ -4,10 +4,18 @@
     <Description>Material 3 Expressive controls and theme inputs for Avalonia.</Description>
     <RepositoryUrl>https://github.com/ODtian/Avalonia.Material3</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <IsAotCompatible>true</IsAotCompatible>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <EnableAotAnalyzer>true</EnableAotAnalyzer>
+    <Authors>ODtian</Authors>
+    <PackageProjectUrl>https://github.com/ODtian/Avalonia.Material3</PackageProjectUrl>
+    <PackageReleaseNotes>preview.2: full component families; see CHANGELOG.md and docs/upgrade.md. App/platform/manual acceptance remains separate.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="MaterialColorUtilities" Version="0.3.0" ExcludeAssets="analyzers" />
     <None Include="../../README.md" Pack="true" PackagePath="/" />
+    <None Include="../../CHANGELOG.md" Pack="true" PackagePath="/" />
+    <None Include="../../THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 </Project>

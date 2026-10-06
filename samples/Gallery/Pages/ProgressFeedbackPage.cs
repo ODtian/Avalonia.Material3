@@ -15,7 +15,7 @@ public sealed class ProgressFeedbackPage : StackPanel
 {
     private readonly MaterialTheme _theme;
     private readonly Func<IProgress<double>, CancellationToken, Task> _operation;
-    private readonly CancellationTokenSource _lifetime = new();
+    private CancellationTokenSource _lifetime = new();
     private bool _busy;
     private bool _failNext;
     private TimeSpan _time;
@@ -105,12 +105,26 @@ public sealed class ProgressFeedbackPage : StackPanel
                 window.RequestedThemeVariant = window.ActualThemeVariant == ThemeVariant.Dark ? ThemeVariant.Light : ThemeVariant.Dark;
         };
         FontButton.Click += (_, _) => theme.Typography = theme.Typography with { Scale = theme.Typography.Scale == 1 ? 2 : 1 };
-        DetachedFromVisualTree += (_, _) => _lifetime.Cancel();
+        DetachedFromVisualTree += (_, _) =>
+        {
+            _lifetime.Cancel();
+            _busy = false;
+            StartButton.IsEnabled = FailureButton.IsEnabled = true;
+            PauseButton.IsEnabled = false;
+            SetStatus(MaterialProgressStatus.Idle);
+        };
+        AttachedToVisualTree += (_, _) =>
+        {
+            if (!_lifetime.IsCancellationRequested) return;
+            _lifetime.Dispose();
+            _lifetime = new CancellationTokenSource();
+        };
     }
 
     public async Task RunOperationAsync()
     {
         if (_busy) return;
+        var lifetime = _lifetime;
         _busy = true;
         StartButton.IsEnabled = FailureButton.IsEnabled = false;
         PauseButton.IsEnabled = true;
@@ -121,25 +135,30 @@ public sealed class ProgressFeedbackPage : StackPanel
         {
             await _operation(new HostProgress(value =>
             {
+                if (lifetime.IsCancellationRequested || !ReferenceEquals(lifetime, _lifetime)) return;
                 foreach (var indicator in Indicators) indicator.Value = value;
                 UpdateResult();
-            }), _lifetime.Token);
-            if (_lifetime.IsCancellationRequested) return;
+            }), lifetime.Token);
+            if (lifetime.IsCancellationRequested || !ReferenceEquals(lifetime, _lifetime)) return;
             foreach (var indicator in Indicators) indicator.ResultMessage = "12 documents imported";
             SetStatus(MaterialProgressStatus.Completed);
         }
-        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested) { SetStatus(MaterialProgressStatus.Idle); }
+        catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
         catch (Exception error)
         {
+            if (lifetime.IsCancellationRequested || !ReferenceEquals(lifetime, _lifetime)) return;
             foreach (var indicator in Indicators) indicator.ResultMessage = error.Message;
             SetStatus(MaterialProgressStatus.Failed);
         }
         finally
         {
-            _busy = false;
-            StartButton.IsEnabled = FailureButton.IsEnabled = true;
-            PauseButton.IsEnabled = false;
-            UpdateResult();
+            if (ReferenceEquals(lifetime, _lifetime) && !lifetime.IsCancellationRequested)
+            {
+                _busy = false;
+                StartButton.IsEnabled = FailureButton.IsEnabled = true;
+                PauseButton.IsEnabled = false;
+                UpdateResult();
+            }
         }
     }
     private async Task DemoOperationAsync(IProgress<double> reporter, CancellationToken token)

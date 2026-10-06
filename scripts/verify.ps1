@@ -1,84 +1,45 @@
 #requires -Version 7.2
-param(
-    [switch]$DesktopSmoke,
-    [switch]$KeepSandbox
-)
-
+param([switch]$DesktopSmoke, [switch]$KeepSandbox, [string]$BaselinePackage)
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/consumer.ps1"
 $root = Split-Path $PSScriptRoot -Parent
-$artifacts = Join-Path $root 'artifacts'
-$feed = Join-Path $artifacts 'packages'
-$results = Join-Path $artifacts 'TestResults'
-$sandbox = Join-Path ([System.IO.Path]::GetTempPath()) ('m3-consumer-' + [guid]::NewGuid().ToString('N'))
-$previousPackages = $env:NUGET_PACKAGES
-
-function Invoke-Dotnet {
-    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    & dotnet @Arguments --disable-build-servers -p:UseSharedCompilation=false
-    if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments -join ' ') failed ($LASTEXITCODE)." }
-}
-
-function Copy-SourceTree {
-    param([string]$RelativePath)
-    $source = Join-Path $root $RelativePath
-    Get-ChildItem $source -Recurse -File | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } | ForEach-Object {
-        $relative = [System.IO.Path]::GetRelativePath($root, $_.FullName)
-        $destination = Join-Path $sandbox $relative
-        New-Item -ItemType Directory -Force (Split-Path $destination -Parent) | Out-Null
-        Copy-Item $_.FullName $destination
-    }
-}
-
+$run = Join-Path $root ('artifacts/release-' + [guid]::NewGuid().ToString('N'))
+$sandbox = Join-Path $run 'consumer'
+$oldPackages = $env:NUGET_PACKAGES
+New-Item -ItemType Directory -Force "$run/packages", "$run/results" | Out-Null
 Push-Location $root
 try {
-    if ($DesktopSmoke -and -not $IsWindows) { throw '-DesktopSmoke requires an interactive Windows desktop.' }
-    New-Item -ItemType Directory -Force $feed, $results | Out-Null
-    # Package consumers are tested below only after a fresh pack, never against a stale same-version cache.
-    Invoke-Dotnet @('test', 'tests/Avalonia.Material3.Tests/Avalonia.Material3.Tests.csproj', '-c', 'Release', '--logger', 'trx;LogFileName=source.trx', '--results-directory', $results)
-    Invoke-Dotnet @('pack', 'src/Avalonia.Material3/Avalonia.Material3.csproj', '-c', 'Release', '-o', $feed)
-
-    # Copy only consumers and tests, never the library project, to a new directory and cache.
-    New-Item -ItemType Directory -Force (Join-Path $sandbox 'artifacts/packages') | Out-Null
-    Copy-Item (Join-Path $feed '*.nupkg') (Join-Path $sandbox 'artifacts/packages')
-    foreach ($file in 'Directory.Build.props', 'global.json', 'NuGet.Config') {
-        Copy-Item (Join-Path $root $file) $sandbox
+    $version = [string](([xml](Get-Content Directory.Build.props -Raw)).Project.PropertyGroup.Material3Version)
+    $commit = (git rev-parse HEAD).Trim()
+    Invoke-CheckedDotnet test tests/Avalonia.Material3.Tests -c Release --logger 'trx;LogFileName=source.trx' --results-directory "$run/results"
+    $packArgs = @('pack', 'src/Avalonia.Material3/Avalonia.Material3.csproj', '-c', 'Release', '-o', "$run/packages", "-p:RepositoryCommit=$commit")
+    if ($BaselinePackage) {
+        if ((Get-FileHash $BaselinePackage -Algorithm SHA256).Hash -ne 'C52D2E60A9E508ACF7EA1915EFBD5A84E7508AD39D8662453793759AC44174B6') { throw 'Immutable preview.1 baseline hash mismatch.' }
+        $packArgs += '-p:EnablePackageValidation=true', "-p:PackageValidationBaselinePath=$BaselinePackage", '-p:ApiCompatEnableRuleCannotChangeParameterName=true'
     }
-    Copy-SourceTree 'samples'
-    Copy-SourceTree 'tests/PackageConsumption.Tests'
-    Copy-SourceTree 'tests/ReferenceVectors'
-    New-Item -ItemType Directory -Force (Join-Path $sandbox 'tests/Avalonia.Material3.Tests') | Out-Null
-    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ButtonGroupScenarioTests.cs', 'ButtonGroupMatrixScenarioTests.cs', 'ContractScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'ExpressiveButtonScenarioTests.cs', 'SelectionHost.cs', 'SelectionScenarioTests.cs', 'SelectionFormScenarioTests.cs', 'SelectionAdaptationScenarioTests.cs', 'TextFieldScenarioTests.cs', 'ContentScenarioTests.cs', 'ProgressScenarioTests.cs', 'CarouselRefreshScenarioTests.cs', 'CarouselGalleryScenarioTests.cs', 'ProgressMatrixScenarioTests.cs', 'ProgressGalleryScenarioTests.cs', 'SearchChipScenarioTests.cs', 'SearchGalleryScenarioTests.cs', 'SearchAdaptationScenarioTests.cs', 'FloatingActionScenarioTests.cs', 'FloatingActionContractTests.cs', 'FloatingActionsGalleryTests.cs', 'DialogScenarioTests.cs', 'DialogGalleryScenarioTests.cs', 'DateTimePickerScenarioTests.cs', 'DateTimePickerGalleryScenarioTests.cs', 'NavigationScenarioTests.cs', 'NavigationMatrixScenarioTests.cs', 'NavigationGalleryScenarioTests.cs', 'AppChromeScenarioTests.cs', 'AppChromeMatrixScenarioTests.cs', 'AppChromeGalleryScenarioTests.cs', 'SecondaryFeedbackScenarioTests.cs', 'SecondaryFeedbackAdaptationTests.cs', 'SecondaryFeedbackGalleryTests.cs') {
-        Copy-Item (Join-Path $root "tests/Avalonia.Material3.Tests/$file") (Join-Path $sandbox 'tests/Avalonia.Material3.Tests')
-    }
-    $env:NUGET_PACKAGES = Join-Path $sandbox 'packages'
-    Write-Host "Isolated package consumer: $sandbox"
-    Invoke-Dotnet @('test', (Join-Path $sandbox 'tests/PackageConsumption.Tests/PackageConsumption.Tests.csproj'), '-c', 'Release', '--logger', 'trx;LogFileName=package-consumption.trx', '--results-directory', $results)
-
+    Invoke-CheckedDotnet @packArgs
+    $package = "$run/packages/Avalonia.Material3.$version.nupkg"
+    $hash = (Get-FileHash $package -Algorithm SHA256).Hash
+    Assert-PackageIdentity $package $version $commit
+    New-PackageConsumer $root $sandbox $package $hash
+    $env:NUGET_PACKAGES = "$sandbox/packages"
+    Invoke-CheckedDotnet test "$sandbox/tests/PackageConsumption.Tests" -c Release --logger 'trx;LogFileName=package.trx' --results-directory "$run/results"
+    Assert-ConsumerAssets $sandbox $version $package $hash
+    Assert-ScenarioParity "$run/results/source.trx" "$run/results/package.trx" "$run/scenarios.json" "$root/tests/PackageOnlyScenarios.txt"
+    @{ commit=$commit; version=$version; package=$package; sha256=$hash; sandbox=$sandbox; sdk=(& dotnet --version); scenarioManifest="$run/scenarios.json"; baseline=$BaselinePackage } | ConvertTo-Json | Set-Content "$run/manifest.json" -Encoding utf8
     if ($DesktopSmoke) {
-        foreach ($sample in 'Gallery', 'StandaloneHost') {
-            $executable = Join-Path $sandbox "samples/$sample/bin/Release/net10.0/$sample.exe"
-            & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'windows-smoke.ps1') -Executable $executable -Screenshots (Join-Path $artifacts 'screenshots')
-            if ($LASTEXITCODE -ne 0) { throw "Desktop smoke failed for $sample." }
+        if (!$IsWindows) { throw 'Native UIA requires Windows.' }
+        foreach ($hostName in 'Gallery', 'StandaloneHost') {
+            & powershell.exe -NoProfile -File "$PSScriptRoot/windows-gallery-smoke.ps1" -Executable "$sandbox/samples/$hostName/bin/Release/net10.0/$hostName.exe" -Evidence "$run/native-$hostName"
+            if ($LASTEXITCODE -ne 0) { throw "Native UIA failed: $hostName" }
         }
     }
-    Write-Host 'PASS: source scenarios, versioned package, gallery and independent consumer.'
+    Write-Host "PASS source/package exact identity parity: $run/manifest.json"
 }
 finally {
-    $env:NUGET_PACKAGES = $previousPackages
+    $env:NUGET_PACKAGES = $oldPackages
+    Stop-ConsumerCollectors $sandbox
     Pop-Location
-    if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }
-    elseif (Test-Path $sandbox) {
-        # Collector services outlive builds and can lock their own DLLs. Only close collectors
-        # loaded from this uniquely-owned sandbox, never another ticket's global build servers.
-        if ($IsWindows) {
-            Get-CimInstance Win32_Process | Where-Object {
-                $_.Name -eq 'dotnet.exe' -and $_.CommandLine -and $_.CommandLine.Contains($sandbox) -and
-                $_.CommandLine.Contains('Avalonia.BuildServices.Collector.dll')
-            } | ForEach-Object { Stop-Process -Id $_.ProcessId -ErrorAction SilentlyContinue }
-        }
-        for ($attempt = 0; $attempt -lt 20; $attempt++) {
-            try { Remove-Item $sandbox -Recurse -Force -ErrorAction Stop; break }
-            catch { if ($attempt -eq 19) { throw }; Start-Sleep -Milliseconds 500 }
-        }
-    }
+    if (!$KeepSandbox -and (Test-Path $sandbox)) { Remove-Item $sandbox -Recurse -Force }
+    Write-Host "Evidence retained: $run"
 }

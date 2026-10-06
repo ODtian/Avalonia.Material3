@@ -1,25 +1,3 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="using:Gallery"
-        xmlns:m3="using:Avalonia.Material3.Controls"
-        x:Class="Gallery.MainWindow" x:DataType="local:MainWindow"
-        Title="Material 3 Expressive Gallery" Width="760" Height="520"
-        MinWidth="360" MinHeight="420" RequestedThemeVariant="Light">
-  <StackPanel Margin="32" Spacing="16">
-    <TextBlock Text="Material 3 Expressive" FontSize="28" FontWeight="SemiBold" />
-    <TextBlock Text="Small filled button · public package contract" TextWrapping="Wrap" />
-    <TextBlock Text="Use mouse, touch, Tab, Enter or Space. Hover, press and disabled states are visible."
-               TextWrapping="Wrap" />
-    <m3:MaterialButton x:Name="ActionButton" Content="Run action" Click="OnAction"
-                       AutomationProperties.AutomationId="ActionButton" />
-    <TextBlock x:Name="ResultText" Text="{Binding Feedback}" />
-    <m3:MaterialButton x:Name="ThemeButton" Content="{Binding ThemeCaption}" Click="OnTheme"
-                       AutomationProperties.AutomationId="ThemeButton" />
-    <m3:MaterialButton Content="Unavailable" IsEnabled="False" />
-    <WrapPanel>
-      <m3:MaterialButton Content="Toggle font scale" Click="OnFontScale" Margin="0,0,12,0" />
-      <m3:MaterialButton Content="Toggle reduced motion" Click="OnMotion" />
-    </WrapPanel>
-    <TextBlock Text="Baseline: 2026-10-04 · Avalonia 12.1.3 · M3-01" TextWrapping="Wrap" />
-  </StackPanel>
-</Window>
+<Window xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Gallery.MainWindow" Title="Material 3 Expressive Gallery"
+        Width="1000" Height="800" MinWidth="320" MinHeight="300" RequestedThemeVariant="Light" />

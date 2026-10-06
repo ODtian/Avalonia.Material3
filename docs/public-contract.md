@@ -1,103 +1,59 @@
-# 初始公开消费契约（0.1.0-preview.1）
+# 公开包消费契约 — 0.1.0-preview.2
 
-这是 M3-01 的预览契约，不是完整 M3 Expressive API。完整交付范围见[覆盖矩阵](coverage-matrix.md)。
+完整锁定范围与证据见[覆盖矩阵](coverage-matrix.md)及[最终验证](verification/m3-19.md)。这是本地预览候选，不声称公共 feed 已发布、全部平台认证或稳定 API。历史 #2 文档冻结于 [preview.1 初始契约](compatibility/preview1-contract.md)。
 
-## 安装和初始化
-
-依赖：net10.0、Avalonia 12.1.3；本票验证 Windows x64 普通桌面宿主。Android、其他真实平台、AOT、裁剪及稳定 API 兼容在后续票据验收。
+## 安装 / 初始化
 
 ```xml
-<PackageReference Include="Avalonia.Material3" Version="0.1.0-preview.1" />
+<PackageReference Include="Avalonia.Material3" Version="0.1.0-preview.2" />
 <PackageReference Include="Avalonia.Desktop" Version="12.1.3" />
 ```
 
-首次运行先打包：
-
-```powershell
-dotnet pack src/Avalonia.Material3/Avalonia.Material3.csproj -c Release -o artifacts/packages
-dotnet run --project samples/StandaloneHost -c Release
-```
-
-根目录 `NuGet.Config` 将 `Avalonia.Material3` **只映射到本地源**，其他依赖来自 nuget.org；默认使用仓库内 `artifacts/nuget` 缓存，不改动用户全局缓存。包尚未发布到公共源。复制宿主到其他目录时同时带上 `Directory.Build.props`、`global.json`、配置与本地包，或在自己的项目中明确指定上述版本和包源。不得以库的 ProjectReference 替代包消费。
-
-在创建窗口和内容之前安装主题（推荐 App.Initialize 中加载此 XAML）：
+目标 net10.0，SDK10.0.112。仓库开发 feed 将 M3 映射到本地 `artifacts/packages`；默认缓存不污染用户全局缓存。发布/独立消费必须明确版本/包源，禁止库 ProjectReference。隔离脚本生成自己的 public-only 配置，只复制本次**确切包**，验证恢复的 nupkg 哈希、资产版本/类型与项目依赖闭包。不要把旧 preview.1 同名开发包当作冻结 #2 包。
 
 ```xml
 <Application xmlns="https://github.com/avaloniaui"
-             xmlns:m3="using:Avalonia.Material3.Themes"
-             RequestedThemeVariant="Light">
-  <Application.Styles>
-    <m3:MaterialTheme />
-  </Application.Styles>
+             xmlns:m3="using:Avalonia.Material3.Themes" RequestedThemeVariant="Light">
+  <Application.Styles><m3:MaterialTheme /></Application.Styles>
 </Application>
 ```
 
-主题提供最小 `Window` 宿主模板和 `MaterialButton` 的 ControlTheme，不需要 FluentTheme，也不将普通 `Avalonia.Controls.Button` 冒充已交付的 M3 控件。更完整的窗口/基础控件主题随各票据扩展。
+**在创建内容之前**安装主题；UI 线程设置控件/主题属性。无需 FluentTheme。字体默认平台字体，无捆绑 Roboto/中文字体；字体资源、许可、fallback 与平台输入/Back/IME/insets 由宿主提供。
 
-## MaterialButton
+## 完整组件契约
 
-命名空间：`Avalonia.Material3.Controls`。继承 Avalonia `Button`，保留其 StyledProperty、输入和 ButtonAutomationPeer：
+组件命名空间 `Avalonia.Material3.Controls`，令牌 `Avalonia.Material3.Tokens`，主题 `Avalonia.Material3.Themes`。公开属性/插槽、状态、输入/自动化语义、模板部件与明确投影详见：
 
-```xml
-<m3:MaterialButton xmlns:m3="using:Avalonia.Material3.Controls"
-                   Content="Continue" Command="{Binding ContinueCommand}"
-                   CommandParameter="confirmed" />
-```
-
-- 初始变体：small、round、filled、非切换；其余样式/尺寸/选中状态由 M3-03 提供。
-- 视觉容器最小高度 40 DIP；整体命中区域至少 48 DIP。本模板为容纳 3 DIP 焦点环及 2 DIP 间距，默认外框为 50 DIP 高；内容增长时可扩大。
-- `Content`、`ContentTemplate`、`Command`、`CommandParameter`、`Click`、`IsEnabled`、`Padding`、`Background`、`Foreground`、字体、圆角、`Template` 和 `Theme` 沿用 Avalonia 公开契约。局部值按 Avalonia 优先级覆盖主题；例如显式 Background 也会覆盖禁用样式，宿主需负责对应状态外观。
-- 鼠标/触摸释放在按钮内激活，移出后释放取消；Tab/Shift+Tab 导航；Enter 激活，Space 按下反馈、释放激活；禁用不激活、不参与焦点导航。
-- 悬停/按下状态层、禁用配色、键盘可见焦点；pressed 圆角按锁定规范变化。
-- 可通过 `AutomationProperties.Name` 命名复杂内容；默认沿用 Button 的内容名称、角色、启用状态和 Invoke 行为。真实读屏完整验收不在本票。
-- 自定义 Template 须自行保留内容展示、命中区域、状态层与焦点可见性；输入/命令/自动化由 Button 保持。
-
-## MaterialTheme 与初始令牌
-
-命名空间：`Avalonia.Material3.Themes` / `Avalonia.Material3.Tokens`。
-
-```csharp
-var theme = new MaterialTheme
-{
-    LightColorScheme = MaterialColorScheme.Light with { Primary = Color.Parse("#006C4C") },
-    DarkColorScheme = MaterialColorScheme.Dark,
-    Typography = new MaterialTypography { FontFamily = new FontFamily("Arial"), Scale = 1.5 },
-    Shapes = new MaterialShapes { ButtonCornerRadius = 20, PressedButtonCornerRadius = 8 },
-    Motion = new MaterialMotion { ReduceMotion = true }
-};
-app.Styles.Add(theme); // 创建窗口之前
-```
-
-所有输入都是 StyledProperty，支持绑定。令牌为不可变 record；运行时用新值/`with` 赋给主题，不修改共享默认对象。所有赋值在 UI 线程进行。请求主题使用 **Application 或 Window.RequestedThemeVariant**；不另造与 Avalonia 相冲突的明暗状态。
-
-| 输入 | 默认 / 约束 |
+| 家族 | 权威契约 |
 | --- | --- |
-| LightColorScheme / DarkColorScheme | 非 null；六个语义颜色角色。初始静态紫色调色板来自锁定 PaletteTokens |
-| Typography | FontFamily.Default（宿主平台字体），Scale=1；字体非 null，尺度必须为可用的正有限数 |
-| Shapes | 常态 20、按下 8 DIP；均匀圆角，非负有限数 |
-| Motion | StateLayerDuration=100 ms；非负；ReduceMotion=true 将过渡时长置零 |
+| 49 颜色角色、种子/平台色、30 字阶、形状/海拔/状态/动效 | [M3-02](components/m3-02.md) |
+| Buttons / Icon buttons | [M3-03](components/m3-03.md) |
+| FAB / 扩展 / menu / docked & floating toolbar | [M3-04](components/m3-04.md) |
+| Groups / segmented / split | [M3-05](components/m3-05.md) |
+| Checkbox / radio / switch 与表单 | [M3-06](components/m3-06.md) |
+| Text fields / 原生编辑 / 校验 | [M3-07](components/m3-07.md) |
+| Search / autocomplete / Chips | [M3-08](components/m3-08.md) |
+| Cards / lists / badges / dividers | [M3-09](components/m3-09.md) |
+| Slider / range / settings | [M3-10](components/m3-10.md) |
+| Progress / Expressive loading | [M3-11](components/m3-11.md) |
+| Dialog / shared root Overlay | [M3-12](components/m3-12.md) |
+| Menu / tooltip / Snackbar | [M3-13](components/m3-13.md) |
+| Standard / modal bottom & side sheet | [M3-14](components/m3-14.md) |
+| Navigation bar / rail / tabs | [M3-15](components/m3-15.md) |
+| Top/bottom app bar / standard/modal drawer | [M3-16](components/m3-16.md) |
+| Date / range / time / input | [M3-17](components/m3-17.md) |
+| Carousel / pull-to-refresh | [M3-18](components/m3-18.md) |
 
-默认未打包 Roboto 或中文字体。宿主负责字体资源/许可及平台回退；完整字阶、字距、行高、Expressive 弹簧与形状动画仍待交付。初始状态层使用 Avalonia DoubleTransition，不宣称完整 Expressive motion scheme。
+Avalonia 基类的 Content/ContentTemplate、命令/参数、局部样式优先级、Theme/Template 保持公开扩展边界。替换模板承担渲染/触达/状态视觉责任；不是依赖私有子元素的承诺。初始按钮 small/round/filled 默认、六颜色位置构造/Deconstruct/with、初始资源键保留；见[升级兼容](upgrade.md)。
 
-### 可消费资源
+## 聚合宿主契约
 
-宿主使用 DynamicResource 可与当前主题同步；不要依赖模板子元素名称。
+两个包应用都有显式静态17页、真实结果与运行时 theme/font/seed/platform/shape/motion/window 控制。一个**有界窗口根** MaterialOverlayHost 覆盖 header/nav/page；dialog/feedback/sheet/drawer/picker 页面借用此根，不覆盖根 Content 或嵌套 page-only modality。每次页面访问创建新 lifetime，移除旧页面先 detach；后台任务不能在离开后重新提交/抢焦点。
 
-- 语义画刷：`M3.PrimaryBrush`、`M3.OnPrimaryBrush`、`M3.SurfaceBrush`、`M3.OnSurfaceBrush`、`M3.OnSurfaceVariantBrush`、`M3.OutlineBrush`。
-- 派生禁用画刷：`M3.DisabledContainerBrush`（OnSurface × 0.10）、`M3.DisabledForegroundBrush`（OnSurfaceVariant × 0.38）。
-- 字体：`M3.FontFamily`、`M3.LabelLargeFontSize`（14 × Scale）、`M3.BodyLargeFontSize`（16 × Scale）。按钮标签字重 500。
-- 形状：`M3.ButtonCornerRadius`、`M3.PressedButtonCornerRadius`、`M3.ButtonFocusCornerRadius`、`M3.PressedButtonFocusCornerRadius`。
-- 动效：`M3.StateLayerDuration`（TimeSpan）。
+宿主 Back：有 OpenCount 时先转发 **且绝不路由底层页面**；RequestBack 返回 false 可能是 sheet collapse-first 或 close veto，而非未处理。运行时模态输入与 UIA 后台 gating 不改写原控件绑定。页面自己有 viewport 时不再套无界 ScrollViewer。320-DIP、字体100/150/200% 是此示例验证尺寸，不是所有产品设备/字体的认证。
 
-Light/Dark 使用 Avalonia ThemeDictionaries；更新色彩输入替换相应字典，现有 DynamicResource 自动更新。字体、形状与动效输入同样更新现有资源。
+## 构建 / API / 发布兼容
 
-## 开发和验证
+`verify.ps1` 为唯一共享场景/fixture/copy/身份门禁；`tests/ScenarioInventory.props` 声明编译/资源集，两个 bootstrap 不共享。source/package 的同名场景使用 Ordinal 身份比较，另有明确包应用 fixture。`verify-theme.ps1` 委托同一入口。API/resource 文本冻结在 `tests/ReferenceVectors/public-api.txt` / `resource-keys.txt`；SDK binary baseline 检查与旧编译消费者补充构造、XAML、资源与行为证据。
 
-```powershell
-pwsh ./scripts/verify.ps1
-pwsh ./scripts/verify.ps1 -DesktopSmoke
-```
-
-脚本先验证源码入口、打包，再把两个消费宿主和测试复制到**没有 src 库项目**的新目录，用全新 NuGet 缓存恢复并验证。可加 `-KeepSandbox` 保留用于运行和检查；默认自动清理。
-
-不要反复向常用 NuGet 缓存覆盖同一个已消费版本：修改包内容应更新 `Material3Version`，或使用上述隔离验证脚本。本地预览包不是公共发布/稳定 API 的承诺。验证记录见 [M3-01](verification/m3-01.md)。
+库实际启用 IsAotCompatible/trim/AOT 分析器；发布脚本以严格 IL 警告策略构建包-only Windows x64 NativeAOT 与 full-trim managed Gallery/独立宿主，必须运行 **published** executables。分析器/编译成功不是其他平台或读屏验收。实际命令、诊断、哈希/commit 和未满足项目见最终记录。版本/兼容政策：[升级](upgrade.md)，分发/授权：[发布](release.md)。

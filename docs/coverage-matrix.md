@@ -8,7 +8,7 @@
   ButtonSmall / FilledButton 的生成版本为 `v0_11_0`；颜色与状态为 `v0_210`；TypeScale/Elevation/Motion 为 `v0_103`，Shape 为 `14_1_0`，标准/Expressive spring 为 `v0_14_0`。
 - 对照实现：[Material Components Android 固定提交 `60ff09436d5d477a4b9d02940f31eb01e1250620`][android-buttons]。
 - 色彩算法参考：[Material Color Utilities][mcu]；M3-02 固定 Google MCU npm 0.3.0 / `6bda88814da380664aaecc163ecdb8ac8caebb0a` 为独立 oracle，C# HCT 端依赖 MaterialColorUtilities 0.3.0；CorePalette.of + 本基线角色 tone 映射，不冒充较新的动态对比解析器。
-- 框架：Avalonia **12.1.3**（稳定版）；目标框架 **net10.0**；SDK **10.0.112**；包 **0.1.0-preview.1**。
+- 框架：Avalonia **12.1.3**（稳定版）；目标框架 **net10.0**；SDK **10.0.112**；当前候选包 **0.1.0-preview.2**。历史组件记录保留原 preview.1 版本/hash，不覆盖冻结 #2 二进制。
 
 本表是完整交付清单，不是“全部完成”的声明。`初始` 表示仅交付本票明确的子集，`待交付` 必须由归属票据补上场景、状态、输入与无障碍证据。后续规范更新须更改基线并审查此表；不得静默跟随上游主分支。
 
@@ -23,10 +23,10 @@
 | 海拔与阴影 | 令牌已交付：0/1/3/6/8/12 DIP、可覆盖 Avalonia 阴影投影；不宣称与 Android 阴影像素相同 | [M3-02 #3][i3] | ElevationTokens v0_103；[M3-02](verification/m3-02.md) |
 | 状态层 | 完整 hover/focus/press/drag 与禁用 alpha 输入已交付；初始按钮实时消费 hover/press/disabled，其他控件状态归各组件票 | [M3-02 #3][i3]、[M3-03 #4][i4] | StateTokens v0_210、FilledButtonTokens；真实指针场景 |
 | 动效、Expressive 弹簧、减少动效 | 令牌已交付：16 时长、10 easing、标准与 Expressive 各 6 spring 对；减少动效将有效时长归零/弹簧标为瞬时。组件 spring 驱动与形变播放不在令牌完成声明内 | [M3-02 #3][i3]、[M3-03 #4][i4]及各组件票 | MotionTokens v0_103、Standard/ExpressiveMotionTokens v0_14_0；[M3-02](verification/m3-02.md) |
-| 密度、尺寸、窗口适配 | 初始：40 单位视觉高度、至少 48 单位触达；字体放大可增长 | [M3-19 #20][i20]及各组件票 | ButtonSmallTokens；触摸场景 |
-| 鼠标、触摸、键盘、焦点与无障碍 | 初始按钮：点击、取消、Tab、Enter/Space、可见焦点、Button peer 的名称/角色/禁用语义 | [M3-19 #20][i20]及各组件票 | `ButtonScenarioTests`、`ContractScenarioTests`；真实 Windows UI Automation |
-| 模板、属性、内容插槽与命令 | 初始按钮：Avalonia 公开契约与 ContentTemplate/CommandParameter | [M3-19 #20][i20]及各组件票 | `Host_content_template_and_command_work_without_replacing_input_behavior` |
-| AOT、裁剪、API 兼容与发布 | 待交付；本票仅普通桌面构建与本地预览包 | [M3-19 #20][i20] | M10、M11，不宣称已验收 |
+| 密度、尺寸、窗口适配 | 全家族各组件字体/长文本/尺寸契约，聚合17页320×300/1000×800、100/150/200%；物理设备范围不得由此推断 | [M3-19 #20][i20]及各组件票 | 各组件 evidence；`GalleryReleaseScenarioTests`；[最终矩阵](verification/m3-19.md) |
+| 鼠标、触摸、键盘、焦点与无障碍 | 全组件 headless 输入/自动化与逐票 Windows UIA；根模态覆盖 header/nav，Back collapse/veto；人工 spoken reader、物理触摸及 Android 有明确未满足项 | [M3-19 #20][i20]及各组件票 | `tests/ScenarioInventory.props` 全共享场景；[最终原生证据/限制](verification/m3-19.md) |
+| 模板、属性、内容插槽与命令 | 全组件公开扩展契约与实际宿主结果；主题/模板替换 seam 随组件证据交付，初始按钮回归保留 | [M3-19 #20][i20]及各组件票 | 各组件 Scenario/Matrix/Gallery Tests；[契约索引](public-contract.md) |
+| AOT、裁剪、API 兼容与发布 | preview.2 分析器/严格发布与 API/resource/旧编译 XAML/client 门禁已实现；具体执行结果逐项记录，App M11/公共 feed/平台人工项不冒充通过 | [M3-19 #20][i20] | [M3-19](verification/m3-19.md)、[发布过程](release.md)、[升级](upgrade.md) |
 
 ## 全部标准组件与 Expressive 变体
 
@@ -68,7 +68,7 @@
 | Time pickers：钟面、键盘输入、12/24 小时 | 已实现：256 基准真实钟面/24h 双圈、纵横布局、逐分钟拖动/键盘/可访问行动、原生 TimeInput 与 AM/PM、完整确认/取消/边界；大字体增长/横向滚动为明确 Avalonia 投影，非上游像素/扩展 TimeScroll 系列声明 | [M3-17 #18][i18] | [Time pickers][time-pickers]、锁定 TimePicker/TimeInputTokens；[契约](components/m3-17.md)、[证据](verification/m3-17.md) |
 | Carousel：multi-browse、uncontained、hero、full-screen | 已实现四种实际图片布局/掩膜、触摸/鼠标/键盘、宿主项目/位置/加载错误恢复、窗口连续性、Scroll 自动化、新包展厅；布局/惯性/动效明确为 Avalonia 投影，非上游算法等价 | [M3-18 #19][i19] | [Carousel][carousel]、锁定 Carousel.kt；[公开契约](components/m3-18.md)、[证据与限制](verification/m3-18.md) |
 | Pull-to-refresh：手势、指示器、内容更新 | 已实现真实阈值/抵抗/释放/取消/忙态手势，standard/Expressive 反馈、宿主结果与错误恢复、F5/Invoke；读屏人工/移动硬件与 Compose nested-scroll/物理等价未认领 | [M3-18 #19][i19] | 锁定 PullToRefresh.kt；[公开契约](components/m3-18.md)、[验证](verification/m3-18.md) |
-| 完整展厅、包文档、宿主矩阵、API/版本兼容、AOT/裁剪及发布 | 初始展厅与本地包已交付；完整验收待交付 | [M3-19 #20][i20] | [验证记录](verification/m3-01.md)、[消费契约](public-contract.md) |
+| 完整展厅、包文档、宿主矩阵、API/版本兼容、AOT/裁剪及发布 | 全部17页显式工厂、两个完整包宿主、共享清单/身份/确切包门禁、preview.2文档/API/resource基线及发布脚本；M3-local 实际结果与外部欠缺分别记录，整体 acceptance 不能自动认领 | [M3-19 #20][i20] | [最终验证](verification/m3-19.md)、[消费契约](public-contract.md)、[升级](upgrade.md)、[发布](release.md) |
 
 [components]: https://m3.material.io/components
 [expressive]: https://developer.android.com/develop/ui/compose/designsystems/material3

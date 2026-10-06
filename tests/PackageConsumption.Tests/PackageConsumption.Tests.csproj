@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
-  </PropertyGroup>
+  <PropertyGroup><OutputType>Exe</OutputType><IsPackable>false</IsPackable><IsTestProject>true</IsTestProject></PropertyGroup>
+  <Import Project="../ScenarioInventory.props" />
   <ItemGroup>
     <PackageReference Include="Avalonia.Material3" Version="$(Material3Version)" />
     <PackageReference Include="Avalonia.Headless.XUnit" Version="$(AvaloniaVersion)" />
@@ -13,48 +10,6 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
     <ProjectReference Include="../../samples/Gallery/Gallery.csproj" />
     <ProjectReference Include="../../samples/TextFieldHost/TextFieldHost.csproj" />
-    <ProjectReference Include="../../samples/StandaloneHost/StandaloneHost.csproj" />
-    <Compile Include="../Avalonia.Material3.Tests/TextFieldScenarioTests.cs" Link="TextFieldScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/NavigationScenarioTests.cs" Link="NavigationScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/AppChromeScenarioTests.cs" Link="AppChromeScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/AppChromeMatrixScenarioTests.cs" Link="AppChromeMatrixScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/AppChromeGalleryScenarioTests.cs" Link="AppChromeGalleryScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/NavigationMatrixScenarioTests.cs" Link="NavigationMatrixScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/NavigationGalleryScenarioTests.cs" Link="NavigationGalleryScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SearchChipScenarioTests.cs" Link="SearchChipScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SearchGalleryScenarioTests.cs" Link="SearchGalleryScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SearchAdaptationScenarioTests.cs" Link="SearchAdaptationScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ButtonScenarioTests.cs" Link="ButtonScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ButtonGroupScenarioTests.cs" Link="ButtonGroupScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ButtonGroupMatrixScenarioTests.cs" Link="ButtonGroupMatrixScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ButtonHost.cs" Link="ButtonHost.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ContractScenarioTests.cs" Link="ContractScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ExpressiveButtonScenarioTests.cs" Link="ExpressiveButtonScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SelectionHost.cs" Link="SelectionHost.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SelectionScenarioTests.cs" Link="SelectionScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SelectionFormScenarioTests.cs" Link="SelectionFormScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SelectionAdaptationScenarioTests.cs" Link="SelectionAdaptationScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ContentScenarioTests.cs" Link="ContentScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SliderScenarioTests.cs" Link="SliderScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/FloatingActionScenarioTests.cs" Link="FloatingActionScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/FloatingActionContractTests.cs" Link="FloatingActionContractTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/FloatingActionsGalleryTests.cs" Link="FloatingActionsGalleryTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ProgressScenarioTests.cs" Link="ProgressScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/CarouselRefreshScenarioTests.cs" Link="CarouselRefreshScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/CarouselGalleryScenarioTests.cs" Link="CarouselGalleryScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ProgressMatrixScenarioTests.cs" Link="ProgressMatrixScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ProgressGalleryScenarioTests.cs" Link="ProgressGalleryScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/DialogScenarioTests.cs" Link="DialogScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/DateTimePickerScenarioTests.cs" Link="DateTimePickerScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/DateTimePickerGalleryScenarioTests.cs" Link="DateTimePickerGalleryScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/DialogGalleryScenarioTests.cs" Link="DialogGalleryScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SecondaryFeedbackScenarioTests.cs" Link="SecondaryFeedbackScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SecondaryFeedbackGalleryTests.cs" Link="SecondaryFeedbackGalleryTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/SecondaryFeedbackAdaptationTests.cs" Link="SecondaryFeedbackAdaptationTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ThemeScenarioTests.cs" Link="ThemeScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/TokenReferenceScenarioTests.cs" Link="TokenReferenceScenarioTests.cs" />
-    <Compile Include="../Avalonia.Material3.Tests/ThemeGalleryScenarioTests.cs" Link="ThemeGalleryScenarioTests.cs" />
-    <EmbeddedResource Include="../ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
-    <EmbeddedResource Include="../ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />
+    <ProjectReference Include="../../samples/StandaloneHost/StandaloneHost.csproj" Aliases="standalone" />
   </ItemGroup>
 </Project>

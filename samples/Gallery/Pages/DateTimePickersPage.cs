@@ -27,10 +27,10 @@ public sealed class DateTimePickersPage : UserControl
     public TimeOnly SavedTime { get; private set; } = new(14, 7);
     public string LastResult => _result.Text ?? "";
     public CultureInfo Culture => CultureInfo.GetCultureInfo(_cultures[_cultureIndex]);
-    public DateTimePickersPage(MaterialTheme theme)
+    public DateTimePickersPage(MaterialTheme theme, MaterialOverlayHost? windowOverlayHost = null)
     {
         _theme = theme;
-        Overlay = new MaterialOverlayHost();
+        Overlay = windowOverlayHost ?? new MaterialOverlayHost();
         AutomationProperties.SetAutomationId(_result, "PickerResult");
         AutomationProperties.SetLiveSetting(_result, AutomationLiveSetting.Polite);
         DockedSingle = Date(MaterialDateSelectionMode.Single, MaterialDatePickerMode.Calendar);
@@ -71,8 +71,9 @@ public sealed class DateTimePickersPage : UserControl
             if (DockedRange.IsValid) { SavedRange = new(DockedRange.SelectedDate!.Value, DockedRange.RangeEnd!.Value);
                 Report($"Confirmed range: {SavedRange.Start:yyyy-MM-dd}..{SavedRange.End:yyyy-MM-dd}"); }
         }));
-        Overlay.Content = new ScrollViewer { Content = page, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
-        Content = Overlay;
+        var pageContent = new ScrollViewer { Content = page, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
+        if (windowOverlayHost is null) { Overlay.Content = pageContent; Content = Overlay; }
+        else Content = pageContent;
     }
     private MaterialButton Action(string text, string id, System.Action action)
     {
