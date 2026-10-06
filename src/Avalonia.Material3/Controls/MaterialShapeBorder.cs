@@ -105,16 +105,26 @@ internal sealed class MaterialShapeBorder : Border
 
     private CornerRadius Resolve(CornerRadius radius)
     {
-        // Normalize before interpolation: animating 9999 -> 8 would otherwise look unchanged until the last frame.
-        // Use ratios that cannot overflow when hosts author large, finite saturated radii.
-        static double Ratio(double edge, double first, double second)
+        // Full is a percentage-like token, not a 9999-DIP fixed corner. Resolve it before
+        // interpolation. AndroidX CornerBasedShape normalizes start/end sides independently;
+        // a global scalar incorrectly turns an adjacent fixed4/8 inner corner into ~0.
+        var shortest = Math.Max(0, Math.Min(Bounds.Width, Bounds.Height));
+        double Finite(double value) => value >= 9999 ? shortest : value;
+        var tl = Finite(radius.TopLeft); var tr = Finite(radius.TopRight);
+        var br = Finite(radius.BottomRight); var bl = Finite(radius.BottomLeft);
+        static void Fit(double edge, ref double first, ref double second)
         {
             var largest = Math.Max(first, second);
-            return largest > 0 ? Math.Min(1, edge / largest / (first / largest + second / largest)) : 1;
+            var scale = largest > 0 ? Math.Min(1, edge / largest / (first / largest + second / largest)) : 1;
+            first *= scale; second *= scale;
         }
-        var scale = Math.Min(Math.Min(Ratio(Bounds.Width, radius.TopLeft, radius.TopRight), Ratio(Bounds.Width, radius.BottomLeft, radius.BottomRight)),
-            Math.Min(Ratio(Bounds.Height, radius.TopLeft, radius.BottomLeft), Ratio(Bounds.Height, radius.TopRight, radius.BottomRight)));
-        return new CornerRadius(radius.TopLeft * scale, radius.TopRight * scale, radius.BottomRight * scale, radius.BottomLeft * scale);
+        Fit(shortest, ref tl, ref bl);
+        Fit(shortest, ref tr, ref br);
+        // Keep exotic asymmetric caller corners finite on horizontal edges too, so the
+        // renderer does not perform a second, hidden normalization after interpolation.
+        Fit(Bounds.Width, ref tl, ref tr);
+        Fit(Bounds.Width, ref bl, ref br);
+        return new CornerRadius(tl, tr, br, bl);
     }
 
     private void Stop()
