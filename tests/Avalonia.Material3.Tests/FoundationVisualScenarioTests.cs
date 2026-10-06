@@ -73,6 +73,11 @@ public class FoundationVisualScenarioTests
             var signature = new byte[4]; font.ReadExactly(signature);
             Assert.Equal(new byte[] { 0, 1, 0, 0 }, signature);
         }
+        using var codepoints = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Icons/MaterialSymbolsRounded.codepoints"));
+        using var codepointReader = new StreamReader(codepoints);
+        var canonical = codepointReader.ReadToEnd().Replace("\r\n", "\n");
+        Assert.Equal("225BD09137103CB7746BC93DC08D08764C9F0C3BD04F4B958D4A3C3C19432DD6",
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(canonical))));
         using var manifest = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Icons/manifest.json"));
         using var reader = new StreamReader(manifest);
         Assert.Contains("737e3324305806514d7909874fa1818ae1808232", reader.ReadToEnd());

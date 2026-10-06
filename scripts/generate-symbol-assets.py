@@ -25,7 +25,8 @@ out = root / 'src/Avalonia.Material3/Assets/Icons'
 out.mkdir(parents=True, exist_ok=True)
 entries = [line.split() for line in a.codepoints.read_text().splitlines()]
 manifest = {'upstream': 'google/material-design-icons', 'commit': PIN, 'license': 'Apache-2.0',
-            'originalSha256': HASHES[0], 'codepointsSha256': HASHES[1], 'fontTools': '4.53.0',
+            'originalSha256': HASHES[0], 'codepointsSha256': HASHES[1],
+            'codepointsSha256Definition': 'SHA256 of UTF-8 text with canonical LF line endings; raw Windows checkout/package bytes may have CRLF. Font hashes are always exact raw binary bytes.', 'fontTools': '4.53.0',
             'modification': 'Static FILL instances, renamed families; GRAD0/opsz24/wght400. No icon redrawing.', 'instances': []}
 for fill, label in [(0, 'Unfilled'), (1, 'Filled')]:
     font = TTFont(a.font, recalcTimestamp=False)
