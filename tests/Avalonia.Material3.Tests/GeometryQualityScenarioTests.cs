@@ -104,6 +104,31 @@ public class GeometryQualityScenarioTests
         Assert.Equal(outside, host.Pixel(32, 28));
         Assert.NotEqual(outside, host.Pixel(128, 28)); // actual centered4×48 marker remains visible
     }
+
+    [AvaloniaFact]
+    public void Clock_selector_hover_preserves_its_80_dip_visual_and_numeric_content_center()
+    {
+        var picker = new MaterialTimePicker { Is24Hour = true, SelectedTime = new(19, 7) };
+        using var host = new GeometryHost(picker, 400, 640);
+        var selector = picker.GetVisualDescendants().OfType<MaterialTimeSelector>().First();
+        var before = GeometryHost.Box(selector, host.Window);
+        Assert.Equal(80, before.Height);
+        host.Window.MouseMove(before.Center); host.Render();
+        Assert.Equal(before, GeometryHost.Box(selector, host.Window));
+    }
+
+    [AvaloniaFact]
+    public void Clock_numbers_have_an_independent_24_dip_separator_and_36_dip_dial_gap()
+    {
+        var picker = new MaterialTimePicker { Is24Hour = true, SelectedTime = new(19, 7) };
+        using var host = new GeometryHost(picker, 400, 640);
+        var selectors = picker.GetVisualDescendants().OfType<MaterialTimeSelector>().ToArray();
+        var hour = GeometryHost.Box(selectors[0], host.Window);
+        var minute = GeometryHost.Box(selectors[1], host.Window);
+        Assert.Equal(24, minute.Left - hour.Right);
+        var dial = GeometryHost.Box(picker.GetVisualDescendants().OfType<MaterialClockDial>().Single(), host.Window);
+        Assert.Equal(36, dial.Top - hour.Bottom);
+    }
 }
 
 internal sealed class GeometryHost : IDisposable
