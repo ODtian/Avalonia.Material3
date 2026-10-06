@@ -13,6 +13,36 @@ namespace Avalonia.Material3.Tests;
 public class InputGeometryScenarioTests
 {
     [AvaloniaFact]
+    public void Clear_symbol_paint_is_independent_of_document_font_and_200_percent_CJK_typography()
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Label = "名称 / Name", Text = "中文 Atlas", ShowClearButton = true });
+        byte[] Crop()
+        {
+            host.Capture();
+            var clear = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(host.Field).OfType<Button>()
+                .Single(button => Avalonia.Automation.AutomationProperties.GetName(button) == "Clear text");
+            Assert.Equal(new Size(48, 48), clear.Bounds.Size);
+            var point = clear.TranslatePoint(new Point(12, 12), host.Window)!.Value;
+            using var bitmap = host.Window.CaptureRenderedFrame()!;
+            using var frame = bitmap.Lock();
+            var size = (int)Math.Round(24 * host.Window.RenderScaling);
+            var bytes = new byte[size * size * 4];
+            for (var row = 0; row < size; row++)
+                System.Runtime.InteropServices.Marshal.Copy(frame.Address + (int)(point.Y * host.Window.RenderScaling + row) * frame.RowBytes +
+                    (int)(point.X * host.Window.RenderScaling) * 4, bytes, row * size * 4, size * 4);
+            return bytes;
+        }
+        var before = Crop();
+        var clear = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(host.Field).OfType<Button>()
+            .Single(button => Avalonia.Automation.AutomationProperties.GetName(button) == "Clear text");
+        Assert.Equal(Avalonia.Media.Color.Parse("#49454F"), host.PixelAt(clear.TranslatePoint(new Point(24, 24), host.Window)!.Value));
+        host.Theme.Typography = new MaterialTypography { Scale = 2, FontFamily = new Avalonia.Media.FontFamily("Times New Roman") };
+        Assert.Equal(before, Crop());
+        host.Theme.Typography = new MaterialTypography { Scale = 1, FontFamily = new Avalonia.Media.FontFamily("Courier New") };
+        Assert.Equal(before, Crop());
+    }
+
+    [AvaloniaFact]
     public async Task Switch_intermediate_thumb_shape_grows_around_the_same_icon_center()
     {
         var icon = new Border { Width = 4, Height = 4, Background = Avalonia.Media.Brushes.Red };
