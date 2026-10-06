@@ -36,6 +36,31 @@ public class MotionQualityScenarioTests
         Assert.InRange(new Vector(first.X - second.X, first.Y - second.Y).Length, 0, 2);
     }
 
+    [AvaloniaFact]
+    public async Task Opening_menu_has_a_monotonic_reveal_and_a_fixed_trigger_edge_at_every_sample()
+    {
+        using var host = new ButtonHost();
+        host.Theme.Motion = new MaterialMotion();
+        host.Window.Width = host.Window.Height = 500;
+        var menu = new MaterialFabMenu();
+        for (var i = 0; i < 4; i++) menu.Items.Add(new MaterialFabMenuItem { Content = "Create document " + i });
+        host.Window.Content = new Grid { Children = { menu } };
+        host.Capture();
+        var edge = menu.TranslatePoint(new Point(menu.Bounds.Width, menu.Bounds.Height), host.Window)!.Value;
+        menu.IsExpanded = true;
+        double previous = 0;
+        for (var frame = 0; frame < 38; frame++)
+        {
+            await Task.Delay(12);
+            host.Capture();
+            Assert.True(menu.Bounds.Height + .01 >= previous, $"Reveal recoiled from {previous} to {menu.Bounds.Height}.");
+            previous = menu.Bounds.Height;
+            var next = menu.TranslatePoint(new Point(menu.Bounds.Width, menu.Bounds.Height), host.Window)!.Value;
+            Assert.Equal(edge.Y, next.Y, 4);
+        }
+        Assert.True(previous > 200, "The test must expose actual expanded actions, not an invisible zero-size projection.");
+    }
+
     private static Point ActiveInkCenter(ButtonHost host, Control graphic)
     {
         var origin = graphic.TranslatePoint(default, host.Window)!.Value;

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Globalization;
 using Avalonia.Automation.Peers;
 using Avalonia.Animation.Easings;
@@ -6,14 +5,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Material3.Tokens;
 using Avalonia.Media;
-using Avalonia.Threading;
 
 namespace Avalonia.Material3.Controls;
 
 /// <summary>The host sets activity and terminal outcomes; reaching Value=1 never completes a task implicitly.</summary>
 public enum MaterialProgressStatus { Idle, Running, Paused, Completed, Failed }
 
-/// <summary>Host-owned feedback. The only timer renders frames; no tasks are executed or scheduled.</summary>
+/// <summary>Host-owned feedback. Presentation follows the framework render frames; no application tasks are scheduled.</summary>
 public abstract class MaterialProgressIndicator : TemplatedControl
 {
     public static readonly StyledProperty<double> ValueProperty = AvaloniaProperty.Register<MaterialProgressIndicator, double>(
@@ -41,19 +39,17 @@ public abstract class MaterialProgressIndicator : TemplatedControl
     public static readonly DirectProperty<MaterialProgressIndicator, double> GraphicWidthProperty = AvaloniaProperty.RegisterDirect<MaterialProgressIndicator, double>(nameof(GraphicWidth), control => control.GraphicWidth);
     public static readonly DirectProperty<MaterialProgressIndicator, double> GraphicHeightProperty = AvaloniaProperty.RegisterDirect<MaterialProgressIndicator, double>(nameof(GraphicHeight), control => control.GraphicHeight);
 
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(16) };
-    private readonly Stopwatch _clock = new();
+    private readonly MaterialFrameLease _frames;
     private double _amplitude;
     private double _amplitudeFrom;
     private double _amplitudeTarget;
     private double _amplitudeStart;
-    private double _lastTime;
     private double _elapsed;
     private bool _attached;
     private string _description = "Running, 0%";
     protected MaterialProgressIndicator()
     {
-        _timer.Tick += (_, _) => Advance(_clock.Elapsed.TotalSeconds);
+        _frames = MaterialRenderFrames.Bind(this, Advance);
         RefreshDescription();
     }
     public double Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
@@ -81,7 +77,6 @@ public abstract class MaterialProgressIndicator : TemplatedControl
     internal double WaveAmplitude => _amplitude;
     protected virtual bool HasAnimatedFeedback => EffectiveIndeterminate || IsExpressive && (_amplitude > 0 || _amplitudeTarget > 0);
     private bool ShouldTick => _attached && IsVisible && IsEffectivelyEnabled && Status == MaterialProgressStatus.Running && !ReducedMotion && HasAnimatedFeedback;
-    private bool CanAnimate => ShouldTick && IsEffectivelyVisible;
     internal event Action? FrameChanged;
     protected override AutomationPeer OnCreateAutomationPeer() => new MaterialProgressAutomationPeer(this);
 
@@ -90,33 +85,30 @@ public abstract class MaterialProgressIndicator : TemplatedControl
         base.OnAttachedToVisualTree(args);
         _attached = true;
         _amplitude = _amplitudeFrom = _amplitudeTarget;
-        _clock.Restart();
-        _lastTime = AnimationTime?.TotalSeconds ?? 0;
+        _frames.SetTime(AnimationTime);
         RefreshDescription();
         UpdateClock();
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs args)
     {
         _attached = false;
-        _timer.Stop();
-        _clock.Stop();
+        _frames.SetRunning(false);
         base.OnDetachedFromVisualTree(args);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == AnimationTimeProperty)
-        {
-            if (change.OldValue is TimeSpan && change.NewValue is TimeSpan time) Advance(time.TotalSeconds);
-            else _lastTime = AnimationTime?.TotalSeconds ?? _clock.Elapsed.TotalSeconds;
-        }
+        if (change.Property == AnimationTimeProperty) _frames?.SetTime(AnimationTime);
         if (change.Property == StatusProperty && Status == MaterialProgressStatus.Running && change.OldValue is MaterialProgressStatus old && old != MaterialProgressStatus.Paused)
+        {
+            _frames?.Restart();
+            _elapsed = _amplitudeStart = 0;
+        }
+        if (ReducedMotion)
+        {
             _elapsed = 0;
-        if (change.Property == StatusProperty || change.Property == IsVisibleProperty || change.Property == IsEffectivelyEnabledProperty
-            || change.Property == MotionSpringProperty || change.Property == MotionDurationProperty
-            || change.Property == IsIndeterminateProperty || change.Property == IsExpressiveProperty)
-            _lastTime = AnimationTime?.TotalSeconds ?? _clock.Elapsed.TotalSeconds;
-        if (ReducedMotion) _elapsed = 0;
+            if (change.Property == MotionSpringProperty || change.Property == MotionDurationProperty) _frames?.Restart();
+        }
         var amplitudeTarget = IsExpressive && (EffectiveIndeterminate || EffectiveValue is > .1 and < .95) ? 1d : 0d;
         if (amplitudeTarget != _amplitudeTarget)
         {
@@ -139,22 +131,18 @@ public abstract class MaterialProgressIndicator : TemplatedControl
         UpdateClock();
         FrameChanged?.Invoke();
     }
-    private void UpdateClock()
+    private void UpdateClock() => _frames?.SetRunning(ShouldTick);
+    private bool Advance(MaterialFrame frame)
     {
-        if (AnimationTime is null && ShouldTick) _timer.Start(); else _timer.Stop();
-    }
-    private void Advance(double time)
-    {
-        if (time < _lastTime)
+        _elapsed = ReducedMotion ? 0 : frame.Elapsed.TotalSeconds;
+        if (frame.Rewound)
         {
-            _elapsed = _amplitudeStart = 0;
+            _amplitudeStart = 0;
             _amplitude = _amplitudeFrom = _amplitudeTarget;
         }
-        else if (CanAnimate) _elapsed += time - _lastTime;
-        _lastTime = time;
         UpdateAmplitude();
-        UpdateClock();
-        FrameChanged?.Invoke();
+        if (IsEffectivelyVisible) FrameChanged?.Invoke();
+        return ShouldTick;
     }
     private void RefreshDescription()
     {
