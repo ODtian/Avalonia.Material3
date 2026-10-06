@@ -177,4 +177,31 @@ public class AppChromeMatrixScenarioTests
         if (rtl) Assert.True(Bounds(nav).Left > Bounds(action).Right);
         else Assert.True(Bounds(nav).Right < Bounds(action).Left);
     }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Rendered_close_drag_moves_toward_physical_start_edge_and_cancel_restores_the_surface(bool rtl)
+    {
+        var drawer = new MaterialNavigationDrawer { Mode = MaterialNavigationDrawerMode.Modal, IsOpen = false };
+        var item = new MaterialNavigationItem { Content = "Home" };
+        drawer.Items.Add(item);
+        var overlays = new MaterialOverlayHost { Content = new MaterialNavigationDrawerLayout { Drawer = drawer, Content = new Border() }, FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
+        using var host = new ChromeHost(overlays);
+        drawer.IsOpen = true; host.Layout();
+        Rect Bounds() => new Rect(item.Bounds.Size).TransformToAABB(item.TransformToVisual(host.Window)!.Value);
+        var initial = Bounds().Left;
+        var start = host.Center(item);
+        using (var contact = host.Window.TouchBegin(start))
+        {
+            host.Window.TouchMove(contact, start + new Vector(rtl ? 100 : -100, 0));
+            host.Layout();
+            Assert.Equal(initial + (rtl ? 100 : -100), Bounds().Left);
+            drawer.IsGestureEnabled = false;
+            host.Window.TouchEnd(contact, start);
+        }
+        host.Layout();
+        Assert.Equal(initial, Bounds().Left);
+        Assert.True(drawer.IsOpen);
+    }
 }

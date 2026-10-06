@@ -8,7 +8,7 @@
     <Setter Property="Template"><ControlTemplate>
       <Border x:Name="Surface" Background="{TemplateBinding CurrentBackground}">
         <controls:MaterialAppBarPanel>
-          <ContentPresenter Content="{TemplateBinding NavigationContent}" ContentTemplate="{TemplateBinding NavigationContentTemplate}" VerticalAlignment="Center" Foreground="{DynamicResource M3.OnSurfaceBrush}" />
+          <ContentPresenter x:Name="Navigation" Content="{TemplateBinding NavigationContent}" ContentTemplate="{TemplateBinding NavigationContentTemplate}" VerticalAlignment="Center" Foreground="{DynamicResource M3.OnSurfaceBrush}" />
           <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
             <ContentPresenter Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}" VerticalAlignment="Center" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
           </ScrollViewer>
@@ -112,7 +112,7 @@
     <Setter Property="ItemsPanel"><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></Setter>
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
     <Setter Property="Template"><ControlTemplate>
-      <Border x:Name="PART_Surface" Background="{TemplateBinding Background}">
+      <Border x:Name="PART_Surface" Background="{TemplateBinding Background}" BoxShadow="{TemplateBinding BoxShadow}">
         <ScrollViewer x:Name="PART_HeaderScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
           <StackPanel Spacing="4">
             <Grid ColumnDefinitions="*,Auto" Margin="28,12,12,12">
@@ -128,7 +128,7 @@
       </Border>
     </ControlTemplate></Setter>
     <Style Selector="^:modal"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /></Style>
-    <Style Selector="^:modal /template/ Border#PART_Surface"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeEnd}" /><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:modal /template/ Border#PART_Surface"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeEnd}" /></Style>
     <Style Selector="^:modal:rtl /template/ Border#PART_Surface"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeStart}" /></Style>
     <Style Selector="^:permanent /template/ controls|MaterialIconButton#PART_CloseButton"><Setter Property="IsVisible" Value="False" /></Style>
   </ControlTheme>

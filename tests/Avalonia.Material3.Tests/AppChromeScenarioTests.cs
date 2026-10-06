@@ -371,6 +371,53 @@ public class AppChromeScenarioTests
         Assert.Same(last, drawer.SelectedItem);
         Assert.Equal(0, invocations);
     }
+
+    [AvaloniaFact]
+    public void Modal_drawer_uses_pinned_default_zero_elevation_with_explicit_host_shadow_override()
+    {
+        var drawer = new MaterialNavigationDrawer { Mode = MaterialNavigationDrawerMode.Modal, IsOpen = false };
+        drawer.Items.Add(new MaterialNavigationItem { Content = "Home" });
+        var overlays = new MaterialOverlayHost { Content = new MaterialNavigationDrawerLayout { Drawer = drawer, Content = new Border() } };
+        using var host = new ChromeHost(overlays);
+        drawer.IsOpen = true; host.Layout();
+        Assert.Equal(default(BoxShadows), drawer.BoxShadow);
+        var shadow = BoxShadows.Parse("0 3 6 0 #40000000");
+        drawer.BoxShadow = shadow; host.Layout();
+        Assert.Equal(shadow, drawer.BoxShadow);
+        drawer.Mode = MaterialNavigationDrawerMode.Standard; host.Layout();
+        Assert.Equal(shadow, drawer.BoxShadow);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialTopAppBarVariant.Medium, 24)]
+    [InlineData(MaterialTopAppBarVariant.MediumFlexible, 24)]
+    [InlineData(MaterialTopAppBarVariant.Large, 28)]
+    [InlineData(MaterialTopAppBarVariant.LargeFlexible, 28)]
+    public void Expanded_title_uses_reference_last_baseline_bottom_padding_when_room_is_available(MaterialTopAppBarVariant variant, double padding)
+    {
+        var title = new TextBlock { Text = "Host title", FontSize = 16, LineHeight = 20 };
+        var bar = new MaterialTopAppBar { Title = "Collection", Variant = variant, TitleTemplate = new FuncDataTemplate<string>((_, _) => title) };
+        using var host = new ChromeHost(bar);
+        var baseline = title.TranslatePoint(new Point(0, title.TextLayout.TextLines[0].Baseline), host.Window)!.Value.Y;
+        // Avalonia's default layout rounding may shift a glyph baseline by up to half a DIP.
+        Assert.InRange(bar.Bounds.Bottom - baseline, padding - .5, padding + .5);
+    }
+
+    [AvaloniaFact]
+    public void Navigation_and_action_icons_use_distinct_pinned_roles_without_overwriting_host_local_color()
+    {
+        var navigation = new MaterialIconButton { Content = "←" };
+        var action = new MaterialIconButton { Content = "✓" };
+        var bar = new MaterialTopAppBar { Title = "Collection", NavigationContent = navigation, Actions = action };
+        using var host = new ChromeHost(bar);
+        Assert.Equal(Color.Parse("#1D1B20"), ((ISolidColorBrush)navigation.Foreground!).Color);
+        Assert.Equal(Color.Parse("#49454F"), ((ISolidColorBrush)action.Foreground!).Color);
+        host.Window.RequestedThemeVariant = ThemeVariant.Dark; host.Layout();
+        Assert.Equal(Color.Parse("#E6E0E9"), ((ISolidColorBrush)navigation.Foreground!).Color);
+        Assert.Equal(Color.Parse("#CAC4D0"), ((ISolidColorBrush)action.Foreground!).Color);
+        navigation.Foreground = Brushes.Red; host.Layout();
+        Assert.Equal(Colors.Red, ((ISolidColorBrush)navigation.Foreground!).Color);
+    }
 }
 
 internal sealed class ChromeHost : IDisposable

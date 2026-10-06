@@ -5,6 +5,10 @@ using Avalonia.Automation.Peers;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Controls.Presenters;
+using Avalonia.Styling;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
 
@@ -54,8 +58,7 @@ public class MaterialTopAppBar : TemplatedControl
     public object? Actions { get => GetValue(ActionsProperty); set => SetValue(ActionsProperty, value); }
     public IDataTemplate? ActionsTemplate { get => GetValue(ActionsTemplateProperty); set => SetValue(ActionsTemplateProperty, value); }
     internal bool IsTwoRow => Variant is not (MaterialTopAppBarVariant.Small or MaterialTopAppBarVariant.CenterAligned);
-    internal double TitleBottomPadding => Variant == MaterialTopAppBarVariant.Large ? 28
-        : Variant is MaterialTopAppBarVariant.MediumFlexible or MaterialTopAppBarVariant.LargeFlexible && string.IsNullOrEmpty(Subtitle) ? 12 : 16;
+    internal double TitleBottomPadding => Variant is MaterialTopAppBarVariant.Large or MaterialTopAppBarVariant.LargeFlexible ? 28 : 24;
     internal double NominalHeight => Variant switch
     {
         MaterialTopAppBarVariant.Medium => 112,
@@ -64,7 +67,43 @@ public class MaterialTopAppBar : TemplatedControl
         MaterialTopAppBarVariant.LargeFlexible => string.IsNullOrEmpty(Subtitle) ? 120 : 152,
         _ => 64
     };
+    private ContentPresenter? _navigationPresenter;
+    private readonly List<MaterialIconButton> _navigationIcons = [];
+    private readonly Style _navigationRoleStyle = new(selector => selector.OfType<MaterialIconButton>().Class(":icon-standard").Not(disabled => disabled.Class(":disabled")))
+    {
+        Setters = { new Setter(ForegroundProperty, new DynamicResourceExtension("M3.OnSurfaceBrush")) }
+    };
     public MaterialTopAppBar() => UpdatePresentation();
+    private void ClearNavigationRole()
+    {
+        foreach (var icon in _navigationIcons) icon.Styles.Remove(_navigationRoleStyle);
+        _navigationIcons.Clear();
+    }
+    private void UpdateNavigationRole()
+    {
+        ClearNavigationRole();
+        if (VisualRoot is null) return;
+        var content = _navigationPresenter?.Child ?? NavigationContent as Control;
+        if (content is null) return;
+        foreach (var icon in content.GetVisualDescendants().OfType<MaterialIconButton>().Concat(content is MaterialIconButton button ? [button] : Array.Empty<MaterialIconButton>()))
+        {
+            icon.Styles.Add(_navigationRoleStyle);
+            _navigationIcons.Add(icon);
+        }
+    }
+    private void NavigationPresenterChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Property == ContentPresenter.ChildProperty) UpdateNavigationRole();
+    }
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        if (_navigationPresenter is not null) _navigationPresenter.PropertyChanged -= NavigationPresenterChanged;
+        ClearNavigationRole();
+        base.OnApplyTemplate(e);
+        _navigationPresenter = e.NameScope.Find<ContentPresenter>("Navigation");
+        if (_navigationPresenter is not null) _navigationPresenter.PropertyChanged += NavigationPresenterChanged;
+        UpdateNavigationRole();
+    }
     internal bool UsesCollapsedTitle => IsTwoRow && CollapsedFraction >= .5;
     internal double RenderedHeight => ExpandedHeight - _collapse;
     internal void SetMeasuredHeights(double collapsed, double expanded)
@@ -176,8 +215,8 @@ public class MaterialTopAppBar : TemplatedControl
         if (ScrollBehavior == MaterialAppBarScrollBehavior.ExitUntilCollapsed && e.Delta.Y > 0 && _subscribedScroll is { Offset.Y: <= 0 } && _collapse > 0)
             e.Handled = ApplyScrollDelta(-e.Delta.Y * 48, 0) != 0;
     }
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); StartScroll(); }
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { StopWatchingScroll(); base.OnDetachedFromVisualTree(e); }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); StartScroll(); UpdateNavigationRole(); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { StopWatchingScroll(); ClearNavigationRole(); base.OnDetachedFromVisualTree(e); }
     private void UpdatePresentation()
     {
         var fraction = CollapsedFraction;
@@ -195,6 +234,7 @@ public class MaterialTopAppBar : TemplatedControl
         if (change.Property == VariantProperty || change.Property == SubtitleProperty || change.Property == CenterTitleProperty || change.Property == TitleProperty || change.Property == TitleTemplateProperty) UpdatePresentation();
         if (change.Property == ScrollSourceProperty || change.Property == ScrollBehaviorProperty) StartScroll();
         if (change.Property == BackgroundProperty || change.Property == ScrolledBackgroundProperty) UpdateBackground();
+        if (change.Property == NavigationContentProperty || change.Property == NavigationContentTemplateProperty) UpdateNavigationRole();
     }
     protected override Type StyleKeyOverride => typeof(MaterialTopAppBar);
     protected override AutomationPeer OnCreateAutomationPeer() => new AppBarAutomationPeer(this);

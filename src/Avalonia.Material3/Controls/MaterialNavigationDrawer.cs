@@ -25,6 +25,9 @@ public class MaterialNavigationDrawer : MaterialNavigation
     public bool IsOpen { get => GetValue(IsOpenProperty); set => SetValue(IsOpenProperty, value); }
     public double DrawerWidth { get => GetValue(DrawerWidthProperty); set => SetValue(DrawerWidthProperty, value); }
     public MaterialNavigationDrawerMode Mode { get => GetValue(ModeProperty); set => SetValue(ModeProperty, value); }
+    public static readonly StyledProperty<Avalonia.Media.BoxShadows> BoxShadowProperty = AvaloniaProperty.Register<MaterialNavigationDrawer, Avalonia.Media.BoxShadows>(nameof(BoxShadow));
+    /// <summary>Surface shadow. Default zero follows pinned DrawerDefaults; hosts can opt into elevation.</summary>
+    public Avalonia.Media.BoxShadows BoxShadow { get => GetValue(BoxShadowProperty); set => SetValue(BoxShadowProperty, value); }
     public static readonly StyledProperty<bool> IsStandardDismissibleProperty = AvaloniaProperty.Register<MaterialNavigationDrawer, bool>(nameof(IsStandardDismissible), true);
     public bool IsStandardDismissible { get => GetValue(IsStandardDismissibleProperty); set => SetValue(IsStandardDismissibleProperty, value); }
     public static readonly StyledProperty<bool> IsGestureEnabledProperty = AvaloniaProperty.Register<MaterialNavigationDrawer, bool>(nameof(IsGestureEnabled), true);
@@ -92,7 +95,9 @@ public class MaterialNavigationDrawer : MaterialNavigation
         }
         _distance = Math.Clamp(FlowDirection == Avalonia.Media.FlowDirection.RightToLeft ? delta.X : -delta.X, 0, Bounds.Width);
         SetAndRaise(DragOffsetProperty, ref _dragOffset, FlowDirection == Avalonia.Media.FlowDirection.RightToLeft ? _distance : -_distance);
-        if (_surface?.RenderTransform is Avalonia.Media.TranslateTransform transform) transform.X = DragOffset;
+        // The surface inherits Avalonia's RTL mirror. Translation is logical-start in both modes;
+        // DragOffset remains the publicly observed physical signed distance.
+        if (_surface?.RenderTransform is Avalonia.Media.TranslateTransform transform) transform.X = -_distance;
         e.Handled = true;
     }
     private void DragReleased(object? sender, PointerReleasedEventArgs e)
