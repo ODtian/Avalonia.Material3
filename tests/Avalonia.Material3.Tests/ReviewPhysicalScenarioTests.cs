@@ -19,6 +19,38 @@ namespace Avalonia.Material3.Tests;
 public class ReviewPhysicalScenarioTests
 {
     [AvaloniaTheory]
+    [InlineData(false, false, false)]
+    [InlineData(false, false, true)]
+    [InlineData(true, false, false)]
+    [InlineData(true, false, true)]
+    [InlineData(true, true, false)]
+    [InlineData(true, true, true)]
+    public void Always_range_value_bubbles_stay_with_physical_endpoints_in_LTR_RTL_and_reverse(bool rtl, bool inherited, bool reverse)
+    {
+        var range = new MaterialRangeSlider { Width = 360, Height = 100, Step = 10, LowerValue = 20, UpperValue = 80,
+            ReverseDirection = reverse, ValueLabelVisibility = SliderValueLabelVisibility.Always };
+        using var host = new BrowseHost(range, 400, 200);
+        host.Window.Background = new SolidColorBrush(Color.Parse("#FEF7FF"));
+        if (rtl && inherited) host.Window.FlowDirection = FlowDirection.RightToLeft;
+        else if (rtl) range.FlowDirection = FlowDirection.RightToLeft;
+        host.Render();
+        var box = Physical(range, host.Window);
+        // Short labels have ample space: physical centers86.4/273.6, not two central/swapped bubbles.
+        var lowerFraction = rtl ^ reverse ? .8 : .2;
+        var upperFraction = rtl ^ reverse ? .2 : .8;
+        var lowerX = box.Left + 24 + lowerFraction * (box.Width - 48);
+        var upperX = box.Left + 24 + upperFraction * (box.Width - 48);
+        Assert.Equal(Color.Parse("#322F35"), Pixel(host.Window, new(lowerX, box.Bottom - 70)));
+        Assert.Equal(Color.Parse("#322F35"), Pixel(host.Window, new(upperX, box.Bottom - 70)));
+        Assert.Equal(Color.Parse("#FEF7FF"), Pixel(host.Window, new(box.Center.X, box.Bottom - 70)));
+        // Close/coincident endpoints still show TWO separated bubbles instead of painting one over the other.
+        range.LowerValue = range.UpperValue = 50; host.Render();
+        Assert.Equal(Color.Parse("#322F35"), Pixel(host.Window, new(box.Center.X - 12, box.Bottom - 70)));
+        Assert.Equal(Color.Parse("#322F35"), Pixel(host.Window, new(box.Center.X + 12, box.Bottom - 70)));
+        Assert.Equal(50, range.LowerValue); Assert.Equal(50, range.UpperValue);
+    }
+
+    [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
     public void Physical_RTL_dialog_actions_confirm_left_of_cancel_and_align_to_logical_end(bool inherited)

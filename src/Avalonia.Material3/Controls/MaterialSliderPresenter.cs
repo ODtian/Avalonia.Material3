@@ -189,7 +189,7 @@ public sealed class MaterialSliderPresenter : Control
         else if (upper.HasValue)
         {
             // Separate coincident endpoint labels instead of drawing one on top of the other.
-            var trailing = upper.Value ^ owner.IsReversed;
+            var trailing = upper.Value ^ owner.ReverseDirection;
             x = trailing ? Math.Max(x, Bounds.Width / 2) : Math.Min(x, Math.Max(0, Bounds.Width / 2 - width));
             x = Math.Clamp(x, 0, Math.Max(0, Bounds.Width - width));
         }
