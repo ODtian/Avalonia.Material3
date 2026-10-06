@@ -43,6 +43,76 @@ public class GeometryQualityScenarioTests
         Assert.Equal(75, endpoints[1].GetProvider<IRangeValueProvider>()!.Value);
     }
 
+    [AvaloniaTheory]
+    [InlineData(1d)]
+    [InlineData(1.25)]
+    [InlineData(1.5)]
+    [InlineData(2d)]
+    public void Offscreen_device_scale_raster_preserves_literal_slider_cap_and_thumb_centers(double scale)
+    {
+        var slider = new MaterialRangeSlider { Width = 320, Height = 64, Step = 25, LowerValue = 25, UpperValue = 75,
+            ShowMarks = true, ValueLabelVisibility = SliderValueLabelVisibility.Never };
+        using var host = new GeometryHost(slider, 320, 64);
+        // A real DPI-aware offscreen renderer, NOT a native monitor/Window.RenderScaling claim.
+        var pixels = host.Offscreen(scale);
+        Assert.Equal((int)(320 * scale), pixels.GetLength(0));
+        Assert.Equal((int)(64 * scale), pixels.GetLength(1));
+        Color At(double x, double y) => pixels[(int)(x * scale), (int)(y * scale)];
+        Assert.Equal(Color.Parse("#6750A4"), At(32, 32));
+        Assert.Equal(Color.Parse("#6750A4"), At(288, 32));
+        Assert.Equal(Color.Parse("#6750A4"), At(95, 15));
+        Assert.Equal(Color.Parse("#6750A4"), At(223, 15));
+        Assert.Equal(Color.Parse("#FEF7FF"), At(297, 32));
+        Assert.Equal(Color.Parse("#E8DEF8"), At(160, 32));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(1d, false)]
+    [InlineData(1.25, false)]
+    [InlineData(1.5, false)]
+    [InlineData(2d, false)]
+    [InlineData(1d, true)]
+    [InlineData(1.25, true)]
+    [InlineData(1.5, true)]
+    [InlineData(2d, true)]
+    public void Offscreen_device_scale_calendar_preserves_joining_and_forbidden_half_masks(double scale, bool rtl)
+    {
+        var picker = new MaterialDatePicker { Width = 360, SelectionMode = MaterialDateSelectionMode.Range,
+            Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US"), DisplayMonth = new(2024, 2, 1),
+            SelectedDate = new(2024, 2, 7), RangeEnd = new(2024, 2, 24),
+            FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
+        using var host = new GeometryHost(picker, 360, 640);
+        var start = GeometryHost.Box(picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(d => d.Date.Day == 7), host.Window);
+        var pixels = host.Offscreen(scale);
+        Color At(double dx, double dy) => pixels[(int)((start.Left + dx) * scale), (int)((start.Top + dy) * scale)];
+        Assert.Equal(Color.Parse("#E8DEF8"), At(rtl ? 14 : 34, 5));
+        Assert.Equal(Color.Parse("#ECE6F0"), At(rtl ? 34 : 14, 5));
+        Assert.Equal(Color.Parse("#6750A4"), At(12, 24)); // circle fill, deliberately away from numeral7 ink
+        Assert.Equal(Color.Parse("#ECE6F0"), At(24, 2));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(1d)]
+    [InlineData(1.25)]
+    [InlineData(1.5)]
+    [InlineData(2d)]
+    public void Offscreen_device_scale_clock_07_retains_true_bubble_angle_and_spatial_white_numeral_ink(double scale)
+    {
+        var dial = new MaterialClockDial { Value = 7, ActivePart = MaterialTimePickerPart.Minute };
+        using var host = new GeometryHost(dial, 256, 256);
+        var pixels = host.Offscreen(scale);
+        Assert.Equal(Color.Parse("#6750A4"), pixels[(int)(209 * scale), (int)(53 * scale)]);
+        Assert.Equal(Color.Parse("#E6E0E9"), pixels[(int)(177 * scale), (int)(20 * scale)]);
+        var ink = 0;
+        for (var y = (int)(27 * scale); y < 57 * scale; y++)
+        for (var x = (int)(164 * scale); x < 195 * scale; x++)
+        {
+            var dx = x + .5 - 195.582191242245 * scale; var dy = y + .5 - 52.9423726267832 * scale;
+            if (dx * dx + dy * dy < 22 * 22 * scale * scale && pixels[x, y] == Color.Parse("#FFFFFF")) ink++;
+        }
+        Assert.True(ink > 0, "Spatial selected numeral ink must actually render at this raster DPI.");
+    }
+
     [AvaloniaFact]
     public void Dense_discrete_pointer_inverse_selects_the_value_at_its_painted_interior_thumb()
     {
@@ -89,6 +159,24 @@ public class GeometryQualityScenarioTests
         Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(middle.Left + 1, middle.Top + 2));
         picker.RangeEnd = picker.SelectedDate; host.Render();
         Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(start.Left + (rtl ? 14 : 34), start.Top + 5));
+    }
+
+    [AvaloniaFact]
+    public void Date_range_font_growth_keeps_circular_endpoints_and_a_40_dip_joining_band()
+    {
+        var picker = new MaterialDatePicker { Width = 360, SelectionMode = MaterialDateSelectionMode.Range,
+            Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US"), DisplayMonth = new(2024, 2, 1),
+            SelectedDate = new(2024, 2, 7), RangeEnd = new(2024, 2, 24) };
+        using var host = new GeometryHost(picker, 360, 900);
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 }; host.Render();
+        var day = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(d => d.Date.Day == 7);
+        var box = GeometryHost.Box(day, host.Window);
+        // BodyLarge line48 requires a48 circle plus two4 gutters: readable56-square target.
+        Assert.Equal(new Size(56, 56), box.Size);
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Left + 5, box.Center.Y));
+        Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(box.Left + 50, box.Top + 9));
+        Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(box.Left + 6, box.Top + 9));
+        Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(box.Right - 1, box.Top + 6));
     }
 
     [AvaloniaFact]
@@ -173,11 +261,12 @@ public class GeometryQualityScenarioTests
         }
         Assert.True(selectedInk > 4, $"No OnPrimary numeral ink within the07 selector ({selectedInk}).");
         Assert.True(unselectedInk > 0, "The ordinary numeral fixture must contain outside solid ink; exact area is font dependent.");
+        int? chosen = null; dial.ValueSelected += (_, args) => chosen = args.Value;
         var five = dial.GetVisualDescendants().OfType<MaterialClockNumber>().Single(n => n.Value == 5);
         Assert.False(five.IsChecked); // overlap isn't semantic selection
         var point = GeometryHost.Box(five, host.Window).Center;
         host.Window.MouseDown(point, MouseButton.Left); host.Window.MouseUp(point, MouseButton.Left);
-        Assert.Equal(5, five.Value); // still a native action (ValueSelected exercised by existing picker suite)
+        Assert.Equal(5, chosen); // actual native action retained; overlap doesn't change its identity
     }
 
     [AvaloniaFact]
@@ -240,11 +329,13 @@ internal sealed class GeometryHost : IDisposable
 {
     public MaterialTheme Theme { get; } = new() { Motion = new MaterialMotion { ReduceMotion = true } };
     public Window Window { get; }
+    private readonly Border _surface;
     public GeometryHost(Control content, double width, double height)
     {
         Application.Current!.Styles.Add(Theme);
+        _surface = new Border { Background = new SolidColorBrush(Color.Parse("#FEF7FF")), Child = content };
         Window = new Window { Width = width, Height = height, RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light,
-            Background = new SolidColorBrush(Color.Parse("#FEF7FF")), Content = content };
+            Background = _surface.Background, Content = _surface };
         Window.Show(); Render();
     }
     public static Rect Box(Control control, Window window) => new Rect(control.Bounds.Size).TransformToAABB(control.TransformToVisual(window)!.Value);
@@ -258,6 +349,26 @@ internal sealed class GeometryHost : IDisposable
         var green = Marshal.ReadByte(frame.Address, offset + 1);
         var third = Marshal.ReadByte(frame.Address, offset + 2);
         return frame.Format == PixelFormat.Bgra8888 ? Color.FromRgb(third, green, first) : Color.FromRgb(first, green, third);
+    }
+    public Color[,] Offscreen(double scale)
+    {
+        var width = (int)(_surface.Bounds.Width * scale); var height = (int)(_surface.Bounds.Height * scale);
+        using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(width, height), new Vector(96 * scale, 96 * scale));
+        bitmap.Render(_surface);
+        using var storage = new Avalonia.Media.Imaging.WriteableBitmap(new PixelSize(width, height),
+            new Vector(96 * scale, 96 * scale), PixelFormat.Bgra8888, AlphaFormat.Premul);
+        using var frame = storage.Lock();
+        bitmap.CopyPixels(frame);
+        var result = new Color[width, height];
+        for (var y = 0; y < height; y++)
+        for (var x = 0; x < width; x++)
+        {
+            var offset = y * frame.RowBytes + x * 4;
+            var blue = Marshal.ReadByte(frame.Address, offset); var green = Marshal.ReadByte(frame.Address, offset + 1);
+            var red = Marshal.ReadByte(frame.Address, offset + 2);
+            result[x, y] = Color.FromRgb(red, green, blue);
+        }
+        return result;
     }
     public Color[,] Region(int left, int top, int width, int height)
     {

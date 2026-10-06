@@ -14,13 +14,13 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Background="Transparent">
-          <Border x:Name="Circle" MinWidth="40" MinHeight="40" Margin="4" CornerRadius="999"
+          <c:MaterialCalendarCircle x:Name="Circle" MinWidth="40" MinHeight="40" Margin="4"
                   Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}" HorizontalAlignment="Center" VerticalAlignment="Center">
             <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                               Foreground="{TemplateBinding Foreground}" Padding="4,0" />
-          </Border>
+          </c:MaterialCalendarCircle>
           <Border x:Name="State" Margin="4" CornerRadius="999" Background="{TemplateBinding Foreground}"
                   Opacity="0" IsHitTestVisible="False" />
           <Border x:Name="Focus" Margin="1" CornerRadius="999" BorderBrush="{DynamicResource M3.SecondaryBrush}"
