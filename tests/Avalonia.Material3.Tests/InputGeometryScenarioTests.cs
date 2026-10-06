@@ -13,6 +13,38 @@ namespace Avalonia.Material3.Tests;
 public class InputGeometryScenarioTests
 {
     [AvaloniaFact]
+    public async Task Switch_intermediate_thumb_shape_grows_around_the_same_icon_center()
+    {
+        var icon = new Border { Width = 4, Height = 4, Background = Avalonia.Media.Brushes.Red };
+        var toggle = new MaterialSwitch { OnIcon = icon };
+        using var host = new SelectionHost(toggle);
+        host.Theme.Motion = new MaterialMotion { DurationShort4 = TimeSpan.FromMilliseconds(400) };
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        toggle.IsChecked = true;
+        await Task.Delay(80);
+        using var bitmap = host.Window.CaptureRenderedFrame()!;
+        using var frame = bitmap.Lock();
+        var origin = toggle.TranslatePoint(default, host.Window)!.Value;
+        var thumb = new List<int>(); var glyph = new List<int>();
+        for (var x = 10; x <= 55; x++)
+        {
+            var offset = (int)(origin.Y + 24) * frame.RowBytes + (int)(origin.X + x) * 4;
+            var first = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset);
+            var g = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 1);
+            var third = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 2);
+            var red = frame.Format == Avalonia.Platform.PixelFormat.Bgra8888 ? third : first;
+            // Primary track green80, thumb goes116->255. Exact red caller artwork has green0.
+            if (g > 95) thumb.Add(x);
+            if (g == 0 && red == 255) glyph.Add(x);
+        }
+        Assert.NotEmpty(thumb); Assert.NotEmpty(glyph);
+        Assert.InRange(thumb[^1] - thumb[0] + 1, 17, 23); // Not instantaneous16 or24 endpoints.
+        var thumbCentre = (thumb[0] + thumb[^1] + 1) / 2d;
+        var glyphCentre = (glyph[0] + glyph[^1] + 1) / 2d;
+        Assert.InRange(Math.Abs(thumbCentre - glyphCentre), 0, 0.5);
+    }
+
+    [AvaloniaFact]
     public void Wrapped_filled_label_reserves_its_full_envelope_before_focus_without_overlapping_native_text()
     {
         using var host = new TextFieldHost(new MaterialTextField { Label = "A long 中文 label that needs more than one floating line in this narrow editor", ShowClearButton = true });
