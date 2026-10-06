@@ -25,6 +25,9 @@
     <Compile Include="../Avalonia.Material3.Tests/SelectionAdaptationScenarioTests.cs" Link="SelectionAdaptationScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ContentScenarioTests.cs" Link="ContentScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/SliderScenarioTests.cs" Link="SliderScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/ProgressScenarioTests.cs" Link="ProgressScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/ProgressMatrixScenarioTests.cs" Link="ProgressMatrixScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/ProgressGalleryScenarioTests.cs" Link="ProgressGalleryScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ThemeScenarioTests.cs" Link="ThemeScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/TokenReferenceScenarioTests.cs" Link="TokenReferenceScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ThemeGalleryScenarioTests.cs" Link="ThemeGalleryScenarioTests.cs" />

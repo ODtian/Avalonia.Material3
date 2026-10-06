@@ -1,0 +1,62 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls" x:CompileBindings="False">
+  <ControlTheme x:Key="{x:Type controls:MaterialProgressIndicator}" TargetType="controls:MaterialProgressIndicator">
+    <Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" />
+    <Setter Property="TrackBrush" Value="{DynamicResource M3.SecondaryContainerBrush}" />
+    <Setter Property="ErrorBrush" Value="{DynamicResource M3.ErrorBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodyMediumFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyMediumFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodyMediumFontWeight}" />
+    <Setter Property="MotionSpring" Value="{DynamicResource M3.Motion.DefaultSpatial}" />
+    <Setter Property="MotionDuration" Value="{DynamicResource M3.Motion.DurationLong2}" />
+    <Setter Property="AccelerateEasing" Value="{DynamicResource M3.Motion.EasingEmphasizedAccelerate}" />
+    <Setter Property="DecelerateEasing" Value="{DynamicResource M3.Motion.EasingEmphasizedDecelerate}" />
+    <Setter Property="ProgressEasing" Value="{DynamicResource M3.Motion.EasingStandard}" />
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <StackPanel>
+          <controls:MaterialProgressPresenter Width="{TemplateBinding GraphicWidth}" Height="{TemplateBinding GraphicHeight}" HorizontalAlignment="Left" Indicator="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
+          <TextBlock x:Name="StatusText" IsVisible="False" Text="{TemplateBinding StatusDescription}" TextWrapping="Wrap"
+                     LineHeight="{DynamicResource M3.BodyMediumLineHeight}" LetterSpacing="{DynamicResource M3.BodyMediumLetterSpacing}"
+                     Foreground="{DynamicResource M3.OnSurfaceBrush}" />
+        </StackPanel>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:disabled">
+      <Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" />
+      <Setter Property="TrackBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
+    </Style>
+    <Style Selector="^:result /template/ TextBlock#StatusText"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:paused /template/ TextBlock#StatusText"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:idle /template/ TextBlock#StatusText"><Setter Property="IsVisible" Value="True" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialLinearProgressIndicator}" TargetType="controls:MaterialLinearProgressIndicator"
+                BasedOn="{StaticResource {x:Type controls:MaterialProgressIndicator}}">
+    <Setter Property="Width" Value="240" />
+
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialCircularProgressIndicator}" TargetType="controls:MaterialCircularProgressIndicator"
+                BasedOn="{StaticResource {x:Type controls:MaterialProgressIndicator}}">
+    <Setter Property="Width" Value="40" />
+    <Style Selector="^:expressive"><Setter Property="Width" Value="48" /></Style>
+    <Style Selector="^:idle"><Setter Property="Width" Value="240" /></Style>
+    <Style Selector="^:paused"><Setter Property="Width" Value="240" /></Style>
+    <Style Selector="^:result"><Setter Property="Width" Value="240" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialLoadingIndicator}" TargetType="controls:MaterialLoadingIndicator"
+                BasedOn="{StaticResource {x:Type controls:MaterialProgressIndicator}}">
+    <Setter Property="Width" Value="48" />
+    <Style Selector="^:idle"><Setter Property="Width" Value="240" /></Style>
+    <Style Selector="^:paused"><Setter Property="Width" Value="240" /></Style>
+    <Style Selector="^:result"><Setter Property="Width" Value="240" /></Style>
+    <Setter Property="ContainerBrush" Value="{DynamicResource M3.PrimaryContainerBrush}" />
+    <Setter Property="ContainedForeground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" />
+    <Setter Property="ContainerCornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
+    <Setter Property="MotionSpring" Value="{DynamicResource M3.Motion.SlowSpatial}" />
+    <Style Selector="^:disabled">
+      <Setter Property="ContainerBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
+      <Setter Property="ContainedForeground" Value="{DynamicResource M3.DisabledForegroundBrush}" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>
