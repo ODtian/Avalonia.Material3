@@ -63,7 +63,7 @@ public class MaterialNavigationItem : Button
     protected override void OnClick()
     {
         if (!IsEffectivelyEnabled) return;
-        Owner?.Activate(this);
+        if (Owner is { } owner && !owner.TryActivate(this)) return;
         base.OnClick();
         Owner?.NotifyInvoked(this);
     }

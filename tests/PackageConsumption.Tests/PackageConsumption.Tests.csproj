@@ -16,6 +16,9 @@
     <ProjectReference Include="../../samples/StandaloneHost/StandaloneHost.csproj" />
     <Compile Include="../Avalonia.Material3.Tests/TextFieldScenarioTests.cs" Link="TextFieldScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/NavigationScenarioTests.cs" Link="NavigationScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/AppChromeScenarioTests.cs" Link="AppChromeScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/AppChromeMatrixScenarioTests.cs" Link="AppChromeMatrixScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/AppChromeGalleryScenarioTests.cs" Link="AppChromeGalleryScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/NavigationMatrixScenarioTests.cs" Link="NavigationMatrixScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/NavigationGalleryScenarioTests.cs" Link="NavigationGalleryScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/SearchChipScenarioTests.cs" Link="SearchChipScenarioTests.cs" />
