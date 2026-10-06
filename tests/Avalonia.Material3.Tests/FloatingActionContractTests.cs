@@ -20,6 +20,19 @@ namespace Avalonia.Material3.Tests;
 public class FloatingActionContractTests
 {
     [AvaloniaFact]
+    public void Vibrant_toolbar_preserves_an_explicit_filled_icon_recipe_in_its_public_action_slot()
+    {
+        using var host = new ButtonHost();
+        var icon = new MaterialIconButton { Content = "+", IconVariant = MaterialIconButtonVariant.Filled };
+        var toolbar = new MaterialToolbar { Color = MaterialToolbarColor.Vibrant };
+        toolbar.Items.Add(icon);
+        host.Window.Content = toolbar;
+        host.Capture();
+        Assert.Equal(Color.Parse("#6750A4"), ((ISolidColorBrush)icon.Background!).Color);
+        Assert.Equal(Color.Parse("#FFFFFF"), ((ISolidColorBrush)icon.Foreground!).Color);
+    }
+
+    [AvaloniaFact]
     public async Task Extreme_valid_host_springs_cannot_poison_action_layout()
     {
         using var host = new ButtonHost();

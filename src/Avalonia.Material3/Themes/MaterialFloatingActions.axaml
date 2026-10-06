@@ -180,6 +180,6 @@
       <Style Selector="^:docked:vertical"><Setter Property="HorizontalAlignment" Value="Left" /><Setter Property="VerticalAlignment" Value="Stretch" /><Setter Property="Padding" Value="0,16" /></Style>
     </ControlTheme>
   </Styles.Resources>
-  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:not(:disabled):not(:checked)"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
-  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:not(:disabled):checked"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:icon-standard:not(:disabled):not(:checked)"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
+  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:icon-standard:not(:disabled):checked"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
 </Styles>
