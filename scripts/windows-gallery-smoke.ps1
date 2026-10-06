@@ -5,6 +5,9 @@ Add-Type @'
 using System; using System.Runtime.InteropServices;
 public static class GalleryNativeWindow {
  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+ [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+ [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
+ [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extra);
  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int width, int height, uint flags);
 }
 '@
@@ -16,10 +19,30 @@ function Wait($condition, $description) {
     while ($timer.Elapsed.TotalSeconds -lt 25) { $value = & $condition; if ($value) { return $value }; Start-Sleep -Milliseconds 80 }
     throw "Timed out: $description"
 }
+function Foreground {
+    [GalleryNativeWindow]::SetForegroundWindow($handle) | Out-Null
+    if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) {
+        # Windows may deny a background automation caller's activation. Raise ONLY our
+        # window and give its inert upper-left header a real native mouse click.
+        # No foreground-lock/keyboard-layout/global setting is changed.
+        [GalleryNativeWindow]::SetWindowPos($handle,[IntPtr]::Zero,0,0,0,0,0x0043) | Out-Null
+        $bounds=$window.Current.BoundingRectangle
+        [GalleryNativeWindow]::SetCursorPos([int]($bounds.X + [Math]::Min(100,$bounds.Width / 4)), [int]($bounds.Y + 12)) | Out-Null
+        [GalleryNativeWindow]::mouse_event(2,0,0,0,[UIntPtr]::Zero)
+        [GalleryNativeWindow]::mouse_event(4,0,0,0,[UIntPtr]::Zero)
+    }
+    Wait { [GalleryNativeWindow]::GetForegroundWindow() -eq $handle } 'actual foreground window' | Out-Null
+}
 function Find($property, $value) { $window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, (New-Object System.Windows.Automation.PropertyCondition($property, [string]$value))) }
 function Invoke($element) { if (!$element) { throw 'Missing native action' }; $element.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke() }
 function ById($value) { Wait { Find $id $value } $value }
 function ByName($value) { Wait { Find $name $value } $value }
+function ByPrefix($prefix) {
+    Wait {
+        $window.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::TrueCondition) |
+            Where-Object { $_.Current.Name -like ($prefix + '*') -and $_.Current.IsEnabled } | Select-Object -First 1
+    } $prefix
+}
 function Capture($file) {
     $r=$window.Current.BoundingRectangle; $b=New-Object Drawing.Bitmap([int]$r.Width,[int]$r.Height); $g=[Drawing.Graphics]::FromImage($b)
     try { $g.CopyFromScreen([int]$r.X,[int]$r.Y,0,0,$b.Size); $b.Save((Join-Path $Evidence $file),[Drawing.Imaging.ImageFormat]::Png) } finally { $g.Dispose(); $b.Dispose() }
@@ -32,7 +55,7 @@ for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
         $window=[System.Windows.Automation.AutomationElement]::FromHandle($handle)
         $action=ById 'ActionButton'; if (!$action.Current.IsEnabled) { throw 'Initial action is not enabled' }
         $timer.Stop(); $timings += $timer.Elapsed.TotalMilliseconds
-        [GalleryNativeWindow]::SetForegroundWindow($handle) | Out-Null
+        Foreground
         Invoke $action; ByName 'Action completed (1)' | Out-Null
         if ($iteration -gt 0) { continue }
         $theme=ById 'ThemeButton'; $action.SetFocus(); [Windows.Forms.SendKeys]::SendWait('{TAB}')
@@ -45,6 +68,53 @@ for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
             $observations += "visited:$page"
             Write-Host "Native visit: $page"
             switch ($page) {
+                'ExpressiveButtons' {
+                    Invoke (ByName 'Submit and continue'); ByName 'Action completed (1): confirmed' | Out-Null
+                    Invoke (ByName 'Favorite'); ByName 'Favorite: selected' | Out-Null
+                    $observations += 'buttons:command-parameter-and-selected-icon-result'
+                }
+                'FloatingActions' {
+                    $menu=ByName 'Creation choices'; $expansion=$menu.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern)
+                    $expansion.Expand(); Wait { $expansion.Current.ExpandCollapseState -eq [System.Windows.Automation.ExpandCollapseState]::Expanded } 'delayed FAB menu template' | Out-Null
+                    Invoke (ByPrefix 'Document '); Wait { $expansion.Current.ExpandCollapseState -eq [System.Windows.Automation.ExpandCollapseState]::Collapsed } 'FAB action collapsed menu' | Out-Null
+                    Capture 'fab-menu-action-result.png'
+                    $toolbar=ByName 'Floating Horizontal Standard editing tools'
+                    $toolbarExpansion=$toolbar.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern)
+                    $toolbarExpansion.Collapse(); $toolbarExpansion.Expand()
+                    Wait { $toolbarExpansion.Current.ExpandCollapseState -eq [System.Windows.Automation.ExpandCollapseState]::Expanded } 'toolbar disclosure template' | Out-Null
+                    $observations += 'fab-toolbar:delayed-menu-action-collapse-and-toolbar-disclosure'
+                }
+                'ButtonGroups' {
+                    Invoke (ById 'split-secondary'); ByName 'Cloud' | Out-Null
+                    (ByName 'Cloud').GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+                    Invoke (ById 'split-main'); Wait { (ById 'split-result').Current.Name -eq 'Saved: 1' } 'split action result' | Out-Null
+                    $observations += 'groups:split-secondary-destination-and-independent-main-result'
+                }
+                'SearchChips' {
+                    $queryEditor=ById 'QueryEditor'; $queryValue=$queryEditor.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
+                    $queryValue.SetValue('publishedquery')
+                    (ById 'OpenAccessFilter').GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle()
+                    Invoke (ByName 'Submit query')
+                    Wait { (ById 'QueryResult').Current.Name -like 'Submitted 1*publishedquery' } 'explicit query/token snapshot result' | Out-Null
+                    $observations += 'search-chips:native-editor-token-toggle-and-explicit-result'
+                }
+                'ContentHierarchy' {
+                    $card=ByName 'Elevated collection card'
+                    Write-Host "Native card: $($card.Current.ClassName), $($card.Current.ControlType.ProgrammaticName), Invoke=$($card.GetCurrentPropertyValue([System.Windows.Automation.AutomationElement]::IsInvokePatternAvailableProperty))"
+                    Invoke $card; ByName 'Activated card-Elevated' | Out-Null
+                    $observations += 'content:interactive-card-command-result'
+                }
+                'ContentNavigation' {
+                    (ById 'navigation-main-1').GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
+                    Invoke (ById 'navigation-mark-read')
+                    Wait { (ById 'navigation-status').Current.Name -eq 'Library badge cleared; content action completed' } 'actual selected page/badge action result' | Out-Null
+                    $observations += 'navigation:real-selected-content-and-badge-action'
+                }
+                'CarouselRefresh' {
+                    Invoke (ById 'PhotographRefresh')
+                    Wait { (ById 'BrowseResult').Current.Name -like '*photographs updated*' } 'real host refresh/image-result completion' | Out-Null
+                    $observations += 'carousel-refresh:native-invoke-and-image-update-result'
+                }
                 'SelectionForm' {
                     $autosave=ByName 'Auto save'
                     $autosave.GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle()
@@ -112,12 +182,22 @@ for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
                     Invoke (ById 'chrome-details'); Invoke (ById 'chrome-save'); Invoke (ById 'chrome-back')
                     for ($recipe=0; $recipe -lt 8; $recipe++) { Invoke (ById 'chrome-recipe'); Start-Sleep -Milliseconds 80 }
                     Invoke (ById 'chrome-navigation'); Start-Sleep -Milliseconds 200
+                    # AppChrome's documented host policy keeps the drawer open across narrow
+                    # transfer only when its focus is inside; establish that public precondition.
+                    Foreground
+                    $homeItem=ById 'chrome-destination-home'; $homeItem.SetFocus()
+                    Wait { $homeItem.Current.HasKeyboardFocus } 'focused standard drawer before responsive transfer' | Out-Null
                     [GalleryNativeWindow]::SetWindowPos($handle,[IntPtr]::Zero,80,60,500,700,0x0040) | Out-Null
                     Wait { !$action.Current.IsEnabled } 'responsive drawer covers aggregate header/nav' | Out-Null
                     Invoke (ById 'chrome-modal'); ByName 'Navigation confirmation' | Out-Null
                     Capture 'drawer-nested-root-modal.png'
                     Invoke (ById 'chrome-dialog-back')
                     Wait { !$action.Current.IsEnabled -and !(Find $name 'Navigation confirmation') } 'nested top-first back retained drawer modality' | Out-Null
+                    # Native Invoke returns before posted focus restoration; wait for the real return
+                    # target/foreground before sending OS keys, rather than weakening dismissal checks.
+                    Foreground
+                    $footer=ById 'chrome-modal'; $footer.SetFocus()
+                    Wait { $footer.Current.HasKeyboardFocus } 'actual focus return inside drawer' | Out-Null
                     [Windows.Forms.SendKeys]::SendWait('{ESC}'); Wait { $action.Current.IsEnabled } 'drawer Escape restores whole-window background' | Out-Null
                     [GalleryNativeWindow]::SetWindowPos($handle,[IntPtr]::Zero,80,60,1000,800,0x0040) | Out-Null
                     $observations += 'chrome:details-save-return-eight-recipes-responsive-root-modal-nested-back'

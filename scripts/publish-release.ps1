@@ -10,7 +10,9 @@ if ($inputManifest.commit -cne $commit) { throw 'Stale manifest: package commit 
 $version=[string](([xml](Get-Content "$root/Directory.Build.props" -Raw)).Project.PropertyGroup.Material3Version)
 if ($inputManifest.version -cne $version) { throw 'Stale selected package version.' }
 Assert-PackageIdentity $inputManifest.package $version $commit
-$run=Join-Path (Split-Path $Manifest -Parent) ('publish-' + [guid]::NewGuid().ToString('N'))
+# MSVC14 link.exe cannot open >MAX_PATH runtime .lib paths. Keep the isolated cache
+# beneath the assigned worktree but short; no system long-path/toolchain settings are changed.
+$run=Join-Path $root ('artifacts/p-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
 $consumer=Join-Path $run 'consumer'
 $oldPackages=$env:NUGET_PACKAGES
 try {

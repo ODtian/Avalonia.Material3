@@ -131,6 +131,18 @@ public class GalleryReleaseScenarioTests
         finally { window.Close(); Application.Current.Styles.Remove(theme); }
     }
 
+    [AvaloniaFact]
+    public async Task Published_content_automation_can_query_invoke_availability_from_a_native_worker()
+    {
+        var card = new MaterialCard { IsInteractive = true, IsSelectable = true, Title = "Native card" };
+        var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(card)!;
+        Assert.True(await Task.Run(() => peer.GetProvider<Avalonia.Automation.Provider.IInvokeProvider>() is not null));
+        card.IsSelected = true;
+        Assert.Equal(Avalonia.Automation.Provider.ToggleState.On, await Task.Run(() => peer.GetProvider<Avalonia.Automation.Provider.IToggleProvider>()!.ToggleState));
+        card.IsInteractive = false;
+        Assert.Null(await Task.Run(() => peer.GetProvider<Avalonia.Automation.Provider.IInvokeProvider>()));
+    }
+
     [AvaloniaTheory]
     [InlineData("ThemeTokens")]
     [InlineData("FloatingActions")]
