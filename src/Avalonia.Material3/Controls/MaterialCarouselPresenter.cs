@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Automation;
 using Avalonia.Layout;
+using Avalonia.Styling;
 
 namespace Avalonia.Material3.Controls;
 
@@ -70,6 +71,10 @@ public sealed class MaterialCarouselPresenter : Panel
         if (owner.ItemTemplate is { } template) return template.Build(item) ?? new Panel();
         var grid = new Grid();
         var image = new Image { Source = item.Image, Stretch = Stretch.UniformToFill, IsVisible = item.Image is not null };
+        image.Styles.Add(new Style(selector => selector.OfType<Image>().Class(":disabled"))
+        {
+            Setters = { new Setter(OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) }
+        });
         AutomationProperties.SetName(image, item.Title);
         grid.Children.Add(image);
         if (item.State == MaterialCarouselItemState.Loading)
@@ -77,7 +82,11 @@ public sealed class MaterialCarouselPresenter : Panel
         else if (item.State == MaterialCarouselItemState.Failed)
         {
             var panel = new StackPanel { Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8) };
-            panel.Children.Add(Text(item.ErrorMessage ?? "Image could not be loaded"));
+            var error = Text(item.ErrorMessage ?? "Image could not be loaded");
+            error.MaxLines = 2;
+            error.TextTrimming = TextTrimming.CharacterEllipsis;
+            error.Bind(TextBlock.ForegroundProperty, new DynamicResourceExtension("M3.ErrorBrush"));
+            panel.Children.Add(error);
             var retry = new MaterialButton { Content = "Retry", HorizontalAlignment = HorizontalAlignment.Center };
             AutomationProperties.SetName(retry, "Retry " + item.Title);
             retry.Click += (_, _) => owner.RequestRetry(item);
@@ -89,7 +98,7 @@ public sealed class MaterialCarouselPresenter : Panel
         var caption = new StackPanel { Margin = new Thickness(12, 4), Tag = "caption" };
         caption.Children.Add(Text(item.Title ?? ""));
         if (item.Content is not null) caption.Children.Add(new ContentControl { Content = item.Content });
-        var footer = new Border { Child = caption, VerticalAlignment = VerticalAlignment.Bottom, Tag = "footer" };
+        var footer = new Border { Child = caption, VerticalAlignment = VerticalAlignment.Bottom, Tag = "footer", IsVisible = item.State != MaterialCarouselItemState.Failed };
         footer.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
         grid.Children.Add(footer);
         return grid;
@@ -97,6 +106,10 @@ public sealed class MaterialCarouselPresenter : Panel
     private static TextBlock Text(string text)
     {
         var block = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap };
+        block.Styles.Add(new Style(selector => selector.OfType<TextBlock>().Class(":disabled"))
+        {
+            Setters = { new Setter(OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) }
+        });
         block.Bind(TextBlock.ForegroundProperty, new DynamicResourceExtension("M3.OnSurfaceBrush"));
         foreach (var (property, suffix) in new (AvaloniaProperty, string)[] { (TextBlock.FontFamilyProperty, "FontFamily"), (TextBlock.FontSizeProperty, "FontSize"), (TextBlock.FontWeightProperty, "FontWeight"), (TextBlock.LineHeightProperty, "LineHeight"), (TextBlock.LetterSpacingProperty, "LetterSpacing") })
             block.Bind(property, new DynamicResourceExtension("M3.BodyMedium" + suffix));
@@ -125,7 +138,8 @@ public sealed class MaterialCarouselPresenter : Panel
             var from = rectangles[i];
             var to = target[i];
             if (Children[i] is Border { Child: Grid grid })
-                foreach (var footer in grid.Children.Where(c => c.Tag is "footer")) footer.IsVisible = from.Width + (to.Width - from.Width) * progress >= 120;
+                foreach (var footer in grid.Children.Where(c => c.Tag is "footer"))
+                    footer.IsVisible = ((MaterialCarouselItem)Children[i].Tag!).State != MaterialCarouselItemState.Failed && from.Width + (to.Width - from.Width) * progress >= 120;
             Children[i].Arrange(new Rect(from.X + (to.X - from.X) * progress, from.Y + (to.Y - from.Y) * progress,
                 from.Width + (to.Width - from.Width) * progress, from.Height + (to.Height - from.Height) * progress));
         }

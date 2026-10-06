@@ -455,6 +455,38 @@ public class CarouselRefreshScenarioTests
         host.Render();
         Assert.Equal(Color.Parse("#2B2930"), ((ISolidColorBrush)container.Background!).Color);
     }
+
+    [AvaloniaFact]
+    public void Long_mixed_language_error_at_large_fonts_keeps_the_named_retry_action_reachable()
+    {
+        var item = new MaterialCarouselItem { Title = "Forest / 林", State = MaterialCarouselItemState.Failed, ErrorMessage = string.Concat(Enumerable.Repeat("Image unavailable 图像不可用；Please retry。", 12)) };
+        var carousel = new MaterialCarousel { ItemsSource = [item], Height = 220 };
+        using var host = new BrowseHost(carousel, 320, 320);
+        host.Theme.Typography = new() { Scale = 2 };
+        host.Render();
+        carousel.ItemRetryRequested += (_, _) => item.State = MaterialCarouselItemState.Loading;
+        var retry = carousel.GetVisualDescendants().OfType<MaterialButton>().Single();
+        var position = host.At(retry, new Rect(retry.Bounds.Size).Center);
+        Assert.InRange(position.Y, 0, 320);
+        host.Window.MouseDown(position, MouseButton.Left);
+        host.Window.MouseUp(position, MouseButton.Left);
+        Assert.Equal(MaterialCarouselItemState.Loading, item.State);
+    }
+
+    [AvaloniaFact]
+    public void Disabled_image_collection_visibly_mutes_generated_image_and_caption_once_and_rejects_input()
+    {
+        var carousel = new MaterialCarousel { ItemsSource = [new MaterialCarouselItem { Title = "Forest / 林", Image = Picture(Brushes.Green) }, new() { Title = "Ocean" }], Height = 220 };
+        using var host = new BrowseHost(carousel);
+        carousel.IsEnabled = false;
+        host.Render();
+        var image = carousel.GetVisualDescendants().OfType<Image>().First();
+        Assert.Equal(.38, image.Opacity);
+        var caption = carousel.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "Forest / 林");
+        Assert.Equal(.38, caption.Opacity);
+        Assert.False(carousel.MoveNext());
+        Assert.Equal(0, carousel.CurrentIndex);
+    }
 }
 
 public sealed class BrowseModel : INotifyPropertyChanged

@@ -26,7 +26,7 @@ public sealed class BrowseApplication : Application
             var panel = new DockPanel();
             var controls = new WrapPanel();
             DockPanel.SetDock(controls, Dock.Top);
-            var window = new Window { Title = "M3-18 Browse package host", Width = 900, Height = 850, Content = panel };
+            var window = new Window { Title = "M3-18 Browse package host", Width = 900, Height = 850, Content = panel, RequestedThemeVariant = ThemeVariant.Light };
             controls.Children.Add(Button("Light / Dark", "BrowseTheme", () => window.RequestedThemeVariant = window.RequestedThemeVariant == ThemeVariant.Light ? ThemeVariant.Dark : ThemeVariant.Light));
             controls.Children.Add(Button("320 / 900 width", "BrowseWidth", () => window.Width = window.Width > 400 ? 320 : 900));
             controls.Children.Add(Button("100 / 200% font", "BrowseFont", () => _theme.Typography = _theme.Typography with { Scale = _theme.Typography.Scale == 1 ? 2 : 1 }));

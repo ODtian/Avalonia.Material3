@@ -123,7 +123,8 @@ public sealed class CarouselRefreshPage : UserControl, IDisposable
     }
     private static MaterialButton Action(string label, string id, Action action)
     {
-        var button = new MaterialButton { Content = label, Margin = new Thickness(0, 0, 8, 4) };
+        var button = new MaterialButton { Content = new TextBlock { Text = label, MaxWidth = 200, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center }, MaxWidth = 220, Margin = new Thickness(0, 0, 8, 4) };
+        AutomationProperties.SetName(button, label);
         AutomationProperties.SetAutomationId(button, id);
         button.Click += (_, _) => action();
         return button;
