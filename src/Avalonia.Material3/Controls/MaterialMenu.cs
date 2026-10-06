@@ -445,11 +445,23 @@ internal sealed class MaterialMenuGroupPanel : Panel
     public static readonly StyledProperty<Orientation> OrientationProperty =
         AvaloniaProperty.Register<MaterialMenuGroupPanel, Orientation>(nameof(Orientation));
     public Orientation Orientation => GetValue(OrientationProperty);
+    static MaterialMenuGroupPanel() => AffectsMeasure<MaterialMenuGroupPanel>(OrientationProperty);
     private int _columns = 1;
     private double _rowHeight;
     protected override Size MeasureOverride(Size availableSize)
     {
-        _columns = Orientation == Orientation.Horizontal ? Math.Max(1, Math.Min(Children.Count, (int)(double.IsFinite(availableSize.Width) ? availableSize.Width / 48 : Children.Count))) : 1;
+        var targetWidth = 48d;
+        if (Orientation == Orientation.Horizontal)
+        {
+            foreach (var child in Children)
+            {
+                child.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
+                targetWidth = Math.Max(targetWidth, child.DesiredSize.Width);
+            }
+        }
+        var columns = double.IsFinite(availableSize.Width) ?
+            (int)((availableSize.Width + 2) / (Math.Min(availableSize.Width, targetWidth) + 2)) : Children.Count;
+        _columns = Orientation == Orientation.Horizontal ? Math.Max(1, Math.Min(Children.Count, columns)) : 1;
         var childWidth = double.IsFinite(availableSize.Width) ? Math.Max(0, (availableSize.Width - (_columns - 1) * 2) / _columns) : double.PositiveInfinity;
         _rowHeight = 0;
         var width = 0d;

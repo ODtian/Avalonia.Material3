@@ -9,6 +9,7 @@ public class MaterialTooltipPanel : Panel
     public MaterialTooltipPanel() => UseLayoutRounding = false;
     public static readonly StyledProperty<MaterialTooltipVariant> VariantProperty = AvaloniaProperty.Register<MaterialTooltipPanel, MaterialTooltipVariant>(nameof(Variant));
     public MaterialTooltipVariant Variant { get => GetValue(VariantProperty); set => SetValue(VariantProperty, value); }
+    static MaterialTooltipPanel() => AffectsMeasure<MaterialTooltipPanel>(VariantProperty);
     private double _titleY, _bodyY, _actionY;
     protected override Size MeasureOverride(Size availableSize)
     {

@@ -15,6 +15,36 @@ namespace Avalonia.Material3.Tests;
 public class SecondaryFeedbackScenarioTests
 {
     [AvaloniaFact]
+    public void Horizontal_groups_wrap_whole_readable_targets_instead_of_squeezing_large_font_words_into_capsules()
+    {
+        using var host = new FeedbackHost(320, 480);
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 };
+        var compact = new MaterialMenuItem { Content = "Compact" };
+        var comfortable = new MaterialMenuItem { Content = "Comfortable" };
+        var group = new MaterialMenuGroup { Orientation = Avalonia.Layout.Orientation.Horizontal, Items = { compact, comfortable } };
+        new MaterialMenu { IsSegmented = true, Items = { group } }.Show(host.Overlay, host.Entry);
+        host.Render();
+        Assert.True(comfortable.Bounds.Top >= compact.Bounds.Bottom);
+        var text = comfortable.GetVisualDescendants().OfType<TextBlock>().Single(block => block.Text == "Comfortable");
+        Assert.Single(text.TextLayout.TextLines);
+        host.Key(Key.Right); Assert.True(comfortable.IsFocused);
+    }
+
+    [AvaloniaFact]
+    public void A_requested_cancellation_blocks_the_action_before_UI_dispatch_can_remove_the_surface()
+    {
+        using var host = new FeedbackHost();
+        using var cancellation = new CancellationTokenSource();
+        var actions = 0;
+        var snackbar = new MaterialSnackbar { Content = "Saved", ActionContent = "Undo", ActionCommand = new FeedbackCommand(() => actions++) };
+        var session = snackbar.Show(host.Overlay, cancellationToken: cancellation.Token); host.Render();
+        cancellation.Cancel();
+        Assert.False(snackbar.InvokeAction()); Assert.Equal(0, actions);
+        host.Render();
+        Assert.Equal(MaterialOverlayCloseReason.Cancelled, session.Completion.Result.Reason);
+    }
+
+    [AvaloniaFact]
     public void A_second_contact_cancels_long_press_and_cannot_become_a_new_gesture_generation()
     {
         using var host = new FeedbackHost();

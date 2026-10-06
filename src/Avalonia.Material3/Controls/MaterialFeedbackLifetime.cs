@@ -15,13 +15,16 @@ internal sealed class MaterialFeedbackLifetime : IDisposable
     private readonly bool _allowDisabledAnchor;
     private readonly ITimer? _timer;
     private CancellationTokenRegistration _registration;
+    private readonly CancellationToken _cancellationToken;
     private bool _disposed;
-    public bool IsEnding { get; private set; }
+    private bool _ending;
+    public bool IsEnding => _ending || _cancellationToken.IsCancellationRequested;
     public event EventHandler? StateChanged;
     public MaterialFeedbackLifetime(MaterialOverlayHost host, MaterialOverlaySession session, TimeSpan? duration,
         TimeProvider timeProvider, CancellationToken cancellationToken, Control? anchor = null, bool allowDisabledAnchor = false)
     {
         _host = host; _session = session; _anchor = anchor;
+        _cancellationToken = cancellationToken;
         _allowDisabledAnchor = allowDisabledAnchor;
         host.PropertyChanged += HostChanged;
         if (anchor is not null) host.LayoutUpdated += CheckAnchor;
@@ -46,7 +49,7 @@ internal sealed class MaterialFeedbackLifetime : IDisposable
     public void RequestDismiss()
     {
         if (_disposed) return;
-        IsEnding = true; StateChanged?.Invoke(this, EventArgs.Empty); TryDismiss();
+        _ending = true; StateChanged?.Invoke(this, EventArgs.Empty); TryDismiss();
     }
     private void TryDismiss()
     {

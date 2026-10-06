@@ -7,6 +7,7 @@ public class MaterialFeedbackPanel : Panel
 {
     public static readonly StyledProperty<bool> ActionOnNewLineProperty = AvaloniaProperty.Register<MaterialFeedbackPanel, bool>(nameof(ActionOnNewLine));
     public bool ActionOnNewLine { get => GetValue(ActionOnNewLineProperty); set => SetValue(ActionOnNewLineProperty, value); }
+    static MaterialFeedbackPanel() => AffectsMeasure<MaterialFeedbackPanel>(ActionOnNewLineProperty);
     private bool _stacked;
     private double _firstHeight, _secondHeight;
     protected override Size MeasureOverride(Size availableSize)
