@@ -47,6 +47,37 @@ public class FoundationVisualScenarioTests
         Assert.Equal(Color.Parse("#6750A4"), host.PixelAt(main.TranslatePoint(new Point(117, 8), host.Window)!.Value));
     }
 
+    [AvaloniaFact]
+    public void Filled_uses_real_official_fill_artwork_in_the_same_fixed_frame()
+    {
+        using var host = new ButtonHost();
+        var symbol = new MaterialSymbol { Symbol = "favorite", Foreground = Brushes.Black };
+        host.Window.Background = Brushes.White;
+        host.Window.Content = new Border { Padding = new Thickness(24), Child = symbol,
+            HorizontalAlignment = Layout.HorizontalAlignment.Left, VerticalAlignment = Layout.VerticalAlignment.Top };
+        host.Capture();
+        var outline = Mask(host.Window, symbol);
+        Assert.Equal(0, outline[12 * 24 + 12]);
+        symbol.Filled = true; host.Capture();
+        var filled = Mask(host.Window, symbol);
+        Assert.Equal(1, filled[12 * 24 + 12]);
+        Assert.Equal(new Size(24, 24), symbol.Bounds.Size);
+    }
+
+    [AvaloniaFact]
+    public void Published_asset_seam_exposes_both_pinned_fonts_and_matching_manifest()
+    {
+        foreach (var instance in new[] { "Unfilled", "Filled" })
+        {
+            using var font = AssetLoader.Open(new Uri($"avares://Avalonia.Material3/Assets/Icons/MaterialSymbolsRounded-{instance}.ttf"));
+            var signature = new byte[4]; font.ReadExactly(signature);
+            Assert.Equal(new byte[] { 0, 1, 0, 0 }, signature);
+        }
+        using var manifest = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Icons/manifest.json"));
+        using var reader = new StreamReader(manifest);
+        Assert.Contains("737e3324305806514d7909874fa1818ae1808232", reader.ReadToEnd());
+    }
+
     private static byte[] Mask(Window window, Control visual)
     {
         using var bitmap = window.CaptureRenderedFrame()!;
