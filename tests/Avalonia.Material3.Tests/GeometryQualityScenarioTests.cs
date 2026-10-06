@@ -180,6 +180,19 @@ public class GeometryQualityScenarioTests
     }
 
     [AvaloniaFact]
+    public void Enlarged_month_caption_wraps_instead_of_cutting_off_the_year()
+    {
+        var picker = new MaterialDatePicker { Width = 360, Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US"),
+            DisplayMonth = new(2024, 2, 1), SelectedDate = new(2024, 2, 7) };
+        using var host = new GeometryHost(picker, 360, 900);
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 }; host.Render();
+        var caption = picker.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "February 2024");
+        Assert.True(caption.TextLayout.Width <= caption.Bounds.Width + .01,
+            $"Month/year ink layout{caption.TextLayout.Width} exceeds its visible caption{caption.Bounds.Width}.");
+        Assert.True(caption.TextLayout.TextLines.Count > 1, "The narrow enlarged caption must expose the complete year through wrapping.");
+    }
+
+    [AvaloniaFact]
     public void Side_handle_hover_and_focus_do_not_paint_a_full_width_header_bar()
     {
         var handle = new MaterialSheetDragHandle { Sheet = new MaterialSideSheet() };

@@ -117,6 +117,8 @@ public class MaterialDatePicker : TemplatedControl
         _previous = MaterialPickerSupport.Action(Labels.PreviousMonth, () => NavigateMonth(-1));
         _next = MaterialPickerSupport.Action(Labels.NextMonth, () => NavigateMonth(1));
         _month = MaterialPickerSupport.Action(Labels.ChooseYear, () => { _choosingYear = !_choosingYear; RefreshCalendar(); });
+        _month.ContentTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<string>((text, _) =>
+            new TextBlock { Text = text, TextWrapping = Media.TextWrapping.Wrap });
         _previous.Content = new MaterialSymbol { Symbol = "chevron_left", Size = 24 };
         _next.Content = new MaterialSymbol { Symbol = "chevron_right", Size = 24 };
         var navigation = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), MinHeight = 56 };
