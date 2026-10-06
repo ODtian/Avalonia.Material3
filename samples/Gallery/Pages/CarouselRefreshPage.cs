@@ -90,7 +90,6 @@ public sealed class CarouselRefreshPage : UserControl, IDisposable
     }
     private async Task RefreshAsync()
     {
-        var position = MultiBrowse.CurrentIndex;
         Result.Text = "Refreshing";
         try
         {
@@ -99,7 +98,7 @@ public sealed class CarouselRefreshPage : UserControl, IDisposable
             Items = new(items);
             foreach (var carousel in new[] { MultiBrowse, Uncontained, Hero, FullScreen })
             {
-                var index = carousel == MultiBrowse ? position : carousel.CurrentIndex;
+                var index = carousel.CurrentIndex;
                 carousel.ItemsSource = Items;
                 carousel.CurrentIndex = index;
             }

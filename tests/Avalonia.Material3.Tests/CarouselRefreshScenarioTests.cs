@@ -487,6 +487,26 @@ public class CarouselRefreshScenarioTests
         Assert.False(carousel.MoveNext());
         Assert.Equal(0, carousel.CurrentIndex);
     }
+
+    [AvaloniaTheory]
+    [InlineData(400)]
+    [InlineData(900)]
+    public void Every_current_item_becomes_a_large_focal_image_including_near_the_trailing_boundary(int width)
+    {
+        var items = Enumerable.Range(0, 6).Select(i => new MaterialCarouselItem { Title = $"Photo {i}", Image = Picture(Brushes.Green) }).ToList();
+        var carousel = new MaterialCarousel { ItemsSource = items, Height = 220, ItemSpacing = 8, MotionDuration = TimeSpan.Zero };
+        using var host = new BrowseHost(carousel, width);
+        for (var index = 0; index < items.Count; index++)
+        {
+            carousel.CurrentIndex = index;
+            host.Render();
+            var images = carousel.GetVisualDescendants().OfType<Image>().ToList();
+            var current = images.Single(image => image.Source == items[index].Image);
+            var currentMask = current.GetVisualAncestors().OfType<Border>().First();
+            var largestMask = images.Select(image => image.GetVisualAncestors().OfType<Border>().First().Bounds.Width).Max();
+            Assert.Equal(largestMask, currentMask.Bounds.Width);
+        }
+    }
 }
 
 public sealed class BrowseModel : INotifyPropertyChanged

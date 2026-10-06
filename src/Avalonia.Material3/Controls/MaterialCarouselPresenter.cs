@@ -181,8 +181,14 @@ public sealed class MaterialCarouselPresenter : Panel
             var medium = Math.Min(owner.PreferredItemWidth / 2, Math.Max(48, width / 4));
             var large = (width - (smallCount == 2 ? medium + 48 : smallCount * 48) - (largeCount + smallCount - 1) * gap) / largeCount;
             if (large < medium && smallCount == 2) { smallCount = 1; large = (width - 48 - largeCount * gap) / largeCount; }
-            widths = Enumerable.Repeat(large, largeCount).Concat(smallCount == 2 ? [medium, 48] : smallCount == 1 ? [48d] : Array.Empty<double>()).ToArray();
-            if (index == count - 1) Array.Reverse(widths);
+            var largeWidths = Enumerable.Repeat(large, largeCount);
+            var leadingPeeks = Math.Clamp(index - (count - largeCount - smallCount) - largeCount + 1, 0, smallCount);
+            widths = leadingPeeks switch
+            {
+                2 => new[] { 48d, medium }.Concat(largeWidths).ToArray(),
+                1 => new[] { 48d }.Concat(largeWidths).Concat(smallCount == 2 ? [medium] : Array.Empty<double>()).ToArray(),
+                _ => largeWidths.Concat(smallCount == 2 ? [medium, 48] : smallCount == 1 ? [48d] : Array.Empty<double>()).ToArray()
+            };
         }
         var focal = owner.Layout == MaterialCarouselLayout.Hero && index > 0 ? 1 : index == count - 1 ? widths.Length - 1 : 0;
         var start = Math.Clamp(index - focal, 0, count - widths.Length);
