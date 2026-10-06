@@ -64,6 +64,32 @@ public class GeometryQualityScenarioTests
         Assert.Equal(Color.Parse("#322F35"), host.Pixel(148.8, 30));
         Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(196, 30));
     }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Date_range_joins_rectangular_week_bands_to_endpoint_circles_without_painting_the_forbidden_half(bool rtl)
+    {
+        var picker = new MaterialDatePicker { Width = 360, SelectionMode = MaterialDateSelectionMode.Range,
+            Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US"), DisplayMonth = new(2024, 2, 1),
+            SelectedDate = new(2024, 2, 7), RangeEnd = new(2024, 2, 24),
+            FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
+        using var host = new GeometryHost(picker, 360, 640);
+        var days = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().ToArray();
+        var start = GeometryHost.Box(days.Single(d => d.Date.Day == 7), host.Window);
+        var end = GeometryHost.Box(days.Single(d => d.Date.Day == 24), host.Window);
+        Assert.Equal(new Size(48, 48), start.Size);
+        Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(start.Left + (rtl ? 14 : 34), start.Top + 5));
+        Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(start.Left + (rtl ? 34 : 14), start.Top + 5));
+        Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(end.Left + (rtl ? 34 : 14), end.Top + 5));
+        Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(end.Left + (rtl ? 14 : 34), end.Top + 5));
+        // Weekly backing is deliberately rectangular; outside the40-high band is not selected.
+        var middle = GeometryHost.Box(days.Single(d => d.Date.Day == 14), host.Window);
+        Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(middle.Left + 1, middle.Top + 5));
+        Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(middle.Left + 1, middle.Top + 2));
+        picker.RangeEnd = picker.SelectedDate; host.Render();
+        Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(start.Left + (rtl ? 14 : 34), start.Top + 5));
+    }
 }
 
 internal sealed class GeometryHost : IDisposable
@@ -77,6 +103,7 @@ internal sealed class GeometryHost : IDisposable
             Background = new SolidColorBrush(Color.Parse("#FEF7FF")), Content = content };
         Window.Show(); Render();
     }
+    public static Rect Box(Control control, Window window) => new Rect(control.Bounds.Size).TransformToAABB(control.TransformToVisual(window)!.Value);
     public void Render() { using var frame = Window.CaptureRenderedFrame(); }
     public Color Pixel(double x, double y)
     {

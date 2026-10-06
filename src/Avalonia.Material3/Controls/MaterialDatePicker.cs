@@ -293,7 +293,10 @@ public class MaterialDatePicker : TemplatedControl
             var isEnd = date == RangeEnd;
             Grid.SetColumn(band, isStart ? 1 : 0);
             Grid.SetColumnSpan(band, isStart || isEnd ? 1 : 2);
-            band.CornerRadius = new(isStart ? 20 : 0, isEnd ? 20 : 0, isEnd ? 20 : 0, isStart ? 20 : 0);
+            // Pinned DateRangePicker.drawRangeBackground is rectangular, beginning/ending at
+            // endpoint centers. The selected circle supplies the outward rounded cap; rounding
+            // a half-cell instead removes the joining corner (and creates a false range notch).
+            band.CornerRadius = default;
             var status = date == SelectedDate ? SelectionMode == MaterialDateSelectionMode.Single ? Labels.Selected : Labels.RangeStart
                 : date == RangeEnd && SelectionMode == MaterialDateSelectionMode.Range ? Labels.RangeEnd : button.IsInRange ? Labels.InRange : "";
             if (button.IsToday) status += " " + Labels.Today;
