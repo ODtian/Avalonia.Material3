@@ -7,84 +7,129 @@ using Avalonia.Styling;
 
 namespace Avalonia.Material3.Controls;
 
-/// <summary>Template infrastructure; layout algorithms are an Avalonia projection of keyline masking.</summary>
+/// <summary>Template infrastructure; stable content measurement and cached keyline-mask plans.</summary>
 public sealed class MaterialCarouselPresenter : Panel
 {
     public static readonly StyledProperty<MaterialCarousel?> CarouselProperty = AvaloniaProperty.Register<MaterialCarouselPresenter, MaterialCarousel?>(nameof(Carousel));
     public MaterialCarousel? Carousel { get => GetValue(CarouselProperty); set => SetValue(CarouselProperty, value); }
+    private MaterialCarousel? _listening;
+    private Rect[] _start = [], _next = [], _from = [], _presented = [], _measurePlan = [];
+    private double[] _widths = [];
+    private Size _planSize;
+    private int _planIndex = -1;
+    private bool _planDirty = true, _havePresented, _modeSnapshot, _forceArrange = true;
+    private double _contentWidth, _fromContentWidth, _presentedContentWidth;
+
+    public MaterialCarouselPresenter() { ClipToBounds = true; UseLayoutRounding = false; }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
-        if (Carousel is { } owner) { owner.PresentationChanged -= Rebuild; owner.PresentationChanged += Rebuild; }
+        Subscribe();
         Rebuild();
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        if (Carousel is { } owner) owner.PresentationChanged -= Rebuild;
+        Unsubscribe();
         base.OnDetachedFromVisualTree(e);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property != CarouselProperty) return;
-        if (change.OldValue is MaterialCarousel old) old.PresentationChanged -= Rebuild;
-        if (Carousel is { } carousel) carousel.PresentationChanged += Rebuild;
+        Unsubscribe();
+        if (VisualRoot is not null) Subscribe();
         Rebuild();
+    }
+    private void Subscribe()
+    {
+        Unsubscribe();
+        _listening = Carousel;
+        if (_listening is null) return;
+        _listening.ContentChanged += Rebuild;
+        _listening.LayoutChanged += LayoutChanged;
+        _listening.PresentationChanged += FrameChanged;
+    }
+    private void Unsubscribe()
+    {
+        if (_listening is null) return;
+        _listening.ContentChanged -= Rebuild;
+        _listening.LayoutChanged -= LayoutChanged;
+        _listening.PresentationChanged -= FrameChanged;
+        _listening = null;
+    }
+    private void FrameChanged() => InvalidateArrange();
+    private void LayoutChanged()
+    {
+        _modeSnapshot = _havePresented && Carousel?.LayoutProgress < 1 && _presented.Length == Children.Count;
+        if (_modeSnapshot)
+        {
+            Array.Copy(_presented, _from, _presented.Length);
+            _fromContentWidth = _presentedContentWidth;
+        }
+        _planDirty = _forceArrange = true;
+        InvalidateMeasure(); // actual layout input changed, never a position-only frame
+    }
+    private void Buffers(int count)
+    {
+        if (_start.Length == count) return;
+        _start = new Rect[count]; _next = new Rect[count]; _from = new Rect[count];
+        _presented = new Rect[count]; _measurePlan = new Rect[count]; _widths = new double[count];
+        _havePresented = _modeSnapshot = false;
+        _planDirty = _forceArrange = true;
     }
     private void Rebuild()
     {
-        if (Carousel is not { } carousel) { Children.Clear(); return; }
+        if (Carousel is not { } carousel) { Children.Clear(); Buffers(0); return; }
         if (carousel.ItemList.Count == 0)
         {
-            Children.Clear();
-            Children.Add(Text(carousel.EmptyText));
-            InvalidateMeasure();
-            return;
+            Children.Clear(); Children.Add(Text(carousel.EmptyText));
+            Buffers(0); InvalidateMeasure(); return;
         }
-        if (Children.Count != carousel.ItemList.Count || Children.Where((b, i) => b.Tag != carousel.ItemList[i]).Any())
+        var same = Children.Count == carousel.ItemList.Count;
+        if (same)
+            for (var i = 0; i < Children.Count; i++)
+                if (Children[i].Tag != carousel.ItemList[i]) { same = false; break; }
+        if (!same)
         {
             Children.Clear();
             foreach (var item in carousel.ItemList)
             {
-                var border = new Border { Tag = item, ClipToBounds = true };
-                border.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
-                Children.Add(border);
+                var tile = new MaterialCarouselTile { Tag = item, ClipToBounds = true, UseLayoutRounding = false };
+                tile.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
+                Children.Add(tile);
             }
+            _havePresented = false;
         }
-        foreach (var border in Children.OfType<Border>())
+        Buffers(Children.Count);
+        foreach (var child in Children)
         {
-            border.CornerRadius = carousel.Layout == MaterialCarouselLayout.FullScreen ? default : carousel.CornerRadius;
-            var item = (MaterialCarouselItem)border.Tag!;
-            // Reuse each tile while dragging; host state/template changes rebuild only its content.
+            var tile = (MaterialCarouselTile)child;
+            var item = (MaterialCarouselItem)tile.Tag!;
             var signature = (item.Image, item.Title, item.State, item.ErrorMessage, item.Content, carousel.ItemTemplate);
-            if (border.Child?.Tag is not ValueTuple<IImage?, string?, MaterialCarouselItemState, string?, object?, Avalonia.Controls.Templates.IDataTemplate?> old || old != signature)
+            if (tile.Signature is not ValueTuple<IImage?, string?, MaterialCarouselItemState, string?, object?, Avalonia.Controls.Templates.IDataTemplate?> old || old != signature)
             {
-                var content = BuildTile(carousel, item);
-                content.Tag = signature;
-                border.Child = content;
+                tile.Child = BuildTile(carousel, item);
+                tile.Signature = signature;
             }
         }
+        _planDirty = _forceArrange = true;
         InvalidateMeasure();
     }
     private static Control BuildTile(MaterialCarousel owner, MaterialCarouselItem item)
     {
         if (owner.ItemTemplate is { } template) return template.Build(item) ?? new Panel();
-        var grid = new Grid();
         var image = new Image { Source = item.Image, Stretch = Stretch.UniformToFill, IsVisible = item.Image is not null };
         image.Styles.Add(new Style(selector => selector.OfType<Image>().Class(":disabled"))
-        {
-            Setters = { new Setter(OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) }
-        });
+        { Setters = { new Setter(OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) } });
         AutomationProperties.SetName(image, item.Title);
-        grid.Children.Add(image);
+        Control? overlay = null;
         if (item.State == MaterialCarouselItemState.Loading)
-            grid.Children.Add(new MaterialLoadingIndicator { IsContained = true, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
+            overlay = new MaterialLoadingIndicator { IsContained = true, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         else if (item.State == MaterialCarouselItemState.Failed)
         {
             var panel = new StackPanel { Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8) };
             var error = Text(item.ErrorMessage ?? "Image could not be loaded");
-            error.MaxLines = 2;
-            error.TextTrimming = TextTrimming.CharacterEllipsis;
+            error.MaxLines = 2; error.TextTrimming = TextTrimming.CharacterEllipsis;
             error.Bind(TextBlock.ForegroundProperty, new DynamicResourceExtension("M3.ErrorBrush"));
             panel.Children.Add(error);
             var retry = new MaterialButton { Content = "Retry", HorizontalAlignment = HorizontalAlignment.Center };
@@ -93,23 +138,20 @@ public sealed class MaterialCarouselPresenter : Panel
             panel.Children.Add(retry);
             var backing = new Border { Child = panel, VerticalAlignment = VerticalAlignment.Center };
             backing.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
-            grid.Children.Add(backing);
+            overlay = backing;
         }
         var caption = new StackPanel { Margin = new Thickness(12, 4), Tag = "caption" };
         caption.Children.Add(Text(item.Title ?? ""));
         if (item.Content is not null) caption.Children.Add(new ContentControl { Content = item.Content });
-        var footer = new Border { Child = caption, VerticalAlignment = VerticalAlignment.Bottom, Tag = "footer", IsVisible = item.State != MaterialCarouselItemState.Failed };
+        var footer = new Border { Child = caption, Tag = "footer", IsVisible = item.State != MaterialCarouselItemState.Failed };
         footer.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
-        grid.Children.Add(footer);
-        return grid;
+        return new MaterialCarouselTileContent(image, overlay, footer);
     }
     private static TextBlock Text(string text)
     {
         var block = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap };
         block.Styles.Add(new Style(selector => selector.OfType<TextBlock>().Class(":disabled"))
-        {
-            Setters = { new Setter(OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) }
-        });
+        { Setters = { new Setter(OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) } });
         block.Bind(TextBlock.ForegroundProperty, new DynamicResourceExtension("M3.OnSurfaceBrush"));
         foreach (var (property, suffix) in new (AvaloniaProperty, string)[] { (TextBlock.FontFamilyProperty, "FontFamily"), (TextBlock.FontSizeProperty, "FontSize"), (TextBlock.FontWeightProperty, "FontWeight"), (TextBlock.LineHeightProperty, "LineHeight"), (TextBlock.LetterSpacingProperty, "LetterSpacing") })
             block.Bind(property, new DynamicResourceExtension("M3.BodyMedium" + suffix));
@@ -118,90 +160,166 @@ public sealed class MaterialCarouselPresenter : Panel
     protected override Size MeasureOverride(Size availableSize)
     {
         var size = new Size(double.IsFinite(availableSize.Width) ? availableSize.Width : 400, double.IsFinite(availableSize.Height) ? availableSize.Height : 200);
-        var contentWidth = Carousel?.ItemList.Count > 0 ? Positions(size, 0).Max(r => r.Width) : size.Width;
-        foreach (var border in Children.OfType<Border>())
-            if (border.Child is { } content) { content.Width = contentWidth; content.HorizontalAlignment = HorizontalAlignment.Center; }
-        foreach (var child in Children) child.Measure(size);
+        if (Carousel is not { } owner || owner.ItemList.Count == 0)
+        { foreach (var child in Children) child.Measure(size); return size; }
+        Buffers(Children.Count);
+        if (_planDirty || _planSize != size)
+        {
+            FillPositions(size, 0, _measurePlan);
+            _contentWidth = 0;
+            for (var i = 0; i < _measurePlan.Length; i++) _contentWidth = Math.Max(_contentWidth, _measurePlan[i].Width);
+        }
+        var measureWidth = _modeSnapshot ? Math.Max(_fromContentWidth, _contentWidth) : _contentWidth;
+        foreach (var child in Children)
+        {
+            var tile = (MaterialCarouselTile)child;
+            tile.MeasureWidth = measureWidth;
+            tile.Measure(size);
+        }
         return size;
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (Carousel is not { } carousel || Children.Count == 0) return finalSize;
-        if (carousel.ItemList.Count == 0) { Children[0].Arrange(new Rect(finalSize)); return finalSize; }
-        var position = Math.Clamp(carousel.PresentationPosition, 0, Children.Count - 1);
-        var start = (int)Math.Floor(position);
-        var rectangles = Positions(finalSize, start);
-        var target = Positions(finalSize, Math.Min(start + 1, Children.Count - 1));
-        var progress = position - start;
+        if (Carousel is not { } owner || Children.Count == 0) return finalSize;
+        if (owner.ItemList.Count == 0) { Children[0].Arrange(new Rect(finalSize)); return finalSize; }
+        var position = Math.Clamp(owner.PresentationPosition, 0, Children.Count - 1);
+        var index = (int)Math.Floor(position);
+        if (_planDirty || _planIndex != index || _planSize != finalSize)
+        {
+            FillPositions(finalSize, index, _start);
+            FillPositions(finalSize, Math.Min(index + 1, Children.Count - 1), _next);
+            _planIndex = index; _planSize = finalSize; _planDirty = false;
+        }
+        var fraction = position - index;
+        var mode = _modeSnapshot ? owner.LayoutProgress : 1;
+        var contentWidth = _modeSnapshot ? _fromContentWidth + (_contentWidth - _fromContentWidth) * mode : _contentWidth;
+        var completing = _modeSnapshot && mode >= 1;
         for (var i = 0; i < Children.Count; i++)
         {
-            var from = rectangles[i];
-            var to = target[i];
-            if (Children[i] is Border { Child: Grid grid })
-                foreach (var footer in grid.Children.Where(c => c.Tag is "footer"))
-                    footer.IsVisible = ((MaterialCarouselItem)Children[i].Tag!).State != MaterialCarouselItemState.Failed && from.Width + (to.Width - from.Width) * progress >= 120;
-            Children[i].Arrange(new Rect(from.X + (to.X - from.X) * progress, from.Y + (to.Y - from.Y) * progress,
-                from.Width + (to.Width - from.Width) * progress, from.Height + (to.Height - from.Height) * progress));
+            var rect = Mix(_start[i], _next[i], fraction);
+            if (_modeSnapshot) rect = Mix(_from[i], rect, mode);
+            var previous = _presented[i];
+            _presented[i] = rect;
+            var tile = (MaterialCarouselTile)Children[i];
+            // Far-offscreen masks cannot paint or hit this clipped viewport. Keep their native trees
+            // parked rather than changing N visual/property graphs on every fractional frame.
+            if (!_forceArrange && !completing && !Near(rect, finalSize) && !Near(previous, finalSize)
+                && (_modeSnapshot || tile.Bounds.Size == rect.Size)) continue;
+            tile.ContentWidth = contentWidth;
+            tile.CornerRadius = owner.Layout == MaterialCarouselLayout.FullScreen ? default : owner.CornerRadius;
+            tile.Arrange(rect);
         }
+        _presentedContentWidth = contentWidth;
+        _havePresented = true; _forceArrange = false;
+        if (completing) _modeSnapshot = false;
         return finalSize;
     }
-    private Rect[] Positions(Size size, int index)
+    private static bool Near(Rect rect, Size viewport) => rect.Right >= -48 && rect.Left <= viewport.Width + 48 && rect.Bottom >= -48 && rect.Top <= viewport.Height + 48;
+    private static Rect Mix(Rect from, Rect to, double t) => new(from.X + (to.X - from.X) * t, from.Y + (to.Y - from.Y) * t,
+        from.Width + (to.Width - from.Width) * t, from.Height + (to.Height - from.Height) * t);
+
+    private void FillPositions(Size size, int index, Rect[] result)
     {
         var owner = Carousel!;
-        var count = Children.Count;
-        var result = new Rect[count];
-        var width = size.Width;
-        var height = size.Height;
-        var gap = owner.ItemSpacing;
+        var count = result.Length;
+        var width = size.Width; var height = size.Height; var gap = owner.ItemSpacing;
         if (owner.Layout == MaterialCarouselLayout.FullScreen)
         {
             for (var i = 0; i < count; i++) result[i] = new Rect(0, (i - index) * height, width, height);
-            return result;
+            return;
         }
         if (owner.Layout == MaterialCarouselLayout.Uncontained)
         {
             var itemWidth = Math.Min(owner.PreferredItemWidth, width);
             var offset = Math.Min(index * (itemWidth + gap), Math.Max(0, count * (itemWidth + gap) - gap - width));
             for (var i = 0; i < count; i++) result[i] = new Rect(i * (itemWidth + gap) - offset, 0, itemWidth, height);
-            return result;
+            return;
         }
-        double[] widths;
-        if (width < 128 || count == 1) widths = [width];
+        int visible;
+        if (width < 128 || count == 1) { visible = 1; _widths[0] = width; }
         else if (owner.Layout == MaterialCarouselLayout.Hero)
         {
-            var sideCount = Math.Min(count - 1, index > 0 && index < count - 1 ? 2 : 1);
-            var large = Math.Max(48, width - sideCount * (48 + gap));
-            widths = sideCount == 2 ? [48, large, 48] : index == count - 1 ? [48, large] : [large, 48];
+            var sides = Math.Min(count - 1, index > 0 && index < count - 1 ? 2 : 1);
+            var large = Math.Max(48, width - sides * (48 + gap));
+            visible = sides + 1;
+            if (sides == 2) { _widths[0] = 48; _widths[1] = large; _widths[2] = 48; }
+            else if (index == count - 1) { _widths[0] = 48; _widths[1] = large; }
+            else { _widths[0] = large; _widths[1] = 48; }
         }
         else
         {
-            var largeCount = Math.Max(1, (int)Math.Floor((width - 48 - gap) / (owner.PreferredItemWidth + gap)));
-            largeCount = Math.Min(largeCount, count);
+            var largeCount = Math.Min(count, Math.Max(1, (int)Math.Floor((width - 48 - gap) / (owner.PreferredItemWidth + gap))));
             var smallCount = Math.Min(2, count - largeCount);
             var medium = Math.Min(owner.PreferredItemWidth / 2, Math.Max(48, width / 4));
             var large = (width - (smallCount == 2 ? medium + 48 : smallCount * 48) - (largeCount + smallCount - 1) * gap) / largeCount;
             if (large < medium && smallCount == 2) { smallCount = 1; large = (width - 48 - largeCount * gap) / largeCount; }
-            var largeWidths = Enumerable.Repeat(large, largeCount);
-            var leadingPeeks = Math.Clamp(index - (count - largeCount - smallCount) - largeCount + 1, 0, smallCount);
-            widths = leadingPeeks switch
-            {
-                2 => new[] { 48d, medium }.Concat(largeWidths).ToArray(),
-                1 => new[] { 48d }.Concat(largeWidths).Concat(smallCount == 2 ? [medium] : Array.Empty<double>()).ToArray(),
-                _ => largeWidths.Concat(smallCount == 2 ? [medium, 48] : smallCount == 1 ? [48d] : Array.Empty<double>()).ToArray()
-            };
+            var peeks = Math.Clamp(index - (count - largeCount - smallCount) - largeCount + 1, 0, smallCount);
+            visible = largeCount + smallCount;
+            var cursor = 0;
+            if (peeks >= 1) _widths[cursor++] = 48;
+            if (peeks == 2) _widths[cursor++] = medium;
+            for (var i = 0; i < largeCount; i++) _widths[cursor++] = large;
+            if (peeks == 0 && smallCount == 2) { _widths[cursor++] = medium; _widths[cursor] = 48; }
+            else if (peeks == 0 && smallCount == 1) _widths[cursor] = 48;
+            else if (peeks == 1 && smallCount == 2) _widths[cursor] = medium;
         }
-        var focal = owner.Layout == MaterialCarouselLayout.Hero && index > 0 ? 1 : index == count - 1 ? widths.Length - 1 : 0;
-        var start = Math.Clamp(index - focal, 0, count - widths.Length);
+        var focal = owner.Layout == MaterialCarouselLayout.Hero && index > 0 ? 1 : index == count - 1 ? visible - 1 : 0;
+        var start = Math.Clamp(index - focal, 0, count - visible);
         var x = 0d;
-        for (var i = start; i < start + widths.Length; i++)
-        {
-            var w = widths[i - start];
-            result[i] = new Rect(x, 0, w, height);
-            x += w + gap;
-        }
+        for (var i = start; i < start + visible; i++)
+        { var w = _widths[i - start]; result[i] = new Rect(x, 0, w, height); x += w + gap; }
         for (var i = start - 1; i >= 0; i--) result[i] = new Rect((i - start) * (48 + gap), 0, 48, height);
-        for (var i = start + widths.Length; i < count; i++) result[i] = new Rect(x + (i - start - widths.Length) * (48 + gap), 0, 48, height);
-        // Like Uncontained, arrange logical rectangles; Avalonia mirrors all horizontal forms once.
-        return result;
+        for (var i = start + visible; i < count; i++) result[i] = new Rect(x + (i - start - visible) * (48 + gap), 0, 48, height);
+    }
+}
+
+internal sealed class MaterialCarouselTile : Border
+{
+    internal object? Signature;
+    internal double MeasureWidth, ContentWidth;
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        Child?.Measure(new Size(MeasureWidth, availableSize.Height));
+        return new Size(MeasureWidth, availableSize.Height);
+    }
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        if (Child is MaterialCarouselTileContent content) content.MaskWidth = finalSize.Width;
+        Child?.Arrange(new Rect((finalSize.Width - ContentWidth) / 2, 0, ContentWidth, finalSize.Height));
+        return finalSize;
+    }
+}
+
+// Separate image arrangement from a reserved caption lane. No visibility/measure mutation in Arrange.
+internal sealed class MaterialCarouselTileContent : Panel
+{
+    private readonly Control _image;
+    private readonly Control? _overlay;
+    private readonly Border _footer;
+    private double _captionWidth;
+    internal double MaskWidth;
+    internal MaterialCarouselTileContent(Control image, Control? overlay, Border footer)
+    {
+        _image = image; _overlay = overlay; _footer = footer;
+        Children.Add(image);
+        if (overlay is not null) Children.Add(overlay);
+        Children.Add(footer);
+    }
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        _captionWidth = availableSize.Width;
+        _image.Measure(availableSize);
+        _overlay?.Measure(availableSize);
+        _footer.Measure(new Size(_captionWidth, double.PositiveInfinity));
+        return availableSize;
+    }
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        _image.Arrange(new Rect(finalSize));
+        _overlay?.Arrange(new Rect(finalSize));
+        _footer.Opacity = Math.Clamp((MaskWidth - 116) / 8, 0, 1);
+        _footer.IsEnabled = _footer.IsHitTestVisible = MaskWidth >= 120;
+        _footer.Arrange(new Rect((finalSize.Width - MaskWidth) / 2, Math.Max(0, finalSize.Height - _footer.DesiredSize.Height), _captionWidth, _footer.DesiredSize.Height));
+        return finalSize;
     }
 }
