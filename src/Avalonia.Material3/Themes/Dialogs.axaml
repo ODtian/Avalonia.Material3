@@ -1,0 +1,109 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls"
+                    xmlns:themes="using:Avalonia.Material3.Themes"
+                    xmlns:converters="using:Avalonia.Data.Converters">
+  <ControlTheme x:Key="{x:Type controls:MaterialOverlayHost}" TargetType="controls:MaterialOverlayHost">
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid>
+          <controls:MaterialOverlayContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+          <Grid x:Name="PART_OverlayLayer" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <themes:ContentRoleTemplate x:Key="M3.Dialog.Body" Role="BodyMedium" />
+  <themes:ContentRoleTemplate x:Key="M3.Dialog.FullScreenBody" Role="BodyLarge" />
+  <ControlTheme x:Key="{x:Type controls:MaterialDialog}" TargetType="controls:MaterialDialog">
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
+    <Setter Property="MaxWidth" Value="560" />
+    <Setter Property="Padding" Value="24" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="VerticalContentAlignment" Value="Stretch" />
+    <Setter Property="ContentTemplate" Value="{StaticResource M3.Dialog.Body}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodyMediumFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyMediumFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodyMediumFontWeight}" />
+    <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyMediumLetterSpacing}" />
+    <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyMediumLineHeight}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
+                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
+          <ScrollViewer x:Name="ShellScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
+          <Grid x:Name="Layout" RowDefinitions="Auto,*,Auto" Margin="{TemplateBinding Padding}">
+            <StackPanel x:Name="BasicHeader">
+              <Viewbox Width="24" Height="24" Margin="0,0,0,16" IsVisible="{TemplateBinding Icon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
+                <ContentPresenter Content="{TemplateBinding Icon}" ContentTemplate="{TemplateBinding IconTemplate}" Foreground="{DynamicResource M3.SecondaryBrush}" />
+              </Viewbox>
+              <TextBlock x:Name="Headline" Text="{TemplateBinding Title}" TextWrapping="Wrap" Margin="0,0,0,16"
+                         IsVisible="{TemplateBinding Title, Converter={x:Static converters:ObjectConverters.IsNotNull}}"
+                         Foreground="{DynamicResource M3.OnSurfaceBrush}"
+                         FontFamily="{DynamicResource M3.HeadlineSmallFontFamily}" FontSize="{DynamicResource M3.HeadlineSmallFontSize}"
+                         FontWeight="{DynamicResource M3.HeadlineSmallFontWeight}" LineHeight="{DynamicResource M3.HeadlineSmallLineHeight}"
+                         LetterSpacing="{DynamicResource M3.HeadlineSmallLetterSpacing}" />
+            </StackPanel>
+            <Grid x:Name="FullHeader" ColumnDefinitions="Auto,*,Auto" MinHeight="56" IsVisible="False" Margin="-16,-16,-16,16">
+              <controls:MaterialIconButton x:Name="PART_CloseButton" Content="×" AutomationProperties.Name="{TemplateBinding CancelText}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{TemplateBinding Title}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="8,0"
+                         Foreground="{DynamicResource M3.OnSurfaceBrush}"
+                         FontFamily="{DynamicResource M3.TitleLargeFontFamily}" FontSize="{DynamicResource M3.TitleLargeFontSize}"
+                         FontWeight="{DynamicResource M3.TitleLargeFontWeight}" LineHeight="{DynamicResource M3.TitleLargeLineHeight}"
+                         LetterSpacing="{DynamicResource M3.TitleLargeLetterSpacing}" />
+              <controls:MaterialButton x:Name="PART_FullScreenConfirmButton" Grid.Column="2" Variant="Text" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+                                       AutomationProperties.Name="{TemplateBinding ConfirmText}" IsEnabled="{TemplateBinding IsConfirmEnabled}">
+                <TextBlock Text="{TemplateBinding ConfirmText}" TextWrapping="Wrap" TextAlignment="Center" />
+              </controls:MaterialButton>
+            </Grid>
+            <ScrollViewer x:Name="BodyScroll" Grid.Row="1" Margin="0,0,0,24" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+              <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" />
+            </ScrollViewer>
+            <controls:MaterialDialogActionsPanel x:Name="DefaultActions" Grid.Row="2">
+              <controls:MaterialButton x:Name="PART_CancelButton" Variant="Text" AutomationProperties.Name="{TemplateBinding CancelText}" HorizontalAlignment="Stretch">
+                <TextBlock Text="{TemplateBinding CancelText}" TextWrapping="Wrap" TextAlignment="Center" />
+              </controls:MaterialButton>
+              <controls:MaterialButton x:Name="PART_ConfirmButton" Variant="Text" AutomationProperties.Name="{TemplateBinding ConfirmText}"
+                                       IsEnabled="{TemplateBinding IsConfirmEnabled}" HorizontalAlignment="Stretch">
+                <TextBlock Text="{TemplateBinding ConfirmText}" TextWrapping="Wrap" TextAlignment="Center" />
+              </controls:MaterialButton>
+            </controls:MaterialDialogActionsPanel>
+            <ContentPresenter x:Name="CustomActions" Grid.Row="2" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}"
+                              HorizontalContentAlignment="Right" IsVisible="{TemplateBinding Actions, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
+          </Grid>
+          </ScrollViewer>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <!-- When fixed header/actions exceed a short viewport, make the entire shell reachable,
+         while retaining an independently scrollable, bounded body. -->
+    <Style Selector="^:compact-height /template/ ScrollViewer#ShellScroll"><Setter Property="VerticalScrollBarVisibility" Value="Auto" /></Style>
+    <Style Selector="^:compact-height /template/ ScrollViewer#BodyScroll"><Setter Property="MaxHeight" Value="160" /></Style>
+    <Style Selector="^:icon /template/ TextBlock#Headline"><Setter Property="TextAlignment" Value="Center" /></Style>
+    <Style Selector="^:custom-actions /template/ controls|MaterialDialogActionsPanel#DefaultActions"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:fullscreen">
+      <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="MaxWidth" Value="Infinity" />
+      <Setter Property="ContentTemplate" Value="{StaticResource M3.Dialog.FullScreenBody}" />
+      <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
+      <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.BodyLargeFontWeight}" />
+      <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyLargeLetterSpacing}" />
+      <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
+    </Style>
+    <Style Selector="^:fullscreen /template/ Border#Surface"><Setter Property="BoxShadow" Value="none" /></Style>
+    <Style Selector="^:fullscreen /template/ StackPanel#BasicHeader"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:fullscreen /template/ Grid#FullHeader"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:fullscreen /template/ controls|MaterialDialogActionsPanel#DefaultActions"><Setter Property="IsVisible" Value="False" /></Style>
+  </ControlTheme>
+</ResourceDictionary>
