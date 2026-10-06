@@ -25,6 +25,9 @@
     <Compile Include="../Avalonia.Material3.Tests/SelectionAdaptationScenarioTests.cs" Link="SelectionAdaptationScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ContentScenarioTests.cs" Link="ContentScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/SliderScenarioTests.cs" Link="SliderScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/FloatingActionScenarioTests.cs" Link="FloatingActionScenarioTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/FloatingActionContractTests.cs" Link="FloatingActionContractTests.cs" />
+    <Compile Include="../Avalonia.Material3.Tests/FloatingActionsGalleryTests.cs" Link="FloatingActionsGalleryTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/ProgressScenarioTests.cs" Link="ProgressScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/CarouselRefreshScenarioTests.cs" Link="CarouselRefreshScenarioTests.cs" />
     <Compile Include="../Avalonia.Material3.Tests/CarouselGalleryScenarioTests.cs" Link="CarouselGalleryScenarioTests.cs" />

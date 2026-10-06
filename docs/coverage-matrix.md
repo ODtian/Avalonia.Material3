@@ -34,8 +34,8 @@
 | --- | --- | --- | --- |
 | Buttons：filled、tonal、elevated、outlined、text；round/square、XS/S/M/L/XL、toggle | 已交付：五种配色、五档尺寸、形状/切换/插槽/命令；真实输入、主题角色、弹簧/减少动效、包展厅及 Windows UIA；人工读屏/跨平台/正式发布仍由 #20 验证 | [M3-01 #2][i2] → [M3-03 #4][i4] | [Buttons][buttons]、锁定 Button*Tokens / ButtonDefaults；[契约](components/m3-03.md)、[证据与限制](verification/m3-03.md) |
 | Icon buttons：standard、filled、tonal、outlined；toggle、尺寸/宽度/形状 | 已交付：四种配色、五档尺寸 × 三档宽度、round/square 选中翻转；真实输入、自动化、明暗/字体与包展厅；平台限制见证据 | [M3-03 #4][i4] | [Icon buttons][icon-buttons]、各尺寸 IconButtonTokens；[契约](components/m3-03.md)、[证据与限制](verification/m3-03.md) |
-| FAB：标准、small/medium/large、扩展 FAB、FAB menu | 待交付 | [M3-04 #9][i9] | [FAB][fab]、[Extended FAB][extended-fab]、FabMenuBaselineTokens |
-| Toolbars：docked、floating、水平/垂直、展开与收起 | 待交付 | [M3-04 #9][i9] | DockedToolbarTokens、FloatingToolbarTokens |
+| FAB：标准、small/medium/large、扩展 FAB、FAB menu | 已交付：四档 FAB/扩展尺寸、文本/图标槽、四档菜单触发器与 close recipe、多行动/锚点/RTL/滚动/焦点返回、输入/自动化及弹簧/减少动效；包展厅与 Windows UIA 验证，人工读屏/跨平台与上游帧像素等价未认领 | [M3-04 #9][i9] | [FAB][fab]、[Extended FAB][extended-fab]、FabMenuBaselineTokens / 锁定实现修正；[契约](components/m3-04.md)、[证据与投影边界](verification/m3-04.md) |
+| Toolbars：docked、floating、水平/垂直、展开与收起 | 已交付：四布局 × standard/vibrant、真实 core/leading/trailing/FAB 槽、局部/整面收起、56→80 披露 FAB、锚点/尺寸变化/滚动/焦点与 ExpandCollapse；docked vertical 和动效是明确的 Avalonia 投影，非新增上游函数或帧速度复刻 | [M3-04 #9][i9] | DockedToolbarTokens、FloatingToolbarTokens / FloatingToolbarDefaults；[契约](components/m3-04.md)、[证据](verification/m3-04.md) |
 | Button groups：connected、非连接分组、选择与形变 | 待交付 | [M3-05 #10][i10] | ButtonGroupSmallTokens、ConnectedButtonGroupSmallTokens |
 | Segmented buttons：单选、多选 | 待交付 | [M3-05 #10][i10] | [Segmented buttons][segmented]、OutlinedSegmentedButtonTokens |
 | Split buttons：主操作、次级入口、全部尺寸 | 待交付 | [M3-05 #10][i10] | SplitButtonXSmall/Small/Medium/Large/XLargeTokens |

@@ -29,4 +29,5 @@
     </ResourceDictionary>
   </Styles.Resources>
   <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialButtons.axaml" />
+  <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialFloatingActions.axaml" />
 </Styles>
