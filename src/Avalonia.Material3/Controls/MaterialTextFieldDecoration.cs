@@ -105,6 +105,8 @@ internal sealed class MaterialTextFieldDecoration : Panel
             _labelMetrics.FontFamily = floating.FontFamily;
             _labelMetrics.FontSize = floating.FontSize;
             _labelMetrics.FontWeight = floating.FontWeight;
+            _labelMetrics.FontStyle = floating.FontStyle;
+            _labelMetrics.FontStretch = floating.FontStretch;
             _labelMetrics.LineHeight = floating.LineHeight;
             _labelMetrics.LetterSpacing = floating.LetterSpacing;
             _labelMetrics.TextWrapping = TextWrapping.Wrap;
