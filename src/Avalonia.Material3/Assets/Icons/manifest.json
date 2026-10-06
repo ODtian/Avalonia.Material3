@@ -1,0 +1,23 @@
+{
+  "upstream": "google/material-design-icons",
+  "commit": "737e3324305806514d7909874fa1818ae1808232",
+  "license": "Apache-2.0",
+  "originalSha256": "95b24392bb49efd1bc3e92cff4e2452ad094461bab7c97e7d8723fab97e330ca",
+  "codepointsSha256": "225bd09137103cb7746bc93dc08d08764c9f0c3bd04f4b958d4a3c3c19432dd6",
+  "fontTools": "4.53.0",
+  "modification": "Static FILL instances, renamed families; GRAD0/opsz24/wght400. No icon redrawing.",
+  "instances": [
+    {
+      "file": "MaterialSymbolsRounded-Unfilled.ttf",
+      "family": "Material Symbols Rounded Unfilled",
+      "FILL": 0,
+      "sha256": "a98940947cef01c12ba18b728f78be47933735faebc03854077607ca52d0406d"
+    },
+    {
+      "file": "MaterialSymbolsRounded-Filled.ttf",
+      "family": "Material Symbols Rounded Filled",
+      "FILL": 1,
+      "sha256": "16e0fd0686af0b52338f6294b7ae29cf816fa4f175dbb717adebab67471ca39a"
+    }
+  ]
+}

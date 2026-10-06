@@ -17,5 +17,9 @@
     <None Include="../../README.md" Pack="true" PackagePath="/" />
     <None Include="../../CHANGELOG.md" Pack="true" PackagePath="/" />
     <None Include="../../THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="/" />
+    <AvaloniaResource Include="Assets/Icons/*.ttf" />
+    <AvaloniaResource Include="Assets/Icons/*.codepoints" />
+    <AvaloniaResource Include="Assets/Icons/manifest.json" />
+    <None Update="Assets/Icons/LICENSE.txt;Assets/Icons/manifest.json;Assets/Icons/*.codepoints" Pack="true" PackagePath="licenses/MaterialSymbols/" />
   </ItemGroup>
 </Project>
