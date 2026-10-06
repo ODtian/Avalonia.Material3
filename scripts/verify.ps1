@@ -14,7 +14,7 @@ $previousPackages = $env:NUGET_PACKAGES
 
 function Invoke-Dotnet {
     param([Parameter(ValueFromRemainingArguments = $true)][string[]]$Arguments)
-    & dotnet @Arguments --disable-build-servers
+    & dotnet @Arguments --disable-build-servers -p:UseSharedCompilation=false
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments -join ' ') failed ($LASTEXITCODE)." }
 }
 
@@ -47,7 +47,7 @@ try {
     Copy-SourceTree 'tests/PackageConsumption.Tests'
     Copy-SourceTree 'tests/ReferenceVectors'
     New-Item -ItemType Directory -Force (Join-Path $sandbox 'tests/Avalonia.Material3.Tests') | Out-Null
-    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'ExpressiveButtonScenarioTests.cs', 'SelectionHost.cs', 'SelectionScenarioTests.cs', 'SelectionFormScenarioTests.cs', 'SelectionAdaptationScenarioTests.cs', 'TextFieldScenarioTests.cs', 'ContentScenarioTests.cs', 'FloatingActionScenarioTests.cs', 'FloatingActionContractTests.cs', 'FloatingActionsGalleryTests.cs') {
+    foreach ($file in 'ButtonHost.cs', 'ButtonScenarioTests.cs', 'ContractScenarioTests.cs', 'SliderScenarioTests.cs', 'ThemeScenarioTests.cs', 'TokenReferenceScenarioTests.cs', 'ThemeGalleryScenarioTests.cs', 'ExpressiveButtonScenarioTests.cs', 'SelectionHost.cs', 'SelectionScenarioTests.cs', 'SelectionFormScenarioTests.cs', 'SelectionAdaptationScenarioTests.cs', 'TextFieldScenarioTests.cs', 'ContentScenarioTests.cs', 'ProgressScenarioTests.cs', 'ProgressMatrixScenarioTests.cs', 'ProgressGalleryScenarioTests.cs', 'FloatingActionScenarioTests.cs', 'FloatingActionContractTests.cs', 'FloatingActionsGalleryTests.cs') {
         Copy-Item (Join-Path $root "tests/Avalonia.Material3.Tests/$file") (Join-Path $sandbox 'tests/Avalonia.Material3.Tests')
     }
     $env:NUGET_PACKAGES = Join-Path $sandbox 'packages'
@@ -68,8 +68,14 @@ finally {
     Pop-Location
     if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }
     elseif (Test-Path $sandbox) {
-        # Build-service processes can release collector DLL handles just after dotnet exits.
-        # Retry only this owned sandbox; never shut down another agent's build servers.
+        # Collector services outlive builds and can lock their own DLLs. Only close collectors
+        # loaded from this uniquely-owned sandbox, never another ticket's global build servers.
+        if ($IsWindows) {
+            Get-CimInstance Win32_Process | Where-Object {
+                $_.Name -eq 'dotnet.exe' -and $_.CommandLine -and $_.CommandLine.Contains($sandbox) -and
+                $_.CommandLine.Contains('Avalonia.BuildServices.Collector.dll')
+            } | ForEach-Object { Stop-Process -Id $_.ProcessId -ErrorAction SilentlyContinue }
+        }
         for ($attempt = 0; $attempt -lt 20; $attempt++) {
             try { Remove-Item $sandbox -Recurse -Force -ErrorAction Stop; break }
             catch { if ($attempt -eq 19) { throw }; Start-Sleep -Milliseconds 500 }
