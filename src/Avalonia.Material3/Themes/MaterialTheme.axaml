@@ -10,6 +10,7 @@
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sliders.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/ProgressIndicators.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Dialogs.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/Navigation.axaml" />
       </ResourceDictionary.MergedDictionaries>
       <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />

@@ -58,9 +58,9 @@
 | Snackbar：消息、行动、消失 | 待交付 | [M3-13 #15][i15] | [Snackbar][snackbar]、SnackbarTokens |
 | Bottom sheets：standard、modal、drag handle | 待交付 | [M3-14 #16][i16] | [Bottom sheets][bottom-sheets]、SheetBottom/DragHandle/ScrimTokens |
 | Side sheets：standard、modal | 待交付 | [M3-14 #16][i16] | [Side sheets][side-sheets] |
-| Navigation bar：水平/垂直 item、选中、徽标 | 待交付 | [M3-15 #14][i14] | [Navigation bar][navigation-bar]、NavigationBar*Tokens |
-| Navigation rail：collapsed、expanded、水平/垂直 item | 待交付 | [M3-15 #14][i14] | [Navigation rail][navigation-rail]、NavigationRail*Tokens |
-| Tabs：primary、secondary、固定/滚动 | 待交付 | [M3-15 #14][i14] | [Tabs][tabs]、Primary/SecondaryNavigationTabTokens |
+| Navigation bar：水平/垂直 item、选中、徽标 | 已实现：两种 item 布局、实际内容、徽标/事件/绑定、输入与选择自动化；验收证据和平台限制见组件记录 | [M3-15 #14][i14] | [Navigation bar][navigation-bar]、NavigationBar*Tokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
+| Navigation rail：collapsed、expanded、水平/垂直 item | 已实现：非 modal rail 四组合、96/80 和 220..360 DIP、实际内容及 resize 保留焦点/选择；不认领人工读屏/其他平台 | [M3-15 #14][i14] | [Navigation rail][navigation-rail]、NavigationRail*Tokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
+| Tabs：primary、secondary、固定/滚动 | 已实现：四组合、真实页面/插槽、单 Tab stop/方向键/滚动、主题与字体混排；投影边界与 package/Windows 记录见证据 | [M3-15 #14][i14] | [Tabs][tabs]、Primary/SecondaryNavigationTabTokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
 | Top app bars：small、medium、large、center-aligned、flexible | 待交付 | [M3-16 #17][i17] | [Top app bar][top-app-bar]、AppBar*Tokens |
 | Bottom app bar | 待交付 | [M3-16 #17][i17] | [Bottom app bar][bottom-app-bar]、BottomAppBarTokens |
 | Navigation drawer：standard、modal | 待交付 | [M3-16 #17][i17] | [Navigation drawer][navigation-drawer]、NavigationDrawerTokens |
