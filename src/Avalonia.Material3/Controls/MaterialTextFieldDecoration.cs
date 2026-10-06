@@ -65,7 +65,7 @@ internal sealed class MaterialTextFieldDecoration : Panel
     }
     private void Observe()
     {
-        if (_observed == Field) return;
+        if (!this.IsAttachedToVisualTree() || _observed == Field) return;
         if (_observed is not null) _observed.PropertyChanged -= FieldChanged;
         _observed = Field;
         if (_observed is not null) _observed.PropertyChanged += FieldChanged;

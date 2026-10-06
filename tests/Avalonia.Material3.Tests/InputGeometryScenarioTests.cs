@@ -177,6 +177,7 @@ public class InputGeometryScenarioTests
         var textView = request.Client!.TextViewVisual;
         Point EditorOrigin() => textView.TranslatePoint(default, host.Field)!.Value;
         var editor = EditorOrigin();
+        var nativeTransform = textView.TransformToVisual(host.Field);
         for (var i = 0; i < 50; i++)
         {
             host.Field.Focus();
@@ -185,12 +186,14 @@ public class InputGeometryScenarioTests
             Assert.Equal(size, host.Field.Bounds.Size);
             Assert.Equal(next, host.Next.Bounds);
             Assert.Equal(editor, EditorOrigin());
+            Assert.Equal(nativeTransform, textView.TransformToVisual(host.Field));
             host.Field.IsError = false;
             host.Next.Focus();
             host.Capture();
             Assert.Equal(size, host.Field.Bounds.Size);
             Assert.Equal(next, host.Next.Bounds);
             Assert.Equal(editor, EditorOrigin());
+            Assert.Equal(nativeTransform, textView.TransformToVisual(host.Field));
         }
     }
 
