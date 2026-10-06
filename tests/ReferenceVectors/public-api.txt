@@ -2058,6 +2058,25 @@ TYPE Avalonia.Material3.Controls.MaterialSwitch : Avalonia.Controls.ToggleSwitch
   Property System.Object OffIcon
   Property System.Object OnIcon
   Property System.String ErrorText
+TYPE Avalonia.Material3.Controls.MaterialSymbol : Avalonia.Controls.Control
+  Constructor Void .ctor()
+  Field Avalonia.StyledProperty`1[Avalonia.Media.IBrush] ForegroundProperty
+  Field Avalonia.StyledProperty`1[System.Boolean] FilledProperty
+  Field Avalonia.StyledProperty`1[System.Double] SizeProperty
+  Field Avalonia.StyledProperty`1[System.String] SymbolProperty
+  Method Avalonia.Media.IBrush get_Foreground()
+  Method Boolean get_Filled()
+  Method Double get_Size()
+  Method System.String get_Symbol()
+  Method Void Render(Avalonia.Media.DrawingContext)
+  Method Void set_Filled(Boolean)
+  Method Void set_Foreground(Avalonia.Media.IBrush)
+  Method Void set_Size(Double)
+  Method Void set_Symbol(System.String)
+  Property Avalonia.Media.IBrush Foreground
+  Property Boolean Filled
+  Property Double Size
+  Property System.String Symbol
 TYPE Avalonia.Material3.Controls.MaterialTabLayout : System.Enum
   Field Avalonia.Material3.Controls.MaterialTabLayout Fixed
   Field Avalonia.Material3.Controls.MaterialTabLayout Scrollable
