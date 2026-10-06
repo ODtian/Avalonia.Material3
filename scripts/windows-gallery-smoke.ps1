@@ -16,7 +16,7 @@ $id = [System.Windows.Automation.AutomationElement]::AutomationIdProperty
 $name = [System.Windows.Automation.AutomationElement]::NameProperty
 function Wait($condition, $description) {
     $timer = [Diagnostics.Stopwatch]::StartNew()
-    while ($timer.Elapsed.TotalSeconds -lt 25) { $value = & $condition; if ($value) { return $value }; Start-Sleep -Milliseconds 80 }
+    while ($timer.Elapsed.TotalSeconds -lt 25) { $probe = & $condition; if ($probe) { return $probe }; Start-Sleep -Milliseconds 80 }
     throw "Timed out: $description"
 }
 function Foreground {

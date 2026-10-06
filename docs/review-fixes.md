@@ -38,6 +38,12 @@ Two retained RTL scenario identities previously used mirrored-owner expected coo
 
 Actual focused gates:43 new shared review scenarios passed; affected slider/progress/carousel88 and physical/dialog50 passed. Source/package inventory includes these automatically. Interim diagnostic failures are retained in the fix worktree `artifacts/review-*.log`, including Undo snapshot setup/coercion/one-way-template experiment (template experiment reverted), physical RTL reds and the legacy verifier failure. First logging attempt had no artifacts directory and produced no test result. An attempted external framework-source download was denied; no downloaded source/config changes or workaround was used. Native Undo diagnosis used the public CanUndo notification and observed stack, not a private test oracle.
 
+## Discovered native verifier race (actual red → same-binary green)
+
+Clean producer4283f62127e6c695e1409a5cbf7d6a845473737b passed source710/package734, API/resources/SDK immutable baseline, old binary/XAML and all15 retained non-native entrypoints on `artifacts/r-7003c79b/manifest.json` (package SHA256191E3B53E90885FB1F92FF26509CC34099575C358D4E219BFB1D0A8E878BA22B). First strict Gallery/AOT publication at `artifacts/p-c9596cb5` failed the native editor wait; failure JSON truthfully records the actual editor text already `published`. The Wait helper's local `$value` shadowed the script's UIA ValuePattern `$value` after a not-ready first poll, causing permanent false polling. Rename only that local to `$probe`; expected editor assertion/timeouts remain unchanged. The SAME published Gallery executable then passed all17 pages/actions/modal/key/input/runtime controls and5 fresh processes with `native-Gallery-aot-wait-fix/native.json`. This is an isolated genuine native tracer, **not** a four-host final pass. A new clean producer/package is required below after the verifier correction; older results keep4283 provenance.
+
+Failed current-run consumer caches may be removed after preserving their nupkg/manifest/TRX/logs/native failure observations; they are not the selected final candidate or immutable historical archive. No source/resource/API correction or blanket warning suppression was needed for this race.
+
 ## Exact final release evidence and disk policy
 
 Run on a **clean committed producer**, after merging latest local integration:
