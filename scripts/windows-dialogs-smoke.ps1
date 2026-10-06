@@ -114,12 +114,12 @@ try {
     Keys '{ESC}'
     Wait-For { Find-Name $window 'Outer dialog' } 'outer dialog still open' | Out-Null
     if (Find-Name $window 'Nested confirmation') { throw 'Escape did not remove only the top dialog.' }
-    Keys '{ESC}'
-    Wait-For { (Focus-Id) -eq 'NestedEntry' } 'nested stack focus return' | Out-Null
+    Invoke-Control (Find-Id $window 'ModalBack')
+    Wait-For { $result.Current.Name -eq 'Back' -and (Focus-Id) -eq 'NestedEntry' } 'host back and nested stack focus return' | Out-Null
     Invoke-Control (Find-Id $window 'PopupEntry')
     Invoke-Control (Wait-For { Find-Id $window 'PopupAction' } 'generic anchored overlay')
     Wait-For { $result.Current.Name -eq 'Confirmed: Sample selected' -and (Focus-Id) -eq 'PopupEntry' } 'generic overlay result/focus return' | Out-Null
-    Write-Host 'PASS Windows native package host: named dialog Window role, filtered/disabled background and rejected cached Invoke, native editor+validation, Tab/Shift+Tab containment, Enter confirm/result/focus return, full-screen mouse opening/cancel and Escape, nested stack, anchored overlay, light/dark/scaled resize screenshots.'
+    Write-Host 'PASS Windows native package host: named dialog Window role, filtered/disabled background and rejected cached Invoke, native editor+validation, Tab/Shift+Tab containment, Enter confirm/result/focus return, full-screen mouse opening/cancel and Escape, nested top-only Escape/host back, anchored overlay, light/dark/scaled resize screenshots.'
 }
 catch {
     Write-Host $_.ScriptStackTrace

@@ -69,7 +69,7 @@ public class DialogGalleryScenarioTests
             Click(window, FindAction(page.ActiveDialog!, "Confirm"));
             Assert.Equal("Confirmed: Nested confirmed", page.Result.Text);
             Assert.Equal(1, page.Overlay.OpenCount);
-            Assert.True(page.Overlay.RequestBack());
+            Click(window, FindAction(outer, "Host back"));
             Assert.Equal("Back", page.Result.Text);
             Click(window, page.PopupButton);
             Assert.True(page.BasicButton.IsEffectivelyEnabled);

@@ -41,7 +41,9 @@ public sealed class DialogsPage : UserControl
         NestedButton.Click += (_, _) =>
         {
             var child = Action("Open nested", "NestedLauncher");
-            var outer = new MaterialDialog { Title = "Outer dialog", Content = child, ConfirmText = "Finish" };
+            var modalBack = Action("Host back", "ModalBack");
+            modalBack.Click += (_, _) => Overlay.RequestBack();
+            var outer = new MaterialDialog { Title = "Outer dialog", Content = new StackPanel { Children = { child, modalBack } }, ConfirmText = "Finish" };
             child.Click += (_, _) => Present(new MaterialDialog { Title = "Nested confirmation", Content = "Only the top presentation receives dismissal and focus.", ConfirmText = "Confirm", ConfirmResult = "Nested confirmed" }, child);
             Present(outer, NestedButton);
         };
