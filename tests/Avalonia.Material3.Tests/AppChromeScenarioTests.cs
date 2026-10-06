@@ -248,28 +248,33 @@ public class AppChromeScenarioTests
         Assert.Same(first, drawer.SelectedItem);
     }
 
-    [AvaloniaFact]
-    public void Host_opted_in_edge_swipe_opens_and_gesture_disable_cancels_a_captured_close()
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Host_opted_in_edge_swipe_opens_and_gesture_disable_cancels_a_captured_close(bool rtl)
     {
         var drawer = new MaterialNavigationDrawer { Mode = MaterialNavigationDrawerMode.Modal, IsOpen = false };
         drawer.Items.Add(new MaterialNavigationItem { Content = "Home" });
         var layout = new MaterialNavigationDrawerLayout { Drawer = drawer, IsEdgeSwipeEnabled = true, Content = new Border { Background = Brushes.Transparent } };
-        var overlays = new MaterialOverlayHost { Content = layout };
+        var overlays = new MaterialOverlayHost { Content = layout, FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
         using var host = new ChromeHost(overlays);
-        using (var contact = host.Window.TouchBegin(new Point(2, 200)))
+        var edgeStart = new Point(rtl ? 998 : 2, 200);
+        var edgeEnd = edgeStart + new Vector(rtl ? -218 : 218, 0);
+        using (var contact = host.Window.TouchBegin(edgeStart))
         {
-            host.Window.TouchMove(contact, new Point(220, 200));
-            host.Window.TouchEnd(contact, new Point(220, 200));
+            host.Window.TouchMove(contact, edgeEnd);
+            host.Window.TouchEnd(contact, edgeEnd);
         }
         host.Layout();
         Assert.True(drawer.IsOpen);
-        var start = new Point(200, 200);
+        var start = new Point(rtl ? 800 : 200, 200);
+        var direction = rtl ? 1 : -1;
         using (var contact = host.Window.TouchBegin(start))
         {
-            host.Window.TouchMove(contact, start + new Vector(-100, 0));
-            Assert.Equal(-100, drawer.DragOffset);
+            host.Window.TouchMove(contact, start + new Vector(direction * 100, 0));
+            Assert.Equal(direction * 100, drawer.DragOffset);
             drawer.IsGestureEnabled = false;
-            host.Window.TouchEnd(contact, start + new Vector(-220, 0));
+            host.Window.TouchEnd(contact, start + new Vector(direction * 220, 0));
         }
         host.Layout();
         Assert.True(drawer.IsOpen);

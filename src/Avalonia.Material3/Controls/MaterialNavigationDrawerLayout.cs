@@ -114,7 +114,8 @@ public class MaterialNavigationDrawerLayout : ContentControl
         if (_edgePointer is not null) { if (_edgePointer != e.Pointer) CancelEdge(); return; }
         if (!IsEdgeSwipeEnabled || !IsEffectivelyEnabled || Drawer is not { IsOpen: false, IsGestureEnabled: true } || e.Pointer.Type == PointerType.Mouse) return;
         var point = e.GetPosition(this);
-        var start = FlowDirection == Avalonia.Media.FlowDirection.RightToLeft ? Bounds.Width - point.X : point.X;
+        // GetPosition(this) already converts physical RTL input into this logical coordinate space.
+        var start = point.X;
         if (start is < 0 or > 24) return;
         _edgePointer = e.Pointer; _edgeStart = point; _edgeTime = Stopwatch.GetTimestamp(); _edgeDistance = 0;
     }
@@ -124,7 +125,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
         if (Drawer is not { IsOpen: false, IsGestureEnabled: true }) { CancelEdge(); return; }
         var delta = e.GetPosition(this) - _edgeStart;
         if (!_edgeDragging && Math.Abs(delta.Y) > 8 && Math.Abs(delta.Y) >= Math.Abs(delta.X)) { CancelEdge(); return; }
-        var distance = FlowDirection == Avalonia.Media.FlowDirection.RightToLeft ? -delta.X : delta.X;
+        var distance = delta.X;
         if (!_edgeDragging && (distance <= 8 || Math.Abs(delta.Y) >= Math.Abs(delta.X))) return;
         _edgeDragging = true; e.Pointer.Capture(this); _edgeDistance = Math.Max(0, distance); e.Handled = true;
     }

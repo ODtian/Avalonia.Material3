@@ -112,6 +112,7 @@ public sealed class AppChromePage : Grid
         RecipeButton.Click += (_, _) => { _recipe = (_recipe + 1) % 8; SetRecipe(); };
         ScrollButton.Click += (_, _) => PageScroll.Offset = new Vector(0, PageScroll.Offset.Y == 0 ? 300 : 0);
         SetId(Overlays, "chrome-overlays"); SetId(Drawer, "chrome-drawer"); SetId(TopBar, "chrome-top"); SetId(BottomBar, "chrome-bottom");
+        SetId(PageScroll, "chrome-page-scroll");
         SetId(NavigationButton, "chrome-navigation"); SetId(SaveButton, "chrome-save"); SetId(DetailsButton, "chrome-details");
         SetId(Status, "chrome-status"); SetId(ThemeButton, "chrome-theme"); SetId(FontButton, "chrome-font"); SetId(LongButton, "chrome-long");
         SetId(RecipeButton, "chrome-recipe"); SetId(ScrollButton, "chrome-scroll"); SetId(BackButton, "chrome-back"); SetId(ModalButton, "chrome-modal");

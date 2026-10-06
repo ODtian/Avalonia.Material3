@@ -5,6 +5,7 @@ $root = Split-Path $PSScriptRoot -Parent
 $sandbox = Join-Path $root ('artifacts/issue17-consumer-' + [guid]::NewGuid().ToString('N'))
 $results = Join-Path $root 'artifacts/TestResults/issue17'
 $previousPackages = $env:NUGET_PACKAGES
+$previousScreenshots = $env:M3_ISSUE17_SCREENSHOTS
 $previousNodeReuse = $env:MSBUILDDISABLENODEREUSE
 $env:MSBUILDDISABLENODEREUSE = '1'
 function Invoke-Dotnet {
@@ -26,6 +27,7 @@ Push-Location $root
 try {
     if ($DesktopSmoke -and -not $IsWindows) { throw '-DesktopSmoke requires Windows and serialized desktop ownership.' }
     New-Item -ItemType Directory -Force $results, (Join-Path $sandbox 'feed') | Out-Null
+    $env:M3_ISSUE17_SCREENSHOTS = Join-Path $root 'artifacts/screenshots/issue17'
     Invoke-Dotnet @('test', 'tests/Avalonia.Material3.Tests/Avalonia.Material3.Tests.csproj', '-c', 'Release', '--logger', 'trx;LogFileName=source.trx', '--results-directory', $results)
     Invoke-Dotnet @('pack', 'src/Avalonia.Material3/Avalonia.Material3.csproj', '-c', 'Release', '--no-restore', '-o', (Join-Path $sandbox 'feed'))
     foreach ($file in 'Directory.Build.props', 'global.json') { Copy-File $file }
@@ -64,6 +66,7 @@ try {
 }
 finally {
     $env:NUGET_PACKAGES = $previousPackages
+    $env:M3_ISSUE17_SCREENSHOTS = $previousScreenshots
     $env:MSBUILDDISABLENODEREUSE = $previousNodeReuse
     Pop-Location
     if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }

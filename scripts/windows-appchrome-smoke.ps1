@@ -54,6 +54,8 @@ try {
     if ($drawer.Current.ControlType -ne [System.Windows.Automation.ControlType]::List -or $library.Current.ControlType -ne [System.Windows.Automation.ControlType]::ListItem) { throw 'Wrong destination roles.' }
     if ($top.Current.ControlType -ne [System.Windows.Automation.ControlType]::ToolBar -or $bottom.Current.ControlType -ne [System.Windows.Automation.ControlType]::ToolBar) { throw 'App bars must be action toolbars, not navigation selectors.' }
     $selection = $drawer.GetCurrentPattern([System.Windows.Automation.SelectionPattern]::Pattern)
+    $expansion = $drawer.GetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern)
+    if ($expansion.Current.ExpandCollapseState -ne [System.Windows.Automation.ExpandCollapseState]::Expanded) { throw 'Wrong native drawer expansion state.' }
     if ($selection.Current.CanSelectMultiple -or -not $selection.Current.IsSelectionRequired) { throw 'Wrong drawer selection policy.' }
     $homeItem.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
     $homeItem.SetFocus()
@@ -71,6 +73,14 @@ try {
     Wait-For { $status.Current.Name -match 'Page = Library' -and $status.Current.Name -match 'Library saved' } 'Enter return retaining host result' | Out-Null
     New-Item -ItemType Directory -Force $Screenshots | Out-Null
     Save-Window $window 'm3-16-desktop-standard-library.png'
+    $pageScroll = Wait-For { Find-Id $window 'chrome-page-scroll' } 'bound real page scroll'
+    $rect = $pageScroll.Current.BoundingRectangle
+    [AppChromeSmokeNative]::SetCursorPos([int]($rect.X + $rect.Width / 2), [int]($rect.Y + $rect.Height / 2)) | Out-Null
+    [AppChromeSmokeNative]::mouse_event(0x0800, 0, 0, [uint32]4294966816, [UIntPtr]::Zero)
+    Wait-For { $top.Current.ItemStatus -eq 'collapsed' } 'native wheel updates only bound page app bar' | Out-Null
+    Save-Window $window 'm3-16-desktop-collapsed.png'
+    $pageScroll.GetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern).SetScrollPercent(-1, 0)
+    Wait-For { $top.Current.ItemStatus -eq 'expanded' } 'page scroll provider restores expanded bar' | Out-Null
     $transform = $window.GetCurrentPattern([System.Windows.Automation.TransformPattern]::Pattern)
     $transform.Resize(600, 760)
     Wait-For { -not (Find-Id $window 'chrome-drawer') } 'narrow host chooses closed modal drawer' | Out-Null
