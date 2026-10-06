@@ -30,6 +30,23 @@ public class FoundationVisualScenarioTests
         Assert.Equal(before, Mask(host.Window, symbol));
     }
 
+    [AvaloniaFact]
+    public void Split_main_preserves_the_pinned_four_dip_inner_corner_beside_Full_caps()
+    {
+        using var host = new ButtonHost();
+        var split = new MaterialSplitButton { Width = 180 };
+        split.MainButton.Content = "Save";
+        host.Window.Background = Brushes.White;
+        host.Window.Content = new StackPanel { Margin = new Thickness(20), Children = { split } };
+        host.Capture();
+        var main = split.MainButton;
+        Assert.Equal(120, main.Bounds.Width);
+        // Pinned CornerBasedShape: Small finite main (20,4,4,20), visual top at5.
+        var outside = main.TranslatePoint(new Point(119, 5), host.Window)!.Value;
+        Assert.Equal(Colors.White, host.PixelAt(outside));
+        Assert.Equal(Color.Parse("#6750A4"), host.PixelAt(main.TranslatePoint(new Point(117, 8), host.Window)!.Value));
+    }
+
     private static byte[] Mask(Window window, Control visual)
     {
         using var bitmap = window.CaptureRenderedFrame()!;
