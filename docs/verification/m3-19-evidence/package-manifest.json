@@ -1,0 +1,10 @@
+{
+  "scenarioManifest": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\release-909c4df3ddb5404f87bfde728e63f301/scenarios.json",
+  "sdk": "10.0.112",
+  "sha256": "24D89B369395F5DAF838D80EDFB5EF7EFF9A50417EC1AF68E60EAE4CD72E2FB4",
+  "version": "0.1.0-preview.2",
+  "baseline": "F:/PixivYou/analysis/m3-spec-1-orchestration/baseline/Avalonia.Material3.0.1.0-preview.1.nupkg",
+  "sandbox": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\release-909c4df3ddb5404f87bfde728e63f301\\consumer",
+  "package": "F:\\PixivYou\\analysis\\m3-spec-1-orchestration\\worktrees\\issue-20\\artifacts\\release-909c4df3ddb5404f87bfde728e63f301/packages/Avalonia.Material3.0.1.0-preview.2.nupkg",
+  "commit": "3d888d565bb6cbf5e1fb405c0761a22761212277"
+}

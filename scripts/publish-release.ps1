@@ -30,7 +30,9 @@ try {
             Invoke-CheckedDotnet @publishArgs | Tee-Object "$run/$hostName-$mode.log"
             Assert-ConsumerAssets $consumer $version $inputManifest.package $inputManifest.sha256
             $executable="$output/$hostName.exe"
-            $outputs += @{ mode=$mode; host=$hostName; executable=$executable; sha256=(Get-FileHash $executable -Algorithm SHA256).Hash; bytes=(Get-Item $executable).Length; directoryBytes=(Get-ChildItem $output -File -Recurse | Measure-Object Length -Sum).Sum }
+            $inventory="$run/$hostName-$mode-files.json"
+            $inventoryHash=Write-PublishedInventory $output $inventory
+            $outputs += @{ mode=$mode; host=$hostName; executable=$executable; sha256=(Get-FileHash $executable -Algorithm SHA256).Hash; bytes=(Get-Item $executable).Length; directoryBytes=(Get-ChildItem $output -File -Recurse | Measure-Object Length -Sum).Sum; files=$inventory; inventorySha256=$inventoryHash }
             if ($NativeSmoke) {
                 if (!$IsWindows) { throw 'Windows NativeAOT runtime requires Windows.' }
                 & powershell.exe -NoProfile -File "$PSScriptRoot/windows-gallery-smoke.ps1" -Executable $executable -Evidence "$run/native-$hostName-$mode"

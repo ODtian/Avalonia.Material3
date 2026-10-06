@@ -94,6 +94,17 @@ function Assert-ScenarioParity([string]$Source, [string]$Package, [string]$Outpu
     if (!$allowed.SetEquals([string[]]$extras)) { throw 'Package-only fixture identity differs from reviewed PackageOnlyScenarios.txt.' }
     @{ comparer='Ordinal'; shared=$sourceNames; packageOnly=$extras } | ConvertTo-Json -Depth 4 | Set-Content $Output -Encoding utf8
 }
+function Write-PublishedInventory([string]$Directory, [string]$ManifestPath) {
+    $files = @(Get-ChildItem $Directory -File -Recurse)
+    $paths = [string[]]@($files | ForEach-Object { [IO.Path]::GetRelativePath($Directory, $_.FullName).Replace('\','/') })
+    [Array]::Sort($paths, [StringComparer]::Ordinal)
+    $inventory = @($paths | ForEach-Object {
+        $file = Join-Path $Directory $_
+        [ordered]@{ path=$_; bytes=(Get-Item $file).Length; sha256=(Get-FileHash $file -Algorithm SHA256).Hash }
+    })
+    $inventory | ConvertTo-Json -Depth 3 | Set-Content $ManifestPath -Encoding utf8
+    return (Get-FileHash $ManifestPath -Algorithm SHA256).Hash
+}
 function Stop-ConsumerCollectors([string]$Destination) {
     if ($IsWindows) { Get-CimInstance Win32_Process | Where-Object {
         $_.Name -eq 'dotnet.exe' -and $_.CommandLine -and $_.CommandLine.Contains($Destination) -and $_.CommandLine.Contains('Avalonia.BuildServices.Collector.dll')

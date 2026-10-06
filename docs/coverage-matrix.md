@@ -26,7 +26,7 @@
 | 密度、尺寸、窗口适配 | 全家族各组件字体/长文本/尺寸契约，聚合17页320×300/1000×800、100/150/200%；物理设备范围不得由此推断 | [M3-19 #20][i20]及各组件票 | 各组件 evidence；`GalleryReleaseScenarioTests`；[最终矩阵](verification/m3-19.md) |
 | 鼠标、触摸、键盘、焦点与无障碍 | 全组件 headless 输入/自动化与逐票 Windows UIA；根模态覆盖 header/nav，Back collapse/veto；人工 spoken reader、物理触摸及 Android 有明确未满足项 | [M3-19 #20][i20]及各组件票 | `tests/ScenarioInventory.props` 全共享场景；[最终原生证据/限制](verification/m3-19.md) |
 | 模板、属性、内容插槽与命令 | 全组件公开扩展契约与实际宿主结果；主题/模板替换 seam 随组件证据交付，初始按钮回归保留 | [M3-19 #20][i20]及各组件票 | 各组件 Scenario/Matrix/Gallery Tests；[契约索引](public-contract.md) |
-| AOT、裁剪、API 兼容与发布 | preview.2 分析器/严格发布与 API/resource/旧编译 XAML/client 门禁已实现；具体执行结果逐项记录，App M11/公共 feed/平台人工项不冒充通过 | [M3-19 #20][i20] | [M3-19](verification/m3-19.md)、[发布过程](release.md)、[升级](upgrade.md) |
+| AOT、裁剪、API 兼容与发布 | preview.2 源667/全新包691、API/resource/旧编译 XAML/client 与严格 win-x64 NativeAOT/full-trim managed 四个 published 宿主实际运行通过；具体哈希/命令/诊断逐项记录，App M11/公共 feed/平台人工项不冒充通过 | [M3-19 #20][i20] | [M3-19](verification/m3-19.md)、[发布过程](release.md)、[升级](upgrade.md) |
 
 ## 全部标准组件与 Expressive 变体
 

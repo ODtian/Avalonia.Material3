@@ -38,6 +38,7 @@ function Foreground {
 }
 function Find($property, $value) { $window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, (New-Object System.Windows.Automation.PropertyCondition($property, [string]$value))) }
 function Invoke($element) { if (!$element) { throw 'Missing native action' }; $element.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke() }
+function Keys($text) { [Windows.Forms.SendKeys]::SendWait($text); Start-Sleep -Milliseconds 150 }
 function ById($value) { Wait { Find $id $value } $value }
 function ByName($value) { Wait { Find $name $value } $value }
 function ByPrefix($prefix) {
@@ -145,8 +146,10 @@ for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
                     $rejected=$false; try { Invoke $action } catch { $rejected=$true }
                     if (!$rejected) { throw 'Cached background Invoke was accepted' }
                     $next=Find $id 'GalleryNext'; if ($next -and $next.Current.IsEnabled) { throw 'Modal exposed enabled aggregate navigation' }
+                    Foreground
                     $editor=ById 'DialogEditor'; $editor.SetFocus()
-                    [Windows.Forms.SendKeys]::SendWait('^a'); [Windows.Forms.SendKeys]::SendWait('published'); [Windows.Forms.SendKeys]::SendWait('{ENTER}')
+                    Wait { $editor.Current.HasKeyboardFocus } 'native dialog editor focus before typing' | Out-Null
+                    Keys '^a'; Keys 'published'; Keys '{ENTER}'
                     $value=$editor.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern)
                     Wait { $value.Current.Value -eq 'published' } 'native edit/preedit commit without submission' | Out-Null
                     $dialog=ByName 'Edit details'
@@ -231,7 +234,8 @@ for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
     }
     catch {
         if ($window) { Capture 'failure-observation.png' }
-        @{ executable=$Executable; failed=$_.Exception.Message; visited=$observations } | ConvertTo-Json -Depth 3 | Set-Content (Join-Path $Evidence 'native-failure.json') -Encoding UTF8
+        $observedEditor=$null; if ($value) { try { $observedEditor=$value.Current.Value } catch { } }
+        @{ executable=$Executable; failed=$_.Exception.Message; visited=$observations; editorValue=$observedEditor } | ConvertTo-Json -Depth 3 | Set-Content (Join-Path $Evidence 'native-failure.json') -Encoding UTF8
         throw
     }
     finally { if (!$process.HasExited) { $process.CloseMainWindow() | Out-Null; if (!$process.WaitForExit(4000)) { $process.Kill(); $process.WaitForExit() } }; $process.Dispose() }
