@@ -1,0 +1,104 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls" xmlns:themes="using:Avalonia.Material3.Themes" xmlns:converters="using:Avalonia.Data.Converters">
+  <themes:NavigationLabelTemplate x:Key="M3.Navigation.LabelTemplate" />
+  <ControlTheme x:Key="{x:Type controls:MaterialNavigation}" TargetType="controls:MaterialNavigation">
+    <Setter Property="ItemsPanel"><ItemsPanelTemplate><controls:MaterialNavigationPanel /></ItemsPanelTemplate></Setter>
+    <Setter Property="Template"><ControlTemplate>
+      <DockPanel>
+        <Border x:Name="Header" DockPanel.Dock="Bottom" Background="{DynamicResource M3.SurfaceContainerBrush}" Width="{TemplateBinding HeaderWidth}" MinHeight="80">
+          <ScrollViewer x:Name="PART_HeaderScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+          </ScrollViewer>
+        </Border>
+        <ContentPresenter Content="{TemplateBinding SelectedContent}" ContentTemplate="{TemplateBinding SelectedContentTemplate}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+      </DockPanel>
+    </ControlTemplate></Setter>
+    <Style Selector="^:bar /template/ Border#Header"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
+    <Style Selector="^:bar:horizontal /template/ Border#Header"><Setter Property="MinHeight" Value="64" /></Style>
+    <Style Selector="^:rail /template/ Border#Header">
+      <Setter Property="DockPanel.Dock" Value="Left" /><Setter Property="MinHeight" Value="0" />
+      <Setter Property="MinWidth" Value="80" /><Setter Property="MaxWidth" Value="360" />
+      <Setter Property="Padding" Value="0,44,0,0" /><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+    </Style>
+    <Style Selector="^:rail:expanded /template/ Border#Header"><Setter Property="MinWidth" Value="220" /><Setter Property="MaxWidth" Value="360" /></Style>
+    <Style Selector="^:tabs /template/ Border#Header"><Setter Property="DockPanel.Dock" Value="Top" /><Setter Property="MinHeight" Value="48" /><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.SurfaceVariantBrush}" /><Setter Property="BorderThickness" Value="0,0,0,1" /></Style>
+    <Style Selector="^:tabs:scrollable /template/ ScrollViewer#PART_HeaderScrollViewer"><Setter Property="HorizontalScrollBarVisibility" Value="Auto" /></Style>
+    <Style Selector="^:primary:scrollable /template/ ItemsPresenter#PART_ItemsPresenter"><Setter Property="Margin" Value="52,0" /></Style>
+    <Style Selector="^:secondary:scrollable /template/ ItemsPresenter#PART_ItemsPresenter"><Setter Property="Margin" Value="12,0" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialNavigationItem}" TargetType="controls:MaterialNavigationItem">
+    <Setter Property="MinWidth" Value="48" /><Setter Property="MinHeight" Value="64" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" /><Setter Property="Background" Value="Transparent" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.LabelMediumFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.LabelMediumFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.LabelMediumFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelMediumLetterSpacing}" />
+    <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.LabelMediumLineHeight}" />
+    <Setter Property="ContentTemplate" Value="{StaticResource M3.Navigation.LabelTemplate}" /><Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Template"><ControlTemplate>
+      <Grid Background="Transparent">
+        <Grid x:Name="Group" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+          <Border x:Name="Indicator" Grid.ColumnSpan="2" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Width="56" MinHeight="32" HorizontalAlignment="Center">
+            <Border x:Name="StateLayer" Background="{DynamicResource M3.OnSecondaryContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Opacity="0" IsHitTestVisible="False">
+              <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
+            </Border>
+          </Border>
+          <Viewbox x:Name="Icon" Grid.ColumnSpan="2" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ContentPresenter Content="{TemplateBinding DisplayIcon}" ContentTemplate="{TemplateBinding IconTemplate}" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+          </Viewbox>
+          <ContentPresenter x:Name="Badge" Grid.ColumnSpan="2" Content="{TemplateBinding Badge}" ContentTemplate="{TemplateBinding BadgeTemplate}"
+                            IsVisible="{TemplateBinding Badge, Converter={x:Static converters:ObjectConverters.IsNotNull}}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="24,-2,0,0" IsHitTestVisible="False" />
+          <ContentPresenter x:Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="2" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="4,4,4,0"
+                            LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+        </Grid>
+        <Border x:Name="TabIndicator" Height="3" CornerRadius="3,3,0,0" Background="{DynamicResource M3.PrimaryBrush}" Width="{Binding Bounds.Width, ElementName=PART_ContentPresenter}" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="False" IsHitTestVisible="False" />
+        <Border x:Name="FocusRing" Margin="2" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3" CornerRadius="{DynamicResource M3.Shape.CornerSmall}" IsVisible="False" IsHitTestVisible="False" />
+      </Grid>
+    </ControlTemplate></Setter>
+    <Style Selector="^:horizontal /template/ Border#Indicator"><Setter Property="Width" Value="NaN" /><Setter Property="MinHeight" Value="40" /><Setter Property="HorizontalAlignment" Value="Stretch" /></Style>
+    <Style Selector="^:horizontal /template/ Viewbox#Icon"><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="16,0,0,0" /></Style>
+    <Style Selector="^:horizontal /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Grid.Row" Value="0" /><Setter Property="Grid.Column" Value="1" /><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="4,0,16,0" />
+    </Style>
+    <Style Selector="^:horizontal /template/ ContentPresenter#Badge"><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="36,0,0,0" /><Setter Property="HorizontalAlignment" Value="Left" /></Style>
+    <Style Selector="^:rail:horizontal">
+      <Setter Property="MinHeight" Value="56" /><Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelLargeLetterSpacing}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.LabelLargeLineHeight}" />
+    </Style>
+    <Style Selector="^:rail:horizontal /template/ Border#Indicator"><Setter Property="MinHeight" Value="56" /></Style>
+    <Style Selector="^:rail:horizontal /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Margin" Value="8,0,16,0" /><Setter Property="HorizontalContentAlignment" Value="Left" /></Style>
+    <Style Selector="^:selected"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.SecondaryBrush}" /></Style>
+    <Style Selector="^:selected /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
+    <Style Selector="^:tabs">
+      <Setter Property="MinHeight" Value="48" /><Setter Property="Background" Value="Transparent" />
+      <Setter Property="FontFamily" Value="{DynamicResource M3.TitleSmallFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleSmallFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.TitleSmallFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleSmallLetterSpacing}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.TitleSmallLineHeight}" />
+    </Style>
+    <Style Selector="^:tabs:scrollable"><Setter Property="MinWidth" Value="90" /></Style>
+    <Style Selector="^:primary:icon"><Setter Property="MinHeight" Value="64" /></Style>
+    <Style Selector="^:tabs /template/ Border#Indicator">
+      <Setter Property="Width" Value="NaN" /><Setter Property="MinHeight" Value="48" /><Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="Grid.RowSpan" Value="2" /><Setter Property="CornerRadius" Value="0" />
+    </Style>
+    <Style Selector="^:primary:icon /template/ Border#Indicator"><Setter Property="MinHeight" Value="64" /></Style>
+    <Style Selector="^:tabs /template/ Border#StateLayer"><Setter Property="CornerRadius" Value="0" /><Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:primary:selected /template/ Border#StateLayer"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
+    <Style Selector="^:tabs:not(:icon) /template/ Viewbox#Icon"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:tabs /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="Margin" Value="16,4,16,8" /></Style>
+    <Style Selector="^:tabs:not(:icon) /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Grid.Row" Value="0" /><Setter Property="Grid.Column" Value="0" /><Setter Property="Grid.ColumnSpan" Value="2" /></Style>
+    <Style Selector="^:primary:selected"><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
+    <Style Selector="^:primary:selected /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
+    <Style Selector="^:secondary:selected"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:secondary:selected /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:tabs:pointerover:not(:selected), ^:tabs:focus-visible:not(:selected), ^:tabs:pressed:not(:selected)"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:tabs:pointerover:not(:selected) /template/ Viewbox#Icon ContentPresenter, ^:tabs:focus-visible:not(:selected) /template/ Viewbox#Icon ContentPresenter, ^:tabs:pressed:not(:selected) /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:tabs:selected /template/ Border#TabIndicator"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:secondary /template/ Border#TabIndicator"><Setter Property="Width" Value="NaN" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Height" Value="2" /><Setter Property="CornerRadius" Value="0" /></Style>
+    <Style Selector="^:pointerover /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ Border#FocusRing"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+    <Style Selector="^:disabled /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+    <Style Selector="^:disabled /template/ Border#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled /template/ Border#FocusRing"><Setter Property="IsVisible" Value="False" /></Style>
+  </ControlTheme>
+</ResourceDictionary>
