@@ -82,8 +82,11 @@ internal sealed class MaterialActionReveal : Decorator
         var target = IsExpanded ? 1.0 : 0.0;
         var seconds = _elapsed.Elapsed.TotalSeconds;
         static double Mix(double from, double to, double fraction) => Math.Clamp(from + (to - from) * fraction, 0, 1);
-        _extent = Mix(_fromExtent, target, Response(seconds, SpatialSpring));
-        _alpha = Mix(_fromAlpha, target, Response(seconds, EffectsSpring));
+        var spatial = Response(seconds, SpatialSpring);
+        var effects = Response(seconds, EffectsSpring);
+        if (!double.IsFinite(spatial) || !double.IsFinite(effects)) { Snap(); return; }
+        _extent = Mix(_fromExtent, target, spatial);
+        _alpha = Mix(_fromAlpha, target, effects);
         // A bounded UI projection settles within one thousandth of its extent; no unbounded timer survives detach.
         if (seconds >= 10 || (Math.Abs(_extent - target) < 0.001 && Math.Abs(_alpha - target) < 0.001)) { Snap(); return; }
         Opacity = _alpha;

@@ -61,6 +61,7 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     {
         var seconds = _elapsed.Elapsed.TotalSeconds;
         var progress = Response(seconds, Spring);
+        if (!double.IsFinite(progress)) { Snap(); return; }
         // Clamp the UI projection, keeping positive targets even with underdamped host overrides.
         var extent = _fromExtent + (TargetExtent - _fromExtent) * Math.Clamp(progress, 0, 1);
         var icon = _fromIcon + (TargetIconSize - _fromIcon) * Math.Clamp(progress, 0, 1);

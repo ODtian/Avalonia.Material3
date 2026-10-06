@@ -119,7 +119,8 @@ public sealed class FloatingActionsPage : UserControl
     private static TextBlock Heading(string text) => new() { Text = text, FontSize = 22, FontWeight = FontWeight.Bold, TextWrapping = TextWrapping.Wrap };
     private static MaterialButton Action(string text, string id, Action action)
     {
-        var button = new MaterialButton { Content = text, Variant = MaterialButtonVariant.Tonal };
+        var button = new MaterialButton { Content = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap }, Variant = MaterialButtonVariant.Tonal };
+        AutomationProperties.SetName(button, text);
         AutomationProperties.SetAutomationId(button, id);
         button.Click += (_, _) => action();
         return button;

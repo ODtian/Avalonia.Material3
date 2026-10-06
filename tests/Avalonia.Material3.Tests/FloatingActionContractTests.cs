@@ -19,6 +19,30 @@ namespace Avalonia.Material3.Tests;
 
 public class FloatingActionContractTests
 {
+    [AvaloniaFact]
+    public async Task Extreme_valid_host_springs_cannot_poison_action_layout()
+    {
+        using var host = new ButtonHost();
+        var fab = new MaterialExtendedFab { Icon = "+", Content = "Create document" };
+        host.Window.Content = new StackPanel { Children = { fab } };
+        host.Theme.Motion = new Avalonia.Material3.Tokens.MaterialMotion
+        {
+            Springs = Avalonia.Material3.Tokens.MaterialSpringScheme.Expressive with { FastSpatial = new(1e200, 100), FastEffects = new(1e200, 100) }
+        };
+        host.Capture();
+        fab.IsExpanded = false;
+        await Task.Delay(60);
+        host.Capture();
+        Assert.Equal(66, fab.Bounds.Width);
+        var iconFab = new MaterialFab { Content = "+" };
+        host.Window.Content = new StackPanel { Children = { iconFab } };
+        host.Capture();
+        iconFab.Size = MaterialFabSize.Medium;
+        await Task.Delay(60);
+        host.Capture();
+        Assert.Equal(90, iconFab.Bounds.Width);
+    }
+
     [AvaloniaTheory]
     [InlineData(MaterialFabSize.Standard, 56, 24, 12, 14, 16)]
     [InlineData(MaterialFabSize.Small, 56, 24, 8, 16, 16)]

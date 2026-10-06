@@ -5,6 +5,8 @@ $root = Split-Path $PSScriptRoot -Parent
 $sandbox = Join-Path ([IO.Path]::GetTempPath()) ('m3-issue9-' + [guid]::NewGuid().ToString('N'))
 $previousPackages = $env:NUGET_PACKAGES
 $previousNodeReuse = $env:MSBUILDDISABLENODEREUSE
+$previousScreenshots = $env:M3_ISSUE9_SCREENSHOTS
+$env:M3_ISSUE9_SCREENSHOTS = Join-Path $root 'artifacts/screenshots/issue9'
 $env:MSBUILDDISABLENODEREUSE = '1'
 $results = Join-Path $root 'artifacts/TestResults/issue9'
 function Invoke-Dotnet {
@@ -44,12 +46,15 @@ try {
 finally {
     $env:NUGET_PACKAGES = $previousPackages
     $env:MSBUILDDISABLENODEREUSE = $previousNodeReuse
+    $env:M3_ISSUE9_SCREENSHOTS = $previousScreenshots
     Pop-Location
     if ($KeepSandbox) { Write-Host "Sandbox kept: $sandbox" }
     elseif (Test-Path $sandbox) {
-        for ($attempt = 0; $attempt -lt 20; $attempt++) {
-            try { Remove-Item $sandbox -Recurse -Force; break }
-            catch { if ($attempt -eq 19) { throw }; Start-Sleep -Milliseconds 500 }
+        # Avalonia's build collector may retain its own cache DLL beyond the final native test.
+        # Retry only this owned sandbox; never shut down shared compilers or other agents' processes.
+        for ($attempt = 0; $attempt -lt 120; $attempt++) {
+            try { Remove-Item $sandbox -Recurse -Force -ErrorAction Stop; break }
+            catch { if ($attempt -eq 119) { throw }; Start-Sleep -Milliseconds 500 }
         }
     }
 }
