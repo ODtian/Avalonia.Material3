@@ -1,0 +1,143 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:Avalonia.Material3.Controls" xmlns:converters="using:Avalonia.Data.Converters">
+  <ControlTheme x:Key="{x:Type controls:MaterialTopAppBar}" TargetType="controls:MaterialTopAppBar">
+    <Setter Property="VerticalAlignment" Value="Top" />
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+    <Setter Property="ScrolledBackground" Value="{DynamicResource M3.SurfaceContainerBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="Template"><ControlTemplate>
+      <Border x:Name="Surface" Background="{TemplateBinding CurrentBackground}">
+        <controls:MaterialAppBarPanel>
+          <ContentPresenter Content="{TemplateBinding NavigationContent}" ContentTemplate="{TemplateBinding NavigationContentTemplate}" VerticalAlignment="Center" Foreground="{DynamicResource M3.OnSurfaceBrush}" />
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+            <ContentPresenter Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}" VerticalAlignment="Center" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+          </ScrollViewer>
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <Grid>
+              <TextBlock x:Name="Title" Text="{TemplateBinding Title}" VerticalAlignment="Center" TextWrapping="Wrap"
+                     FontFamily="{DynamicResource M3.TitleLargeFontFamily}" FontSize="{DynamicResource M3.TitleLargeFontSize}" FontWeight="{DynamicResource M3.TitleLargeFontWeight}"
+                     LineHeight="{DynamicResource M3.TitleLargeLineHeight}" LetterSpacing="{DynamicResource M3.TitleLargeLetterSpacing}" />
+              <ContentPresenter x:Name="CustomTitle" IsVisible="False" Content="{TemplateBinding Title}" ContentTemplate="{TemplateBinding TitleTemplate}"
+                                FontFamily="{Binding FontFamily, ElementName=Title}" FontSize="{Binding FontSize, ElementName=Title}" FontWeight="{Binding FontWeight, ElementName=Title}"
+                                LineHeight="{Binding LineHeight, ElementName=Title}" LetterSpacing="{Binding LetterSpacing, ElementName=Title}" />
+            </Grid>
+          </ScrollViewer>
+          <ScrollViewer x:Name="SubtitleScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" IsVisible="False">
+            <TextBlock x:Name="Subtitle" Text="{TemplateBinding Subtitle}" TextWrapping="Wrap" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}"
+                     FontFamily="{DynamicResource M3.LabelMediumFontFamily}" FontSize="{DynamicResource M3.LabelMediumFontSize}" FontWeight="{DynamicResource M3.LabelMediumFontWeight}"
+                     LineHeight="{DynamicResource M3.LabelMediumLineHeight}" LetterSpacing="{DynamicResource M3.LabelMediumLetterSpacing}" />
+          </ScrollViewer>
+        </controls:MaterialAppBarPanel>
+      </Border>
+    </ControlTemplate></Setter>
+    <Style Selector="^:subtitle /template/ ScrollViewer#SubtitleScroll"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:title-template /template/ TextBlock#Title"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:title-template /template/ ContentPresenter#CustomTitle"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:medium /template/ TextBlock#Title">
+      <Setter Property="FontFamily" Value="{DynamicResource M3.HeadlineSmallFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.HeadlineSmallFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.HeadlineSmallFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.HeadlineSmallLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.HeadlineSmallLetterSpacing}" />
+    </Style>
+    <Style Selector="^:large /template/ TextBlock#Title, ^:mediumflexible /template/ TextBlock#Title">
+      <Setter Property="FontFamily" Value="{DynamicResource M3.HeadlineMediumFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.HeadlineMediumFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.HeadlineMediumFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.HeadlineMediumLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.HeadlineMediumLetterSpacing}" />
+    </Style>
+    <Style Selector="^:largeflexible /template/ TextBlock#Title">
+      <Setter Property="FontFamily" Value="{DynamicResource M3.DisplaySmallFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.DisplaySmallFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.DisplaySmallFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.DisplaySmallLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.DisplaySmallLetterSpacing}" />
+    </Style>
+    <Style Selector="^:mediumflexible /template/ TextBlock#Subtitle">
+      <Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.LabelLargeLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelLargeLetterSpacing}" />
+    </Style>
+    <Style Selector="^:largeflexible /template/ TextBlock#Subtitle">
+      <Setter Property="FontFamily" Value="{DynamicResource M3.TitleMediumFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleMediumFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.TitleMediumFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.TitleMediumLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleMediumLetterSpacing}" />
+    </Style>
+    <Style Selector="^:collapsed /template/ TextBlock#Title">
+      <Setter Property="FontFamily" Value="{DynamicResource M3.TitleLargeFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleLargeFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.TitleLargeFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.TitleLargeLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleLargeLetterSpacing}" />
+    </Style>
+    <Style Selector="^:collapsed /template/ ScrollViewer#SubtitleScroll"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:scrolled /template/ Border#Surface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialBottomAppBar}" TargetType="controls:MaterialBottomAppBar">
+    <Setter Property="VerticalAlignment" Value="Bottom" /><Setter Property="MinHeight" Value="80" />
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="Template"><ControlTemplate>
+      <Border Background="{TemplateBinding Background}" BoxShadow="{DynamicResource M3.Elevation.Shadow2}" MinHeight="80" Padding="4,4,11,4">
+        <Grid ColumnDefinitions="*,Auto">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center">
+            <ContentPresenter Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}" HorizontalContentAlignment="Left" />
+          </ScrollViewer>
+          <ContentPresenter Grid.Column="1" Content="{TemplateBinding FloatingAction}" ContentTemplate="{TemplateBinding FloatingActionTemplate}" Margin="12,0,0,0" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+    </ControlTemplate></Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="M3.DrawerItem" TargetType="controls:MaterialNavigationItem">
+    <Setter Property="MinHeight" Value="56" /><Setter Property="MinWidth" Value="48" /><Setter Property="Margin" Value="12,0" />
+    <Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelLargeLetterSpacing}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.LabelLargeLineHeight}" />
+    <Setter Property="ContentTemplate" Value="{StaticResource M3.Navigation.LabelTemplate}" /><Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Template"><ControlTemplate>
+      <Grid Background="Transparent">
+        <Border Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" />
+        <Border x:Name="State" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{DynamicResource M3.Shape.CornerFull}" IsHitTestVisible="False">
+          <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
+        </Border>
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,8,24,8">
+          <Viewbox Width="24" Height="24" Margin="0,0,12,0" VerticalAlignment="Center" IsVisible="{TemplateBinding DisplayIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
+            <ContentPresenter Content="{TemplateBinding DisplayIcon}" ContentTemplate="{TemplateBinding IconTemplate}" />
+          </Viewbox>
+          <ContentPresenter x:Name="PART_ContentPresenter" Grid.Column="1" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" VerticalAlignment="Center"
+                            LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" HorizontalContentAlignment="Left" />
+          <ContentPresenter Grid.Column="2" Margin="12,0,0,0" Content="{TemplateBinding Badge}" ContentTemplate="{TemplateBinding BadgeTemplate}" VerticalAlignment="Center"
+                            Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" IsVisible="{TemplateBinding Badge, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
+        </Grid>
+        <Border x:Name="Focus" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="3" CornerRadius="{DynamicResource M3.Shape.CornerFull}" IsVisible="False" IsHitTestVisible="False" />
+      </Grid>
+    </ControlTemplate></Setter>
+    <Style Selector="^:selected"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
+    <Style Selector="^:pointerover:not(:selected), ^:focus-visible:not(:selected), ^:pressed:not(:selected)"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+    <Style Selector="^:disabled /template/ Border#State"><Setter Property="Opacity" Value="0" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialNavigationDrawer}" TargetType="controls:MaterialNavigationDrawer">
+    <Setter Property="ItemContainerTheme" Value="{StaticResource M3.DrawerItem}" />
+    <Setter Property="ItemsPanel"><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></Setter>
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
+    <Setter Property="Template"><ControlTemplate>
+      <Border x:Name="PART_Surface" Background="{TemplateBinding Background}">
+        <ScrollViewer x:Name="PART_HeaderScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="4">
+            <Grid ColumnDefinitions="*,Auto" Margin="28,12,12,12">
+              <TextBlock Text="{TemplateBinding Title}" TextWrapping="Wrap" VerticalAlignment="Center"
+                         FontFamily="{DynamicResource M3.TitleSmallFontFamily}" FontSize="{DynamicResource M3.TitleSmallFontSize}" FontWeight="{DynamicResource M3.TitleSmallFontWeight}"
+                         LineHeight="{DynamicResource M3.TitleSmallLineHeight}" LetterSpacing="{DynamicResource M3.TitleSmallLetterSpacing}" />
+              <controls:MaterialIconButton Grid.Column="1" x:Name="PART_CloseButton" Content="×" AutomationProperties.Name="{TemplateBinding CloseText}" />
+            </Grid>
+            <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
+            <ContentPresenter Content="{TemplateBinding Footer}" Margin="28,12" />
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+    </ControlTemplate></Setter>
+    <Style Selector="^:modal"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /></Style>
+    <Style Selector="^:modal /template/ Border#PART_Surface"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeEnd}" /><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:modal:rtl /template/ Border#PART_Surface"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeStart}" /></Style>
+    <Style Selector="^:permanent /template/ controls|MaterialIconButton#PART_CloseButton"><Setter Property="IsVisible" Value="False" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type controls:MaterialNavigationDrawerLayout}" TargetType="controls:MaterialNavigationDrawerLayout">
+    <Setter Property="Template"><ControlTemplate>
+      <controls:MaterialDrawerLayoutPanel>
+        <ContentPresenter x:Name="PART_DrawerPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+        <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+      </controls:MaterialDrawerLayoutPanel>
+    </ControlTemplate></Setter>
+  </ControlTheme>
+</ResourceDictionary>

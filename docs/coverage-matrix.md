@@ -61,9 +61,9 @@
 | Navigation bar：水平/垂直 item、选中、徽标 | 已实现：两种 item 布局、实际内容、徽标/事件/绑定、输入与选择自动化；验收证据和平台限制见组件记录 | [M3-15 #14][i14] | [Navigation bar][navigation-bar]、NavigationBar*Tokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
 | Navigation rail：collapsed、expanded、水平/垂直 item | 已实现：非 modal rail 四组合、96/80 和 220..360 DIP、实际内容及 resize 保留焦点/选择；不认领人工读屏/其他平台 | [M3-15 #14][i14] | [Navigation rail][navigation-rail]、NavigationRail*Tokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
 | Tabs：primary、secondary、固定/滚动 | 已实现：四组合、真实页面/插槽、单 Tab stop/方向键/滚动、主题与字体混排；投影边界与 package/Windows 记录见证据 | [M3-15 #14][i14] | [Tabs][tabs]、Primary/SecondaryNavigationTabTokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
-| Top app bars：small、medium、large、center-aligned、flexible | 待交付 | [M3-16 #17][i17] | [Top app bar][top-app-bar]、AppBar*Tokens |
-| Bottom app bar | 待交付 | [M3-16 #17][i17] | [Bottom app bar][bottom-app-bar]、BottomAppBarTokens |
-| Navigation drawer：standard、modal | 待交付 | [M3-16 #17][i17] | [Navigation drawer][navigation-drawer]、NavigationDrawerTokens |
+| Top app bars：small、medium、large、center-aligned、flexible | 已实现八种布局、全部字阶指标/滚动关联/标题与命令槽、真实页面/返回/结果；自动化与包证据、offset-driven/动效/平台边界见记录 | [M3-16 #17][i17] | [Top app bar][top-app-bar]、AppBar*Tokens；[契约](components/m3-16.md)、[证据](verification/m3-16.md) |
+| Bottom app bar | 已实现80 DIP、实际页面行动/FAB与溢出/字体适配；非 destination navigation，无隐式 hide-on-scroll | [M3-16 #17][i17] | [Bottom app bar][bottom-app-bar]、BottomAppBarTokens；[契约](components/m3-16.md)、[证据](verification/m3-16.md) |
+| Navigation drawer：standard、modal | 已实现持久/可关闭标准布局占位与模态 Overlay、选择/焦点/否决/返回/拖动/RTL/生命周期；人工读屏与移动平台不认领 | [M3-16 #17][i17] | [Navigation drawer][navigation-drawer]、NavigationDrawerTokens；[契约](components/m3-16.md)、[证据](verification/m3-16.md) |
 | Date pickers：modal、docked、单日/范围、date input | 待交付 | [M3-17 #18][i18] | [Date pickers][date-pickers]、DatePickerModal/DateInputModalTokens |
 | Time pickers：钟面、键盘输入、12/24 小时 | 待交付 | [M3-17 #18][i18] | [Time pickers][time-pickers]、TimePicker/TimeInputTokens |
 | Carousel：multi-browse、uncontained、hero、full-screen | 待交付 | [M3-18 #19][i19] | [Carousel][carousel] |

@@ -1,5 +1,6 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Avalonia.Material3.Controls"
         x:Class="Avalonia.Material3.Themes.MaterialTheme">
   <Styles.Resources>
     <ResourceDictionary>
@@ -11,6 +12,7 @@
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/ProgressIndicators.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Dialogs.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Navigation.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/AppChrome.axaml" />
       </ResourceDictionary.MergedDictionaries>
       <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
@@ -35,4 +37,8 @@
   <StyleInclude Source="avares://Avalonia.Material3/Themes/ButtonGroups.axaml" />
   <StyleInclude Source="avares://Avalonia.Material3/Themes/SplitButtons.axaml" />
   <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialFloatingActions.axaml" />
+  <Style Selector="controls|MaterialTopAppBar"><Setter Property="Theme" Value="{StaticResource {x:Type controls:MaterialTopAppBar}}" /></Style>
+  <Style Selector="controls|MaterialBottomAppBar"><Setter Property="Theme" Value="{StaticResource {x:Type controls:MaterialBottomAppBar}}" /></Style>
+  <Style Selector="controls|MaterialNavigationDrawer"><Setter Property="Theme" Value="{StaticResource {x:Type controls:MaterialNavigationDrawer}}" /></Style>
+  <Style Selector="controls|MaterialNavigationDrawerLayout"><Setter Property="Theme" Value="{StaticResource {x:Type controls:MaterialNavigationDrawerLayout}}" /></Style>
 </Styles>

@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Avalonia.Material3/Avalonia.Material3.csproj" />
     <Compile Include="../../samples/Gallery/Pages/ContentNavigationPage.cs" Link="ContentNavigationPage.cs" />
+    <Compile Include="../../samples/Gallery/Pages/AppChromePage.cs" Link="AppChromePage.cs" />
     <Compile Include="../../samples/Gallery/Pages/SelectionFormPage.cs" Link="SelectionFormPage.cs" />
     <Compile Include="../../samples/Gallery/Pages/ProgressFeedbackPage.cs" Link="ProgressFeedbackPage.cs" />
     <Compile Include="../../samples/Gallery/Pages/DialogsPage.cs" Link="DialogsPage.cs" />

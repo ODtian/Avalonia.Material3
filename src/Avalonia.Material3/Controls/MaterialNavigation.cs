@@ -102,10 +102,11 @@ public abstract class MaterialNavigation : ItemsControl
         if (e.Property == IsEnabledProperty || e.Property == IsEffectivelyEnabledProperty || e.Property == IsVisibleProperty) UpdateTabStop();
         if (sender == SelectedItem && (e.Property == MaterialNavigationItem.PageContentProperty || e.Property == MaterialNavigationItem.PageContentTemplateProperty)) UpdateContent();
     }
-    internal void Activate(MaterialNavigationItem item) => SetCurrentValue(SelectedIndexProperty, _subscribed.IndexOf(item));
+    internal virtual void Activate(MaterialNavigationItem item) => SetCurrentValue(SelectedIndexProperty, _subscribed.IndexOf(item));
+    internal virtual bool TryActivate(MaterialNavigationItem item) { Activate(item); return true; }
     internal bool Navigate(MaterialNavigationItem from, Key key)
     {
-        var vertical = this is MaterialNavigationRail;
+        var vertical = this is MaterialNavigationRail or MaterialNavigationDrawer;
         var direction = key switch
         {
             Key.Home => -2, Key.End => 2,
@@ -119,7 +120,7 @@ public abstract class MaterialNavigation : ItemsControl
         if (eligible.Count == 0) return true;
         var index = eligible.IndexOf(from);
         var next = direction == -2 ? eligible[0] : direction == 2 ? eligible[^1] : eligible[(index + direction + eligible.Count) % eligible.Count];
-        Activate(next);
+        if (this is not MaterialNavigationDrawer) Activate(next);
         next.Focus(NavigationMethod.Directional);
         RevealSelection();
         return true;
