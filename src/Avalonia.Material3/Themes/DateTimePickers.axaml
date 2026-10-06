@@ -2,7 +2,6 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:c="using:Avalonia.Material3.Controls"
                     xmlns:themes="using:Avalonia.Material3.Themes">
-  <themes:ClockNumberTextTemplate x:Key="M3.ClockNumber.Text" />
   <ControlTheme x:Key="{x:Type c:MaterialCalendarDay}" TargetType="c:MaterialCalendarDay">
     <Setter Property="MinWidth" Value="48" /><Setter Property="MinHeight" Value="48" />
     <Setter Property="Background" Value="Transparent" />
@@ -180,7 +179,7 @@
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialClockNumber}" TargetType="c:MaterialClockNumber">
-    <Setter Property="ContentTemplate" Value="{StaticResource M3.ClockNumber.Text}" />
+    <Setter Property="ContentTemplate"><themes:ClockNumberTextTemplate /></Setter>
     <Setter Property="MinWidth" Value="48" /><Setter Property="MinHeight" Value="48" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />

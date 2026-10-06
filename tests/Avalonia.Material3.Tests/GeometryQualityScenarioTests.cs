@@ -179,6 +179,31 @@ public class GeometryQualityScenarioTests
         host.Window.MouseDown(point, MouseButton.Left); host.Window.MouseUp(point, MouseButton.Left);
         Assert.Equal(5, five.Value); // still a native action (ValueSelected exercised by existing picker suite)
     }
+
+    [AvaloniaFact]
+    public void Navigation_badges_use_the_icon_anchor_without_changing_its_baseline_and_stay_in_the_header()
+    {
+        var icon = new Border { Width = 24, Height = 24, Background = Brushes.Green };
+        var item = new MaterialNavigationItem { Content = "Inbox", Icon = icon };
+        var tabs = new MaterialTabs { Items = { item } };
+        using var host = new GeometryHost(tabs, 240, 200);
+        var anchor = GeometryHost.Box(icon, host.Window);
+        var label = item.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "Inbox");
+        var labelBox = GeometryHost.Box(label, host.Window);
+        var dot = new MaterialBadge(); item.Badge = dot; host.Render();
+        Assert.Equal(anchor, GeometryHost.Box(icon, host.Window));
+        Assert.Equal(labelBox, GeometryHost.Box(label, host.Window));
+        var dotBox = GeometryHost.Box(dot, host.Window);
+        Assert.Equal(18, dotBox.Left - anchor.Left);
+        Assert.Equal(anchor.Top, dotBox.Top);
+        var count = new MaterialBadge { Count = 999 }; item.Badge = count; host.Render();
+        Assert.Equal(anchor, GeometryHost.Box(icon, host.Window));
+        Assert.Equal(labelBox, GeometryHost.Box(label, host.Window));
+        var countBox = GeometryHost.Box(count, host.Window);
+        var itemBox = GeometryHost.Box(item, host.Window);
+        Assert.True(countBox.Top >= itemBox.Top && countBox.Right <= itemBox.Right);
+        Assert.Equal(12, countBox.Left - anchor.Left);
+    }
 }
 
 internal sealed class GeometryHost : IDisposable
