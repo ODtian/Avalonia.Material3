@@ -266,20 +266,29 @@ public class MaterialDatePicker : TemplatedControl
                 var date = new DateOnly(month.Year, month.Month, day);
                 var button = new MaterialCalendarDay { Date = date, Content = day.ToString(Culture), MinHeight = 48, MinWidth = 48 };
                 button.Click += (_, _) => SelectDate(date);
-                var cell = new Border { Child = button };
+                var band = new Border { Height = 40, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
+                Grid.SetColumnSpan(button, 2);
+                var cell = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), Children = { band, button } };
                 Grid.SetRow(cell, (day - 1 + offset) / 7); Grid.SetColumn(cell, (day - 1 + offset) % 7);
                 _days.Children.Add(cell);
             }
         }
-        foreach (var cell in _days.Children.OfType<Border>())
+        foreach (var cell in _days.Children.OfType<Grid>())
         {
-            var button = (MaterialCalendarDay)cell.Child!;
+            var band = (Border)cell.Children[0];
+            var button = (MaterialCalendarDay)cell.Children[1];
             var date = button.Date;
             button.IsEnabled = IsDateAvailable(date);
             button.IsChecked = date == SelectedDate || SelectionMode == MaterialDateSelectionMode.Range && date == RangeEnd;
             button.IsToday = date == Today;
             button.IsInRange = SelectionMode == MaterialDateSelectionMode.Range && SelectedDate is { } start && RangeEnd is { } end && date >= start && date <= end;
-            MaterialPickerSupport.Resource(cell, Border.BackgroundProperty, button.IsInRange ? "SecondaryContainerBrush" : "SurfaceContainerHighBrush");
+            band.IsVisible = button.IsInRange && SelectedDate != RangeEnd;
+            MaterialPickerSupport.Resource(band, Border.BackgroundProperty, "SecondaryContainerBrush");
+            var isStart = date == SelectedDate;
+            var isEnd = date == RangeEnd;
+            Grid.SetColumn(band, isStart ? 1 : 0);
+            Grid.SetColumnSpan(band, isStart || isEnd ? 1 : 2);
+            band.CornerRadius = new(isStart ? 20 : 0, isEnd ? 20 : 0, isEnd ? 20 : 0, isStart ? 20 : 0);
             var status = date == SelectedDate ? SelectionMode == MaterialDateSelectionMode.Single ? Labels.Selected : Labels.RangeStart
                 : date == RangeEnd && SelectionMode == MaterialDateSelectionMode.Range ? Labels.RangeEnd : button.IsInRange ? Labels.InRange : "";
             if (button.IsToday) status += " " + Labels.Today;
@@ -376,8 +385,12 @@ public class MaterialDatePicker : TemplatedControl
             }
             if (DisplayMonth != month) { SetCurrentValue(DisplayMonthProperty, month); return; }
         }
-        if (change.Property == SelectedDateProperty || change.Property == RangeEndProperty ||
-            (change.Property == CultureProperty || change.Property == InputFormatProperty) && IsValid)
+        if (change.Property == CultureProperty || change.Property == InputFormatProperty)
+        {
+            if (IsValid) SynchronizeText();
+            else { ReadInput(); return; } // Retained native text now belongs to the new grammar.
+        }
+        else if (change.Property == SelectedDateProperty || change.Property == RangeEndProperty)
             SynchronizeText();
         Refresh();
         if (change.Property == ModeProperty && TopLevel.GetTopLevel(this) is not null)

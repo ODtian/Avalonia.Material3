@@ -80,7 +80,7 @@ internal sealed class MaterialProgressPresenter : Control
             var cycle = indicator.Elapsed / .65;
             var index = (int)(Math.Floor(cycle) % 7);
             var time = (cycle - Math.Floor(cycle)) * .65;
-            morph = indicator.ReducedMotion ? 0 : SpringResponse(time, indicator.MotionSpring);
+            morph = indicator.ReducedMotion ? 0 : MaterialSpringResponse.Evaluate(time, indicator.MotionSpring);
             rotation = (Math.Floor(cycle) % 4 + 1 + morph) * Math.PI / 2 + (indicator.Elapsed % 4.666) / 4.666 * Math.Tau;
             from = MaterialLoadingShapes.Cycle[index];
             to = MaterialLoadingShapes.Cycle[(index + 1) % 7];
@@ -107,24 +107,6 @@ internal sealed class MaterialProgressPresenter : Control
             drawing.EndFigure(true);
         }
         context.DrawGeometry(indicator.IsContained ? indicator.ContainedForeground : indicator.Foreground, null, path);
-    }
-
-    private static double SpringResponse(double time, Avalonia.Material3.Tokens.MaterialSpring spring)
-    {
-        if (spring.IsInstant) return 1;
-        var omega = Math.Sqrt(spring.Stiffness);
-        var damping = spring.DampingRatio;
-        if (Math.Abs(damping - 1) < 1e-7) return 1 - (1 + omega * time) * Math.Exp(-omega * time);
-        if (damping < 1)
-        {
-            var ratio = Math.Sqrt(1 - damping * damping);
-            var phase = omega * ratio * time;
-            return 1 - Math.Exp(-damping * omega * time) * (Math.Cos(phase) + damping / ratio * Math.Sin(phase));
-        }
-        var root = Math.Sqrt(damping * damping - 1);
-        var first = -omega * (damping - root);
-        var second = -omega * (damping + root);
-        return 1 + (second * Math.Exp(first * time) - first * Math.Exp(second * time)) / (first - second);
     }
 
     private void DrawLinear(DrawingContext context, MaterialProgressIndicator indicator)

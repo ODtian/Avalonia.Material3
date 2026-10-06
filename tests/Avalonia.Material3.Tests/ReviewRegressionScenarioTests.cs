@@ -1,4 +1,7 @@
 using System.Windows.Input;
+using System.Globalization;
+using Gallery;
+using Gallery.Pages;
 using Avalonia.Automation;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
@@ -19,6 +22,140 @@ namespace Avalonia.Material3.Tests;
 // Automatically shared with fresh package consumption by ScenarioInventory.props.
 public class ReviewRegressionScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Closing_or_detaching_gallery_cancels_current_page_with_another_window_alive_and_reattach_is_fresh(bool close)
+    {
+        using var host = new BrowseHost(new Border(), 1000, 800);
+        var shell = new GalleryShell(host.Theme);
+        var other = new Window { Content = new Border(), Width = 200, Height = 200 };
+        other.Show();
+        try
+        {
+            host.Window.Content = shell; host.Render(); shell.Navigate("CarouselRefresh"); host.Render();
+            var old = Assert.IsType<CarouselRefreshPage>(shell.CurrentPage);
+            Assert.True(old.Refresh.RequestRefresh());
+            if (close) host.Window.Close(); else host.Window.Content = null;
+            await old.CurrentOperation.WaitAsync(TimeSpan.FromSeconds(3));
+            Assert.NotEqual(MaterialProgressStatus.Completed, old.Refresh.Status);
+            Assert.DoesNotContain("updated", old.Result.Text!);
+            if (!close)
+            {
+                host.Window.Content = shell; host.Render();
+                var fresh = Assert.IsType<CarouselRefreshPage>(shell.CurrentPage);
+                Assert.NotSame(old, fresh);
+                Assert.True(fresh.Refresh.RequestRefresh());
+                await fresh.CurrentOperation.WaitAsync(TimeSpan.FromSeconds(3));
+                Assert.Equal(MaterialProgressStatus.Completed, fresh.Refresh.Status);
+            }
+        }
+        finally { other.Close(); }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Clock_part_activation_retains_required_selection_and_matching_style_and_Toggle(bool hour24)
+    {
+        using var host = new DialogHost();
+        var picker = new MaterialTimePicker { SelectedTime = new(14, 7), Is24Hour = hour24 };
+        picker.Show(host.Overlay); host.Render();
+        var selectors = picker.GetVisualDescendants().OfType<MaterialTimeSelector>().ToArray();
+        var hour = selectors.Single(s => AutomationProperties.GetName(s)!.StartsWith("Hour"));
+        var minute = selectors.Single(s => AutomationProperties.GetName(s)!.StartsWith("Minute"));
+        foreach (var selector in new[] { hour, minute, minute, hour, hour })
+        {
+            ControlAutomationPeer.CreatePeerForElement(selector)!.GetProvider<IInvokeProvider>()!.Invoke();
+            host.Render();
+            Assert.True(selector.IsChecked);
+            Assert.Equal(ToggleState.On, ControlAutomationPeer.CreatePeerForElement(selector)!.GetProvider<IToggleProvider>()!.ToggleState);
+            Assert.Equal(selector == hour ? MaterialTimePickerPart.Hour : MaterialTimePickerPart.Minute, picker.ActivePart);
+            Assert.Equal(Color.Parse("#EADDFF"), ((ISolidColorBrush)selector.Background!).Color);
+            Assert.Equal(Color.Parse("#21005D"), ((ISolidColorBrush)selector.Foreground!).Color);
+            Assert.False((selector == hour ? minute : hour).IsChecked);
+            Assert.Equal(new TimeOnly(14, 7), picker.SelectedTime);
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Retained_unavailable_date_drafts_reparse_current_grammar_and_confirm_current_meaning(bool range)
+    {
+        using var host = new DialogHost();
+        var picker = new MaterialDatePicker { Mode = MaterialDatePickerMode.Input, Culture = CultureInfo.GetCultureInfo("en-US"),
+            InputFormat = "MM/dd/yyyy", SelectionMode = range ? MaterialDateSelectionMode.Range : MaterialDateSelectionMode.Single,
+            MinimumDate = new(2024, 1, 1), MaximumDate = new(2024, 2, 29) };
+        var session = picker.Show(host.Overlay); host.Render();
+        picker.StartInput.Focus(); host.Window.KeyTextInput("03/04/2024"); host.Render();
+        if (range) { picker.EndInput.Focus(); host.Window.KeyTextInput("04/04/2024"); host.Render(); }
+        picker.StartInput.CaretIndex = 3;
+        Assert.False(picker.IsValid);
+        picker.InputFormat = "dd/MM/yyyy"; host.Render();
+        Assert.Equal("03/04/2024", picker.StartInput.Text);
+        Assert.Equal(3, picker.StartInput.CaretIndex);
+        Assert.Equal(new DateOnly(2024, 4, 3), picker.SelectedDate);
+        if (range) Assert.Equal(new DateOnly(2024, 4, 4), picker.RangeEnd);
+        picker.MaximumDate = new(2024, 4, 30); host.Render();
+        Assert.True(picker.IsValid);
+        Assert.True(picker.Confirm());
+        Assert.Equal(range ? new MaterialDateRange(new(2024, 4, 3), new(2024, 4, 4)) : (object)new DateOnly(2024, 4, 3), session.Completion.Result.Value);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false, false, 2)]
+    [InlineData(false, true, 3)]
+    [InlineData(true, false, 3)]
+    [InlineData(true, true, 2)]
+    public void Submenu_Tab_dismisses_whole_chain_returns_root_focus_without_command(bool rtl, bool shift, int depth)
+    {
+        using var host = new FeedbackHost();
+        host.Overlay.FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        var command = new AvailabilityCommand { Available = true };
+        var menu = new MaterialMenu { Items = { new MaterialMenuItem { Content = "PDF", Command = command } } };
+        var menus = new List<MaterialMenu> { menu };
+        for (var i = 1; i < depth; i++)
+        {
+            menu = new MaterialMenu { Items = { new MaterialMenuItem { Content = "Export " + i, Submenu = menu } } };
+            menus.Add(menu);
+        }
+        var root = menu.Show(host.Overlay, host.Entry);
+        host.Render();
+        for (var i = 1; i < depth; i++) host.Key(rtl ? Key.Left : Key.Right);
+        Assert.Equal(depth, host.Overlay.OpenCount);
+        var modifiers = shift ? RawInputModifiers.Shift : RawInputModifiers.None;
+        host.Window.KeyPressQwerty(PhysicalKey.Tab, modifiers);
+        host.Window.KeyReleaseQwerty(PhysicalKey.Tab, modifiers);
+        host.Render();
+        Assert.Equal(0, host.Overlay.OpenCount);
+        Assert.All(menus, m => Assert.False(m.IsOpen));
+        Assert.True(host.Entry.IsFocused);
+        Assert.Equal(0, command.Executions);
+        Assert.Null(root.Completion.Result.Value);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialTabVariant.Primary, 284)]
+    [InlineData(MaterialTabVariant.Secondary, 204)]
+    public void Scrollable_tabs_have_natural_extent_without_blank_tail_after_resize(MaterialTabVariant variant, double intrinsic)
+    {
+        var tabs = new MaterialTabs { Variant = variant, Layout = MaterialTabLayout.Scrollable,
+            Items = { new MaterialNavigationItem { Content = "A" }, new MaterialNavigationItem { Content = "B" } } };
+        using var host = new BrowseHost(tabs);
+        var scroll = tabs.GetVisualDescendants().OfType<ScrollViewer>().Single();
+        foreach (var width in new[] { 400, 320, 1000, 400 })
+        {
+            host.Window.Width = width;
+            host.Render();
+            Assert.Equal(180, tabs.ItemsPanelRoot!.DesiredSize.Width);
+            Assert.InRange(scroll.Extent.Width, intrinsic, width);
+            scroll.Offset = new Vector(double.MaxValue, 0);
+            host.Render();
+            Assert.Equal(0, scroll.Offset.X);
+        }
+    }
+
     [AvaloniaFact]
     public async Task List_row_native_worker_discovers_dynamic_expansion_and_reads_state_without_UI_affinity()
     {

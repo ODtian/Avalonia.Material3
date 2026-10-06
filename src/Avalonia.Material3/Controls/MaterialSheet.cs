@@ -407,23 +407,7 @@ public abstract class MaterialSheet : ContentControl
     private void AdvanceMotion()
     {
         var seconds = _motionTime.Elapsed.TotalSeconds;
-        var spring = SpatialSpring;
-        var omega = Math.Sqrt(spring.Stiffness);
-        var damping = spring.DampingRatio;
-        double fraction;
-        if (spring.IsInstant) fraction = 1;
-        else if (Math.Abs(damping - 1) < 1e-7) fraction = 1 - (1 + omega * seconds) * Math.Exp(-omega * seconds);
-        else if (damping < 1)
-        {
-            var root = Math.Sqrt(1 - damping * damping);
-            fraction = 1 - Math.Exp(-damping * omega * seconds) * (Math.Cos(omega * root * seconds) + damping / root * Math.Sin(omega * root * seconds));
-        }
-        else
-        {
-            var ratio = Math.Sqrt(damping * damping - 1);
-            var first = -omega * (damping - ratio); var second = -omega * (damping + ratio);
-            fraction = 1 + (second * Math.Exp(first * seconds) - first * Math.Exp(second * seconds)) / (first - second);
-        }
+        var fraction = MaterialSpringResponse.Evaluate(seconds, SpatialSpring);
         _motionExtent = Math.Clamp(_motionFrom + (_motionTo - _motionFrom) * fraction, 0, _expanded);
         if (!double.IsFinite(fraction) || seconds >= 10 || seconds > 0.1 && Math.Abs(_motionExtent - _motionTo) < 0.1) StopMotion();
         InvalidateMeasure();

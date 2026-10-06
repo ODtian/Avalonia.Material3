@@ -60,7 +60,7 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     private void Advance()
     {
         var seconds = _elapsed.Elapsed.TotalSeconds;
-        var progress = Response(seconds, Spring);
+        var progress = MaterialSpringResponse.Evaluate(seconds, Spring);
         if (!double.IsFinite(progress)) { Snap(); return; }
         // Clamp the UI projection, keeping positive targets even with underdamped host overrides.
         var extent = _fromExtent + (TargetExtent - _fromExtent) * Math.Clamp(progress, 0, 1);
@@ -68,20 +68,5 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
         if (seconds >= 10 || (Math.Abs(extent - TargetExtent) < 0.01 && Math.Abs(icon - TargetIconSize) < 0.01)) { Snap(); return; }
         SetAndRaise(ExtentProperty, ref _extent, extent);
         SetAndRaise(IconExtentProperty, ref _iconExtent, icon);
-    }
-    private static double Response(double seconds, MaterialSpring spring)
-    {
-        var omega = Math.Sqrt(spring.Stiffness);
-        var damping = spring.DampingRatio;
-        if (Math.Abs(damping - 1) < 1e-7) return 1 - (1 + omega * seconds) * Math.Exp(-omega * seconds);
-        if (damping < 1)
-        {
-            var root = Math.Sqrt(1 - damping * damping);
-            return 1 - Math.Exp(-damping * omega * seconds) * (Math.Cos(omega * root * seconds) + damping / root * Math.Sin(omega * root * seconds));
-        }
-        var ratio = Math.Sqrt(damping * damping - 1);
-        var first = -omega * (damping - ratio);
-        var second = -omega * (damping + ratio);
-        return 1 + (second * Math.Exp(first * seconds) - first * Math.Exp(second * seconds)) / (first - second);
     }
 }

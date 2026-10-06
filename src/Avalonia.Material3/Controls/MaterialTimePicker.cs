@@ -94,8 +94,16 @@ public class MaterialTimePicker : TemplatedControl
         _pmButton = new MaterialTimePeriodButton { Content = "PM" }; _pmButton.Click += (_, _) => SetPeriod(true);
         _period.Children.Add(_am); _period.Children.Add(_pmButton);
         var separator = MaterialPickerSupport.Text("DisplayLarge"); separator.Text = ":"; separator.Margin = new Thickness(4, 4, 4, 0); separator.VerticalAlignment = VerticalAlignment.Top;
-        _hourSelector.Click += (_, _) => SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Hour);
-        _minuteSelector.Click += (_, _) => SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Minute);
+        _hourSelector.Click += (_, _) =>
+        {
+            SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Hour);
+            _hourSelector.SetCurrentValue(MaterialButton.IsCheckedProperty, true);
+        };
+        _minuteSelector.Click += (_, _) =>
+        {
+            SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Minute);
+            _minuteSelector.SetCurrentValue(MaterialButton.IsCheckedProperty, true);
+        };
         _hourSelector.VerticalAlignment = _minuteSelector.VerticalAlignment = VerticalAlignment.Top;
         var clockSeparator = MaterialPickerSupport.Text("DisplayLarge"); clockSeparator.Text = ":"; clockSeparator.Margin = new Thickness(4, 0);
         _clockSelectors = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,Auto"), Children = { _hourSelector, clockSeparator, _minuteSelector } };

@@ -22,6 +22,7 @@ public sealed class GalleryShell : UserControl
     private readonly TextBlock _caption = new() { TextWrapping = TextWrapping.Wrap };
     private int _index = -1;
     private int _actions;
+    private Window? _window;
     public MaterialOverlayHost Overlay { get; } = new();
     public IReadOnlyList<Page> Pages { get; }
     public Control? CurrentPage { get; private set; }
@@ -102,15 +103,40 @@ public sealed class GalleryShell : UserControl
         var next = -1;
         for (var i = 0; i < Pages.Count; i++) if (Pages[i].Id == id) next = i;
         if (next < 0) return false;
-        if (next == _index) return true;
-        _presenter.Content = null; // Detach before disposing; no dormant live page/timer remains.
-        if (CurrentPage is IDisposable disposable) disposable.Dispose();
+        if (next == _index && CurrentPage is not null) return true;
+        ReleasePage();
         _index = next;
         CurrentPage = Pages[next].Create();
         _presenter.Content = Pages[next].OwnsViewport ? CurrentPage : new ScrollViewer
         { Content = CurrentPage, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
         _caption.Text = $"{next + 1}/{Pages.Count} · {CurrentPageId}";
         return true;
+    }
+    private void ReleasePage()
+    {
+        _presenter.Content = null; // Detach before disposal, including whole-host teardown.
+        if (CurrentPage is IDisposable disposable) disposable.Dispose();
+        CurrentPage = null;
+    }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _window = TopLevel.GetTopLevel(this) as Window;
+        if (_window is not null) _window.Closed += HostClosed;
+        if (CurrentPage is null && _index >= 0) Navigate(CurrentPageId);
+    }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if (_window is not null) _window.Closed -= HostClosed;
+        _window = null;
+        ReleasePage();
+        base.OnDetachedFromVisualTree(e);
+    }
+    private void HostClosed(object? sender, EventArgs e)
+    {
+        if (_window is not null) _window.Closed -= HostClosed;
+        _window = null;
+        ReleasePage();
     }
     public bool RequestBack()
     {

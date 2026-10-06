@@ -33,7 +33,7 @@ public class MaterialNavigationPanel : Panel
         {
             child.Measure(new Size(vertical ? availableSize.Width : cell, double.PositiveInfinity));
             if (vertical) { desiredWidth = Math.Max(desiredWidth, child.DesiredSize.Width); desiredHeight += child.DesiredSize.Height; }
-            else { desiredWidth += Math.Max(child.DesiredSize.Width, double.IsFinite(cell) ? cell : 0); desiredHeight = Math.Max(desiredHeight, child.DesiredSize.Height); }
+            else { desiredWidth += scrollable ? child.DesiredSize.Width : Math.Max(child.DesiredSize.Width, double.IsFinite(cell) ? cell : 0); desiredHeight = Math.Max(desiredHeight, child.DesiredSize.Height); }
         }
         if (vertical && Children.Count > 0) desiredHeight += (Children.Count - 1) * 4;
         return new Size(desiredWidth, desiredHeight);

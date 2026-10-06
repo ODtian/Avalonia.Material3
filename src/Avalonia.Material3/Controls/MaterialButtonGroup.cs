@@ -55,20 +55,7 @@ public partial class MaterialButtonGroup : Panel
         _timer.Tick += (_, _) =>
         {
             var t = _elapsed.Elapsed.TotalSeconds;
-            var omega = Math.Sqrt(_spring.Stiffness);
-            var z = _spring.DampingRatio;
-            double response;
-            if (Math.Abs(z - 1) < 1e-7) response = 1 - (1 + omega * t) * Math.Exp(-omega * t);
-            else if (z < 1)
-            {
-                var r = Math.Sqrt(1 - z * z);
-                response = 1 - Math.Exp(-z * omega * t) * (Math.Cos(omega * r * t) + z / r * Math.Sin(omega * r * t));
-            }
-            else
-            {
-                var r = Math.Sqrt(z * z - 1); var a = -omega * (z - r); var b = -omega * (z + r);
-                response = 1 + (b * Math.Exp(a * t) - a * Math.Exp(b * t)) / (a - b);
-            }
+            var response = MaterialSpringResponse.Evaluate(t, _spring);
             _expansion = Math.Clamp(_from + (_target - _from) * response, 0, 1.5);
             if (!double.IsFinite(response) || t >= 10 || (t > .25 && Math.Abs(_expansion - _target) < .0001))
             { _expansion = _target; _timer.Stop(); }

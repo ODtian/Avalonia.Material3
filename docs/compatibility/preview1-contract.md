@@ -1,6 +1,6 @@
 # 初始公开消费契约（0.1.0-preview.1）
 
-这是 M3-01 的预览契约，不是完整 M3 Expressive API。完整交付范围见[覆盖矩阵](coverage-matrix.md)。
+这是 M3-01 的预览契约，不是完整 M3 Expressive API。完整交付范围见[覆盖矩阵](../coverage-matrix.md)。
 
 ## 安装和初始化
 
@@ -100,4 +100,4 @@ pwsh ./scripts/verify.ps1 -DesktopSmoke
 
 脚本先验证源码入口、打包，再把两个消费宿主和测试复制到**没有 src 库项目**的新目录，用全新 NuGet 缓存恢复并验证。可加 `-KeepSandbox` 保留用于运行和检查；默认自动清理。
 
-不要反复向常用 NuGet 缓存覆盖同一个已消费版本：修改包内容应更新 `Material3Version`，或使用上述隔离验证脚本。本地预览包不是公共发布/稳定 API 的承诺。验证记录见 [M3-01](verification/m3-01.md)。
+不要反复向常用 NuGet 缓存覆盖同一个已消费版本：修改包内容应更新 `Material3Version`，或使用上述隔离验证脚本。本地预览包不是公共发布/稳定 API 的承诺。验证记录见 [M3-01](../verification/m3-01.md)。

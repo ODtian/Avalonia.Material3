@@ -175,7 +175,13 @@ public class MaterialMenu : ItemsControl
         var backward = FlowDirection == FlowDirection.RightToLeft ? Key.Right : Key.Left;
         if (e.Key == forward && Rows.FirstOrDefault(item => item.IsFocused) is { } row && OpenSubmenu(row)) { e.Handled = true; return; }
         if ((e.Key == backward || e.Key == Key.Escape) && _parentMenu is not null) { Dismiss(); e.Handled = true; return; }
-        if (e.Key == Key.Tab) { Dismiss(); e.Handled = true; return; }
+        if (e.Key == Key.Tab)
+        {
+            var root = this;
+            while (root._parentMenu is { } parent) root = parent;
+            root.Dismiss(); // LIFO close/veto and each session's return focus remain authoritative.
+            e.Handled = true; return;
+        }
         if (e.Key is Key.Left or Key.Right && e.Source is Control source &&
             source.GetVisualAncestors().OfType<MaterialMenuGroup>().FirstOrDefault() is { Orientation: Orientation.Horizontal } group)
         {
