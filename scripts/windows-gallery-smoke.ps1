@@ -20,12 +20,15 @@ function Wait($condition, $description) {
     throw "Timed out: $description"
 }
 function Foreground {
+    # Temporarily keep ONLY the owned test window above unrelated topmost desktop apps.
+    # Closing the owned window in finally removes this per-window state.
+    [GalleryNativeWindow]::SetWindowPos($handle,[IntPtr](-1),0,0,0,0,0x0043) | Out-Null
     [GalleryNativeWindow]::SetForegroundWindow($handle) | Out-Null
     if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) {
         # Windows may deny a background automation caller's activation. Raise ONLY our
         # window and give its inert upper-left header a real native mouse click.
         # No foreground-lock/keyboard-layout/global setting is changed.
-        [GalleryNativeWindow]::SetWindowPos($handle,[IntPtr]::Zero,0,0,0,0,0x0043) | Out-Null
+        [GalleryNativeWindow]::SetWindowPos($handle,[IntPtr](-1),0,0,0,0,0x0043) | Out-Null
         $bounds=$window.Current.BoundingRectangle
         [GalleryNativeWindow]::SetCursorPos([int]($bounds.X + [Math]::Min(100,$bounds.Width / 4)), [int]($bounds.Y + 12)) | Out-Null
         [GalleryNativeWindow]::mouse_event(2,0,0,0,[UIntPtr]::Zero)
@@ -44,6 +47,7 @@ function ByPrefix($prefix) {
     } $prefix
 }
 function Capture($file) {
+    if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) { Write-Host "Skipped non-owned foreground capture: $file"; return }
     $r=$window.Current.BoundingRectangle; $b=New-Object Drawing.Bitmap([int]$r.Width,[int]$r.Height); $g=[Drawing.Graphics]::FromImage($b)
     try { $g.CopyFromScreen([int]$r.X,[int]$r.Y,0,0,$b.Size); $b.Save((Join-Path $Evidence $file),[Drawing.Imaging.ImageFormat]::Png) } finally { $g.Dispose(); $b.Dispose() }
 }
