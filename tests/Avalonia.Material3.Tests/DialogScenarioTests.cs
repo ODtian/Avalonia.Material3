@@ -66,7 +66,7 @@ public class DialogScenarioTests
     }
 
     [AvaloniaFact]
-    public void Long_content_accepts_native_touch_scroll_gestures_without_activating_background()
+    public void Long_content_accepts_touch_scroll_gestures_without_activating_background()
     {
         using var host = new DialogHost();
         var dialog = new MaterialDialog { Title = "Touch scroll", Content = string.Join("\n", Enumerable.Repeat("Long content", 100)) };
