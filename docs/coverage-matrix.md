@@ -36,15 +36,15 @@
 | Icon buttons：standard、filled、tonal、outlined；toggle、尺寸/宽度/形状 | 已交付：四种配色、五档尺寸 × 三档宽度、round/square 选中翻转；真实输入、自动化、明暗/字体与包展厅；平台限制见证据 | [M3-03 #4][i4] | [Icon buttons][icon-buttons]、各尺寸 IconButtonTokens；[契约](components/m3-03.md)、[证据与限制](verification/m3-03.md) |
 | FAB：标准、small/medium/large、扩展 FAB、FAB menu | 已交付：四档 FAB/扩展尺寸、文本/图标槽、四档菜单触发器与 close recipe、多行动/锚点/RTL/滚动/焦点返回、输入/自动化及弹簧/减少动效；包展厅与 Windows UIA 验证，人工读屏/跨平台与上游帧像素等价未认领 | [M3-04 #9][i9] | [FAB][fab]、[Extended FAB][extended-fab]、FabMenuBaselineTokens / 锁定实现修正；[契约](components/m3-04.md)、[证据与投影边界](verification/m3-04.md) |
 | Toolbars：docked、floating、水平/垂直、展开与收起 | 已交付：四布局 × standard/vibrant、真实 core/leading/trailing/FAB 槽、局部/整面收起、56→80 披露 FAB、锚点/尺寸变化/滚动/焦点与 ExpandCollapse；docked vertical 和动效是明确的 Avalonia 投影，非新增上游函数或帧速度复刻 | [M3-04 #9][i9] | DockedToolbarTokens、FloatingToolbarTokens / FloatingToolbarDefaults；[契约](components/m3-04.md)、[证据](verification/m3-04.md) |
-| Button groups：connected、非连接分组、选择与形变 | 待交付 | [M3-05 #10][i10] | ButtonGroupSmallTokens、ConnectedButtonGroupSmallTokens |
-| Segmented buttons：单选、多选 | 待交付 | [M3-05 #10][i10] | [Segmented buttons][segmented]、OutlinedSegmentedButtonTokens |
-| Split buttons：主操作、次级入口、全部尺寸 | 待交付 | [M3-05 #10][i10] | SplitButtonXSmall/Small/Medium/Large/XLargeTokens |
+| Button groups：connected、非连接分组、选择与形变 | 已交付：action/single/multiple、连接形变/RTL/vertical、自适应 reflow、非连接宽度弹簧与 overflow；真实输入、UIA、包展厅；明确长文案/动效投影边界 | [M3-05 #10][i10] | ButtonGroupSmallTokens、ConnectedButtonGroupSmallTokens；[契约](components/m3-05.md)、[证据与限制](verification/m3-05.md) |
+| Segmented buttons：单选、多选 | 已交付：outlined、等宽/共享边框、选中图标、required/empty、多选、焦点/键盘与 Selection 关系；生成令牌与 Compose disabled-outline 差异明确记录 | [M3-05 #10][i10] | [Segmented buttons][segmented]、OutlinedSegmentedButtonTokens；[契约](components/m3-05.md)、[证据](verification/m3-05.md) |
+| Split buttons：主操作、次级入口、全部尺寸 | 已交付：Filled/Tonal/Elevated/Outlined × XS/S/M/L/XL、独立主/次 Command、checkable/plain、icon/text、ExpandCollapse/焦点返回与长文案共同高度；人工读屏/平台/AOT 等未认领 | [M3-05 #10][i10] | SplitButtonXSmall/Small/Medium/Large/XLargeTokens；[契约](components/m3-05.md)、[证据与限制](verification/m3-05.md) |
 | Checkbox：二态、三态、错误/禁用 | 已实现：18 DIP、48 触达、mixed/error/disabled、TwoWay 表单；headless + Windows UIA；人工读屏/移动平台未验收 | [M3-06 #5][i5] | [Checkbox][checkbox]、CheckboxTokens 14_1_0；[契约](components/m3-06.md)、[证据](verification/m3-06.md) |
 | Radio buttons | 已实现：20 DIP、48 触达、互斥/方向键/禁用/宿主错误扩展；headless + Windows UIA；人工读屏未验收 | [M3-06 #5][i5] | [Radio buttons][radio]、RadioButtonTokens v0_117；[M3-06](verification/m3-06.md) |
 | Switch | 已实现：52×32 track、16/24/28 handle、48 触达、图标/拖动/禁用/宿主错误扩展；headless + Windows UIA；物理触摸/人工读屏未验收 | [M3-06 #5][i5] | [Switch][switch]、SwitchTokens v0_210；[M3-06](verification/m3-06.md) |
 | Text fields：filled、outlined；标签、辅助/错误文本、图标、计数、多行 | 已实现并通过真实编辑、包隔离与 Windows UIA 场景；实际读屏、平台中文 IME 候选会话待核验 | [M3-07 #6][i6] | [Text fields][text-fields]、Filled/OutlinedTextFieldTokens；[公开契约](components/m3-07.md)、[证据与限制](verification/m3-07.md) |
-| Search：search bar、search view、建议/autocomplete | 待交付 | [M3-08 #11][i11] | [Search][search]、SearchBar/SearchView、Filled/OutlinedAutocompleteTokens |
-| Chips：assist、filter、input、suggestion | 待交付 | [M3-08 #11][i11] | [Chips][chips]、Assist/Filter/Input/SuggestionChipTokens |
+| Search：search bar、search view、建议/autocomplete | 已实现：bar、docked/full-screen view、filled/outlined autocomplete、原生编辑/公开候选与校验/词条编辑/显式意图；source + 新包展厅 + Windows UIA/键鼠；inline dropdown/宿主全屏布局是明确投影，人工读屏/平台中文候选/移动端未验 | [M3-08 #11][i11] | [Search][search]、SearchBar/SearchView、Filled/OutlinedAutocompleteTokens；[契约](components/m3-08.md)、[证据与边界](verification/m3-08.md) |
+| Chips：assist、filter、input、suggestion | 已实现：四用途、flat/elevated、选择、独立删除、avatar/图标、32 visual/48 target、全量 live LabelLarge 与状态；长混排/200%/键盘/Toggle/Invoke 与新包验证；人工读屏/物理触摸未验 | [M3-08 #11][i11] | [Chips][chips]、Assist/Filter/Input/SuggestionChipTokens 7_0_1；[契约](components/m3-08.md)、[证据](verification/m3-08.md) |
 | Cards：elevated、filled、outlined、交互 | 已交付：三变体、独立插槽/操作、选择与拖动态；真实平台及穷尽视觉一致性未验 | [M3-09 #7][i7] | [Cards][cards]、Elevated/Filled/OutlinedCardTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
 | Lists：一/二/三行、leading/trailing、expanded、reorder、reveal | 已交付：最小行高/变量高度、完整插槽、真实展开/排序/行动底层 reveal；手势适配契约与证据分别记录 | [M3-09 #7][i7] | [Lists][lists]、List/ExpandedList/ReorderList/RevealListTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
 | Badges：点、计数 | 已交付：点/计数/上限/零值、完整计数自动化语义及字体尺度 | [M3-09 #7][i7] | [Badges][badges]、BadgeTokens；[契约](components/m3-09.md)、[证据](verification/m3-09.md) |
@@ -58,16 +58,16 @@
 | Snackbar：消息、行动、消失 | 待交付 | [M3-13 #15][i15] | [Snackbar][snackbar]、SnackbarTokens |
 | Bottom sheets：standard、modal、drag handle | 待交付 | [M3-14 #16][i16] | [Bottom sheets][bottom-sheets]、SheetBottom/DragHandle/ScrimTokens |
 | Side sheets：standard、modal | 待交付 | [M3-14 #16][i16] | [Side sheets][side-sheets] |
-| Navigation bar：水平/垂直 item、选中、徽标 | 待交付 | [M3-15 #14][i14] | [Navigation bar][navigation-bar]、NavigationBar*Tokens |
-| Navigation rail：collapsed、expanded、水平/垂直 item | 待交付 | [M3-15 #14][i14] | [Navigation rail][navigation-rail]、NavigationRail*Tokens |
-| Tabs：primary、secondary、固定/滚动 | 待交付 | [M3-15 #14][i14] | [Tabs][tabs]、Primary/SecondaryNavigationTabTokens |
+| Navigation bar：水平/垂直 item、选中、徽标 | 已实现：两种 item 布局、实际内容、徽标/事件/绑定、输入与选择自动化；验收证据和平台限制见组件记录 | [M3-15 #14][i14] | [Navigation bar][navigation-bar]、NavigationBar*Tokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
+| Navigation rail：collapsed、expanded、水平/垂直 item | 已实现：非 modal rail 四组合、96/80 和 220..360 DIP、实际内容及 resize 保留焦点/选择；不认领人工读屏/其他平台 | [M3-15 #14][i14] | [Navigation rail][navigation-rail]、NavigationRail*Tokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
+| Tabs：primary、secondary、固定/滚动 | 已实现：四组合、真实页面/插槽、单 Tab stop/方向键/滚动、主题与字体混排；投影边界与 package/Windows 记录见证据 | [M3-15 #14][i14] | [Tabs][tabs]、Primary/SecondaryNavigationTabTokens；[契约](components/m3-15.md)、[证据](verification/m3-15.md) |
 | Top app bars：small、medium、large、center-aligned、flexible | 待交付 | [M3-16 #17][i17] | [Top app bar][top-app-bar]、AppBar*Tokens |
 | Bottom app bar | 待交付 | [M3-16 #17][i17] | [Bottom app bar][bottom-app-bar]、BottomAppBarTokens |
 | Navigation drawer：standard、modal | 待交付 | [M3-16 #17][i17] | [Navigation drawer][navigation-drawer]、NavigationDrawerTokens |
 | Date pickers：modal、docked、单日/范围、date input | 待交付 | [M3-17 #18][i18] | [Date pickers][date-pickers]、DatePickerModal/DateInputModalTokens |
 | Time pickers：钟面、键盘输入、12/24 小时 | 待交付 | [M3-17 #18][i18] | [Time pickers][time-pickers]、TimePicker/TimeInputTokens |
-| Carousel：multi-browse、uncontained、hero、full-screen | 待交付 | [M3-18 #19][i19] | [Carousel][carousel] |
-| Pull-to-refresh：手势、指示器、内容更新 | 待交付 | [M3-18 #19][i19] | [Expressive Compose][expressive] |
+| Carousel：multi-browse、uncontained、hero、full-screen | 已实现四种实际图片布局/掩膜、触摸/鼠标/键盘、宿主项目/位置/加载错误恢复、窗口连续性、Scroll 自动化、新包展厅；布局/惯性/动效明确为 Avalonia 投影，非上游算法等价 | [M3-18 #19][i19] | [Carousel][carousel]、锁定 Carousel.kt；[公开契约](components/m3-18.md)、[证据与限制](verification/m3-18.md) |
+| Pull-to-refresh：手势、指示器、内容更新 | 已实现真实阈值/抵抗/释放/取消/忙态手势，standard/Expressive 反馈、宿主结果与错误恢复、F5/Invoke；读屏人工/移动硬件与 Compose nested-scroll/物理等价未认领 | [M3-18 #19][i19] | 锁定 PullToRefresh.kt；[公开契约](components/m3-18.md)、[验证](verification/m3-18.md) |
 | 完整展厅、包文档、宿主矩阵、API/版本兼容、AOT/裁剪及发布 | 初始展厅与本地包已交付；完整验收待交付 | [M3-19 #20][i20] | [验证记录](verification/m3-01.md)、[消费契约](public-contract.md) |
 
 [components]: https://m3.material.io/components

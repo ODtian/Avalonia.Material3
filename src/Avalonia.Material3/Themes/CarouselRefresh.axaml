@@ -1,0 +1,46 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:c="using:Avalonia.Material3.Controls" x:CompileBindings="False">
+  <ControlTheme x:Key="{x:Type c:MaterialCarousel}" TargetType="c:MaterialCarousel">
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
+    <Setter Property="MotionDuration" Value="{DynamicResource M3.Motion.DurationShort4}" />
+    <Setter Property="MotionEasing" Value="{DynamicResource M3.Motion.EasingStandard}" />
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid ClipToBounds="True">
+          <Border Background="{TemplateBinding Background}">
+            <c:MaterialCarouselPresenter Carousel="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
+          </Border>
+          <Border Name="FocusRing" IsHitTestVisible="False" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="2" CornerRadius="{TemplateBinding CornerRadius}" IsVisible="False" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:focus-visible /template/ Border#FocusRing"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+  </ControlTheme>
+  <ControlTheme x:Key="{x:Type c:MaterialPullToRefresh}" TargetType="c:MaterialPullToRefresh">
+    <Setter Property="MinHeight" Value="48" />
+    <Setter Property="ClipToBounds" Value="True" />
+    <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodyMediumFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodyMediumFontSize}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid RowDefinitions="*,Auto" Background="Transparent">
+          <Grid ClipToBounds="True">
+            <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
+            <c:MaterialRefreshPresenter IsHitTestVisible="False" Refresh="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
+            <Border Name="RefreshFocusRing" IsVisible="False" IsHitTestVisible="False" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="2" />
+          </Grid>
+          <TextBlock Name="Result" Grid.Row="1" IsVisible="False" Text="{TemplateBinding StatusDescription}" TextWrapping="Wrap"
+                     Foreground="{TemplateBinding Foreground}" LineHeight="{DynamicResource M3.BodyMediumLineHeight}" LetterSpacing="{DynamicResource M3.BodyMediumLetterSpacing}" />
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:result /template/ TextBlock#Result"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:focus-visible /template/ Border#RefreshFocusRing"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:error"><Setter Property="Foreground" Value="{DynamicResource M3.ErrorBrush}" /></Style>
+  </ControlTheme>
+</ResourceDictionary>
