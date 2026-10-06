@@ -52,6 +52,7 @@ public class NavigationGalleryScenarioTests
             Click(window, page.LongLabelButton);
             Capture(window, "gallery-320-font200-long");
             Assert.Equal(2, theme.Typography.Scale);
+            Assert.True(page.Scroller.Viewport.Height >= 192, "Large-font toolbar must not consume the gallery's reachable content viewport.");
             Assert.Equal(10, page.Previews.Count);
             page.Scroller.ScrollToEnd();
             Capture(window, "gallery-bottom-320");
@@ -62,6 +63,8 @@ public class NavigationGalleryScenarioTests
 
     private static void Click(Window window, Control control)
     {
+        control.BringIntoView();
+        Capture(window, null);
         var point = control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), window)!.Value;
         window.MouseDown(point, MouseButton.Left);
         window.MouseUp(point, MouseButton.Left);

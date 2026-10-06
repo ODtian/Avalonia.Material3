@@ -32,7 +32,7 @@ public sealed class ContentNavigationPage : Grid
     public ContentNavigationPage(MaterialTheme theme)
     {
         _theme = theme;
-        RowDefinitions = new RowDefinitions("Auto,Auto,*");
+        RowDefinitions = new RowDefinitions("*");
         var actions = new WrapPanel { Orientation = Orientation.Horizontal };
         foreach (var button in new[] { ModeButton, FontButton, LongLabelButton }) actions.Children.Add(button);
         var scrollMode = new MaterialButton { Content = "Fixed / Scrollable 固定/滚动", Variant = MaterialButtonVariant.Text };
@@ -44,11 +44,11 @@ public sealed class ContentNavigationPage : Grid
             button.MaxWidth = 260;
             button.ContentTemplate = new FuncDataTemplate<string>((text, _) => new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap });
         }
-        Children.Add(actions);
-        Grid.SetRow(Status, 1);
-        Children.Add(Status);
         AutomationProperties.SetAutomationId(Status, "navigation-status");
+        // Settings/status scroll with the page too, so 200% typography cannot starve the content viewport.
         var examples = new StackPanel { Spacing = 12, Margin = new Thickness(12) };
+        examples.Children.Add(actions);
+        examples.Children.Add(Status);
         examples.Children.Add(Heading("Content navigation / 实际内容导航"));
         Populate(MainTabs, "main", 5);
         MainTabs.MinHeight = 220;
@@ -70,7 +70,6 @@ public sealed class ContentNavigationPage : Grid
         AddPreview(examples, "Secondary tabs — scrollable", new MaterialTabs { Variant = MaterialTabVariant.Secondary, Layout = MaterialTabLayout.Scrollable });
         examples.Children.Add(new TextBlock { Text = "Use Tab / Shift+Tab; Left/Right or Up/Down on the rail; Home/End; Enter/Space. Touch drag and wheel scroll the overflowing headers. Badge text is localized by the host. No product routes or services are present.", TextWrapping = TextWrapping.Wrap });
         Scroller = new ScrollViewer { Content = examples };
-        Grid.SetRow(Scroller, 2);
         Children.Add(Scroller);
         AutomationProperties.SetAutomationId(ModeButton, "navigation-mode");
         AutomationProperties.SetAutomationId(FontButton, "navigation-font");
