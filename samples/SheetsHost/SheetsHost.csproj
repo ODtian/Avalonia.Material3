@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>WinExe</OutputType></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Material3" Version="$(Material3Version)" />
+    <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <Compile Include="../Gallery/Pages/SheetsPage.cs" Link="SheetsPage.cs" />
+  </ItemGroup>
+</Project>
