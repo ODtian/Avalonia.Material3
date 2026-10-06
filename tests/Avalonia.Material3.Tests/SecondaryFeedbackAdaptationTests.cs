@@ -76,6 +76,9 @@ public class SecondaryFeedbackAdaptationTests
             ActionContent = "Read more information / 查看更多信息", ActionResult = "more"
         };
         var tipSession = tip.Show(host.Overlay, host.Entry); host.Render();
+        var heading = tip.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == tip.Title);
+        var supporting = tip.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == tip.Content as string);
+        Assert.True(heading.TranslatePoint(new Point(0, heading.Bounds.Height), tip)!.Value.Y + 4 <= supporting.TranslatePoint(default, tip)!.Value.Y);
         var tipAction = tip.GetVisualDescendants().OfType<Button>().Single(button => button.Content as string == tip.ActionContent as string);
         tipAction.BringIntoView(); host.Render();
         Assert.InRange(host.Center(tipAction).Y, 8, 292);

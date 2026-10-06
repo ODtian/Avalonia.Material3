@@ -13,6 +13,7 @@ internal sealed class MaterialFeedbackLifetime : IDisposable
     private readonly MaterialOverlaySession _session;
     private readonly Control? _anchor;
     private readonly bool _allowDisabledAnchor;
+    private readonly InputElement[] _anchorScope = [];
     private readonly ITimer? _timer;
     private CancellationTokenRegistration _registration;
     private readonly CancellationToken _cancellationToken;
@@ -27,7 +28,13 @@ internal sealed class MaterialFeedbackLifetime : IDisposable
         _cancellationToken = cancellationToken;
         _allowDisabledAnchor = allowDisabledAnchor;
         host.PropertyChanged += HostChanged;
-        if (anchor is not null) host.LayoutUpdated += CheckAnchor;
+        if (anchor is not null)
+        {
+            host.LayoutUpdated += CheckAnchor;
+            _anchorScope = anchor.GetVisualAncestors().Prepend(anchor).TakeWhile(visual => visual != host).OfType<InputElement>()
+                .Where(element => element is not MaterialOverlayContentPresenter && element is not MaterialOverlayLayer).ToArray();
+            foreach (var element in _anchorScope) element.PropertyChanged += AnchorChanged;
+        }
         session.Completed += SessionCompleted;
         if (duration is { } delay && delay != Timeout.InfiniteTimeSpan)
             _timer = timeProvider.CreateTimer(_ => Dispatcher.UIThread.Post(RequestDismiss), null, delay, Timeout.InfiniteTimeSpan);
@@ -44,8 +51,10 @@ internal sealed class MaterialFeedbackLifetime : IDisposable
     {
         if (_anchor is { } anchor && (!anchor.IsEffectivelyVisible || !_allowDisabledAnchor &&
             anchor.GetVisualAncestors().Prepend(anchor).TakeWhile(visual => visual != _host).OfType<InputElement>()
-                .Any(element => element is not MaterialOverlayContentPresenter && element is not MaterialOverlayLayer && !element.IsEnabled))) RequestDismiss();
+                .Any(element => element is not MaterialOverlayContentPresenter && element is not MaterialOverlayLayer &&
+                    (!element.IsEnabled || element is Button button && button.Command?.CanExecute(button.CommandParameter) == false)))) RequestDismiss();
     }
+    private void AnchorChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => CheckAnchor(sender, EventArgs.Empty);
     public void RequestDismiss()
     {
         if (_disposed) return;
@@ -62,5 +71,6 @@ internal sealed class MaterialFeedbackLifetime : IDisposable
         _timer?.Dispose(); _registration.Dispose();
         _session.Completed -= SessionCompleted;
         _host.PropertyChanged -= HostChanged; _host.LayoutUpdated -= CheckAnchor;
+        foreach (var element in _anchorScope) element.PropertyChanged -= AnchorChanged;
     }
 }

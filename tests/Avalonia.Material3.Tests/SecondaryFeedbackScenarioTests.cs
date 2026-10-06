@@ -15,6 +15,18 @@ namespace Avalonia.Material3.Tests;
 public class SecondaryFeedbackScenarioTests
 {
     [AvaloniaFact]
+    public void A_command_disabled_opener_cancels_its_menu_without_confusing_the_modal_background_gate()
+    {
+        using var host = new FeedbackHost();
+        var menu = new MaterialMenu { Items = { new MaterialMenuItem { Content = "Operation" } } };
+        var session = menu.Show(host.Overlay, host.Entry); host.Render();
+        Assert.True(menu.IsOpen); // The modal presenter's effective-disable alone must not close it.
+        host.Entry.Command = new FeedbackCommand(() => { }, false);
+        host.Render();
+        Assert.False(menu.IsOpen); Assert.Null(session.Completion.Result.Value);
+    }
+
+    [AvaloniaFact]
     public void Horizontal_groups_wrap_whole_readable_targets_instead_of_squeezing_large_font_words_into_capsules()
     {
         using var host = new FeedbackHost(320, 480);

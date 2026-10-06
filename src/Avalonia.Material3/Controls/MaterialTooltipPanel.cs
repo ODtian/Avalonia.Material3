@@ -23,7 +23,8 @@ public class MaterialTooltipPanel : Panel
         var bodyBaseline = bodyText?.TextLayout.TextLines.FirstOrDefault()?.Baseline ?? 0;
         _titleY = title.IsVisible ? Math.Max(0, Math.Max(28, titleBaseline + 12) - titleBaseline) : 0;
         var lastTitleBaseline = titleBaseline + Math.Max(0, title.DesiredSize.Height - (titleText?.TextLayout.TextLines.FirstOrDefault()?.Height ?? title.DesiredSize.Height));
-        _bodyY = title.IsVisible ? _titleY + lastTitleBaseline + Math.Max(24, bodyBaseline + 4) - bodyBaseline : 16;
+        var baselineGap = Math.Max(24, title.DesiredSize.Height - lastTitleBaseline + bodyBaseline + 4);
+        _bodyY = title.IsVisible ? _titleY + lastTitleBaseline + baselineGap - bodyBaseline : 16;
         _actionY = _bodyY + body.DesiredSize.Height + 16;
         var height = _actionY + (action.IsVisible ? Math.Max(48, action.DesiredSize.Height) + 8 : 0);
         return new Size(Children.Max(child => child.DesiredSize.Width), height);

@@ -84,15 +84,18 @@ try {
     $snackbar = Wait-For { Find-Id $window 'FeedbackSnackbar' } 'Snackbar live message'
     if (-not $snackbar.Current.Name.StartsWith('Changes saved')) { throw 'Snackbar message name missing.' }
     if ($snackbar.Current.ControlType -ne [System.Windows.Automation.ControlType]::Pane) { throw 'Snackbar must expose a named native Pane.' }
+    Save-Window $window 'm3-13-desktop-snackbar.png'
     Invoke-Control (Find-Name $window 'Undo')
     Wait-For { $result.Current.Name -eq 'Snackbar: undo performed' } 'Snackbar host action' | Out-Null
     Invoke-Control (Find-Id $window 'TooltipPlain')
     $tip = Wait-For { Find-Id $window 'FeedbackPlainTooltip' } 'plain Tooltip'
     if (-not $tip.Current.Name.StartsWith('Opens related commands')) { throw 'Tooltip description name missing.' }
     if ($tip.Current.ControlType -ne [System.Windows.Automation.ControlType]::ToolTip) { throw 'Tooltip must expose ToolTip role.' }
+    Save-Window $window 'm3-13-desktop-plain-tooltip.png'
     Keys '{ESC}'
     $rich = Find-Id $window 'TooltipRich'; $rich.SetFocus()
     Wait-For { Find-Name $window 'Learn more' } 'rich tooltip action' | Out-Null
+    Save-Window $window 'm3-13-desktop-rich-tooltip.png'
     Keys '{TAB}'; Keys '{ENTER}'
     Wait-For { $result.Current.Name -eq 'Tooltip: learn more performed' -and (Focus-Id) -eq 'TooltipRich' } 'rich keyboard action and conditional focus return' | Out-Null
     Invoke-Control (Find-Id $window 'FeedbackTheme'); Invoke-Control (Find-Id $window 'FeedbackFont'); Invoke-Control (Find-Id $window 'FeedbackRtl')
