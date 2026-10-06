@@ -186,26 +186,45 @@ public class MaterialTooltip : ContentControl
         private IPointer? _pointer, _suppressRelease;
         private Point _pressPoint;
         private bool _releasingCapture;
-        private readonly TopLevel? _root;
+        private TopLevel? _root;
+        private readonly HashSet<IPointer> _contacts = [];
+        private readonly HashSet<InputElement> _captures = [];
+        private bool _multiContact;
         private IDisposable? _description;
         private bool _disposed;
         public Attachment(MaterialTooltip tip, MaterialOverlayHost host, Control anchor, TimeProvider clock)
         {
             _tip = tip; _host = host; _anchor = anchor; _clock = clock;
-            _root = TopLevel.GetTopLevel(host);
             anchor.PointerEntered += Enter; anchor.PointerExited += Exit; anchor.GotFocus += Focus; anchor.LostFocus += Blur;
             anchor.KeyDown += Key; anchor.DetachedFromVisualTree += Detach;
+            anchor.AttachedToVisualTree += Attached;
             anchor.Holding += Holding;
             anchor.AddHandler(InputElement.PointerPressedEvent, Pressed, RoutingStrategies.Tunnel, handledEventsToo: true);
             anchor.AddHandler(InputElement.PointerMovedEvent, Moved, RoutingStrategies.Tunnel, handledEventsToo: true);
             anchor.AddHandler(InputElement.PointerReleasedEvent, Released, RoutingStrategies.Tunnel, handledEventsToo: true);
             anchor.PointerCaptureLost += CaptureLost;
-            _root?.AddHandler(InputElement.PointerPressedEvent, AdditionalContact, RoutingStrategies.Tunnel, handledEventsToo: true);
+            UpdateRoot();
             if (AutomationProperties.GetHelpText(anchor) is null && tip.Content is string)
                 _description = anchor.Bind(AutomationProperties.HelpTextProperty, new Binding(nameof(Content)) { Source = tip });
         }
         private bool CanShow => !_disposed && !_tip._returningFocus && _tip.EnableUserInput && _anchor.IsEffectivelyVisible &&
             (_anchor.IsEffectivelyEnabled || _tip.ShowOnDisabled) && TopLevel.GetTopLevel(_host) is not null;
+        private void Attached(object? sender, VisualTreeAttachmentEventArgs e) => UpdateRoot();
+        private void UpdateRoot()
+        {
+            var root = TopLevel.GetTopLevel(_host);
+            if (root == _root) return;
+            RemoveRootHandlers(); _root = root;
+            _root?.AddHandler(InputElement.PointerPressedEvent, AdditionalContact, RoutingStrategies.Tunnel, handledEventsToo: true);
+            _root?.AddHandler(InputElement.PointerPressedEvent, TrackCapture, RoutingStrategies.Bubble, handledEventsToo: true);
+            _root?.AddHandler(InputElement.PointerReleasedEvent, RootReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
+        }
+        private void RemoveRootHandlers()
+        {
+            _root?.RemoveHandler(InputElement.PointerPressedEvent, AdditionalContact);
+            _root?.RemoveHandler(InputElement.PointerPressedEvent, TrackCapture);
+            _root?.RemoveHandler(InputElement.PointerReleasedEvent, RootReleased);
+        }
         private void Present(MaterialTooltipTrigger trigger)
         {
             if (!CanShow || _tip.IsOpen) return;
@@ -248,7 +267,7 @@ public class MaterialTooltip : ContentControl
         }
         private void Pressed(object? sender, PointerPressedEventArgs e)
         {
-            if (!CanShow || e.Pointer.Type is not (PointerType.Touch or PointerType.Pen)) return;
+            if (!CanShow || _multiContact || e.Pointer.Type is not (PointerType.Touch or PointerType.Pen)) return;
             if (_pointer is not null && _pointer != e.Pointer) { CancelHold(); return; }
             _pointer = e.Pointer; _pressPoint = e.GetPosition(_anchor);
             var pointer = e.Pointer;
@@ -260,7 +279,32 @@ public class MaterialTooltip : ContentControl
         }
         private void AdditionalContact(object? sender, PointerPressedEventArgs e)
         {
-            if (_pointer is not null && e.Pointer != _pointer && e.Pointer.Type == PointerType.Touch) CancelHold();
+            if (e.Pointer.Type != PointerType.Touch) return;
+            _contacts.Add(e.Pointer);
+            if (_contacts.Count > 1) { _multiContact = true; CancelHold(); }
+        }
+        private void TrackCapture(object? sender, PointerPressedEventArgs e)
+        {
+            if (_contacts.Contains(e.Pointer) && e.Pointer.Captured is InputElement capture && _captures.Add(capture))
+                capture.PointerCaptureLost += ContactLost;
+        }
+        private void ContactLost(object? sender, PointerCaptureLostEventArgs e)
+        {
+            if (!_releasingCapture)
+            {
+                _contacts.Remove(e.Pointer);
+                if (_contacts.Count == 0) _multiContact = false;
+                if (_pointer == e.Pointer) CancelHold();
+            }
+            if (sender is InputElement capture && !_contacts.Any(pointer => pointer.Captured == capture))
+            { capture.PointerCaptureLost -= ContactLost; _captures.Remove(capture); }
+        }
+        private void RootReleased(object? sender, PointerReleasedEventArgs e)
+        {
+            _contacts.Remove(e.Pointer);
+            if (_contacts.Count == 0) _multiContact = false;
+            if (_pointer == e.Pointer) CancelHold();
+            if (_suppressRelease == e.Pointer) { e.Handled = true; _suppressRelease = null; }
         }
         private void Moved(object? sender, PointerEventArgs e)
         {
@@ -293,13 +337,16 @@ public class MaterialTooltip : ContentControl
             if (_disposed) return; _disposed = true;
             _hover?.Dispose(); _hover = null; _description?.Dispose();
             CancelHold(); _suppressRelease = null;
+            foreach (var capture in _captures) capture.PointerCaptureLost -= ContactLost;
+            _captures.Clear(); _contacts.Clear();
             _anchor.PointerEntered -= Enter; _anchor.PointerExited -= Exit; _anchor.GotFocus -= Focus; _anchor.LostFocus -= Blur;
             _anchor.KeyDown -= Key; _anchor.DetachedFromVisualTree -= Detach; _anchor.Holding -= Holding;
+            _anchor.AttachedToVisualTree -= Attached;
             _anchor.RemoveHandler(InputElement.PointerPressedEvent, Pressed);
             _anchor.RemoveHandler(InputElement.PointerMovedEvent, Moved);
             _anchor.RemoveHandler(InputElement.PointerReleasedEvent, Released);
             _anchor.PointerCaptureLost -= CaptureLost;
-            _root?.RemoveHandler(InputElement.PointerPressedEvent, AdditionalContact);
+            RemoveRootHandlers(); _root = null;
             if (_tip.Session?.Options.Anchor == _anchor) _tip.RequestDismiss();
         }
     }

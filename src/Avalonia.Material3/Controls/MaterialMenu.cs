@@ -53,6 +53,7 @@ public class MaterialMenu : ItemsControl
     public MaterialMenu()
     {
         Focusable = true;
+        MaterialMenuShapeRoles.Bind(this);
         Items.CollectionChanged += (_, _) => ReconcileItems();
     }
     internal void ReconcileItems()
@@ -251,6 +252,10 @@ public class MaterialMenu : ItemsControl
 [PseudoClasses(":checked", ":checkable", ":vibrant", ":segmented", ":submenu")]
 public class MaterialMenuItem : Button
 {
+    public static readonly DirectProperty<MaterialMenuItem, CornerRadius> RecipeCornerRadiusProperty = AvaloniaProperty.RegisterDirect<MaterialMenuItem, CornerRadius>(nameof(RecipeCornerRadius), item => item.RecipeCornerRadius);
+    private CornerRadius _recipeCornerRadius = new(4);
+    private bool _first, _last, _standalone;
+    public CornerRadius RecipeCornerRadius => _recipeCornerRadius;
     public static readonly StyledProperty<object?> ValueProperty = AvaloniaProperty.Register<MaterialMenuItem, object?>(nameof(Value));
     public object? Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
     public static readonly StyledProperty<MaterialMenuToggleMode> ToggleModeProperty = AvaloniaProperty.Register<MaterialMenuItem, MaterialMenuToggleMode>(nameof(ToggleMode), validate: value => Enum.IsDefined(value));
@@ -281,8 +286,10 @@ public class MaterialMenuItem : Button
     public IBrush? IconForeground { get => GetValue(IconForegroundProperty); set => SetValue(IconForegroundProperty, value); }
     internal void SetGroupPosition(int index, int count)
     {
+        _first = index == 0; _last = index == count - 1; _standalone = count == 1;
         PseudoClasses.Set(":first", index == 0); PseudoClasses.Set(":last", index == count - 1);
         PseudoClasses.Set(":standalone", count == 1);
+        UpdateRecipe();
     }
     public static readonly StyledProperty<Orientation> GroupOrientationProperty = MaterialMenuGroup.OrientationProperty.AddOwner<MaterialMenuItem>();
     public Orientation GroupOrientation => GetValue(GroupOrientationProperty);
@@ -308,18 +315,35 @@ public class MaterialMenuItem : Button
         if (change.Property == GroupOrientationProperty) PseudoClasses.Set(":horizontal", GroupOrientation == Orientation.Horizontal);
         if (change.Property == IsEnabledProperty || change.Property == IsVisibleProperty)
             this.GetVisualAncestors().OfType<MaterialMenu>().FirstOrDefault()?.ReconcileItems();
+        if (MaterialMenuShapeRoles.IsRole(change.Property) || change.Property == IsCheckedProperty || change.Property == IsSegmentedProperty ||
+            change.Property == GroupOrientationProperty || change.Property == VariantProperty || change.Property == IsFocusedProperty ||
+            change.Property == IsPointerOverProperty || change.Property == IsPressedProperty) UpdateRecipe();
+    }
+    private void UpdateRecipe()
+    {
+        var small = GetValue(MaterialMenuShapeRoles.ExtraSmall).TopLeft;
+        var medium = GetValue(MaterialMenuShapeRoles.Medium).TopLeft;
+        CornerRadius radius;
+        if (GroupOrientation == Orientation.Horizontal && IsChecked) radius = GetValue(MaterialMenuShapeRoles.Full);
+        else if (Variant == MaterialMenuVariant.LegacyDropdown) radius = new(small);
+        else if (IsChecked || GroupOrientation == Orientation.Horizontal && (IsFocused || IsPointerOver || IsPressed)) radius = new(medium);
+        else if (!IsSegmented || GroupOrientation == Orientation.Horizontal) radius = new(small);
+        else if (_standalone) radius = new(medium);
+        else radius = new CornerRadius(_first ? medium : small, _first ? medium : small, _last ? medium : small, _last ? medium : small);
+        SetAndRaise(RecipeCornerRadiusProperty, ref _recipeCornerRadius, radius);
     }
     private sealed class MenuItemPeer : ButtonAutomationPeer, IToggleProvider, IExpandCollapseProvider
     {
         private readonly MaterialMenuItem item;
         private volatile bool _toggle, _submenu;
+        private MaterialMenu? _observedSubmenu;
         public MenuItemPeer(MaterialMenuItem owner) : base(owner)
         {
             item = owner; _toggle = item.ToggleMode != MaterialMenuToggleMode.None; _submenu = item.Submenu is not null;
             item.PropertyChanged += (_, change) =>
             {
                 if (change.Property == ToggleModeProperty) _toggle = item.ToggleMode != MaterialMenuToggleMode.None;
-                if (change.Property == SubmenuProperty) _submenu = item.Submenu is not null;
+                if (change.Property == SubmenuProperty) { _submenu = item.Submenu is not null; ObserveSubmenu(); }
                 if (change.Property == IsCheckedProperty)
                 {
                     RaisePropertyChangedEvent(TogglePatternIdentifiers.ToggleStateProperty,
@@ -328,13 +352,34 @@ public class MaterialMenuItem : Button
                     RaisePropertyChangedEvent(AutomationElementIdentifiers.ItemStatusProperty, null, GetItemStatus());
                 }
             };
+            item.AttachedToVisualTree += (_, _) => ObserveSubmenu();
+            item.DetachedFromVisualTree += (_, _) => StopObservingSubmenu();
+            ObserveSubmenu();
+        }
+        private void StopObservingSubmenu()
+        {
+            if (_observedSubmenu is { } previous) previous.PropertyChanged -= SubmenuChanged;
+            _observedSubmenu = null;
+        }
+        private void ObserveSubmenu()
+        {
+            StopObservingSubmenu();
+            if (TopLevel.GetTopLevel(item) is not null && item.Submenu is { } menu)
+            { _observedSubmenu = menu; menu.PropertyChanged += SubmenuChanged; }
+        }
+        private void SubmenuChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
+        {
+            if (change.Property == MaterialMenu.IsOpenProperty)
+                RaisePropertyChangedEvent(ExpandCollapsePatternIdentifiers.ExpandCollapseStateProperty,
+                    change.GetOldValue<bool>() ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed,
+                    change.GetNewValue<bool>() ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed);
         }
         public ToggleState ToggleState => item.IsChecked ? ToggleState.On : ToggleState.Off;
-        public void Toggle() { if (item.ToggleMode != MaterialMenuToggleMode.None) item.OnClick(); }
+        public void Toggle() { EnsureEnabled(); if (item.ToggleMode != MaterialMenuToggleMode.None) item.OnClick(); }
         public ExpandCollapseState ExpandCollapseState => item.Submenu?.IsOpen == true ? ExpandCollapseState.Expanded : ExpandCollapseState.Collapsed;
         public bool ShowsMenu => true;
-        public void Expand() => item.GetVisualAncestors().OfType<MaterialMenu>().FirstOrDefault()?.OpenSubmenu(item);
-        public void Collapse() => item.Submenu?.Dismiss();
+        public void Expand() { EnsureEnabled(); item.GetVisualAncestors().OfType<MaterialMenu>().FirstOrDefault()?.OpenSubmenu(item); }
+        public void Collapse() { EnsureEnabled(); item.Submenu?.Dismiss(); }
         protected override object? GetProviderCore(Type providerType) =>
             providerType == typeof(IToggleProvider) && !_toggle ||
             providerType == typeof(IExpandCollapseProvider) && !_submenu ? null : base.GetProviderCore(providerType);
@@ -348,6 +393,10 @@ public class MaterialMenuItem : Button
 /// <summary>One expressive group; horizontal groups wrap at constrained window widths rather than clip targets.</summary>
 public class MaterialMenuGroup : ItemsControl
 {
+    public static readonly DirectProperty<MaterialMenuGroup, CornerRadius> RecipeCornerRadiusProperty = AvaloniaProperty.RegisterDirect<MaterialMenuGroup, CornerRadius>(nameof(RecipeCornerRadius), group => group.RecipeCornerRadius);
+    private CornerRadius _recipeCornerRadius = new(16);
+    private bool _first, _last, _standalone = true;
+    public CornerRadius RecipeCornerRadius => _recipeCornerRadius;
     public static readonly StyledProperty<bool> IsActiveProperty = AvaloniaProperty.Register<MaterialMenuGroup, bool>(nameof(IsActive), true);
     public bool IsActive { get => GetValue(IsActiveProperty); set => SetValue(IsActiveProperty, value); }
     public static readonly StyledProperty<Orientation> OrientationProperty =
@@ -368,14 +417,25 @@ public class MaterialMenuGroup : ItemsControl
     protected override Type StyleKeyOverride => typeof(MaterialMenuGroup);
     internal void SetGroupPosition(int index, int count)
     {
+        _first = index == 0; _last = index == count - 1; _standalone = count == 1;
         PseudoClasses.Set(":first", index == 0); PseudoClasses.Set(":last", index == count - 1);
         PseudoClasses.Set(":standalone", count == 1);
+        UpdateRecipe();
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == VariantProperty) PseudoClasses.Set(":vibrant", Variant == MaterialMenuVariant.Vibrant);
         if (change.Property == IsActiveProperty) PseudoClasses.Set(":inactive", !IsActive);
+        if (MaterialMenuShapeRoles.IsRole(change.Property) || change.Property == IsActiveProperty) UpdateRecipe();
+    }
+    private void UpdateRecipe()
+    {
+        var small = GetValue(MaterialMenuShapeRoles.Small).TopLeft;
+        var large = GetValue(MaterialMenuShapeRoles.Large).TopLeft;
+        var radius = !IsActive ? new CornerRadius(small) : _standalone ? new CornerRadius(large) :
+            new CornerRadius(_first ? large : small, _first ? large : small, _last ? large : small, _last ? large : small);
+        SetAndRaise(RecipeCornerRadiusProperty, ref _recipeCornerRadius, radius);
     }
     protected override AutomationPeer OnCreateAutomationPeer() => new ControlAutomationPeer(this);
 }

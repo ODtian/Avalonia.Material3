@@ -6,6 +6,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
+using Avalonia.Data;
+using Avalonia.Media;
 
 namespace Avalonia.Material3.Controls;
 
@@ -18,6 +20,7 @@ public class MaterialSnackbar : ContentControl
     public static readonly StyledProperty<ICommand?> ActionCommandProperty = AvaloniaProperty.Register<MaterialSnackbar, ICommand?>(nameof(ActionCommand));
     public static readonly StyledProperty<object?> ActionParameterProperty = AvaloniaProperty.Register<MaterialSnackbar, object?>(nameof(ActionParameter));
     public static readonly StyledProperty<object?> ActionResultProperty = AvaloniaProperty.Register<MaterialSnackbar, object?>(nameof(ActionResult));
+    public static readonly StyledProperty<IBrush?> ActionForegroundProperty = AvaloniaProperty.Register<MaterialSnackbar, IBrush?>(nameof(ActionForeground));
     public static readonly StyledProperty<bool> IsActionEnabledProperty = AvaloniaProperty.Register<MaterialSnackbar, bool>(nameof(IsActionEnabled), true);
     public static readonly StyledProperty<bool> ActionOnNewLineProperty = AvaloniaProperty.Register<MaterialSnackbar, bool>(nameof(ActionOnNewLine));
     public static readonly StyledProperty<string> DismissTextProperty = AvaloniaProperty.Register<MaterialSnackbar, string>(nameof(DismissText), "Dismiss", validate: value => !string.IsNullOrWhiteSpace(value));
@@ -28,6 +31,7 @@ public class MaterialSnackbar : ContentControl
     private bool _canInvokeAction;
     private MaterialFeedbackLifetime? _lifetime;
     private Button? _action, _dismiss;
+    private IDisposable? _actionForeground, _dismissForeground;
     private static readonly ConditionalWeakTable<MaterialOverlayHost, Slot> Slots = new();
     private sealed class Slot { public MaterialSnackbar? Current; }
     public object? ActionContent { get => GetValue(ActionContentProperty); set => SetValue(ActionContentProperty, value); }
@@ -35,6 +39,7 @@ public class MaterialSnackbar : ContentControl
     public ICommand? ActionCommand { get => GetValue(ActionCommandProperty); set => SetValue(ActionCommandProperty, value); }
     public object? ActionParameter { get => GetValue(ActionParameterProperty); set => SetValue(ActionParameterProperty, value); }
     public object? ActionResult { get => GetValue(ActionResultProperty); set => SetValue(ActionResultProperty, value); }
+    public IBrush? ActionForeground { get => GetValue(ActionForegroundProperty); set => SetValue(ActionForegroundProperty, value); }
     public bool IsActionEnabled { get => GetValue(IsActionEnabledProperty); set => SetValue(IsActionEnabledProperty, value); }
     public bool ActionOnNewLine { get => GetValue(ActionOnNewLineProperty); set => SetValue(ActionOnNewLineProperty, value); }
     public string DismissText { get => GetValue(DismissTextProperty); set => SetValue(DismissTextProperty, value); }
@@ -102,10 +107,21 @@ public class MaterialSnackbar : ContentControl
     {
         if (_action is not null) _action.Click -= ActionClick;
         if (_dismiss is not null) _dismiss.Click -= DismissClick;
+        _actionForeground?.Dispose(); _dismissForeground?.Dispose();
         base.OnApplyTemplate(e);
         _action = e.NameScope.Find<Button>("PART_ActionButton"); _dismiss = e.NameScope.Find<Button>("PART_DismissButton");
-        if (_action is not null) _action.Click += ActionClick;
-        if (_dismiss is not null) _dismiss.Click += DismissClick;
+        if (_action is not null)
+        {
+            _action.Click += ActionClick;
+            // A local binding keeps the inverse recipe above the shared Button :text style trigger.
+            _actionForeground = _action.Bind(Button.ForegroundProperty, new Binding(nameof(ActionForeground)) { Source = this });
+            _action.Background = Brushes.Transparent;
+        }
+        if (_dismiss is not null)
+        {
+            _dismiss.Click += DismissClick;
+            _dismissForeground = _dismiss.Bind(Button.ForegroundProperty, new Binding(nameof(Foreground)) { Source = this });
+        }
         RefreshAction();
     }
 }

@@ -81,12 +81,14 @@ try {
     Save-Window $window 'm3-13-desktop-vibrant.png'
     Keys '{ESC}'
     Invoke-Control (Find-Id $window 'SnackbarEntry')
-    $snackbar = Wait-For { Find-Name $window 'Changes saved / 更改已保存' } 'Snackbar live message'
+    $snackbar = Wait-For { Find-Id $window 'FeedbackSnackbar' } 'Snackbar live message'
+    if (-not $snackbar.Current.Name.StartsWith('Changes saved')) { throw 'Snackbar message name missing.' }
     if ($snackbar.Current.ControlType -ne [System.Windows.Automation.ControlType]::Pane) { throw 'Snackbar must expose a named native Pane.' }
     Invoke-Control (Find-Name $window 'Undo')
     Wait-For { $result.Current.Name -eq 'Snackbar: undo performed' } 'Snackbar host action' | Out-Null
     Invoke-Control (Find-Id $window 'TooltipPlain')
-    $tip = Wait-For { Find-Name $window 'Opens related commands / 打开相关操作' } 'plain Tooltip'
+    $tip = Wait-For { Find-Id $window 'FeedbackPlainTooltip' } 'plain Tooltip'
+    if (-not $tip.Current.Name.StartsWith('Opens related commands')) { throw 'Tooltip description name missing.' }
     if ($tip.Current.ControlType -ne [System.Windows.Automation.ControlType]::ToolTip) { throw 'Tooltip must expose ToolTip role.' }
     Keys '{ESC}'
     $rich = Find-Id $window 'TooltipRich'; $rich.SetFocus()
@@ -100,7 +102,7 @@ try {
     Save-Window $window 'm3-13-desktop-segmented-dark-font200-rtl.png'
     Keys '{ESC}'
     Invoke-Control (Find-Id $window 'SnackbarTimed')
-    Wait-For { Find-Name $window 'Temporary feedback (4 seconds) / 临时反馈' } 'timed feedback visible' | Out-Null
+    Wait-For { Find-Id $window 'FeedbackSnackbar' } 'timed feedback visible' | Out-Null
     Wait-For { $result.Current.Name -eq 'Snackbar: Cancelled' } 'production timer dismissal' | Out-Null
     Write-Host 'PASS Windows native package host: MenuItem/ToolTip/Pane names and roles; Invoke/Toggle/ExpandCollapse; disabled-row keyboard skip; deepest Escape and nested result/focus return; Snackbar action and actual timeout; rich Tab/Enter action/focus return; narrow dark 200% RTL segmented rendering.'
 }

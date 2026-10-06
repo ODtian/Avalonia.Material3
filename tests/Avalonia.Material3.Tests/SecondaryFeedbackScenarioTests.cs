@@ -15,6 +15,61 @@ namespace Avalonia.Material3.Tests;
 public class SecondaryFeedbackScenarioTests
 {
     [AvaloniaFact]
+    public void A_second_contact_cancels_long_press_and_cannot_become_a_new_gesture_generation()
+    {
+        using var host = new FeedbackHost();
+        var clock = new FeedbackTimeProvider();
+        var tip = new MaterialTooltip { Content = "Hold", LongPressDelay = TimeSpan.FromMilliseconds(500) };
+        using var attachment = tip.Attach(host.Overlay, host.Entry, clock);
+        var point = host.Center(host.Entry);
+        using var first = host.Window.TouchBegin(point);
+        using var second = host.Window.TouchBegin(point + new Vector(10, 0));
+        clock.Advance(TimeSpan.FromSeconds(1)); host.Render();
+        Assert.False(tip.IsOpen);
+    }
+
+    [AvaloniaFact]
+    public void Runtime_shape_roles_update_segmented_mixed_corners_and_feedback_surfaces()
+    {
+        using var host = new FeedbackHost();
+        var row = new MaterialMenuItem { Content = "First" };
+        var group = new MaterialMenuGroup { Items = { row, new MaterialMenuItem { Content = "Last" } } };
+        var menu = new MaterialMenu { IsSegmented = true, Items = { group, new MaterialMenuGroup { Items = { new MaterialMenuItem { Content = "Other group" } } } } };
+        menu.Show(host.Overlay, host.Entry); host.Render();
+        host.Theme.Shapes = host.Theme.Shapes with { CornerExtraSmall = 6, CornerSmall = 10, CornerMedium = 14, CornerLarge = 18 };
+        host.Render();
+        Assert.Equal(new CornerRadius(18), menu.CornerRadius);
+        Assert.Equal(new CornerRadius(18, 18, 10, 10), group.CornerRadius);
+        Assert.Equal(new CornerRadius(14, 14, 6, 6), row.CornerRadius);
+        menu.Dismiss();
+        var tip = new MaterialTooltip { Content = "Description" }; tip.Show(host.Overlay, host.Entry); host.Render();
+        Assert.Equal(new CornerRadius(6), tip.CornerRadius); tip.Dismiss();
+        var snackbar = new MaterialSnackbar { Content = "Saved" }; snackbar.Show(host.Overlay); host.Render();
+        Assert.Equal(new CornerRadius(6), snackbar.CornerRadius);
+    }
+
+    [AvaloniaFact]
+    public void Rendered_focused_menu_keeps_visible_contrast_and_snackbar_action_uses_InversePrimary_not_Primary()
+    {
+        using var host = new FeedbackHost();
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
+        var row = new MaterialMenuItem { Content = "Visible menu text", IsChecked = true };
+        var menu = new MaterialMenu { Items = { row } };
+        menu.Show(host.Overlay, host.Entry); host.Render();
+        var point = row.TranslatePoint(new Point(row.Bounds.Width - 6, row.Bounds.Height / 2), host.Window)!.Value;
+        var pixel = host.PixelAt(point);
+        // Independent .10 focus layer blend of #31111D over #FFD8E4, allowing renderer byte rounding.
+        Assert.InRange(pixel.R, (byte)233, (byte)235);
+        Assert.InRange(pixel.G, (byte)195, (byte)197);
+        Assert.InRange(pixel.B, (byte)207, (byte)209);
+        menu.Dismiss();
+        var snackbar = new MaterialSnackbar { Content = "Saved", ActionContent = "Undo" };
+        snackbar.Show(host.Overlay); host.Render();
+        var action = snackbar.GetVisualDescendants().OfType<Button>().Single(button => button.Content as string == "Undo");
+        Assert.Equal(Color.Parse("#D0BCFF"), ((ISolidColorBrush)action.Foreground!).Color);
+    }
+
+    [AvaloniaFact]
     public void Controlled_long_press_suppresses_the_anchors_normal_click_and_cancelled_contacts_leave_no_tip()
     {
         using var host = new FeedbackHost();
@@ -322,6 +377,16 @@ public sealed class FeedbackHost : IDisposable
         Render();
     }
     public void Render() { Window.UpdateLayout(); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Window.CaptureRenderedFrame()?.Dispose(); }
+    public Color PixelAt(Point point)
+    {
+        using var bitmap = Window.CaptureRenderedFrame()!;
+        using var frame = bitmap.Lock();
+        var offset = (int)(point.Y * Window.RenderScaling) * frame.RowBytes + (int)(point.X * Window.RenderScaling) * 4;
+        var first = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset);
+        var green = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 1);
+        var third = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 2);
+        return frame.Format == Avalonia.Platform.PixelFormat.Bgra8888 ? Color.FromRgb(third, green, first) : Color.FromRgb(first, green, third);
+    }
     public Point Center(Control control) => control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), Window)!.Value;
     public void Click(Control control) { var point = Center(control); Window.MouseMove(point); Window.MouseDown(point, MouseButton.Left); Window.MouseUp(point, MouseButton.Left); Render(); }
     public void Key(Key key) { Window.KeyPress(key, RawInputModifiers.None, PhysicalKey.None, null); Window.KeyRelease(key, RawInputModifiers.None, PhysicalKey.None, null); Render(); }

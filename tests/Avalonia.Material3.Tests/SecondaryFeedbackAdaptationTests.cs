@@ -16,6 +16,19 @@ namespace Avalonia.Material3.Tests;
 
 public class SecondaryFeedbackAdaptationTests
 {
+    [AvaloniaFact]
+    public void Host_detach_inside_an_approved_command_finishes_as_forced_cancellation_not_confirmation()
+    {
+        using var host = new FeedbackHost();
+        var row = new MaterialMenuItem { Content = "Remove host", Value = "must not confirm", Command = new FeedbackCommand(() => host.Window.Content = null) };
+        var menu = new MaterialMenu { Items = { row } };
+        var session = menu.Show(host.Overlay, host.Entry); host.Render();
+        ((IInvokeProvider)ControlAutomationPeer.CreatePeerForElement(row)).Invoke();
+        host.Render();
+        Assert.Equal(MaterialOverlayCloseReason.HostDetached, session.Completion.Result.Reason);
+        Assert.Null(session.Completion.Result.Value); Assert.Equal(0, host.Overlay.OpenCount);
+    }
+
     [AvaloniaTheory]
     [InlineData(MaterialMenuVariant.Standard, false, "#FFD8E4", "#31111D")]
     [InlineData(MaterialMenuVariant.Vibrant, false, "#7D5260", "#FFFFFF")]

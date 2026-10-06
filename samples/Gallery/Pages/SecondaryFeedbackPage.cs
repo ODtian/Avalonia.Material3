@@ -28,7 +28,9 @@ public sealed class SecondaryFeedbackPage : UserControl
         AutomationProperties.SetAutomationId(Result, "FeedbackResult");
         var standard = Entry("Standard menu", "MenuStandard");
         var vibrant = Entry("Vibrant menu", "MenuVibrant");
+        var legacy = Entry("Legacy dropdown", "MenuLegacy");
         var segmented = Entry("Segmented menu", "MenuSegmented");
+        var segmentedVibrant = Entry("Segmented vibrant", "MenuSegmentedVibrant");
         _context = Entry("Context menu (right click / Menu key)", "MenuContext");
         _plainEntry = Entry("Plain tooltip", "TooltipPlain");
         _richEntry = Entry("Rich tooltip", "TooltipRich");
@@ -44,7 +46,7 @@ public sealed class SecondaryFeedbackPage : UserControl
             Children =
             {
                 new TextBlock { Text = "Menus, Tooltips & Snackbar / 次级操作", TextWrapping = TextWrapping.Wrap, FontSize = 22 },
-                Result, standard, vibrant, segmented, _context, _plainEntry, _richEntry,
+                Result, standard, vibrant, legacy, segmented, segmentedVibrant, _context, _plainEntry, _richEntry,
                 snackbarEntry, timed, themeEntry, font, rtl, back
             }
         };
@@ -63,9 +65,14 @@ public sealed class SecondaryFeedbackPage : UserControl
             ActionContent = "Learn more", ActionResult = "learn", ShowCaret = true,
             ActionCommand = new HostCommand(() => Result.Text = "Tooltip: learn more performed")
         };
+        AutomationProperties.SetAutomationId(Snackbar, "FeedbackSnackbar");
+        AutomationProperties.SetAutomationId(PlainTooltip, "FeedbackPlainTooltip");
+        AutomationProperties.SetAutomationId(RichTooltip, "FeedbackRichTooltip");
         standard.Click += (_, _) => PresentMenu(BuildMenu(), standard);
         vibrant.Click += (_, _) => PresentMenu(BuildMenu(MaterialMenuVariant.Vibrant), vibrant);
+        legacy.Click += (_, _) => PresentMenu(BuildMenu(MaterialMenuVariant.LegacyDropdown), legacy);
         segmented.Click += (_, _) => PresentMenu(BuildSegmentedMenu(), segmented);
+        segmentedVibrant.Click += (_, _) => PresentMenu(BuildSegmentedMenu(MaterialMenuVariant.Vibrant), segmentedVibrant);
         _contextMenu = BuildMenu();
         _contextMenu.PropertyChanged += (_, change) =>
         {
@@ -119,7 +126,7 @@ public sealed class SecondaryFeedbackPage : UserControl
             }
         };
     }
-    private MaterialMenu BuildSegmentedMenu()
+    private MaterialMenu BuildSegmentedMenu(MaterialMenuVariant variant = MaterialMenuVariant.Standard)
     {
         var small = new MaterialMenuItem { Content = "Compact", GroupName = "density", ToggleMode = MaterialMenuToggleMode.Radio, IsChecked = true, StaysOpenOnClick = true };
         var large = new MaterialMenuItem { Content = "Comfortable", GroupName = "density", ToggleMode = MaterialMenuToggleMode.Radio, StaysOpenOnClick = true };
@@ -128,7 +135,7 @@ public sealed class SecondaryFeedbackPage : UserControl
         AutomationProperties.SetName(icon, "Download");
         return new MaterialMenu
         {
-            IsSegmented = true, Items =
+            IsSegmented = true, Variant = variant, Items =
             {
                 new MaterialMenuGroup { Orientation = Orientation.Horizontal, Items = { small, large } },
                 new MaterialMenuGroup { Items = { new MaterialMenuItem { Content = "Read offline / 离线阅读", SupportingText = "A long supporting description that wraps rather than truncates.", TrailingText = "New", Value = "offline" } } },
