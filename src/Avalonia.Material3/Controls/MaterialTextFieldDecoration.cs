@@ -17,6 +17,10 @@ internal sealed class MaterialTextFieldDecoration : Panel
     public double LabelLineHeight { get => GetValue(LabelLineHeightProperty); set => SetValue(LabelLineHeightProperty, value); }
     internal double OutlineTop => Field is { Variant: MaterialTextFieldVariant.Outlined, Label: { } label } &&
         !string.IsNullOrWhiteSpace(label) ? LabelLineHeight / 2 : 0;
+    public static readonly StyledProperty<double> LabelEnvelopeHeightProperty =
+        AvaloniaProperty.Register<MaterialTextFieldDecoration, double>(nameof(LabelEnvelopeHeight), 16);
+    public double LabelEnvelopeHeight => GetValue(LabelEnvelopeHeightProperty);
+    private readonly TextBlock _labelMetrics = new();
     public static readonly StyledProperty<double> LabelProgressProperty =
         AvaloniaProperty.Register<MaterialTextFieldDecoration, double>(nameof(LabelProgress));
     public static readonly StyledProperty<double> StrokeWidthProperty =
@@ -86,6 +90,28 @@ internal sealed class MaterialTextFieldDecoration : Panel
     protected override Size MeasureOverride(Size availableSize)
     {
         if (Children.Count < 2) return default;
+        if (Field is { Variant: MaterialTextFieldVariant.Filled } field && !string.IsNullOrWhiteSpace(field.Label) &&
+            Children.OfType<TextBlock>().FirstOrDefault(child => child.Name == "FloatingLabel") is { } floating)
+        {
+            var lanes = Children[1] as Panel;
+            var reservedWidth = 0d;
+            if (lanes is not null)
+                foreach (var lane in lanes.Children.Where(child => Grid.GetColumn(child) != 1 && child.IsVisible))
+                {
+                    lane.Measure(availableSize);
+                    reservedWidth += lane.DesiredSize.Width;
+                }
+            _labelMetrics.Text = field.Label;
+            _labelMetrics.FontFamily = floating.FontFamily;
+            _labelMetrics.FontSize = floating.FontSize;
+            _labelMetrics.FontWeight = floating.FontWeight;
+            _labelMetrics.LineHeight = floating.LineHeight;
+            _labelMetrics.LetterSpacing = floating.LetterSpacing;
+            _labelMetrics.TextWrapping = TextWrapping.Wrap;
+            _labelMetrics.Measure(new Size(Math.Max(0, availableSize.Width - reservedWidth - field.Padding.Left - field.Padding.Right), double.PositiveInfinity));
+            SetValue(LabelEnvelopeHeightProperty, Math.Max(LabelLineHeight, _labelMetrics.DesiredSize.Height));
+        }
+        else SetValue(LabelEnvelopeHeightProperty, LabelLineHeight);
         Children[1].Measure(new Size(availableSize.Width, Math.Max(0, availableSize.Height - OutlineTop)));
         for (var i = 2; i < Children.Count; i++)
             Children[i].Measure(new Size(Math.Max(0, availableSize.Width - 32), double.PositiveInfinity));
@@ -101,13 +127,14 @@ internal sealed class MaterialTextFieldDecoration : Panel
         var content = Children[1] as Panel;
         var editor = content?.Children.FirstOrDefault(child => child.Name == "EditorDock");
         var x = editor?.Bounds.X ?? field.Padding.Left;
-        var width = Math.Max(0, finalSize.Width - x - 16);
+        var width = Math.Max(0, editor?.Bounds.Width ?? finalSize.Width - x - 16);
         for (var i = 2; i < Children.Count; i++)
         {
             var child = Children[i];
             var floating = child.Name == "FloatingLabel";
             var y = floating ? (field.Variant == MaterialTextFieldVariant.Outlined ? 0 : field.Padding.Top) :
                 top + (containerHeight - child.DesiredSize.Height) / 2;
+            child.Measure(new Size(width, double.PositiveInfinity));
             child.Arrange(new Rect(x, y, Math.Min(width, child.DesiredSize.Width), child.DesiredSize.Height));
         }
         ProjectLabel();

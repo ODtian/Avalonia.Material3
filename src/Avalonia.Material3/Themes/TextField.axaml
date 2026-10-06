@@ -88,7 +88,7 @@
                   <Binding Path="Padding" RelativeSource="{RelativeSource TemplatedParent}" />
                   <Binding Path="Variant" RelativeSource="{RelativeSource TemplatedParent}" />
                   <Binding Path="Label" RelativeSource="{RelativeSource TemplatedParent}" />
-                  <Binding Path="LabelLineHeight" ElementName="Container" />
+                  <Binding Path="LabelEnvelopeHeight" ElementName="Container" />
                 </MultiBinding>
               </Grid.Margin>
               <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
@@ -146,7 +146,7 @@
                        LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                        Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
             <TextBlock x:Name="FloatingLabel" Text="{TemplateBinding Label}" IsVisible="False" IsHitTestVisible="False"
-                       AutomationProperties.AccessibilityView="Raw" TextTrimming="CharacterEllipsis" Theme="{StaticResource M3.TextField.SupportingText}"
+                       AutomationProperties.AccessibilityView="Raw" TextTrimming="CharacterEllipsis" TextWrapping="Wrap" Theme="{StaticResource M3.TextField.SupportingText}"
                        Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
           </controls:MaterialTextFieldDecoration>
           <Grid x:Name="SupportingContent" Grid.Row="1" ColumnDefinitions="*,Auto" Margin="16,4,16,0">
@@ -199,6 +199,9 @@
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" />
+    </Style>
+    <Style Selector="^:outlined /template/ TextBlock#FloatingLabel">
+      <Setter Property="TextWrapping" Value="NoWrap" />
     </Style>
     <Style Selector="^:pointerover">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />

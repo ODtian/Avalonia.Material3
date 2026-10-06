@@ -12,6 +12,25 @@ namespace Avalonia.Material3.Tests;
 // Confirmed seam: public host layout/input, native IME text-view/caret and rendered output.
 public class InputGeometryScenarioTests
 {
+    [AvaloniaFact]
+    public void Wrapped_filled_label_reserves_its_full_envelope_before_focus_without_overlapping_native_text()
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Label = "A long 中文 label that needs more than one floating line in this narrow editor", ShowClearButton = true });
+        host.Window.Width = 280;
+        host.Capture();
+        var size = host.Field.Bounds.Size;
+        host.Field.Focus();
+        host.Capture();
+        var label = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(host.Field).OfType<TextBlock>()
+            .Single(text => text.Text == host.Field.Label && text.IsEffectivelyVisible);
+        Assert.True(label.Bounds.Height >= 32, $"The filled label lost its documented wrapping: {label.Bounds}.");
+        Assert.Equal(size, host.Field.Bounds.Size);
+        var request = new TextInputMethodClientRequestedEventArgs { RoutedEvent = InputElement.TextInputMethodClientRequestedEvent };
+        host.Field.RaiseEvent(request);
+        Assert.True(label.TranslatePoint(new Point(0, label.Bounds.Height), host.Field)!.Value.Y <=
+            request.Client!.TextViewVisual.TranslatePoint(default, host.Field)!.Value.Y);
+    }
+
     [AvaloniaTheory]
     [InlineData(1, false)]
     [InlineData(2, false)]
