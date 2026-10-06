@@ -6,5 +6,7 @@
   <ItemGroup>
     <PackageReference Include="Avalonia.Material3" Version="$(Material3Version)" />
     <PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" />
+    <AvaloniaResource Include="Assets/Fonts/*.ttf" />
+    <None Update="Assets/Fonts/*OFL.txt;Assets/Fonts/manifest.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

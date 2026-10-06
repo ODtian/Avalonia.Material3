@@ -1,0 +1,47 @@
+{
+  "License": "SIL-OFL-1.1",
+  "scope": "Gallery document fonts only. No global installation or consumer typography override.",
+  "NotoSansSC": {
+    "sha256": "A3041811A78C361B1DE50F953C805E0244951C21C5BD412F7232EF0D899AF0DA",
+    "commit": "a85815a42757630ce188fdad368c2dfc444d4773",
+    "source": "ofl/notosanssc/NotoSansSC[wght].ttf"
+  },
+  "Roboto": {
+    "sha256": "D7598E12C5DBEF095FF8272CFC55DA0250BD07FBDECBAC8A530B9B277872A134",
+    "commit": "1c627bfa375fc51cf86fabeca4f6e08a95f0aa5c",
+    "source": "ofl/roboto/Roboto[wdth,wght].ttf"
+  },
+  "fontTools": "4.53.0",
+  "instances": [
+    {
+      "file": "Roboto-400.ttf",
+      "weight": 400,
+      "sha256": "c76bbfa0c89791a8f3c6c25c5676ff3cc4a65833e521898127396c9c1ffe850a"
+    },
+    {
+      "file": "Roboto-500.ttf",
+      "weight": 500,
+      "sha256": "7b82c70c6f8bf9b716574576b331b280a0c804d8b3d987da2135e5820b0b59bb"
+    },
+    {
+      "file": "Roboto-700.ttf",
+      "weight": 700,
+      "sha256": "7c8d6ac1e107c5557527ba560fafabcfeb1fa007b26bc387dfc9caf1425449e6"
+    },
+    {
+      "file": "NotoSansSC-400.ttf",
+      "weight": 400,
+      "sha256": "b7bebb49c3c6b0266362cf75dd9bdd9bf5fbe5fb390be8f7808ebedef376de76"
+    },
+    {
+      "file": "NotoSansSC-500.ttf",
+      "weight": 500,
+      "sha256": "55215c6c9d56715430a51b2e71b4b0e9617daed929358ed0831dfc359683e55e"
+    },
+    {
+      "file": "NotoSansSC-700.ttf",
+      "weight": 700,
+      "sha256": "984cc8f1b8463689f39f653c783188a3914b2ea4bc084db240569d5e6473d035"
+    }
+  ]
+}
