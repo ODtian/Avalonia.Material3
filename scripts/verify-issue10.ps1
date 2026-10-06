@@ -26,6 +26,9 @@ try {
     New-Item -ItemType Directory -Force $results, (Join-Path $sandbox 'artifacts/packages') | Out-Null
     Invoke-Dotnet @('test', 'tests/Avalonia.Material3.Tests', '-c', 'Release', '--logger', 'trx;LogFileName=source.trx', '--results-directory', $results)
     Invoke-Dotnet @('pack', 'src/Avalonia.Material3/Avalonia.Material3.csproj', '-c', 'Release', '-o', (Join-Path $sandbox 'artifacts/packages'))
+    $packageHash = (Get-ChildItem (Join-Path $sandbox 'artifacts/packages') -Filter 'Avalonia.Material3.*.nupkg' | Get-FileHash -Algorithm SHA256).Hash
+    Write-Host "Fresh package SHA256: $packageHash"
+    Set-Content (Join-Path $results 'package-sha256.txt') $packageHash
     foreach ($file in 'Directory.Build.props', 'global.json') { Copy-Item (Join-Path $root $file) $sandbox }
     # Known public feed definitions only. Never inspect/copy the repository's credential-classified configuration.
     $feedConfig = Join-Path $sandbox 'public-feed.config'

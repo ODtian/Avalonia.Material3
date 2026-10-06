@@ -83,6 +83,40 @@ public class ButtonGroupsGalleryTests
         finally { window.Close(); theme.Typography = original; }
     }
 
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Published_pinned_matrix_renders_all_four_recipes_and_five_sizes_together(bool dark)
+    {
+        var columns = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 12, Margin = new Thickness(16) };
+        foreach (var variant in new[] { MaterialButtonVariant.Filled, MaterialButtonVariant.Tonal, MaterialButtonVariant.Elevated, MaterialButtonVariant.Outlined })
+        {
+            var column = new StackPanel { Width = 350, Spacing = 8 };
+            column.Children.Add(new TextBlock { Text = variant.ToString() });
+            foreach (var size in Enum.GetValues<MaterialButtonSize>())
+            {
+                var split = new MaterialSplitButton { Size = size, Variant = variant };
+                split.MainButton.Content = size switch { MaterialButtonSize.ExtraSmall => "XS", MaterialButtonSize.Small => "S", MaterialButtonSize.Medium => "M", MaterialButtonSize.Large => "L", _ => "XL" };
+                split.MainButton.LeadingIcon = "+";
+                column.Children.Add(split);
+            }
+            columns.Children.Add(column);
+        }
+        var window = new Window { Width = 1480, Height = 570, RequestedThemeVariant = dark ? ThemeVariant.Dark : ThemeVariant.Light, Content = columns };
+        window.Show();
+        try
+        {
+            Save(window, dark ? "m3-05-split-matrix-dark.png" : "m3-05-split-matrix-light.png");
+            foreach (var column in columns.Children.OfType<StackPanel>())
+                foreach (var split in column.Children.OfType<MaterialSplitButton>())
+                {
+                    Assert.True(split.SecondaryButton.Bounds.Width >= 48);
+                    Assert.Equal(2, split.SecondaryButton.Bounds.Left - split.MainButton.Bounds.Right);
+                }
+        }
+        finally { window.Close(); }
+    }
+
     private static void Click(Window window, Control control)
     {
         using var frame = window.CaptureRenderedFrame();
