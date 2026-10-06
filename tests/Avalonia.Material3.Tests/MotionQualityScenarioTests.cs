@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Material3.Controls;
 using Avalonia.Material3.Tokens;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Material3.Tests;
@@ -173,7 +174,8 @@ public class MotionQualityScenarioTests
             Assert.Equal(200, carousel.Bounds.Height);
             Assert.Same(item, carousel.CurrentItem);
             var center = images[0].TranslatePoint(new Point(images[0].Bounds.Width / 2, 60), host.Window)!.Value;
-            Assert.NotNull(host.Window.InputHitTest(center));
+            var hit = host.Window.InputHitTest(center);
+            Assert.True(hit == images[0] || hit is Visual visual && images[0].IsVisualAncestorOf(visual), "The presented image, not just the root background, must own the hit.");
         }
         carousel.AnimationTime = TimeSpan.FromMilliseconds(200);
         host.Capture();
