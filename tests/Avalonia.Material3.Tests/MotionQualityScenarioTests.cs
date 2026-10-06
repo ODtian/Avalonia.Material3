@@ -181,6 +181,22 @@ public class MotionQualityScenarioTests
         Assert.All(images, image => Assert.NotNull(image.Parent));
     }
 
+    [AvaloniaFact]
+    public void Collapsing_extended_action_does_not_drop_its_padding_before_the_first_motion_frame()
+    {
+        using var host = new ButtonHost();
+        var fab = new MaterialExtendedFab { Icon = new MaterialSymbol { Symbol = "add" }, Content = "Create a document" };
+        host.Window.Content = new StackPanel { Children = { fab } };
+        host.Capture();
+        var width = fab.Bounds.Width;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { FastSpatial = new(1, 1), FastEffects = new(1, 1) } };
+        fab.IsExpanded = false;
+        host.Capture();
+        Assert.InRange(width - fab.Bounds.Width, 0, 2);
+        // Public target metrics still change immediately; stock paint must interpolate its own inset.
+        Assert.Equal(default, fab.ContentPadding);
+    }
+
     private static Point ActiveInkCenter(ButtonHost host, Control graphic)
     {
         var origin = graphic.TranslatePoint(default, host.Window)!.Value;

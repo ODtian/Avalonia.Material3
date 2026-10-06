@@ -72,8 +72,8 @@
                 <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{Binding CornerRadius, ElementName=Container}">
                   <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
                 </Border>
-                <DockPanel Margin="{TemplateBinding ContentPadding}" HorizontalSpacing="{TemplateBinding IconSpacing}" HorizontalAlignment="Center">
-                  <Viewbox DockPanel.Dock="Left" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}" VerticalAlignment="Center"
+                <c:MaterialExtendedFabPanel HorizontalAlignment="Center">
+                  <Viewbox Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}" VerticalAlignment="Center"
                            IsVisible="{TemplateBinding Icon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
                     <ContentPresenter Content="{TemplateBinding Icon}" ContentTemplate="{TemplateBinding IconTemplate}" />
                   </Viewbox>
@@ -81,7 +81,7 @@
                     <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                                       LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" TextWrapping="Wrap" />
                   </c:MaterialActionReveal>
-                </DockPanel>
+                </c:MaterialExtendedFabPanel>
               </Grid>
             </c:MaterialShapeBorder>
             <c:MaterialShapeBorder x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False" BorderThickness="3"
