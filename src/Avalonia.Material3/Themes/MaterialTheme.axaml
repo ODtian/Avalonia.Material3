@@ -6,11 +6,14 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/SelectionControls.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/TextField.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/SearchChips.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/ContentControls.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sliders.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/ProgressIndicators.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/CarouselRefresh.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Dialogs.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sheets.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/Navigation.axaml" />
       </ResourceDictionary.MergedDictionaries>
       <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
         <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
@@ -19,16 +22,20 @@
         <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />
         <Setter Property="Template">
           <ControlTemplate>
-            <ContentPresenter x:Name="PART_ContentPresenter"
-                              Background="{TemplateBinding Background}"
-                              Content="{TemplateBinding Content}"
-                              ContentTemplate="{TemplateBinding ContentTemplate}"
-                              Padding="{TemplateBinding Padding}" />
+            <VisualLayerManager x:Name="PART_VisualLayerManager" EnableOverlayLayer="True" EnableAdornerLayer="True">
+              <ContentPresenter x:Name="PART_ContentPresenter"
+                                Background="{TemplateBinding Background}"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}" />
+            </VisualLayerManager>
           </ControlTemplate>
         </Setter>
       </ControlTheme>
     </ResourceDictionary>
   </Styles.Resources>
   <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialButtons.axaml" />
+  <StyleInclude Source="avares://Avalonia.Material3/Themes/ButtonGroups.axaml" />
+  <StyleInclude Source="avares://Avalonia.Material3/Themes/SplitButtons.axaml" />
   <StyleInclude Source="avares://Avalonia.Material3/Themes/MaterialFloatingActions.axaml" />
 </Styles>
