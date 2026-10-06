@@ -248,9 +248,9 @@ public class TextFieldScenarioTests
         Assert.DoesNotContain("Optional reference", host.VisibleText());
         var clear = host.Window.GetVisualDescendants().OfType<Button>()
             .Single(button => AutomationProperties.GetName(button) == "Clear text");
-        var icon = clear.GetVisualDescendants().OfType<PathIcon>().Single();
-        Assert.True(icon.Data!.Bounds.Width > 0 && icon.Data.Bounds.Height > 0);
         var point = clear.TranslatePoint(new Point(24, 24), host.Window)!.Value;
+        // Paint, not geometry metadata: a template-less PathIcon previously passed with zero ink.
+        Assert.Equal(Color.Parse("#49454F"), host.PixelAt(point));
         host.Window.MouseDown(point, MouseButton.Left);
         host.Window.MouseUp(point, MouseButton.Left);
         Assert.Equal(string.Empty, host.Field.Text);

@@ -137,7 +137,7 @@
             <Grid Grid.Column="3" Width="48" MinHeight="48" IsVisible="{TemplateBinding ShowClearButton}">
             <Button x:Name="PART_ClearButton" IsVisible="False" VerticalAlignment="Center"
                     Theme="{StaticResource M3.TextField.Action}" AutomationProperties.Name="{TemplateBinding ClearButtonLabel}">
-              <PathIcon Width="24" Height="24" Data="M6,4.5 L12,10.5 L18,4.5 L19.5,6 L13.5,12 L19.5,18 L18,19.5 L12,13.5 L6,19.5 L4.5,18 L10.5,12 L4.5,6 Z" />
+              <controls:MaterialSymbol Symbol="close" Size="24" />
             </Button>
             </Grid>
             </Grid>
