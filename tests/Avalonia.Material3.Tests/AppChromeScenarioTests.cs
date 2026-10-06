@@ -447,6 +447,37 @@ public class AppChromeScenarioTests
         Assert.Equal(Color.Parse("#49454F"), ((ISolidColorBrush)first.Foreground!).Color);
         Assert.Equal(Color.Parse("#49454F"), ((ISolidColorBrush)second.Foreground!).Color);
     }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialTopAppBarVariant.MediumFlexible)]
+    [InlineData(MaterialTopAppBarVariant.LargeFlexible)]
+    public void Flexible_subtitle_is_retained_when_collapsed_with_small_subtitle_typography(MaterialTopAppBarVariant variant)
+    {
+        var bar = new MaterialTopAppBar { Variant = variant, Title = "Collection", Subtitle = "Updated today", ScrollBehavior = MaterialAppBarScrollBehavior.EnterAlways };
+        using var host = new ChromeHost(bar);
+        bar.ApplyScrollDelta(500, 500); host.Layout();
+        var subtitle = bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Updated today");
+        Assert.True(subtitle.IsEffectivelyVisible);
+        Assert.Equal(12, subtitle.FontSize);
+        Assert.Equal(16, subtitle.LineHeight);
+        Assert.Equal(.5, subtitle.LetterSpacing);
+        Assert.Equal(64, bar.Bounds.Height);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialTopAppBarVariant.Small)]
+    [InlineData(MaterialTopAppBarVariant.Medium)]
+    public void Single_row_title_respects_four_dip_space_after_navigation_target(MaterialTopAppBarVariant variant)
+    {
+        var navigation = new MaterialIconButton { Content = "←" };
+        var bar = new MaterialTopAppBar { Variant = variant, Title = "Collection", NavigationContent = navigation, ScrollBehavior = MaterialAppBarScrollBehavior.EnterAlways };
+        using var host = new ChromeHost(bar);
+        if (variant == MaterialTopAppBarVariant.Medium) { bar.ApplyScrollDelta(500, 500); host.Layout(); }
+        var title = bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Collection");
+        var navRight = navigation.TranslatePoint(default, host.Window)!.Value.X + navigation.Bounds.Width;
+        var titleLeft = title.TranslatePoint(default, host.Window)!.Value.X;
+        Assert.Equal(4, titleLeft - navRight);
+    }
 }
 
 internal sealed class ChromeHost : IDisposable

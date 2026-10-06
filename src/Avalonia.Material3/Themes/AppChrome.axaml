@@ -57,7 +57,10 @@
       <Setter Property="FontFamily" Value="{DynamicResource M3.TitleLargeFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleLargeFontSize}" />
       <Setter Property="FontWeight" Value="{DynamicResource M3.TitleLargeFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.TitleLargeLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.TitleLargeLetterSpacing}" />
     </Style>
-    <Style Selector="^:collapsed /template/ ScrollViewer#SubtitleScroll"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:collapsed /template/ TextBlock#Subtitle">
+      <Setter Property="FontFamily" Value="{DynamicResource M3.LabelMediumFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.LabelMediumFontSize}" />
+      <Setter Property="FontWeight" Value="{DynamicResource M3.LabelMediumFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.LabelMediumLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelMediumLetterSpacing}" />
+    </Style>
     <Style Selector="^:scrolled /template/ Border#Surface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:MaterialBottomAppBar}" TargetType="controls:MaterialBottomAppBar">

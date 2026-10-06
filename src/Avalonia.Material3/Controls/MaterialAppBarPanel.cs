@@ -30,7 +30,9 @@ public class MaterialAppBarPanel : Panel
         Children[1].Measure(new Size(Math.Max(0, width * .45), double.PositiveInfinity));
         _topHeight = Math.Max(64, Math.Max(Children[0].DesiredSize.Height, Children[1].DesiredSize.Height) + 8);
         var expandedTitle = owner.IsTwoRow && !owner.UsesCollapsedTitle;
-        var titleWidth = Math.Max(0, width - (expandedTitle && owner.CollapsedFraction == 0 ? 32 : Children[0].DesiredSize.Width + Children[1].DesiredSize.Width + 32));
+        var titleStart = Math.Max(16, Children[0].DesiredSize.Width + 8);
+        var titleEnd = Math.Max(16, Children[1].DesiredSize.Width + 8);
+        var titleWidth = Math.Max(0, width - (expandedTitle && owner.CollapsedFraction == 0 ? 32 : titleStart + titleEnd));
         // Finite hosts retain space for page content. Overflow title/subtitle remains scrollable and
         // fully named, rather than forcing a giant app bar or ellipsizing important host text.
         var budget = double.IsFinite(availableSize.Height) ? Math.Max(owner.NominalHeight, availableSize.Height * .5) : double.PositiveInfinity;
@@ -55,8 +57,8 @@ public class MaterialAppBarPanel : Panel
         Arrange(Children[0], 4, 4, navigation, _topHeight - 8);
         Arrange(Children[1], finalSize.Width - actions - 4, 4, actions, _topHeight - 8);
         var expanded = owner.IsTwoRow && !owner.UsesCollapsedTitle;
-        var start = expanded && owner.CollapsedFraction == 0 ? 16 : navigation + 16;
-        var available = Math.Max(0, finalSize.Width - start - (expanded && owner.CollapsedFraction == 0 ? 16 : actions + 16));
+        var start = expanded && owner.CollapsedFraction == 0 ? 16 : Math.Max(16, navigation + 8);
+        var available = Math.Max(0, finalSize.Width - start - (expanded && owner.CollapsedFraction == 0 ? 16 : Math.Max(16, actions + 8)));
         var centered = owner.CenterTitle || owner.Variant == MaterialTopAppBarVariant.CenterAligned;
         var titleWidth = centered ? Math.Min(available, Children[2].DesiredSize.Width) : available;
         var x = centered ? Math.Clamp((finalSize.Width - titleWidth) / 2, start, start + available - titleWidth) : start;
