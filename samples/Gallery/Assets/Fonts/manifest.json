@@ -16,32 +16,32 @@
     {
       "file": "Roboto-400.ttf",
       "weight": 400,
-      "sha256": "c76bbfa0c89791a8f3c6c25c5676ff3cc4a65833e521898127396c9c1ffe850a"
+      "sha256": "aa6f953f06f8070c8cb258e686743ef3214a38b612b946fb5ebcd79772fff5a7"
     },
     {
       "file": "Roboto-500.ttf",
       "weight": 500,
-      "sha256": "7b82c70c6f8bf9b716574576b331b280a0c804d8b3d987da2135e5820b0b59bb"
+      "sha256": "6043733b553b3ee9bf56772c12943c96bfda8fc0b93b0ddb03fff16b318bd134"
     },
     {
       "file": "Roboto-700.ttf",
       "weight": 700,
-      "sha256": "7c8d6ac1e107c5557527ba560fafabcfeb1fa007b26bc387dfc9caf1425449e6"
+      "sha256": "3c5d025a8f08907d8c7746f5b9a735257ea898b3cc559e2b7569c321ddbbd63c"
     },
     {
       "file": "NotoSansSC-400.ttf",
       "weight": 400,
-      "sha256": "b7bebb49c3c6b0266362cf75dd9bdd9bf5fbe5fb390be8f7808ebedef376de76"
+      "sha256": "f85c6fc3f3970ffd69cde7ac69b4cb03bd1c34e18f286f020fef255d2873466e"
     },
     {
       "file": "NotoSansSC-500.ttf",
       "weight": 500,
-      "sha256": "55215c6c9d56715430a51b2e71b4b0e9617daed929358ed0831dfc359683e55e"
+      "sha256": "13d86fad40da268542c52ebeac7328b7dd7a65a1c62085aece0f2d6239ba7c27"
     },
     {
       "file": "NotoSansSC-700.ttf",
       "weight": 700,
-      "sha256": "984cc8f1b8463689f39f653c783188a3914b2ea4bc084db240569d5e6473d035"
+      "sha256": "e548bb319bae4e00dda90d93b0a64a46e1cfc119311a85418cd2e29c2f3a8362"
     }
   ]
 }

@@ -16,6 +16,11 @@ for source,family,axes,digest in [(a.roboto,'Roboto',{'wdth':100},m['Roboto']['s
  for weight in (400,500,700):
   font=TTFont(source,recalcTimestamp=False)
   font=instantiateVariableFont(font,dict(axes,wght=weight),inplace=True)
+  face='Gallery Roboto' if family=='Roboto' else 'Gallery Noto Sans SC'
+  style={400:'Regular',500:'Medium',700:'Bold'}[weight]
+  for name in font['name'].names:
+   text={1:face,2:style,4:face+' '+style,6:face.replace(' ','')+'-'+style,16:face,17:style}.get(name.nameID)
+   if text: name.string=text.encode(name.getEncoding())
   target=out/(family+'-'+str(weight)+'.ttf');font.save(target,reorderTables=True)
   m['instances'].append({'file':target.name,'weight':weight,'sha256':hashlib.sha256(target.read_bytes()).hexdigest()})
 (out/'manifest.json').write_text(json.dumps(m,indent=2)+'\n',encoding='utf8')

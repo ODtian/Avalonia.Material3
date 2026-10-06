@@ -14,7 +14,7 @@ public partial class App : Application
         var theme = Styles.OfType<Avalonia.Material3.Themes.MaterialTheme>().Single();
         theme.Typography = theme.Typography with
         {
-            FontFamily = new Avalonia.Media.FontFamily("avares://Gallery/Assets/Fonts#Roboto, avares://Gallery/Assets/Fonts#Noto Sans SC")
+            FontFamily = new Avalonia.Media.FontFamily("avares://Gallery/Assets/Fonts#Gallery Roboto, avares://Gallery/Assets/Fonts#Gallery Noto Sans SC")
         };
     }
 
