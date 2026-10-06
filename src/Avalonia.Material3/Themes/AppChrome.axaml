@@ -122,7 +122,7 @@
               <TextBlock Text="{TemplateBinding Title}" TextWrapping="Wrap" VerticalAlignment="Center"
                          FontFamily="{DynamicResource M3.TitleSmallFontFamily}" FontSize="{DynamicResource M3.TitleSmallFontSize}" FontWeight="{DynamicResource M3.TitleSmallFontWeight}"
                          LineHeight="{DynamicResource M3.TitleSmallLineHeight}" LetterSpacing="{DynamicResource M3.TitleSmallLetterSpacing}" />
-              <controls:MaterialIconButton Grid.Column="1" x:Name="PART_CloseButton" Content="×" AutomationProperties.Name="{TemplateBinding CloseText}" />
+              <controls:MaterialIconButton Grid.Column="1" x:Name="PART_CloseButton" AutomationProperties.Name="{TemplateBinding CloseText}"><controls:MaterialSymbol Symbol="close" /></controls:MaterialIconButton>
             </Grid>
             <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
             <ContentPresenter Content="{TemplateBinding Footer}" Margin="28,12" />

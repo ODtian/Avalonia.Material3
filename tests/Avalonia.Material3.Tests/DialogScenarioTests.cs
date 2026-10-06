@@ -113,7 +113,7 @@ public class DialogScenarioTests
         host.Click(confirm);
         Assert.False(dialog.Confirm());
         Assert.True(session.IsOpen);
-        var cancel = mode == MaterialDialogMode.Basic ? host.Button(dialog, "Cancel") : host.Button(dialog, "×");
+        var cancel = host.Button(dialog, "Cancel");
         Assert.Equal("Cancel", ControlAutomationPeer.CreatePeerForElement(cancel).GetName());
         var point = cancel.TranslatePoint(new Point(cancel.Bounds.Width / 2, 1), host.Window)!.Value;
         using var touch = host.Window.TouchBegin(point);
@@ -446,7 +446,7 @@ internal sealed class DialogHost : IDisposable
         Render();
     }
     public void Render() { using var frame = Window.CaptureRenderedFrame(); }
-    public MaterialButton Button(Control root, string label) => root.GetVisualDescendants().OfType<MaterialButton>().Single(button => button.IsEffectivelyVisible && (button.Content is TextBlock text ? text.Text : button.Content?.ToString()) == label);
+    public MaterialButton Button(Control root, string label) => root.GetVisualDescendants().OfType<MaterialButton>().Single(button => button.IsEffectivelyVisible && ControlAutomationPeer.CreatePeerForElement(button)!.GetName() == label);
     public Point Center(Control control) => control.TranslatePoint(new Point(control.Bounds.Width / 2, control.Bounds.Height / 2), Window)!.Value;
     public void Click(Control control) { Render(); Window.MouseDown(Center(control), MouseButton.Left); Window.MouseUp(Center(control), MouseButton.Left); Render(); }
     public void Key(PhysicalKey key, RawInputModifiers modifiers = RawInputModifiers.None) { Window.KeyPressQwerty(key, modifiers); Window.KeyReleaseQwerty(key, modifiers); Render(); }

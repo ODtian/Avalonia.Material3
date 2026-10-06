@@ -22,7 +22,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Background="Transparent">
-          <Border x:Name="ChipContainer" Margin="4,8" MinHeight="32" VerticalAlignment="Center"
+          <c:MaterialInsetBorder x:Name="ChipContainer" Margin="4,8" MinHeight="32" VerticalAlignment="Center" ReservedBorderThickness="1"
                   Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid>
@@ -39,24 +39,27 @@
                          IsVisible="{TemplateBinding TrailingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
                   <ContentPresenter Content="{TemplateBinding TrailingIcon}" ContentTemplate="{TemplateBinding TrailingIconTemplate}" />
                 </Viewbox>
-                <Viewbox DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Center"
+                <Viewbox x:Name="LeadingIcon" DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Center"
                          IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
                   <ContentPresenter x:Name="ChipLeading" Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}"
                                     Foreground="{DynamicResource M3.PrimaryBrush}" />
                 </Viewbox>
-                <TextBlock x:Name="Check" DockPanel.Dock="Left" Text="✓" Width="18" IsVisible="False" VerticalAlignment="Center" />
+                <Grid x:Name="FilterIcon" DockPanel.Dock="Left" Width="18" Height="18" IsVisible="False" VerticalAlignment="Center">
+                  <Viewbox><ContentPresenter x:Name="FilterLeading" Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}" Foreground="{DynamicResource M3.PrimaryBrush}" /></Viewbox>
+                  <c:MaterialSymbol x:Name="Check" Symbol="check" Size="18" Opacity="0" />
+                </Grid>
                 <Border x:Name="RemoveSpace" DockPanel.Dock="Right" Width="32" IsVisible="False" />
                 <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                                   TextWrapping="Wrap" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="Center" RecognizesAccessKey="True" />
               </DockPanel>
             </Grid>
-          </Border>
+          </c:MaterialInsetBorder>
           <Border x:Name="ChipFocus" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="3"
                   CornerRadius="{TemplateBinding CornerRadius}" IsVisible="False" IsHitTestVisible="False" />
-          <c:MaterialIconButton x:Name="PART_RemoveButton" Content="×" IconVariant="Standard" Size="ExtraSmall"
+          <c:MaterialIconButton x:Name="PART_RemoveButton" IconVariant="Standard" Size="ExtraSmall"
                                 AutomationProperties.Name="{TemplateBinding RemoveButtonLabel}"
-                                HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="False" />
+                                HorizontalAlignment="Right" VerticalAlignment="Center" IsVisible="False"><c:MaterialSymbol Symbol="close" Size="20" /></c:MaterialIconButton>
         </Grid>
       </ControlTemplate>
     </Setter>
@@ -71,17 +74,20 @@
     <Style Selector="^:input:not(:checked) /template/ ContentPresenter#ChipLeading"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" /></Style>
     <Style Selector="^:input:pointerover /template/ ContentPresenter#ChipLeading, ^:input:focus-visible /template/ ContentPresenter#ChipLeading"><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
     <Style Selector="^:input:checked:dragged /template/ ContentPresenter#ChipLeading"><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
-    <Style Selector="^:filter:checked /template/ TextBlock#Check"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:filter /template/ Grid#FilterIcon"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:filter /template/ Viewbox#LeadingIcon"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:filter:checked /template/ c|MaterialSymbol#Check"><Setter Property="Opacity" Value="1" /></Style>
+    <Style Selector="^:filter:checked /template/ ContentPresenter#FilterLeading"><Setter Property="Opacity" Value="0" /></Style>
     <Style Selector="^:removable /template/ c|MaterialIconButton#PART_RemoveButton"><Setter Property="IsVisible" Value="True" /></Style>
     <Style Selector="^:removable /template/ Border#RemoveSpace"><Setter Property="IsVisible" Value="True" /></Style>
     <Style Selector="^:elevated"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /><Setter Property="BorderThickness" Value="0" /></Style>
     <Style Selector="^:elevated:checked"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /></Style>
-    <Style Selector="^:elevated /template/ Border#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
-    <Style Selector="^:elevated:pointerover /template/ Border#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
-    <Style Selector="^:filter:checked:pointerover /template/ Border#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
-    <Style Selector="^:pressed /template/ Border#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
-    <Style Selector="^:elevated:pressed /template/ Border#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
-    <Style Selector="^:dragged /template/ Border#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
+    <Style Selector="^:elevated /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:elevated:pointerover /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
+    <Style Selector="^:filter:checked:pointerover /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:pressed /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
+    <Style Selector="^:elevated:pressed /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:dragged /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
     <Style Selector="^:pointerover /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:focus-visible /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
@@ -92,9 +98,9 @@
       <Setter Property="BorderBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
-    <Style Selector="^:disabled /template/ TextBlock#Check"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
+    <Style Selector="^:disabled /template/ c|MaterialSymbol#Check"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     <Style Selector="^:disabled:checked, ^:disabled:elevated"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /></Style>
-    <Style Selector="^:disabled /template/ Border#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
+    <Style Selector="^:disabled /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
     <Style Selector="^:disabled /template/ Border#ChipLayer"><Setter Property="Opacity" Value="0" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="M3.Search.Editor" TargetType="c:MaterialTextField" BasedOn="{StaticResource {x:Type c:MaterialTextField}}">
@@ -121,8 +127,8 @@
                              CaretBrush="{TemplateBinding CaretBrush}" VerticalAlignment="Center" />
             </Panel>
           </ScrollViewer>
-          <c:MaterialIconButton x:Name="PART_ClearButton" Grid.Column="1" Content="×" IconVariant="Standard"
-                                AutomationProperties.Name="{TemplateBinding ClearButtonLabel}" IsVisible="False" VerticalAlignment="Center" />
+          <c:MaterialIconButton x:Name="PART_ClearButton" Grid.Column="1" IconVariant="Standard"
+                                AutomationProperties.Name="{TemplateBinding ClearButtonLabel}" IsVisible="False" VerticalAlignment="Center"><c:MaterialSymbol Symbol="close" /></c:MaterialIconButton>
         </Grid>
       </ControlTemplate>
     </Setter>
@@ -168,10 +174,10 @@
                 <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
               </Border>
               <DockPanel MinHeight="{TemplateBinding HeaderHeight}">
-                <c:MaterialIconButton x:Name="PART_CloseButton" DockPanel.Dock="Left" Content="←" IsVisible="False"
-                                      AutomationProperties.Name="{TemplateBinding CloseButtonLabel}" VerticalAlignment="Center" />
+                <c:MaterialIconButton x:Name="PART_CloseButton" DockPanel.Dock="Left" IsVisible="False"
+                                      AutomationProperties.Name="{TemplateBinding CloseButtonLabel}" VerticalAlignment="Center"><c:MaterialSymbol Symbol="arrow_back" /></c:MaterialIconButton>
                 <ContentPresenter DockPanel.Dock="Left" Content="{TemplateBinding LeadingContent}" VerticalContentAlignment="Center" />
-                <c:MaterialIconButton x:Name="PART_SubmitButton" DockPanel.Dock="Right" Content="→" AutomationProperties.Name="{TemplateBinding SubmitButtonLabel}" VerticalAlignment="Center" />
+                <c:MaterialIconButton x:Name="PART_SubmitButton" DockPanel.Dock="Right" AutomationProperties.Name="{TemplateBinding SubmitButtonLabel}" VerticalAlignment="Center"><c:MaterialSymbol Symbol="search" /></c:MaterialIconButton>
                 <ContentPresenter DockPanel.Dock="Right" Content="{TemplateBinding TrailingContent}" VerticalContentAlignment="Center" />
                 <c:MaterialTextField x:Name="PART_Editor" Label="{TemplateBinding Label}" PlaceholderText="{TemplateBinding Label}" ShowClearButton="True" MinWidth="0"
                                      ClearButtonLabel="{TemplateBinding ClearButtonLabel}" AutomationProperties.Name="{TemplateBinding Label}" IsError="{TemplateBinding IsError}" IsReadOnly="{TemplateBinding IsReadOnly}"

@@ -107,7 +107,7 @@ public class SelectionFormPage : StackPanel
             examples.Add(new MaterialSwitch { Content = $"Switch — {label}", IsChecked = value });
             examples.Add(new MaterialSwitch { Content = $"Switch — disabled {label}", IsChecked = value, IsEnabled = false });
             examples.Add(new MaterialSwitch { Content = $"Switch — host error {label}", IsChecked = value, IsError = true, ErrorText = "Review auto save" });
-            examples.Add(new MaterialSwitch { Content = $"Switch — thumb icons {label}", IsChecked = value, OnIcon = "✓", OffIcon = "×" });
+            examples.Add(new MaterialSwitch { Content = $"Switch — thumb icons {label}", IsChecked = value, OnIcon = Symbols.Create("check", 16), OffIcon = Symbols.Create("close", 16) });
         }
         return examples.AsReadOnly();
     }

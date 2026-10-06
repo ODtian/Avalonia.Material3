@@ -6,8 +6,10 @@
         <ControlTemplate>
           <Grid Background="Transparent">
             <c:MaterialShapeBorder x:Name="Container" Margin="0,5" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Stretch"
-                     Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                     Background="{TemplateBinding Background}"
                      ShapeCornerRadius="{TemplateBinding SplitCornerRadius}" ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
+              <c:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                       CornerRadius="{Binding CornerRadius, ElementName=Container}">
               <Grid>
                 <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False">
                   <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
@@ -34,6 +36,7 @@
                   <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" />
                 </Viewbox>
               </Grid>
+              </c:MaterialInsetBorder>
             </c:MaterialShapeBorder>
             <c:MaterialShapeBorder x:Name="FocusRing" Margin="-5,0" IsVisible="False" IsHitTestVisible="False" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
                   ShapeCornerRadius="{TemplateBinding SplitCornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}" ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />

@@ -43,7 +43,7 @@ public sealed class FloatingActionsPage : UserControl
         var fabRow = new WrapPanel { ItemSpacing = 12, LineSpacing = 12 };
         foreach (var size in Enum.GetValues<MaterialFabSize>())
         {
-            var fab = new MaterialFab { Size = size, Content = "+", Command = new ResultCommand(value => Result.Text = $"{value} action completed"), CommandParameter = size };
+            var fab = new MaterialFab { Size = size, Content = Symbols.Create("add"), Command = new ResultCommand(value => Result.Text = $"{value} action completed"), CommandParameter = size };
             AutomationProperties.SetName(fab, $"{size} create action");
             fabs.Add(fab);
             fabRow.Children.Add(new StackPanel { Children = { new TextBlock { Text = size.ToString() }, fab } });
@@ -54,7 +54,7 @@ public sealed class FloatingActionsPage : UserControl
         var extended = new List<MaterialExtendedFab>();
         foreach (var size in Enum.GetValues<MaterialFabSize>())
         {
-            var fab = new MaterialExtendedFab { Size = size, Icon = "+", Content = $"{size} — Create 新文档", Command = new ResultCommand(value => Result.Text = $"{value} extended action completed"), CommandParameter = size };
+            var fab = new MaterialExtendedFab { Size = size, Icon = Symbols.Create("add"), Content = $"{size} — Create 新文档", Command = new ResultCommand(value => Result.Text = $"{value} extended action completed"), CommandParameter = size };
             extended.Add(fab);
             panel.Children.Add(fab);
         }
@@ -63,15 +63,15 @@ public sealed class FloatingActionsPage : UserControl
         ExtendedSamples = extended;
         panel.Children.Add(textOnly);
         panel.Children.Add(Action("Expand / collapse labels", "floating-labels", () => { foreach (var fab in extended) fab.IsExpanded = !fab.IsExpanded; }));
-        var longLabel = new MaterialExtendedFab { Icon = "+", Content = "Create a new shared document 新建共享文档 with a longer mixed-language label", HorizontalAlignment = HorizontalAlignment.Stretch };
+        var longLabel = new MaterialExtendedFab { Icon = Symbols.Create("add"), Content = "Create a new shared document 新建共享文档 with a longer mixed-language label", HorizontalAlignment = HorizontalAlignment.Stretch };
         longLabel.Click += (_, _) => Result.Text = "Long label action completed";
         panel.Children.Add(longLabel);
         panel.Children.Add(Heading("Multi-action FAB menu — anchored, non-modal, scrollable"));
         PreviewMenu = new MaterialFabMenu { Margin = new Thickness(16) };
         AutomationProperties.SetName(PreviewMenu, "Creation choices");
-        PreviewMenu.Items.Add(new MaterialFabMenuItem { Content = "Document 新文档", LeadingIcon = "+", Command = new ResultCommand(_ => Result.Text = "Document created") });
-        PreviewMenu.Items.Add(new MaterialFabMenuItem { Content = "Folder 文件夹", LeadingIcon = "▣", Command = new ResultCommand(_ => Result.Text = "Folder created") });
-        PreviewMenu.Items.Add(new MaterialFabMenuItem { Content = "Unavailable action", LeadingIcon = "×", IsEnabled = false });
+        PreviewMenu.Items.Add(new MaterialFabMenuItem { Content = "Document 新文档", LeadingIcon = Symbols.Create("add"), Command = new ResultCommand(_ => Result.Text = "Document created") });
+        PreviewMenu.Items.Add(new MaterialFabMenuItem { Content = "Folder 文件夹", LeadingIcon = Symbols.Create("folder"), Command = new ResultCommand(_ => Result.Text = "Folder created") });
+        PreviewMenu.Items.Add(new MaterialFabMenuItem { Content = "Unavailable action", LeadingIcon = Symbols.Create("close"), IsEnabled = false });
         panel.Children.Add(new Border { Height = 340, Background = new SolidColorBrush(Colors.Transparent), Child = new Grid { Children = { PreviewMenu } } });
         var anchors = new WrapPanel { ItemSpacing = 8, LineSpacing = 8 };
         foreach (var anchor in Enum.GetValues<MaterialActionAnchor>())
@@ -91,13 +91,13 @@ public sealed class FloatingActionsPage : UserControl
         {
             var toolbar = new MaterialToolbar { Variant = variant, Orientation = orientation, Color = color, Anchor = MaterialActionAnchor.BottomEnd };
             AutomationProperties.SetName(toolbar, $"{variant} {orientation} {color} editing tools");
-            toolbar.Items.Add(Tool("★", "Select", Result));
-            toolbar.Items.Add(Tool("✎", "Edit", Result));
-            toolbar.LeadingItems.Add(Tool("↶", "Undo", Result));
-            toolbar.TrailingItems.Add(Tool("▣", "Copy", Result));
+            toolbar.Items.Add(Tool("star", "Select", Result));
+            toolbar.Items.Add(Tool("edit", "Edit", Result));
+            toolbar.LeadingItems.Add(Tool("undo", "Undo", Result));
+            toolbar.TrailingItems.Add(Tool("content_copy", "Copy", Result));
             if (variant == MaterialToolbarVariant.Floating)
             {
-                toolbar.FloatingAction = new MaterialFab { Content = "+", Command = new ResultCommand(_ => Result.Text = "Toolbar primary action completed") };
+                toolbar.FloatingAction = new MaterialFab { Content = Symbols.Create("add"), Command = new ResultCommand(_ => Result.Text = "Toolbar primary action completed") };
                 toolbar.FloatingActionPosition = color == MaterialToolbarColor.Standard ? MaterialToolbarFabPosition.Start : MaterialToolbarFabPosition.End;
                 toolbar.CollapseBehavior = color == MaterialToolbarColor.Standard ? MaterialToolbarCollapseBehavior.ExpansionSlots : MaterialToolbarCollapseBehavior.WholeToolbar;
                 AutomationProperties.SetName(toolbar.FloatingAction, "Toolbar create action");
@@ -127,7 +127,7 @@ public sealed class FloatingActionsPage : UserControl
     }
     private static MaterialIconButton Tool(string icon, string label, TextBlock result)
     {
-        var button = new MaterialIconButton { Content = icon, IsToggle = true, Command = new ResultCommand(_ => result.Text = $"Tool selected: {label}") };
+        var button = new MaterialIconButton { Content = Symbols.Create(icon), IsToggle = true, Command = new ResultCommand(_ => result.Text = $"Tool selected: {label}") };
         AutomationProperties.SetName(button, label);
         return button;
     }

@@ -52,9 +52,10 @@
         <ControlTemplate>
           <Grid Background="Transparent">
             <controls:MaterialShapeBorder x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Center"
-                    Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
+                    Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                     ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
+              <controls:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{Binding CornerRadius, ElementName=Container}">
               <Grid>
                 <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
                         CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False">
@@ -81,6 +82,7 @@
                                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True" />
                 </DockPanel>
               </Grid>
+              </controls:MaterialInsetBorder>
             </controls:MaterialShapeBorder>
             <controls:MaterialShapeBorder x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
                     BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
@@ -89,6 +91,15 @@
           </Grid>
         </ControlTemplate>
       </Setter>
+      <Style Selector="^:outlined /template/ controls|MaterialInsetBorder#Stroke, ^:icon-outlined /template/ controls|MaterialInsetBorder#Stroke">
+        <Setter Property="ReservedBorderThickness" Value="1" />
+      </Style>
+      <Style Selector="^:outlined:large /template/ controls|MaterialInsetBorder#Stroke, ^:icon-outlined:large /template/ controls|MaterialInsetBorder#Stroke">
+        <Setter Property="ReservedBorderThickness" Value="2" />
+      </Style>
+      <Style Selector="^:outlined:extralarge /template/ controls|MaterialInsetBorder#Stroke, ^:icon-outlined:extralarge /template/ controls|MaterialInsetBorder#Stroke">
+        <Setter Property="ReservedBorderThickness" Value="3" />
+      </Style>
       <Style Selector="^:extrasmall">
         <!-- ButtonDefaults corrects generated XS horizontal spacing to 12 DIP. -->
         <Setter Property="Padding" Value="12,6" />
@@ -241,9 +252,10 @@
           <Grid Background="Transparent">
             <controls:MaterialShapeBorder x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}"
                     MinWidth="{TemplateBinding ContainerWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                    BorderThickness="{TemplateBinding BorderThickness}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
+                    Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                     ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
+              <controls:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{Binding CornerRadius, ElementName=Container}">
               <Grid>
                 <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
                         CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False">
@@ -259,6 +271,7 @@
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
                 </Viewbox>
               </Grid>
+              </controls:MaterialInsetBorder>
             </controls:MaterialShapeBorder>
             <controls:MaterialShapeBorder x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
                     BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"

@@ -15,12 +15,12 @@ public sealed class ExpressiveButtonsPage : StackPanel
 {
     public MaterialButton ActionButton { get; } = new()
     {
-        Content = "提交 / Continue", LeadingIcon = "+", TrailingIcon = "→", CommandParameter = "confirmed",
+        Content = "提交 / Continue", LeadingIcon = Symbols.Create("add"), TrailingIcon = Symbols.Create("arrow_forward"), CommandParameter = "confirmed",
         MaxWidth = 260, ContentTemplate = WrappingLabel
     };
     public MaterialIconButton FavoriteButton { get; } = new()
     {
-        Content = "☆", IconVariant = MaterialIconButtonVariant.Filled, IsToggle = true
+        Content = Symbols.Create("star"), IconVariant = MaterialIconButtonVariant.Filled, IsToggle = true
     };
     private static readonly IDataTemplate WrappingLabel = new FuncDataTemplate<string>((text, _) =>
         new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap });
@@ -59,7 +59,7 @@ public sealed class ExpressiveButtonsPage : StackPanel
         AutomationProperties.SetName(FavoriteButton, "Favorite");
         FavoriteButton.Click += (_, _) =>
         {
-            FavoriteButton.Content = FavoriteButton.IsChecked ? "★" : "☆";
+            FavoriteButton.Content = Symbols.Create("star", filled: FavoriteButton.IsChecked);
             Result.Text = FavoriteButton.IsChecked ? "Favorite: selected" : "Favorite: unselected";
         };
         ThemeButton.Click += (_, _) =>
@@ -127,7 +127,7 @@ public sealed class ExpressiveButtonsPage : StackPanel
             {
                 var button = new MaterialIconButton
                 {
-                    IconVariant = variant, Content = state == "on" ? "★" : "☆", IsToggle = state is "off" or "on",
+                    IconVariant = variant, Content = Symbols.Create("star", filled: state == "on"), IsToggle = state is "off" or "on",
                     IsChecked = state == "on", IsEnabled = state != "disabled", Margin = new Thickness(4)
                 };
                 ConnectResult(button, $"{variant} favorite ({state})");
@@ -144,7 +144,7 @@ public sealed class ExpressiveButtonsPage : StackPanel
                 {
                     var button = new MaterialIconButton
                     {
-                        IconVariant = MaterialIconButtonVariant.Tonal, Content = "☆", IsToggle = true,
+                        IconVariant = MaterialIconButtonVariant.Tonal, Content = Symbols.Create("star"), IsToggle = true,
                         Size = size, Shape = shape, WidthMode = width, Margin = new Thickness(4)
                     };
                     ConnectResult(button, $"{size} {shape} {width} favorite");
@@ -156,7 +156,7 @@ public sealed class ExpressiveButtonsPage : StackPanel
         var longLabel = new MaterialButton
         {
             Content = new TextBlock { Text = "保存修改并继续 / Save changes and continue with this longer accessible label", TextWrapping = TextWrapping.Wrap },
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch, LeadingIcon = "+"
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch, LeadingIcon = Symbols.Create("add")
         };
         ConnectResult(longLabel, "Save changes and continue");
         Children.Add(longLabel);

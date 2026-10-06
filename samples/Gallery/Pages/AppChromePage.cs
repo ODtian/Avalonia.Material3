@@ -29,8 +29,8 @@ public sealed class AppChromePage : Grid
     public MaterialNavigationDrawer Drawer { get; } = new() { Mode = MaterialNavigationDrawerMode.Modal, IsOpen = false, Title = "Collections 收藏" };
     public MaterialTopAppBar TopBar { get; } = new() { Variant = MaterialTopAppBarVariant.MediumFlexible, Subtitle = "Host-owned page navigation", ScrollBehavior = MaterialAppBarScrollBehavior.ExitUntilCollapsed };
     public MaterialBottomAppBar BottomBar { get; } = new();
-    public MaterialIconButton NavigationButton { get; } = new() { Content = "☰" };
-    public MaterialIconButton SaveButton { get; } = new() { Content = "✓" };
+    public MaterialIconButton NavigationButton { get; } = new() { Content = Symbols.Create("menu") };
+    public MaterialIconButton SaveButton { get; } = new() { Content = Symbols.Create("check") };
     public MaterialButton DetailsButton { get; } = new() { Content = "Open details", Variant = MaterialButtonVariant.Tonal };
     public MaterialButton ThemeButton { get; } = new() { Content = "Light / dark", Variant = MaterialButtonVariant.Text };
     public MaterialButton FontButton { get; } = new() { Content = "Font 100 / 200%", Variant = MaterialButtonVariant.Text };
@@ -49,9 +49,9 @@ public sealed class AppChromePage : Grid
         TopBar.Actions = SaveButton;
         AutomationProperties.SetName(NavigationButton, "Open navigation");
         AutomationProperties.SetName(SaveButton, "Save page");
-        var bottomAction = new MaterialIconButton { Content = "→" };
+        var bottomAction = new MaterialIconButton { Content = Symbols.Create("arrow_forward") };
         AutomationProperties.SetName(bottomAction, "Open details");
-        var fab = new MaterialFab { Content = "+" };
+        var fab = new MaterialFab { Content = Symbols.Create("add") };
         AutomationProperties.SetName(fab, "Create detail");
         BottomBar.Actions = bottomAction; BottomBar.FloatingAction = fab;
         bottomAction.Click += (_, _) => OpenDetails();
@@ -70,7 +70,7 @@ public sealed class AppChromePage : Grid
             page.Children.Add(new TextBlock { Text = route + " content 内容", FontSize = 24, TextWrapping = TextWrapping.Wrap });
             for (var i = 0; i < 24; i++) page.Children.Add(new TextBlock { Text = $"{route} paragraph {i + 1} — Collection 收藏、Latin text and host-owned page state. Scroll this actual page; the bound top bar collapses while the bottom actions remain available.", TextWrapping = TextWrapping.Wrap });
             _pages.Add(route, page);
-            var item = new MaterialNavigationItem { Content = route == "Library" ? "Library 资料" : route, Icon = route == "Home" ? "⌂" : "▤", PageContent = page, IsEnabled = route != "Unavailable" };
+            var item = new MaterialNavigationItem { Content = route == "Library" ? "Library 资料" : route, Icon = Symbols.Create(route == "Home" ? "home" : "view_list"), PageContent = page, IsEnabled = route != "Unavailable" };
             AutomationProperties.SetAutomationId(item, "chrome-destination-" + route.ToLowerInvariant());
             Drawer.Items.Add(item);
         }
@@ -107,7 +107,7 @@ public sealed class AppChromePage : Grid
             session.Closed += (_, result) => { if (result.Reason == MaterialOverlayCloseReason.Confirmed) { _savedPage = result.Value as string ?? ""; UpdateStatus(); } };
         };
         ThemeButton.Click += (_, _) => { if (TopLevel.GetTopLevel(this) is Window window) window.RequestedThemeVariant = window.ActualThemeVariant == ThemeVariant.Dark ? ThemeVariant.Light : ThemeVariant.Dark; };
-        FontButton.Click += (_, _) => _theme.Typography = _theme.Typography with { FontFamily = new FontFamily("Arial"), Scale = _theme.Typography.Scale == 1 ? 2 : 1 };
+        FontButton.Click += (_, _) => _theme.Typography = _theme.Typography with { Scale = _theme.Typography.Scale == 1 ? 2 : 1 };
         LongButton.Click += (_, _) =>
         {
             _longText = !_longText;
@@ -179,7 +179,7 @@ public sealed class AppChromePage : Grid
     private void UpdateTitle()
     {
         TopBar.Title = _longText ? CurrentPage + " 资料与收藏 — bilingual collection with host-owned page operations" : CurrentPage + " 收藏";
-        NavigationButton.Content = CurrentPage == "Details" ? "←" : "☰";
+        NavigationButton.Content = Symbols.Create(CurrentPage == "Details" ? "arrow_back" : "menu");
         AutomationProperties.SetName(NavigationButton, CurrentPage == "Details" ? "Return to collection" : "Open navigation");
     }
     private void UpdateStatus() => Status.Text = $"Page = {CurrentPage}; selected = {Drawer.SelectedIndex}; {_savedPage} {(_savedPage.Length > 0 ? "saved" : "not saved")}; recipe {_recipe + 1}/8; overlays = {Overlays?.OpenCount ?? 0}.";

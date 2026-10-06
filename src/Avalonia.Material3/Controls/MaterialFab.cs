@@ -56,7 +56,7 @@ public class MaterialFab : Button
         }
         base.OnClick();
     }
-    public MaterialFab() => UpdateSize();
+    public MaterialFab() { DataTemplates.Add(MaterialSymbolTemplate.Instance); UpdateSize(); }
     private void UpdateSize()
     {
         var old = _lastPresentedSize;

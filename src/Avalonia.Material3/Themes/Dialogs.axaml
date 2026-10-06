@@ -52,7 +52,7 @@
                          LetterSpacing="{DynamicResource M3.HeadlineSmallLetterSpacing}" />
             </StackPanel>
             <Grid x:Name="FullHeader" ColumnDefinitions="Auto,*,Auto" MinHeight="56" IsVisible="False" Margin="-16,-16,-16,16">
-              <controls:MaterialIconButton x:Name="PART_CloseButton" Content="×" AutomationProperties.Name="{TemplateBinding CancelText}" VerticalAlignment="Center" />
+              <controls:MaterialIconButton x:Name="PART_CloseButton" AutomationProperties.Name="{TemplateBinding CancelText}" VerticalAlignment="Center"><controls:MaterialSymbol Symbol="close" /></controls:MaterialIconButton>
               <TextBlock Grid.Column="1" Text="{TemplateBinding Title}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="8,0"
                          Foreground="{DynamicResource M3.OnSurfaceBrush}"
                          FontFamily="{DynamicResource M3.TitleLargeFontFamily}" FontSize="{DynamicResource M3.TitleLargeFontSize}"

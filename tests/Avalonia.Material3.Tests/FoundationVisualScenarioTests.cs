@@ -78,6 +78,51 @@ public class FoundationVisualScenarioTests
         Assert.Contains("737e3324305806514d7909874fa1818ae1808232", reader.ReadToEnd());
     }
 
+    [AvaloniaFact]
+    public void Selected_outlined_button_keeps_its_content_and_outer_layout_registration()
+    {
+        using var host = new ButtonHost();
+        var label = new TextBlock { Text = "Stable content", Width = 140, Height = 24 };
+        var button = new MaterialButton { Content = label, Variant = MaterialButtonVariant.Outlined, IsToggle = true };
+        host.Window.Content = new StackPanel { Margin = new Thickness(24), Children = { button } };
+        host.Capture();
+        var before = new Rect(label.TranslatePoint(default, host.Window)!.Value, label.Bounds.Size);
+        var envelope = button.Bounds;
+        button.IsChecked = true;
+        host.Capture();
+        Assert.Equal(envelope, button.Bounds);
+        Assert.Equal(before, new Rect(label.TranslatePoint(default, host.Window)!.Value, label.Bounds.Size));
+    }
+
+    [AvaloniaFact]
+    public void Filter_selection_replaces_one_reserved_icon_lane_without_moving_label_or_sibling()
+    {
+        using var host = new ButtonHost();
+        var label = new TextBlock { Text = "Filter content", Width = 100, Height = 20 };
+        var chip = new MaterialChip { ChipVariant = MaterialChipVariant.Filter, Content = label };
+        var sibling = new TextBlock { Text = "Below" };
+        host.Window.Content = new StackPanel { Children = { chip, sibling } };
+        host.Capture();
+        var before = label.TranslatePoint(default, host.Window); var envelope = chip.Bounds; var below = sibling.Bounds;
+        chip.IsChecked = true; host.Capture();
+        Assert.Equal(envelope, chip.Bounds);
+        Assert.Equal(before, label.TranslatePoint(default, host.Window));
+        Assert.Equal(below, sibling.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Segmented_selection_keeps_a_single_icon_lane_and_label_registration()
+    {
+        using var host = new ButtonHost();
+        var label = new TextBlock { Text = "Option", Width = 100, Height = 20 };
+        var option = new MaterialGroupButton { Content = label };
+        host.Window.Content = new MaterialSegmentedButtonGroup { AllowEmptySelection = true, Children = { option } };
+        host.Capture();
+        var before = label.TranslatePoint(default, host.Window);
+        option.IsChecked = true; host.Capture();
+        Assert.Equal(before, label.TranslatePoint(default, host.Window));
+    }
+
     private static byte[] Mask(Window window, Control visual)
     {
         using var bitmap = window.CaptureRenderedFrame()!;

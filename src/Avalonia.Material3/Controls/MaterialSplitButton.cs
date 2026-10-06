@@ -19,7 +19,7 @@ public class MaterialSplitButton : Panel
     public bool IsExpanded { get => GetValue(IsExpandedProperty); set => SetValue(IsExpandedProperty, value); }
     public bool SecondaryIsToggle { get => GetValue(SecondaryIsToggleProperty); set => SetValue(SecondaryIsToggleProperty, value); }
     public MaterialSplitButtonPart MainButton { get; } = new();
-    public MaterialSplitButtonPart SecondaryButton { get; } = new() { IsSecondary = true, Content = "⌄", IsToggle = true };
+    public MaterialSplitButtonPart SecondaryButton { get; } = new() { IsSecondary = true, Content = new MaterialSymbolSource("expand_more"), IsToggle = true };
     private bool _updating;
     public MaterialSplitButton()
     {

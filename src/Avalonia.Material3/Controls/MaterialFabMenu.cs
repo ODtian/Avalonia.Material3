@@ -23,8 +23,8 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
     public static readonly StyledProperty<MaterialActionAnchor> AnchorProperty = AvaloniaProperty.Register<MaterialFabMenu, MaterialActionAnchor>(nameof(Anchor), validate: value => Enum.IsDefined(value));
     public static readonly StyledProperty<MaterialFabSize> TriggerSizeProperty = AvaloniaProperty.Register<MaterialFabMenu, MaterialFabSize>(nameof(TriggerSize), validate: value => Enum.IsDefined(value));
     public MaterialFabSize TriggerSize { get => GetValue(TriggerSizeProperty); set => SetValue(TriggerSizeProperty, value); }
-    public static readonly StyledProperty<object?> ToggleIconProperty = AvaloniaProperty.Register<MaterialFabMenu, object?>(nameof(ToggleIcon), "+");
-    public static readonly StyledProperty<object?> CloseIconProperty = AvaloniaProperty.Register<MaterialFabMenu, object?>(nameof(CloseIcon), "×");
+    public static readonly StyledProperty<object?> ToggleIconProperty = AvaloniaProperty.Register<MaterialFabMenu, object?>(nameof(ToggleIcon), new MaterialSymbolSource("add"));
+    public static readonly StyledProperty<object?> CloseIconProperty = AvaloniaProperty.Register<MaterialFabMenu, object?>(nameof(CloseIcon), new MaterialSymbolSource("close"));
     public static readonly StyledProperty<IDataTemplate?> ToggleIconTemplateProperty = AvaloniaProperty.Register<MaterialFabMenu, IDataTemplate?>(nameof(ToggleIconTemplate));
     public static readonly StyledProperty<IDataTemplate?> CloseIconTemplateProperty = AvaloniaProperty.Register<MaterialFabMenu, IDataTemplate?>(nameof(CloseIconTemplate));
     public static readonly StyledProperty<string> ExpandLabelProperty = AvaloniaProperty.Register<MaterialFabMenu, string>(nameof(ExpandLabel), "Expand actions", validate: value => !string.IsNullOrWhiteSpace(value));
