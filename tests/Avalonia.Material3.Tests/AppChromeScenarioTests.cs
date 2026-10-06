@@ -418,6 +418,35 @@ public class AppChromeScenarioTests
         navigation.Foreground = Brushes.Red; host.Layout();
         Assert.Equal(Colors.Red, ((ISolidColorBrush)navigation.Foreground!).Color);
     }
+
+    [AvaloniaFact]
+    public void Centered_flexible_form_centers_subtitle_glyphs_with_the_title()
+    {
+        var bar = new MaterialTopAppBar { Variant = MaterialTopAppBarVariant.LargeFlexible, Title = "Collection", Subtitle = "Updated today", CenterTitle = true };
+        using var host = new ChromeHost(bar);
+        foreach (var text in bar.GetVisualDescendants().OfType<TextBlock>().Where(text => text.Text is "Collection" or "Updated today"))
+        {
+            var glyphCenter = text.TranslatePoint(new Point(text.TextLayout.WidthIncludingTrailingWhitespace / 2, 0), host.Window)!.Value.X;
+            // Integer slot placement plus rounded glyph extent can differ by up to one DIP.
+            Assert.InRange(glyphCenter, 499, 501);
+        }
+    }
+
+    [AvaloniaFact]
+    public void Compound_navigation_slot_can_reuse_its_buttons_as_ordinary_actions_after_replacement()
+    {
+        var first = new MaterialIconButton { Content = "←" };
+        var second = new MaterialIconButton { Content = "☰" };
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Children = { first, second } };
+        var bar = new MaterialTopAppBar { Title = "Collection", NavigationContent = panel };
+        using var host = new ChromeHost(bar);
+        Assert.Equal(Color.Parse("#1D1B20"), ((ISolidColorBrush)first.Foreground!).Color);
+        Assert.Equal(Color.Parse("#1D1B20"), ((ISolidColorBrush)second.Foreground!).Color);
+        bar.NavigationContent = null; host.Layout();
+        bar.Actions = panel; host.Layout();
+        Assert.Equal(Color.Parse("#49454F"), ((ISolidColorBrush)first.Foreground!).Color);
+        Assert.Equal(Color.Parse("#49454F"), ((ISolidColorBrush)second.Foreground!).Color);
+    }
 }
 
 internal sealed class ChromeHost : IDisposable

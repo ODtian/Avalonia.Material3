@@ -60,4 +60,28 @@ public class AppChromeGalleryScenarioTests
         host.Window.RequestedThemeVariant = ThemeVariant.Dark; host.Layout();
         Assert.Equal(ThemeVariant.Dark, gallery.TopBar.ActualThemeVariant);
     }
+
+    [AvaloniaFact]
+    public void Borrowed_window_root_overlay_host_gates_aggregate_header_and_restores_its_focus()
+    {
+        using var host = new ChromeHost(new Border(), 600);
+        var aggregateAction = new MaterialButton { Content = "Aggregate shell action" };
+        var overlays = new MaterialOverlayHost();
+        var gallery = new AppChromePage(host.Theme, overlays);
+        var shell = new DockPanel();
+        DockPanel.SetDock(aggregateAction, Dock.Top);
+        shell.Children.Add(aggregateAction); shell.Children.Add(gallery);
+        overlays.Content = shell; host.Window.Content = overlays; host.Layout();
+        aggregateAction.Focus();
+        gallery.OpenNavigation(); host.Layout();
+        Assert.Equal(1, overlays.OpenCount);
+        Assert.True(aggregateAction.IsEnabled);
+        Assert.False(aggregateAction.IsEffectivelyEnabled);
+        var peer = Avalonia.Automation.Peers.ControlAutomationPeer.CreatePeerForElement(aggregateAction)!;
+        Assert.ThrowsAny<Exception>(() => ((Avalonia.Automation.Provider.IInvokeProvider)peer).Invoke());
+        Assert.True(gallery.RequestBack()); host.Layout();
+        Assert.True(aggregateAction.IsEffectivelyEnabled);
+        Assert.True(aggregateAction.IsFocused);
+        Assert.Equal(0, overlays.OpenCount);
+    }
 }

@@ -68,15 +68,11 @@ public class MaterialTopAppBar : TemplatedControl
         _ => 64
     };
     private ContentPresenter? _navigationPresenter;
-    private readonly List<MaterialIconButton> _navigationIcons = [];
-    private readonly Style _navigationRoleStyle = new(selector => selector.OfType<MaterialIconButton>().Class(":icon-standard").Not(disabled => disabled.Class(":disabled")))
-    {
-        Setters = { new Setter(ForegroundProperty, new DynamicResourceExtension("M3.OnSurfaceBrush")) }
-    };
+    private readonly List<(MaterialIconButton Icon, Style Role)> _navigationIcons = [];
     public MaterialTopAppBar() => UpdatePresentation();
     private void ClearNavigationRole()
     {
-        foreach (var icon in _navigationIcons) icon.Styles.Remove(_navigationRoleStyle);
+        foreach (var (icon, role) in _navigationIcons) icon.Styles.Remove(role);
         _navigationIcons.Clear();
     }
     private void UpdateNavigationRole()
@@ -87,8 +83,12 @@ public class MaterialTopAppBar : TemplatedControl
         if (content is null) return;
         foreach (var icon in content.GetVisualDescendants().OfType<MaterialIconButton>().Concat(content is MaterialIconButton button ? [button] : Array.Empty<MaterialIconButton>()))
         {
-            icon.Styles.Add(_navigationRoleStyle);
-            _navigationIcons.Add(icon);
+            var role = new Style(selector => selector.OfType<MaterialIconButton>().Class(":icon-standard").Not(disabled => disabled.Class(":disabled")))
+            {
+                Setters = { new Setter(ForegroundProperty, new DynamicResourceExtension("M3.OnSurfaceBrush")) }
+            };
+            icon.Styles.Add(role);
+            _navigationIcons.Add((icon, role));
         }
     }
     private void NavigationPresenterChanged(object? sender, AvaloniaPropertyChangedEventArgs change)

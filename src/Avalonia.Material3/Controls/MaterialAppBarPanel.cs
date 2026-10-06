@@ -78,7 +78,9 @@ public class MaterialAppBarPanel : Panel
         var y = expanded ? finalSize.Height - titleHeight - subtitleHeight - padding
             : (finalSize.Height - titleHeight - subtitleHeight) / 2;
         Arrange(Children[2], x, y, titleWidth, titleHeight);
-        Arrange(Children[3], centered ? start : x, y + titleHeight, available, subtitleHeight);
+        var subtitleWidth = centered ? Math.Min(available, Children[3].DesiredSize.Width) : available;
+        var subtitleX = centered ? Math.Clamp((finalSize.Width - subtitleWidth) / 2, start, start + available - subtitleWidth) : x;
+        Arrange(Children[3], subtitleX, y + titleHeight, subtitleWidth, subtitleHeight);
         return finalSize;
     }
 }

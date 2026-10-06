@@ -42,7 +42,7 @@ public sealed class AppChromePage : Grid
     public TextBlock Status { get; } = new() { TextWrapping = TextWrapping.Wrap };
     public ScrollViewer PageScroll { get; }
     public string CurrentPage { get; private set; } = "Home";
-    public AppChromePage(MaterialTheme theme)
+    public AppChromePage(MaterialTheme theme, MaterialOverlayHost? windowOverlayHost = null)
     {
         _theme = theme;
         TopBar.NavigationContent = NavigationButton;
@@ -84,9 +84,14 @@ public sealed class AppChromePage : Grid
             UpdateTitle(); UpdateStatus();
         };
         _drawerLayout = new MaterialNavigationDrawerLayout { Drawer = Drawer, Content = chrome, IsEdgeSwipeEnabled = true };
-        Overlays = new MaterialOverlayHost { Content = _drawerLayout };
-        Overlays.PropertyChanged += (_, change) => { if (change.Property == MaterialOverlayHost.OpenCountProperty) UpdateStatus(); };
-        Children.Add(Overlays);
+        Overlays = windowOverlayHost ?? new MaterialOverlayHost { Content = _drawerLayout };
+        if (windowOverlayHost is null) Children.Add(Overlays);
+        else
+        {
+            // Borrow the aggregate window scope without replacing its content/navigation shell.
+            _drawerLayout.OverlayHost = windowOverlayHost;
+            Children.Add(_drawerLayout);
+        }
         NavigationButton.Click += (_, _) => { if (CurrentPage == "Details") ReturnFromDetails(); else OpenNavigation(); };
         SaveButton.Click += (_, _) => { _savedPage = CurrentPage; UpdateStatus(); };
         DetailsButton.Click += (_, _) => OpenDetails();
@@ -121,6 +126,21 @@ public sealed class AppChromePage : Grid
         _pagePresenter.Content = Drawer.SelectedContent;
         SetRecipe(); UpdateTitle(); UpdateStatus();
         LayoutUpdated += (_, _) => Adapt();
+    }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        Overlays.PropertyChanged += OverlayCountChanged;
+        UpdateStatus();
+    }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        Overlays.PropertyChanged -= OverlayCountChanged;
+        base.OnDetachedFromVisualTree(e);
+    }
+    private void OverlayCountChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Property == MaterialOverlayHost.OpenCountProperty) UpdateStatus();
     }
     private static void SetId(Control control, string id) => AutomationProperties.SetAutomationId(control, id);
     private void SetRecipe()
