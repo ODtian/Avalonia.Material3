@@ -6,6 +6,7 @@
       <ResourceDictionary.MergedDictionaries>
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/SelectionControls.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/TextField.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/SearchChips.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/ContentControls.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sliders.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/ProgressIndicators.axaml" />
