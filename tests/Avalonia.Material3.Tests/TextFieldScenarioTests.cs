@@ -648,7 +648,7 @@ internal sealed class TextFieldHost : IDisposable
     }
 
     public string[] VisibleText() => Window.GetVisualDescendants().OfType<TextBlock>()
-        .Where(text => text.IsEffectivelyVisible && text.Bounds.Width > 0)
+        .Where(text => text.IsEffectivelyVisible && text.Opacity > 0 && text.Bounds.Width > 0)
         .Select(text => text.Text ?? string.Empty).ToArray();
 
     public void Dispose()
