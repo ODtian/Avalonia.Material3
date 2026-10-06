@@ -12,6 +12,7 @@
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/ProgressIndicators.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/CarouselRefresh.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Dialogs.axaml" />
+        <ResourceInclude Source="avares://Avalonia.Material3/Themes/Sheets.axaml" />
         <ResourceInclude Source="avares://Avalonia.Material3/Themes/Navigation.axaml" />
       </ResourceDictionary.MergedDictionaries>
       <ControlTheme x:Key="{x:Type Window}" TargetType="Window">
