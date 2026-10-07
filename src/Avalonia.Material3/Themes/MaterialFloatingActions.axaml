@@ -7,6 +7,9 @@
       <Setter Property="Template"><ControlTemplate><ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" /></ControlTemplate></Setter>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialFab}" TargetType="c:MaterialFab">
+      <!-- Animated roots and their measured template children share fractional layout axes.
+           Stroke and glyph rasterization stay in their existing renderers. -->
+      <Setter Property="UseLayoutRounding" Value="False" />
       <Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" />
       <Setter Property="MinHeight" Value="48" />
@@ -107,6 +110,7 @@
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="TextWrapping" Value="Wrap" /></Style>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialFabMenu}" TargetType="c:MaterialFabMenu">
+      <Setter Property="UseLayoutRounding" Value="False" />
       <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" /><Setter Property="Margin" Value="16" />
       <Setter Property="Template">
         <ControlTemplate>
@@ -135,6 +139,7 @@
       <Style Selector="^ /template/ Border#Container, ^:pointerover /template/ Border#Container, ^:pressed /template/ Border#Container"><Setter Property="BoxShadow" Value="none" /></Style>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialToolbar}" TargetType="c:MaterialToolbar">
+      <Setter Property="UseLayoutRounding" Value="False" />
       <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" />
       <Setter Property="Margin" Value="16" /><Setter Property="Padding" Value="8" />

@@ -1,12 +1,14 @@
 # Avalonia Material 3 Expressive
 
-独立、通用、版本化的 Material 3 Expressive 控件库。**0.1.0-preview.2** 集成完整锁定组件清单：设计令牌、按钮/FAB/工具栏/分组、选择/输入/搜索/Chips、内容/导航、进度/加载、共享 overlay/对话框/菜单/提示/面板、应用栏/抽屉、日期时间与 Carousel/刷新。17 个页面由静态工厂显式注册，Gallery 与独立包宿主访问相同完整展厅。
+独立、通用、版本化的 Material 3 Expressive 控件库。当前本地候选为 **0.1.0-preview.3**，覆盖完整锁定组件清单：设计令牌、按钮/FAB/工具栏/分组、选择/输入/搜索/Chips、内容/导航、进度/加载、共享 overlay/对话框/菜单/提示/面板、应用栏/抽屉、日期时间与 Carousel/刷新。17 个页面由静态工厂显式注册，Gallery 与独立包宿主访问相同完整展厅。
+
+preview.3 接入固定版本的 Material Symbols Rounded 字体与图标映射，统一图标度量；修复状态布局、输入装饰、选择控件、范围轨道、日期时间、导航徽标及浮动操作／多图动效。人工视觉与交互复验持续开放，逐项证据见[反馈验收记录](docs/verification/manual-quality-feedback.md)。
 
 这是**本地预览候选**，不是已发布到 nuget.org 的声明；也不等于母规格全部验收。真实 App 升级、人工读屏、物理移动设备及 Android 验收仍有明确外部条件，见[最终证据与支持矩阵](docs/verification/m3-19.md)。各组件的 Avalonia 投影边界仍适用，不宣称 Compose 内部物理/帧像素等价。
 
 - .NET SDK **10.0.112** / net10.0；Avalonia **12.1.3**
-- 本地包 **Avalonia.Material3 0.1.0-preview.2**；包消费者不引用库源码
-- `Directory.Build.props` 是唯一版本来源；历史 preview.1 记录不改写
+- 本地包 **Avalonia.Material3 0.1.0-preview.3**；包消费者不引用库源码
+- `Directory.Build.props` 是唯一版本来源；历史 preview.1 / preview.2 记录保留
 
 ## 构建、验证、运行
 

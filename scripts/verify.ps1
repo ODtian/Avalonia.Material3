@@ -48,7 +48,7 @@ try {
     if ($DesktopSmoke) {
         if (!$IsWindows) { throw 'Native UIA requires Windows.' }
         foreach ($hostName in 'Gallery', 'StandaloneHost') {
-            & powershell.exe -NoProfile -File "$PSScriptRoot/windows-gallery-smoke.ps1" -Executable "$sandbox/samples/$hostName/bin/Release/net10.0/$hostName.exe" -Evidence "$run/native-$hostName"
+            & pwsh -NoProfile -File "$PSScriptRoot/windows-gallery-smoke.ps1" -Executable "$sandbox/samples/$hostName/bin/Release/net10.0/$hostName.exe" -Evidence "$run/native-$hostName"
             if ($LASTEXITCODE -ne 0) { throw "Native UIA failed: $hostName" }
         }
     }

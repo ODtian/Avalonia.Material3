@@ -1,8 +1,10 @@
-# Upgrade and rollback: preview.1 → preview.2
+# Upgrade and rollback: preview.1 / preview.2 → preview.3
 
 ## Immutable identities / policy
 
-New candidate: **0.1.0-preview.2**, net10.0 / Avalonia12.1.3 / SDK10.0.112. No stable API or arbitrary future Avalonia version guarantee: package metadata has a minimum dependency version; the tested host pins12.1.3. All additions remain prerelease; intentional future breaks require a new version, explicit migration and reviewed API/resource diff. Never replace contents of an already distributed identity.
+New candidate: **0.1.0-preview.3**, net10.0 / Avalonia12.1.3 / SDK10.0.112. No stable API or arbitrary future Avalonia version guarantee: package metadata has a minimum dependency version; the tested host pins12.1.3. All additions remain prerelease; intentional future breaks require a new version, explicit migration and reviewed API/resource diff. Never replace contents of an already distributed identity.
+
+preview.3 带来真实图标资源、状态布局稳定性与动效修复；保留 preview.1 / preview.2 的版本化记录。升级后按[人工反馈验收记录](verification/manual-quality-feedback.md) 复验图标、输入、选择、浮动操作、日期时间和多图布局。
 
 The original #2 binary is **not** later development preview.1 packs recorded by individual tickets:
 
@@ -21,8 +23,8 @@ Six-color `MaterialColorScheme` positional constructor, six-output `Deconstruct`
 
 ## Consumer upgrade
 
-1. Preserve old lock/package/hash and host commit. Use a new isolated cache/feed; verify the chosen preview.2 artifact hash from the release manifest.
-2. Change PackageReference from preview.1 to **preview.2**; keep Avalonia12.1.3 and net10.0 pinned. No source reference is allowed.
+1. Preserve old lock/package/hash and host commit. Use a new isolated cache/feed; verify the chosen preview.3 artifact hash from the release manifest.
+2. Change PackageReference from preview.1 or preview.2 to **preview.3**; keep Avalonia12.1.3 and net10.0 pinned. No source reference is allowed.
 3. Install MaterialTheme before creating content. Existing #2 usages need no migration. New variants have explicit component API/defaults; do not bind to private template parts.
 4. NativeAOT/full trim consumers use compiled XAML/bindings or typed observable property bindings, static factories and source-generated serializers. Enable analyzers and fail on IL diagnostics; do not root the entire assembly.
 5. Place shared MaterialOverlayHost at bounded window root, including chrome. Back while OpenCount>0 always remains in the overlay flow; bottom-sheet first Back may collapse while RequestBack returns false.

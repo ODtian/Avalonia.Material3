@@ -7,6 +7,7 @@ namespace Avalonia.Material3.Controls;
 /// <summary>Bounded action spacing; extra space never inflates individual hit targets.</summary>
 internal sealed class MaterialToolbarItemsPanel : Panel
 {
+    public MaterialToolbarItemsPanel() => UseLayoutRounding = false;
     public static readonly StyledProperty<Orientation> OrientationProperty = AvaloniaProperty.Register<MaterialToolbarItemsPanel, Orientation>(nameof(Orientation));
     public static readonly StyledProperty<double> SpacingProperty = AvaloniaProperty.Register<MaterialToolbarItemsPanel, double>(nameof(Spacing), 4);
     public static readonly StyledProperty<int> StretchChildIndexProperty = AvaloniaProperty.Register<MaterialToolbarItemsPanel, int>(nameof(StretchChildIndex), -1);

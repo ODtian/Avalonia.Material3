@@ -5,6 +5,7 @@ namespace Avalonia.Material3.Controls;
 /// <summary>Stock icon/label layout: padding, gap and wrapped cross extent follow the same reveal.</summary>
 internal sealed class MaterialExtendedFabPanel : Panel
 {
+    public MaterialExtendedFabPanel() => UseLayoutRounding = false;
     private Thickness _expandedPadding;
     private double _gap;
     private double Fraction => Children.Count == 2 && Children[1] is MaterialActionReveal reveal ? reveal.RevealFraction : 1;

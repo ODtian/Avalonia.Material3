@@ -25,7 +25,11 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     private double _fromIcon;
     private bool _attached;
     protected override Type StyleKeyOverride => typeof(Decorator);
-    public MaterialFabGeometryPresenter() => _frames = MaterialRenderFrames.Bind(this, Advance);
+    public MaterialFabGeometryPresenter()
+    {
+        UseLayoutRounding = false;
+        _frames = MaterialRenderFrames.Bind(this, Advance);
+    }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);

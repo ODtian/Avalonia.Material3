@@ -9,6 +9,7 @@ public static class GalleryNativeWindow {
  [DllImport("user32.dll")] public static extern bool SetCursorPos(int x, int y);
  [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extra);
  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int width, int height, uint flags);
+ [DllImport("dwmapi.dll")] public static extern int DwmFlush();
 }
 '@
 New-Item -ItemType Directory -Force $Evidence | Out-Null
@@ -47,17 +48,56 @@ function ByPrefix($prefix) {
             Where-Object { $_.Current.Name -like ($prefix + '*') -and $_.Current.IsEnabled } | Select-Object -First 1
     } $prefix
 }
-function Capture($file) {
-    if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) { Write-Host "Skipped non-owned foreground capture: $file"; return }
-    $r=$window.Current.BoundingRectangle; $b=New-Object Drawing.Bitmap([int]$r.Width,[int]$r.Height); $g=[Drawing.Graphics]::FromImage($b)
-    try { $g.CopyFromScreen([int]$r.X,[int]$r.Y,0,0,$b.Size); $b.Save((Join-Path $Evidence $file),[Drawing.Imaging.ImageFormat]::Png) } finally { $g.Dispose(); $b.Dispose() }
+function CaptionPaint {
+    $caption = Find $id 'GalleryPage'
+    if (!$caption) { return $null }
+    $r=$window.Current.BoundingRectangle; $c=$caption.Current.BoundingRectangle
+    if ($c.Height -le 0 -or $r.Width -le 0) { return $null }
+    # Fixed-width title band: changing the UIA text's desired width cannot masquerade as new paint.
+    [GalleryNativeWindow]::DwmFlush() | Out-Null
+    $b=New-Object Drawing.Bitmap([int]$r.Width,[int][Math]::Ceiling($c.Height)); $g=[Drawing.Graphics]::FromImage($b)
+    $stream=New-Object IO.MemoryStream; $hash=[Security.Cryptography.SHA256]::Create()
+    try {
+        $g.CopyFromScreen([int]$r.X,[int]$c.Y,0,0,$b.Size)
+        $b.Save($stream,[Drawing.Imaging.ImageFormat]::Png)
+        return @{ name=$caption.Current.Name; signature=[Convert]::ToBase64String($hash.ComputeHash($stream.ToArray())) }
+    } finally { $hash.Dispose(); $stream.Dispose(); $g.Dispose(); $b.Dispose() }
 }
-$timings = @(); $observations = @()
+function SettleCaptionPaint($file) {
+    $timer=[Diagnostics.Stopwatch]::StartNew(); $previous=$null; $stable=0
+    while ($timer.Elapsed.TotalSeconds -lt 5) {
+        if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) { throw "Owned window lost foreground while settling $file" }
+        $probe=CaptionPaint
+        if ($probe -and $previous -and $probe.name -eq $previous.name -and $probe.signature -eq $previous.signature) { $stable++ } else { $stable=0 }
+        $changedPagePaint=$probe -and (!$script:lastCaptureCaption -or $probe.name -eq $script:lastCaptureCaption.name -or $probe.signature -ne $script:lastCaptureCaption.signature)
+        if ($timer.Elapsed.TotalMilliseconds -ge 450 -and $stable -ge 3 -and $changedPagePaint) { return $probe }
+        $previous=$probe
+        Start-Sleep -Milliseconds 80
+    }
+    throw "Native page caption paint did not settle for $file"
+}
+function Capture($file, [bool]$Settle=$true) {
+    if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) { Write-Host "Skipped non-owned foreground capture: $file"; return }
+    $caption=if ($Settle) { SettleCaptionPaint $file } else { $null }
+    [GalleryNativeWindow]::DwmFlush() | Out-Null
+    $r=$window.Current.BoundingRectangle; $b=New-Object Drawing.Bitmap([int]$r.Width,[int]$r.Height); $g=[Drawing.Graphics]::FromImage($b)
+    try {
+        $g.CopyFromScreen([int]$r.X,[int]$r.Y,0,0,$b.Size)
+        if ($caption) {
+            $paint=CaptionPaint
+            if ($paint.name -ne $caption.name -or $paint.signature -ne $caption.signature) { throw "Native caption changed during capture: $file" }
+        }
+        $b.Save((Join-Path $Evidence $file),[Drawing.Imaging.ImageFormat]::Png)
+        if ($caption) { $script:lastCaptureCaption=$caption; $script:captures += @{ file=$file; page=$caption.name; captionPaintSha256Base64=$caption.signature } }
+    } finally { $g.Dispose(); $b.Dispose() }
+}
+$timings = @(); $observations = @(); $script:captures=@()
 for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
     $timer=[Diagnostics.Stopwatch]::StartNew(); $process=Start-Process $Executable -PassThru
     try {
         $handle=Wait { $process.Refresh(); if ($process.HasExited) { throw 'Published host exited before readiness' }; if ($process.MainWindowHandle -ne 0) { $process.MainWindowHandle } } 'window'
         $window=[System.Windows.Automation.AutomationElement]::FromHandle($handle)
+        $script:lastCaptureCaption=$null
         $action=ById 'ActionButton'; if (!$action.Current.IsEnabled) { throw 'Initial action is not enabled' }
         $timer.Stop(); $timings += $timer.Elapsed.TotalMilliseconds
         Foreground
@@ -233,12 +273,12 @@ for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
         $observations += 'runtime:font200-seed-platform-shape-motion-window-reactivation'
     }
     catch {
-        if ($window) { Capture 'failure-observation.png' }
+        if ($window) { Capture 'failure-observation.png' $false }
         $observedEditor=$null; if ($value) { try { $observedEditor=$value.Current.Value } catch { } }
         @{ executable=$Executable; failed=$_.Exception.Message; visited=$observations; editorValue=$observedEditor } | ConvertTo-Json -Depth 3 | Set-Content (Join-Path $Evidence 'native-failure.json') -Encoding UTF8
         throw
     }
     finally { if (!$process.HasExited) { $process.CloseMainWindow() | Out-Null; if (!$process.WaitForExit(4000)) { $process.Kill(); $process.WaitForExit() } }; $process.Dispose() }
 }
-@{ executable=$Executable; sha256=(Get-FileHash $Executable -Algorithm SHA256).Hash; method='fresh-process Start-Process to native UIA enabled ActionButton; warm OS file cache; no machine reboot/cache flush; milliseconds'; coldStarts=$timings; nativeObservations=$observations; speech='NOT tested'; physicalTouch='NOT tested' } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $Evidence 'native.json') -Encoding UTF8
+@{ executable=$Executable; sha256=(Get-FileHash $Executable -Algorithm SHA256).Hash; method='fresh-process Start-Process to native UIA enabled ActionButton; warm OS file cache; no machine reboot/cache flush; milliseconds'; coldStarts=$timings; nativeObservations=$observations; captures=$script:captures; speech='NOT tested'; physicalTouch='NOT tested' } | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $Evidence 'native.json') -Encoding UTF8
 Write-Host "PASS published native gallery $Executable; all pages, delayed forms, real UIA/keys and $ColdStarts fresh processes"
