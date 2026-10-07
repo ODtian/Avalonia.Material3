@@ -43,3 +43,5 @@ NativeSmoke 操作真实桌面焦点/键盘，不能并行运行。发布门禁�
 - [第三方归属](THIRD-PARTY-NOTICES.md)、[领域词汇](GLOSSARY.md)、[ADR](docs/adr/)
 
 通用设计系统不包含 Pixiv 业务。实际消费方 [MaterixivYou](https://github.com/ODtian/MaterixivYou) 通过版本化包采用公开契约；其 docs-only 基线不是可执行消费方，M11 不能由本仓库样例替代。
+
+本轮人工反馈修复与新版展厅：[preview.3 复验记录](docs/verification/manual-quality-preview3.md)，包含官方图标、布局与动效修复、实际 DPI 指标及可运行产物。
