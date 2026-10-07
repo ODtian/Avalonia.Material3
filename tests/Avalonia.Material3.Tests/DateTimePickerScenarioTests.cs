@@ -18,6 +18,19 @@ namespace Avalonia.Material3.Tests;
 public class DateTimePickerScenarioTests
 {
     [AvaloniaFact]
+    public void Short_horizontal_time_dialog_keeps_its_footer_inside_the_content_insets()
+    {
+        using var host = new DialogHost(800, 350);
+        var picker = new MaterialTimePicker { Height = 230, Layout = MaterialTimePickerLayout.Horizontal, SelectedTime = new(7, 7) };
+        picker.Show(host.Overlay); host.Render();
+        var dialog = host.Window.GetVisualDescendants().OfType<MaterialDialog>().Single();
+        var mode = host.Window.GetVisualDescendants().OfType<MaterialIconButton>().Single(b => ControlAutomationPeer.CreatePeerForElement(b).GetName() == picker.Labels.InputMode);
+        var confirm = host.Button(dialog, picker.Labels.Confirm);
+        var box = GeometryHost.Box(dialog, host.Window);
+        Assert.Equal(24, GeometryHost.Box(mode, host.Window).Left - box.Left);
+        Assert.Equal(24, box.Right - GeometryHost.Box(confirm, host.Window).Right);
+    }
+    [AvaloniaFact]
     public void Horizontal_clock_dial_does_not_stretch_the_standard_time_selector_recipe()
     {
         using var host = new DialogHost();

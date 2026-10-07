@@ -262,7 +262,6 @@ public class MaterialTimePicker : TemplatedControl
             _dialog.MaxWidth = horizontal ? 584 : 400;
             if(_confirmAction is { } confirm){confirm.IsEnabled=IsValid&&IsEffectivelyEnabled;confirm.Content=Labels.Confirm;AutomationProperties.SetName(confirm,Labels.Confirm);}
             if(_cancelAction is { } cancel){cancel.Content=Labels.Cancel;AutomationProperties.SetName(cancel,Labels.Cancel);}
-            if(_footer is { } footer)footer.MinWidth=Mode==MaterialTimePickerMode.Input?Is24Hour?216:272:horizontal?216+36+(availableHeight>=384?256:availableHeight>=330?238:200):Is24Hour?256:272;
             AutomationProperties.SetName(_dialog, Labels.Title);
         }
         DraftChanged?.Invoke(this, EventArgs.Empty);
