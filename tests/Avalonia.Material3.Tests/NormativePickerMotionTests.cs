@@ -3,6 +3,9 @@ using Avalonia.Headless.XUnit;
 using Avalonia.Material3.Controls;
 using Avalonia.Material3.Tokens;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using System.Runtime.InteropServices;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -26,13 +29,30 @@ public class NormativePickerMotionTests
         Assert.All(numbers, number => Assert.Equal(0, number.Opacity));
         var crossed = false;
         var faded = false;
-        for (var frame = 0; frame < 25; frame++)
+        var observed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        TimeSpan? started = null;
+        var frames = new List<string>();
+        using var bitmap = new RenderTargetBitmap(new PixelSize(256, 256), new Vector(96, 96));
+        using var pixels = new WriteableBitmap(new PixelSize(256, 256), new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
+        void Sample(TimeSpan time)
         {
-            await Task.Delay(12); host.Render();
-            if (host.Pixel(box.Left + 199, box.Top + 57) == Color.Parse("#6750A4")) crossed = true;
+            started ??= time;
+            // Render the current displayed dial once per actual window frame. Pixel reads
+            // from this image leave the animation clock at that same presented phase.
+            bitmap.Render(dial);
+            using var storage = pixels.Lock(); bitmap.CopyPixels(storage);
+            var offset = 57 * storage.RowBytes + 199 * 4;
+            var color = Color.FromRgb(Marshal.ReadByte(storage.Address, offset + 2),
+                Marshal.ReadByte(storage.Address, offset + 1), Marshal.ReadByte(storage.Address, offset));
+            if (color == Color.Parse("#6750A4")) crossed = true;
             if (numbers[0].Opacity is > 0 and < 1) faded = true;
+            frames.Add($"{(time - started.Value).TotalMilliseconds:F0}:{color}:{numbers[0].Opacity:F3}");
+            if (time - started.Value >= TimeSpan.FromMilliseconds(700)) observed.TrySetResult();
+            else host.Window.RequestAnimationFrame(Sample);
         }
-        Assert.True(crossed, "Hand must paint the short upper-right arc."); Assert.True(faded, "Minute face must paint intermediate opacity.");
+        host.Window.RequestAnimationFrame(Sample); host.Render();
+        await observed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.True(crossed, "Hand must paint the short upper-right arc. " + string.Join(";", frames)); Assert.True(faded, "Minute face must paint intermediate opacity.");
         host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true }; host.Render();
         Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Left + 146, box.Top + 27));
     }
