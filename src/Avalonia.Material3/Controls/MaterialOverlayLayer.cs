@@ -5,11 +5,22 @@ using Avalonia.Media;
 namespace Avalonia.Material3.Controls;
 
 // A layout implementation, not an extension contract. The public seam is host/options/session.
-internal sealed class MaterialOverlayLayer(MaterialOverlayHost host, MaterialOverlayOptions options, Border scrim, Border container) : Panel
+internal sealed class MaterialOverlayLayer : Panel
 {
+    private readonly MaterialOverlayHost host;
+    private readonly MaterialOverlayOptions options;
+    private readonly Border scrim;
+    internal MaterialOverlayMotion? Presentation { get; }
+    internal Border Scrim => scrim;
+    internal MaterialOverlayOptions Options => options;
+    internal MaterialOverlayLayer(MaterialOverlayHost host, MaterialOverlayOptions options, Border scrim, Border container)
+    {
+        this.host = host; this.options = options; this.scrim = scrim; Container = container;
+        if (container.Child is MaterialMenu or MaterialTooltip or MaterialSnackbar or MaterialDialog or MaterialNavigationDrawer) Presentation = new(this);
+    }
     protected override AutomationPeer OnCreateAutomationPeer() => new MaterialOverlayScopeAutomationPeer(this);
     private Rect? _anchorBounds;
-    public Border Container { get; } = container;
+    public Border Container { get; }
     public void UpdateAnchor()
     {
         if (Container.FlowDirection != host.FlowDirection) { Container.FlowDirection = host.FlowDirection; InvalidateArrange(); }
@@ -73,6 +84,15 @@ internal sealed class MaterialOverlayLayer(MaterialOverlayHost host, MaterialOve
         x = Math.Clamp(x + offsetX, m.Left, m.Left + width - w);
         y = Math.Clamp(y + offsetY, m.Top, m.Top + height - h);
         Container.Arrange(new Rect(x, y, w, h));
+        Presentation?.UpdateGeometry();
+        if (Container.Child is MaterialMenu && _anchorBounds is { } pivotAnchor && Presentation is not null)
+        {
+            static double Pivot(double near, double far, double anchorNear, double anchorFar) =>
+                near >= anchorFar ? 0 : far <= anchorNear ? 1 : far == near ? 0 :
+                ((Math.Max(near, anchorNear) + Math.Min(far, anchorFar)) / 2 - near) / (far - near);
+            Container.RenderTransformOrigin = new RelativePoint(Pivot(x, x + w, pivotAnchor.Left, pivotAnchor.Right),
+                Pivot(y, y + h, pivotAnchor.Top, pivotAnchor.Bottom), RelativeUnit.Relative);
+        }
         return finalSize;
     }
 }

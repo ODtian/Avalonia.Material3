@@ -26,8 +26,14 @@ public class MaterialNavigationDrawerLayout : ContentControl
     private long _edgeTime;
     private bool _edgeDragging;
     private double _edgeDistance;
+    private readonly MaterialMotionValue _presentation;
+    private readonly MaterialMotionSettings _motion;
+    private bool _presentationInitialized;
+    internal double PresentationFraction => Math.Max(0, _presentation.Value);
     public MaterialNavigationDrawerLayout()
     {
+        _presentation = new(this, 0, _ => PresentationChanged());
+        _motion = new(this, Reconcile);
         AddHandler(PointerPressedEvent, EdgePressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerMovedEvent, EdgeMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerReleasedEvent, EdgeReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
@@ -42,6 +48,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
     }
     private void WatchDrawer()
     {
+        if (_subscribed != Drawer) _presentationInitialized = false;
         if (_subscribed is not null) _subscribed.PropertyChanged -= DrawerChanged;
         _subscribed = Drawer;
         if (_subscribed is not null) _subscribed.PropertyChanged += DrawerChanged;
@@ -49,6 +56,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
     }
     private void DrawerChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
+        if (change.Property == MaterialNavigationDrawer.ModeProperty) _presentationInitialized = false;
         if (change.Property == MaterialNavigationDrawer.IsOpenProperty || change.Property == MaterialNavigationDrawer.ModeProperty || change.Property == MaterialNavigationDrawer.DrawerWidthProperty) Reconcile();
     }
     private void Reconcile()
@@ -63,8 +71,17 @@ public class MaterialNavigationDrawerLayout : ContentControl
                 if (focused != drawer && (focused is null || !drawer.IsVisualAncestorOf(focused))) focused = null;
                 if (drawer.Mode == MaterialNavigationDrawerMode.Standard && drawer.Session is not null && !drawer.CloseForPresentationChange())
                     drawer.SetCurrentValue(MaterialNavigationDrawer.ModeProperty, MaterialNavigationDrawerMode.Modal);
-                var persistent = drawer.IsOpen && drawer.Mode == MaterialNavigationDrawerMode.Standard;
+                if (drawer.Mode == MaterialNavigationDrawerMode.Standard)
+                {
+                    if (!_presentationInitialized)
+                    {
+                        _presentationInitialized = true; _presentation.Snap(drawer.IsOpen ? 1 : 0);
+                    }
+                    else _presentation.Spring(drawer.IsOpen ? 1 : 0, drawer.IsOpen ? _motion.DefaultSpatial : _motion.FastEffects);
+                }
+                var persistent = drawer.Mode == MaterialNavigationDrawerMode.Standard && (drawer.IsOpen || _presentation.IsRunning || PresentationFraction > 0);
                 _drawerPresenter.Content = persistent ? drawer : null;
+                _drawerPresenter.IsEnabled = drawer.IsOpen;
                 _drawerPresenter.UpdateChild();
                 if (drawer.IsOpen && drawer.Mode == MaterialNavigationDrawerMode.Modal && drawer.Session is null)
                 {
@@ -85,6 +102,14 @@ public class MaterialNavigationDrawerLayout : ContentControl
             InvalidateMeasure();
         }
         finally { _reconciling = false; }
+    }
+    private void PresentationChanged()
+    {
+        _drawerPresenter?.InvalidateMeasure();
+        (_drawerPresenter?.GetVisualParent() as Control)?.InvalidateMeasure();
+        InvalidateMeasure();
+        if (!_reconciling && Drawer is { Mode: MaterialNavigationDrawerMode.Standard, IsOpen: false } && PresentationFraction <= .001)
+            Reconcile();
     }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); WatchDrawer(); }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -149,20 +174,24 @@ public class MaterialNavigationDrawerLayout : ContentControl
 /// <summary>Default logical-start persistent-drawer layout. No implicit breakpoint or application routing.</summary>
 public class MaterialDrawerLayoutPanel : Panel
 {
+    private MaterialNavigationDrawerLayout? Owner => this.GetVisualAncestors().OfType<MaterialNavigationDrawerLayout>().FirstOrDefault();
     protected override Size MeasureOverride(Size availableSize)
     {
         if (Children.Count != 2) return default;
         Children[0].Measure(availableSize);
-        Children[1].Measure(new Size(Math.Max(0, availableSize.Width - Children[0].DesiredSize.Width), availableSize.Height));
-        return new Size(Children[0].DesiredSize.Width + Children[1].DesiredSize.Width, Math.Max(Children[0].DesiredSize.Height, Children[1].DesiredSize.Height));
+        var reserved = Math.Min(availableSize.Width, Children[0].DesiredSize.Width) * (Owner?.PresentationFraction ?? 1);
+        Children[1].Measure(new Size(Math.Max(0, availableSize.Width - reserved), availableSize.Height));
+        return new Size(reserved + Children[1].DesiredSize.Width, Math.Max(Children[0].DesiredSize.Height, Children[1].DesiredSize.Height));
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (Children.Count != 2) return finalSize;
         var width = Math.Min(finalSize.Width, Children[0].DesiredSize.Width);
+        var reserved = width * (Owner?.PresentationFraction ?? 1);
         // Avalonia mirrors this logical-start layout; do not physically reverse it a second time.
-        Children[0].Arrange(new Rect(0, 0, width, finalSize.Height));
-        Children[1].Arrange(new Rect(width, 0, finalSize.Width - width, finalSize.Height));
+        Children[0].Arrange(new Rect(reserved - width, 0, width, finalSize.Height));
+        Children[1].Arrange(new Rect(reserved, 0, Math.Max(0, finalSize.Width - reserved), finalSize.Height));
+        Owner?.Drawer?.SetPresentationOffset(reserved - width);
         return finalSize;
     }
 }

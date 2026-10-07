@@ -117,6 +117,7 @@ public class AppChromeScenarioTests
         var page = new Border();
         var layout = new MaterialNavigationDrawerLayout { Drawer = drawer, Content = page };
         using var host = new ChromeHost(layout);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
         Assert.Equal(360, drawer.Bounds.Width);
         Assert.Equal(640, page.Bounds.Width);
         Assert.Equal(336, second.Bounds.Width);
