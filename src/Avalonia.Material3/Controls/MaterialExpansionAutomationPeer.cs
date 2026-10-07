@@ -52,6 +52,8 @@ internal sealed class MaterialExpansionButton : MaterialFab
     }
     public static readonly StyledProperty<bool> IsExpandedProperty = AvaloniaProperty.Register<MaterialExpansionButton, bool>(nameof(IsExpanded));
     public bool IsExpanded { get => GetValue(IsExpandedProperty); set => SetValue(IsExpandedProperty, value); }
+    internal double ClosedContainerSize => base.GetContainerSize(PresentedSize);
+    internal double ClosedIconSize => base.GetIconSize(PresentedSize);
     protected override double GetContainerSize(MaterialFabSize size) => Expansion is MaterialFabMenu && IsExpanded ? 56 : base.GetContainerSize(size);
     protected override double GetIconSize(MaterialFabSize size) => IsExpanded ? 20 : base.GetIconSize(size);
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

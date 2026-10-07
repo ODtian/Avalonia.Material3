@@ -46,16 +46,17 @@
     <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
     <Setter Property="Template">
       <ControlTemplate>
+        <Grid>
         <Border x:Name="YearFace" Margin="4,6" MinHeight="36" CornerRadius="999" Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
           <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                             Foreground="{TemplateBinding Foreground}" />
         </Border>
+        <c:MaterialStateLayer Margin="4,6" CornerRadius="999" Background="{TemplateBinding Foreground}" IsHitTestVisible="False" />
+        </Grid>
       </ControlTemplate>
     </Setter>
     <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
-    <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
-    <Style Selector="^:pointerover"><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="1" /></Style>
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialDatePicker}" TargetType="c:MaterialDatePicker">
@@ -144,8 +145,6 @@
       </ControlTemplate>
     </Setter>
     <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
-    <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
-    <Style Selector="^:pointerover"><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="1" /></Style>
     <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
@@ -204,7 +203,6 @@
       </ControlTemplate>
     </Setter>
     <Style Selector="^:checked"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
-    <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
     <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
   </ControlTheme>
