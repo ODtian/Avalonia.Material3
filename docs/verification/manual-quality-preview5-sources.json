@@ -1,0 +1,478 @@
+[
+  {
+    "file": "RenderNodeAnimator.java",
+    "sha256": "C8E4A4E326D7D0C25E220C46FE2A2CD287489677EDBB5ADAB288EA6995A5B78E",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-15.0.0_r1/graphics/java/android/graphics/animation/RenderNodeAnimator.java?format=TEXT"
+  },
+  {
+    "file": "RippleAnimationSession.java",
+    "sha256": "FA851D59AD7533C852A122F1E205E87E149367778C9DBF0D7EB692264370C6F8",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-15.0.0_r1/graphics/java/android/graphics/drawable/RippleAnimationSession.java?format=TEXT"
+  },
+  {
+    "file": "RippleDrawable.java",
+    "sha256": "ACA752D7F8F8914A7F3C0489D697465F2C788AF75CD3225EC30EC3EBC8586ECA",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-15.0.0_r1/graphics/java/android/graphics/drawable/RippleDrawable.java?format=TEXT"
+  },
+  {
+    "file": "RippleShader.java",
+    "sha256": "74A48F7FF4A8DE5C2E6960C68BB329AFBA30B4D20EF0D4DA4D2712AEE341B931",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-15.0.0_r1/graphics/java/android/graphics/drawable/RippleShader.java?format=TEXT"
+  },
+  {
+    "file": "RecordingCanvas.java",
+    "sha256": "F643E15891FF552E7E28575EF7A1AFFEBB91E0C7622C276FBC38DE5121DA5FAB",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-15.0.0_r1/graphics/java/android/graphics/RecordingCanvas.java?format=TEXT"
+  },
+  {
+    "file": "AnimatedDrawables.h",
+    "sha256": "946FA8C2F5231C1530EEE98E58D492F3B60315738BF48DC2FC23858D06BBC329",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-15.0.0_r1/libs/hwui/pipeline/skia/AnimatedDrawables.h?format=TEXT"
+  },
+  {
+    "file": "RippleAnimationSession.java",
+    "sha256": "FA851D59AD7533C852A122F1E205E87E149367778C9DBF0D7EB692264370C6F8",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-16.0.0_r1/graphics/java/android/graphics/drawable/RippleAnimationSession.java?format=TEXT"
+  },
+  {
+    "file": "RippleDrawable.java",
+    "sha256": "ACA752D7F8F8914A7F3C0489D697465F2C788AF75CD3225EC30EC3EBC8586ECA",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-16.0.0_r1/graphics/java/android/graphics/drawable/RippleDrawable.java?format=TEXT"
+  },
+  {
+    "file": "RippleShader.java",
+    "sha256": "74A48F7FF4A8DE5C2E6960C68BB329AFBA30B4D20EF0D4DA4D2712AEE341B931",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/android-16.0.0_r1/graphics/java/android/graphics/drawable/RippleShader.java?format=TEXT"
+  },
+  {
+    "file": "RippleAnimationSession.java",
+    "sha256": "FA851D59AD7533C852A122F1E205E87E149367778C9DBF0D7EB692264370C6F8",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/graphics/java/android/graphics/drawable/RippleAnimationSession.java?format=TEXT"
+  },
+  {
+    "file": "RippleDrawable.java",
+    "sha256": "ACA752D7F8F8914A7F3C0489D697465F2C788AF75CD3225EC30EC3EBC8586ECA",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/graphics/java/android/graphics/drawable/RippleDrawable.java?format=TEXT"
+  },
+  {
+    "file": "RippleShader.java",
+    "sha256": "74A48F7FF4A8DE5C2E6960C68BB329AFBA30B4D20EF0D4DA4D2712AEE341B931",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android17-release/graphics/java/android/graphics/drawable/RippleShader.java?format=TEXT"
+  },
+  {
+    "file": "RippleAnimationSession.java",
+    "sha256": "FA851D59AD7533C852A122F1E205E87E149367778C9DBF0D7EB692264370C6F8",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/graphics/java/android/graphics/drawable/RippleAnimationSession.java?format=TEXT"
+  },
+  {
+    "file": "RippleDrawable.java",
+    "sha256": "ACA752D7F8F8914A7F3C0489D697465F2C788AF75CD3225EC30EC3EBC8586ECA",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/graphics/java/android/graphics/drawable/RippleDrawable.java?format=TEXT"
+  },
+  {
+    "file": "RippleShader.java",
+    "sha256": "74A48F7FF4A8DE5C2E6960C68BB329AFBA30B4D20EF0D4DA4D2712AEE341B931",
+    "source": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/graphics/java/android/graphics/drawable/RippleShader.java?format=TEXT"
+  },
+  {
+    "file": "material3-ripple-android-1.5.0-alpha29-sources.jar",
+    "sha256": "1BB35479DEE54E915D3243272E6052FCE12A64FBACA333DEFE38F7CA107BC41D",
+    "source": "https://dl.google.com/dl/android/maven2/androidx/compose/material3/material3-ripple-android/1.5.0-alpha29/material3-ripple-android-1.5.0-alpha29-sources.jar"
+  },
+  {
+    "file": "AnimateAsState.kt",
+    "sha256": "86DFADB3140E95CB5EFC47EC5235885AAC603D18B8290253B0F14778D40E8ACC",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/animation/animation-core/src/commonMain/kotlin/androidx/compose/animation/core/AnimateAsState.kt"
+  },
+  {
+    "file": "ColorVectorConverter.kt",
+    "sha256": "3FF31AD9217F13E9421A4DEE0AD0CBF3CC8A1284879DD2B021323BBA737D7F93",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/ColorVectorConverter.kt"
+  },
+  {
+    "file": "FlingCalculator.kt",
+    "sha256": "40FA8D3A1E78A9160B57A1EF777DD1F8E77A701CF4A77479E94C6680776D6522",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/FlingCalculator.kt"
+  },
+  {
+    "file": "SplineBasedDecay.kt",
+    "sha256": "ABFB366FE94B09A97F88011439F761282101D42BFE161BB1BFE6C3357965861C",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/animation/animation/src/commonMain/kotlin/androidx/compose/animation/SplineBasedDecay.kt"
+  },
+  {
+    "file": "PagerSnapLayoutInfoProvider.kt",
+    "sha256": "C0AA96D769477BB10CADC9B956AA4DC3E57A88B31DA18A891E26850BDF720920",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/PagerSnapLayoutInfoProvider.kt"
+  },
+  {
+    "file": "SnapFlingBehavior.kt",
+    "sha256": "EE856D5DDC681D7EB80F53DD5BB0F8512398360D1C9ABA4D206685E848BB5434",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/gestures/snapping/SnapFlingBehavior.kt"
+  },
+  {
+    "file": "Pager.kt",
+    "sha256": "3CE0E6FEACAD12F78020A225882E29F799151B7DDAF7D16D775CE8BFFB52971D",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/foundation/foundation/src/commonMain/kotlin/androidx/compose/foundation/pager/Pager.kt"
+  },
+  {
+    "file": "StateLayer.kt",
+    "sha256": "BC13968044876AF2D68335922FEF63ACE5BA02628D22FF0B1145CD1752F78E40",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/Ripple.kt"
+  },
+  {
+    "file": "RippleAnimation.kt",
+    "sha256": "E9A09D233B3ACFAE31E73FE678C7D17FAC9E2608E5432A9375D5E1231F9B11D1",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material/material-ripple/src/commonMain/kotlin/androidx/compose/material/ripple/RippleAnimation.kt"
+  },
+  {
+    "file": "Ripple.android.kt",
+    "sha256": "D82F6C789DFDFEA7C8F18C07A2BB71351F3EACD4A9C88A0BA4688D9B12F3F741",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3-ripple/src/androidMain/kotlin/androidx/compose/material3/ripple/Ripple.android.kt"
+  },
+  {
+    "file": "RippleContainer.android.kt",
+    "sha256": "64314ADD4AECC31ED58B0BA7599D258923E85DDAA43B35E3FEE0C34479D6438D",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3-ripple/src/androidMain/kotlin/androidx/compose/material3/ripple/RippleContainer.android.kt"
+  },
+  {
+    "file": "RippleHostView.android.kt",
+    "sha256": "051B24F5AC01DB0B1B60CB996EAF964E6C8CCD3FADE163F73E8B8FAD0C06FC67",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3-ripple/src/androidMain/kotlin/androidx/compose/material3/ripple/RippleHostView.android.kt"
+  },
+  {
+    "file": "Border.kt",
+    "sha256": "8B4520A6E9D03731F90AA042BA18332B537FA2B148CECAF8BE047F38A1B7068D",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3-ripple/src/commonMain/kotlin/androidx/compose/material3/ripple/Border.kt"
+  },
+  {
+    "file": "CommonRipple.kt",
+    "sha256": "BEDC98FB431199C95FA78CF6689253101F77B43A0EBF32D56F13E08A4105CCEA",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3-ripple/src/commonMain/kotlin/androidx/compose/material3/ripple/CommonRipple.kt"
+  },
+  {
+    "file": "Ripple.kt",
+    "sha256": "F0BA3E8B3D5B40D3977F7E4DCBF2C93DEC02E19705A1141F8EFE6DC81C2F0AA7",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3-ripple/src/commonMain/kotlin/androidx/compose/material3/ripple/Ripple.kt"
+  },
+  {
+    "file": "RippleAnimation.kt",
+    "sha256": "6D3A90E3AB5D82C7A1A1C615FADCC5886343D0029540D3DE4C8B151BAC6C14F2",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3-ripple/src/commonMain/kotlin/androidx/compose/material3/ripple/RippleAnimation.kt"
+  },
+  {
+    "file": "RippleNodeConfiguration.kt",
+    "sha256": "62FFA826E25C74A98E64FD99B550EE406349138B6A28354CB90B3B805FB20784",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3-ripple/src/commonMain/kotlin/androidx/compose/material3/ripple/RippleNodeConfiguration.kt"
+  },
+  {
+    "file": "CenteredHeroTest.kt",
+    "sha256": "FCEAD9B9A2B28AC73FB9319BEB7C4A03ED41D8C956E68CE9E4DB43965120DCF7",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/androidHostTest/kotlin/androidx/compose/material3/carousel/CenteredHeroTest.kt"
+  },
+  {
+    "file": "KeylineSnapPositionTest.kt",
+    "sha256": "54DA7B6974B5E832F56A62658F5AAC2DBC0D61608A6E25EA1991B292D5BA473A",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/androidHostTest/kotlin/androidx/compose/material3/carousel/KeylineSnapPositionTest.kt"
+  },
+  {
+    "file": "MultiBrowseTest.kt",
+    "sha256": "E1DE729E72E2D7CB259DC108FBE1E98CE768BCD749A37173E9CBE76E0F583476",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/androidHostTest/kotlin/androidx/compose/material3/carousel/MultiBrowseTest.kt"
+  },
+  {
+    "file": "StrategyTest.kt",
+    "sha256": "80B6F5780C5C2A6A2873EE88E1759CABC8C6D55E91C01B2605F622980473DCD1",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/androidHostTest/kotlin/androidx/compose/material3/carousel/StrategyTest.kt"
+  },
+  {
+    "file": "UncontainedTest.kt",
+    "sha256": "70D9D8E2AF5EE4FA6DFD693C039E55A3B40E007419C358D3DE8B369A1B8DCB3D",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/androidHostTest/kotlin/androidx/compose/material3/carousel/UncontainedTest.kt"
+  },
+  {
+    "file": "AppBar.kt",
+    "sha256": "3261FD559FD0F9ABFF24C75F46DEAE40BBB76DE2CC8899243FE139A18B046270",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/AppBar.kt"
+  },
+  {
+    "file": "BottomSheet.kt",
+    "sha256": "6377890EFE658F0FBF866799E39F9BC7ACF6C36E9DD2DC1E8FB16163B7E2062D",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/BottomSheet.kt"
+  },
+  {
+    "file": "BottomSheetScaffold.kt",
+    "sha256": "F59E772BC9CED6FF8E8D882A113B01B41745005FBFF6BB30CB96AD2ED3A26B56",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/BottomSheetScaffold.kt"
+  },
+  {
+    "file": "Button.kt",
+    "sha256": "4D18A20B7CBE4F670BA83DCC460E9BE8415DDA3AB509AF93DCFF97A80F99882E",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Button.kt"
+  },
+  {
+    "file": "ButtonGroup.kt",
+    "sha256": "448C9C680ABB1F0BF3C9B58423F20DD0CBF2FCD38E8B10ACFAC889434AB64BF7",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ButtonGroup.kt"
+  },
+  {
+    "file": "Card.kt",
+    "sha256": "28E9321B2A97BA11EF2B4D2E6E99623DA91A61140D6A0AFEF1AD087D5D65F26C",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Card.kt"
+  },
+  {
+    "file": "Arrangement.kt",
+    "sha256": "39FF3FF95A28CD995BFFDB8DA9410313A27B60A6D173FC33A9C0B67CBFCC9010",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/Arrangement.kt"
+  },
+  {
+    "file": "Carousel.kt",
+    "sha256": "D634E48D71794251B63C8EB5A78B413EC6ADB492A8C9C500D63AE50F154CC2C4",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/Carousel.kt"
+  },
+  {
+    "file": "KeylineList.kt",
+    "sha256": "718BB58B748F898482241D121D1BC681CC4B3E6722E39C16DC19A1753F67ECA7",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/KeylineList.kt"
+  },
+  {
+    "file": "Keylines.kt",
+    "sha256": "A33ED44D518421F0014FDC489774846A9160FC894026DA9DF3509FEB0C50CE4E",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/Keylines.kt"
+  },
+  {
+    "file": "KeylineSnapPosition.kt",
+    "sha256": "23CBCCBFFC81BF8D3B534AEE40D496B6AEB819E4217DA5AF26906E19050F4135",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/KeylineSnapPosition.kt"
+  },
+  {
+    "file": "Strategy.kt",
+    "sha256": "0A58694F0095071B90196C0EE40F0BD3942FE71AB6271B638C6DE388CC22B3C2",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/carousel/Strategy.kt"
+  },
+  {
+    "file": "Checkbox.kt",
+    "sha256": "13B16C178C8886411CE53CDC290ABD858FD559610130D401BA48F8E82DB109EE",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Checkbox.kt"
+  },
+  {
+    "file": "Chip.kt",
+    "sha256": "D3F1C95D15522E08A2B8222956FF0503C346F97AAB670741AB8B7AEDCFE538D9",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Chip.kt"
+  },
+  {
+    "file": "ComposeMaterial3Flags.kt",
+    "sha256": "4218CB959D0BFC617DD512BA89A223ED30546B1383011FD4DD0BA6C4ADB12D40",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ComposeMaterial3Flags.kt"
+  },
+  {
+    "file": "DatePicker.kt",
+    "sha256": "6D80D7BA27B052BEAAC1628458DC41621E02093D36C5D2691234D0931CA3EA22",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/DatePicker.kt"
+  },
+  {
+    "file": "DateRangePicker.kt",
+    "sha256": "938FCAA98BB503EFAD2CFC34975630B96B2B619D8934FF6753231AD0557F3967",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/DateRangePicker.kt"
+  },
+  {
+    "file": "FloatingActionButton.kt",
+    "sha256": "59D5708D5DD390DD25734C6EF2C2EBDCB1A149D82E9FE9038A75E670C1F7C9BD",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/FloatingActionButton.kt"
+  },
+  {
+    "file": "FloatingActionButtonMenu.kt",
+    "sha256": "526E4A6FCC7C2CDBFEF60999737720B05350D7C1D59EBB3CCAB4EBE42C3A040B",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/FloatingActionButtonMenu.kt"
+  },
+  {
+    "file": "FloatingToolbar.kt",
+    "sha256": "7C014D29BAEF68F505A624B26E4C264BCE2E7F72726D29DFCC09869C81142598",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/FloatingToolbar.kt"
+  },
+  {
+    "file": "IconButton.kt",
+    "sha256": "173BCB2F6097767B641B9DBCC447406C38F144D0EA649372AD395CA690F1292A",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/IconButton.kt"
+  },
+  {
+    "file": "Elevation.kt",
+    "sha256": "304E9D0D7749BF1A7A2646ACD7F05A7D6F5C52FE0118FD8BBFD37FBD03D08F2F",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/internal/Elevation.kt"
+  },
+  {
+    "file": "LoadingIndicator.kt",
+    "sha256": "5B369A09CF80401620E49387116DAD4D49DD785EB086BD917A1D1F52142CE8B9",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/LoadingIndicator.kt"
+  },
+  {
+    "file": "Menu.kt",
+    "sha256": "F6FE29552C15E79A2A102D65FC450BB60C34816CBDA0580E98C8539588CE2938",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Menu.kt"
+  },
+  {
+    "file": "ModalBottomSheet.kt",
+    "sha256": "6B5F472E9CEF3109F488562F396C8D6351406AD36424D03F877D5BC01B44741F",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ModalBottomSheet.kt"
+  },
+  {
+    "file": "MotionScheme.kt",
+    "sha256": "95FCF8D94C5885A16D82EAB986CE4C1B02A8F09F59784D03A9FAB168529FF270",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/MotionScheme.kt"
+  },
+  {
+    "file": "NavigationBar.kt",
+    "sha256": "25504D905F94172C3C3E553AA20B285B5166145C49FF448BADA1D929962814D4",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/NavigationBar.kt"
+  },
+  {
+    "file": "NavigationDrawer.kt",
+    "sha256": "F5A53108F27288B678810D9DA9F64DCF176FA7E6E2BD896CC1E6A96966F45650",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/NavigationDrawer.kt"
+  },
+  {
+    "file": "NavigationRail.kt",
+    "sha256": "A9964532F667CAA1DCFDD7BDC960411C4987BA3225A03B4D2909EF333FF77D1D",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/NavigationRail.kt"
+  },
+  {
+    "file": "OutlinedTextField.kt",
+    "sha256": "41426CC018AE1EC5D4CF590D550E3E9D1E072BB69C8096935F07556A5965C86D",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/OutlinedTextField.kt"
+  },
+  {
+    "file": "ProgressIndicator.kt",
+    "sha256": "D8FC0FB57F963F651809736201002D322CF7C49C3FD4B401613A76513696263F",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ProgressIndicator.kt"
+  },
+  {
+    "file": "PullToRefresh.kt",
+    "sha256": "02D9C31924037D14FEA1982AA76E4AD70545B60FB101C4FA315E3024ACF3C1BA",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/pulltorefresh/PullToRefresh.kt"
+  },
+  {
+    "file": "RadioButton.kt",
+    "sha256": "6A1EB283C6A56BCB2CD479207B1713292283A372D87F99F1E4F1AF8B4BFEEA9E",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/RadioButton.kt"
+  },
+  {
+    "file": "Ripple.kt",
+    "sha256": "4B53B7FFB01FF48014CDC2F6AF216C97F6463D5E25343D9DB699EA4ABB90BC00",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Ripple.kt"
+  },
+  {
+    "file": "SearchBar.kt",
+    "sha256": "421E325E5B94C59F1A90284EBA912128F6E43DC1D211938B89BB37580DA527F7",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SearchBar.kt"
+  },
+  {
+    "file": "SheetDefaults.kt",
+    "sha256": "4D9A9D651DC2683F6AD7304A30D4B81339019A02FC462FAE41CCBF74C3161E21",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SheetDefaults.kt"
+  },
+  {
+    "file": "Slider.kt",
+    "sha256": "B26B472F358D33F852044FBF36F7CC851960A02DF8475CC012BD0D6556B3FE01",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Slider.kt"
+  },
+  {
+    "file": "Snackbar.kt",
+    "sha256": "8215A0E95333E392EDC17D082FF6BE259470DD4B5D9B36EAE4056DD2D5EC0947",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Snackbar.kt"
+  },
+  {
+    "file": "SnackbarHost.kt",
+    "sha256": "AAD16708D07386301856F633E8296092027C79AB59F350CB35680DE869D8178F",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/SnackbarHost.kt"
+  },
+  {
+    "file": "Switch.kt",
+    "sha256": "FE82A452EF737ED9FBCFA1F56E5F636CB562AAA077994D3248974FBA65796AB8",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Switch.kt"
+  },
+  {
+    "file": "Tab.kt",
+    "sha256": "29D1A0799BD5B87E19DC684C9CCD07F0BE42339A55FB460F7D0847339DB9974C",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Tab.kt"
+  },
+  {
+    "file": "TabRow.kt",
+    "sha256": "B58CFF3A2F57F0BFF6A59BAC33722B4DD1DAB5ECE0B2C27CB0A2442877C379E3",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TabRow.kt"
+  },
+  {
+    "file": "TextFieldImpl.kt",
+    "sha256": "6490160723B2E07790CBCAE86DB014B494AA45B4F5F13402EBFC5597D94B2253",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TextFieldImpl.kt"
+  },
+  {
+    "file": "TimePicker.kt",
+    "sha256": "787E55E79A94B58775567110B2B27C74834529B643960CB0FF86589930E3F221",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/TimePicker.kt"
+  },
+  {
+    "file": "ToggleButton.kt",
+    "sha256": "057B45B4278773A1B9BF077CAB2E39EF50B674D25FC4AA686DB1A04F6E779CB1",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/ToggleButton.kt"
+  },
+  {
+    "file": "LoadingIndicatorTokens.kt",
+    "sha256": "58624ED41AF880124A8C27055A56CC0C3694594BF1B12EA8C2FB1234DB24B0CF",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/tokens/LoadingIndicatorTokens.kt"
+  },
+  {
+    "file": "Tooltip.kt",
+    "sha256": "B1047314137DA575357CC56742F6DC4B264BD50D0838B09655CB897FE635AD86",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/Tooltip.kt"
+  },
+  {
+    "file": "WavyProgressIndicator.kt",
+    "sha256": "D968B8E289C5D1346FA3D2DC92892C9BB3C90ABAA4F5A8224925ABD00AD0F5D0",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/WavyProgressIndicator.kt"
+  },
+  {
+    "file": "WideNavigationRail.kt",
+    "sha256": "BA4AABF6F201F75DAA6B4F71BD16253B5489DA8532071C137FDAB061FF5FF1D4",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/compose/material3/material3/src/commonMain/kotlin/androidx/compose/material3/WideNavigationRail.kt"
+  },
+  {
+    "file": "ViewDragHelper.java",
+    "sha256": "48DE192F0F6E19A99CD57B05104D00E22A96439E5D2CA6DD2848F3113AF3D9A4",
+    "source": "https://raw.githubusercontent.com/androidx/androidx/11ece46a49d485c7644e53cb0684a611d7a0ec10/customview/customview/src/main/java/androidx/customview/widget/ViewDragHelper.java"
+  },
+  {
+    "file": "SideSheet.md",
+    "sha256": "8BC7FDAE4E717AE73AF583F08A37032373A3242B1E2578454980E0A0340BB8B4",
+    "source": "https://raw.githubusercontent.com/material-components/material-components-android/60ff09436d5d477a4b9d02940f31eb01e1250620/docs/components/SideSheet.md"
+  },
+  {
+    "file": "LeftSheetDelegate.java",
+    "sha256": "2634A6B0DBA7DCEE0FDC9E761FDC997864B26D6E26FEA8653E4D0291B3175410",
+    "source": "https://raw.githubusercontent.com/material-components/material-components-android/60ff09436d5d477a4b9d02940f31eb01e1250620/lib/java/com/google/android/material/sidesheet/LeftSheetDelegate.java"
+  },
+  {
+    "file": "RightSheetDelegate.java",
+    "sha256": "4C69702E8D14ECB1835037C88EC45F34B5FCA08B65CAA5A6F086BD8F0D67ECD1",
+    "source": "https://raw.githubusercontent.com/material-components/material-components-android/60ff09436d5d477a4b9d02940f31eb01e1250620/lib/java/com/google/android/material/sidesheet/RightSheetDelegate.java"
+  },
+  {
+    "file": "SideSheetBehavior.java",
+    "sha256": "7DB538E2D6587831247CC2C3717BBBBFE98EB98541AB9D99545E486AF8C45D1E",
+    "source": "https://raw.githubusercontent.com/material-components/material-components-android/60ff09436d5d477a4b9d02940f31eb01e1250620/lib/java/com/google/android/material/sidesheet/SideSheetBehavior.java"
+  },
+  {
+    "file": "SideSheetDialog.java",
+    "sha256": "AFCB463501D9C21AA6BC9E46E72894A70E6977662EAA75E000E27B482D919AE0",
+    "source": "https://raw.githubusercontent.com/material-components/material-components-android/60ff09436d5d477a4b9d02940f31eb01e1250620/lib/java/com/google/android/material/sidesheet/SideSheetDialog.java"
+  },
+  {
+    "source": "https://dl.google.com/dl/android/maven2/androidx/compose/material3/material3-android/1.5.0-beta01/material3-android-1.5.0-beta01-sources.jar",
+    "sha256": "124C8C15190772DAF273007DBF54524EF4F66E0A4AFA9F3C6A25190CA13D0387",
+    "file": "material3-android-1.5.0-beta01-sources.jar"
+  },
+  {
+    "source": "https://dl.google.com/dl/android/maven2/androidx/compose/material3/material3/maven-metadata.xml",
+    "sha256": "8AC1F373810AA8569B6561BFE9312CA6E0C94BB87097398A31A56B7A887F7DA8",
+    "file": "material3-maven-metadata.xml",
+    "lastUpdated": "20261007170356"
+  }
+]

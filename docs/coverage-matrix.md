@@ -8,11 +8,13 @@
   ButtonSmall / FilledButton 的生成版本为 `v0_11_0`；颜色与状态为 `v0_210`；TypeScale/Elevation/Motion 为 `v0_103`，Shape 为 `14_1_0`，标准/Expressive spring 为 `v0_14_0`。
 - 对照实现：[Material Components Android 固定提交 `60ff09436d5d477a4b9d02940f31eb01e1250620`][android-buttons]。
 - 色彩算法参考：[Material Color Utilities][mcu]；M3-02 固定 Google MCU npm 0.3.0 / `6bda88814da380664aaecc163ecdb8ac8caebb0a` 为独立 oracle，C# HCT 端依赖 MaterialColorUtilities 0.3.0；CorePalette.of + 本基线角色 tone 映射，不冒充较新的动态对比解析器。
-- 框架：Avalonia **12.1.3**（稳定版）；目标框架 **net10.0**；SDK **10.0.112**；当前候选包 **0.1.0-preview.2**。历史组件记录保留原 preview.1 版本/hash，不覆盖冻结 #2 二进制。
+- 框架：Avalonia **12.1.3**（稳定版）；目标框架 **net10.0**；SDK **10.0.112**；当前候选包 **0.1.0-preview.5**。历史组件记录保留原 preview.1 版本/hash，不覆盖冻结 #2 二进制。
 
 本表是完整交付清单，不是“全部完成”的声明。`初始` 表示仅交付本票明确的子集，`待交付` 必须由归属票据补上场景、状态、输入与无障碍证据。后续规范更新须更改基线并审查此表；不得静默跟随上游主分支。
 
 最终两轴审查的库内修正及独立物理 RTL 证据见 [review-fixes](review-fixes.md)。旧组件／#20 记录仍属于原 producer；新候选的确切门禁、hash 与四个 published 宿主证据以该文档指向的新 manifest/handoff 为准，不沿用旧 binary 的通过声明。
+
+2026-10-08 复验另锁定官方 Material3 1.5.0-beta01 原生对照；日期、时间、按钮、选择、文本、进度与动效源码以及120个令牌文件与上述基线一致。完整逐文件SHA与实际配置见 [preview.5 记录](verification/manual-quality-preview5.md)。
 
 ## 设计令牌与共通能力
 
@@ -129,3 +131,4 @@
 [i18]: https://github.com/ODtian/Avalonia.Material3/issues/18
 [i19]: https://github.com/ODtian/Avalonia.Material3/issues/19
 [i20]: https://github.com/ODtian/Avalonia.Material3/issues/20
+

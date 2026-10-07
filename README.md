@@ -1,13 +1,13 @@
 # Avalonia Material 3 Expressive
 
-独立、通用、版本化的 Material 3 Expressive 控件库。当前本地候选为 **0.1.0-preview.4**，覆盖完整锁定组件清单：设计令牌、按钮/FAB/工具栏/分组、选择/输入/搜索/Chips、内容/导航、进度/加载、共享 overlay/对话框/菜单/提示/面板、应用栏/抽屉、日期时间与 Carousel/刷新。17 个页面由静态工厂显式注册，Gallery 与独立包宿主访问相同完整展厅。
+独立、通用、版本化的 Material 3 Expressive 控件库。当前本地候选为 **0.1.0-preview.5**，覆盖完整锁定组件清单：设计令牌、按钮/FAB/工具栏/分组、选择/输入/搜索/Chips、内容/导航、进度/加载、共享 overlay/对话框/菜单/提示/面板、应用栏/抽屉、日期时间与 Carousel/刷新。17 个页面由静态工厂显式注册，Gallery 与独立包宿主访问相同完整展厅。
 
-preview.4 按锁定源码统一标准动效、海拔和状态反馈；按钮组保留完整文字，Carousel采用参考keyline布局，使用官方图标及标准选择标记。逐项证据见[反馈验收记录](docs/verification/manual-quality-feedback.md)。
+preview.5 提供纯色扩散与渐变闪光两套 Ripple，修复日期范围的动态排列，并按官方构造校正日期时间控件。逐项证据见[反馈验收记录](docs/verification/manual-quality-feedback.md)。
 
 这是**本地预览候选**，不是已发布到 nuget.org 的声明；也不等于母规格全部验收。真实 App 升级、人工读屏、物理移动设备及 Android 验收仍有明确外部条件，见[最终证据与支持矩阵](docs/verification/m3-19.md)。各组件的 Avalonia 投影边界仍适用，不宣称 Compose 内部物理/帧像素等价。
 
 - .NET SDK **10.0.112** / net10.0；Avalonia **12.1.3**
-- 本地包 **Avalonia.Material3 0.1.0-preview.4**；包消费者不引用库源码
+- 本地包 **Avalonia.Material3 0.1.0-preview.5**；包消费者不引用库源码
 - `Directory.Build.props` 是唯一版本来源；历史 preview.1 / preview.2 记录保留
 
 ## 构建、验证、运行
@@ -44,4 +44,4 @@ NativeSmoke 操作真实桌面焦点/键盘，不能并行运行。发布门禁�
 
 通用设计系统不包含 Pixiv 业务。实际消费方 [MaterixivYou](https://github.com/ODtian/MaterixivYou) 通过版本化包采用公开契约；其 docs-only 基线不是可执行消费方，M11 不能由本仓库样例替代。
 
-本轮人工反馈修复与新版展厅：[preview.3 复验记录](docs/verification/manual-quality-preview3.md)，包含官方图标、布局与动效修复、实际 DPI 指标及可运行产物。
+本轮标准动效、阴影和几何修复与新版展厅：[preview.5 复验记录](docs/verification/manual-quality-preview5.md)。此前产物与指标见 [preview.3 记录](docs/verification/manual-quality-preview3.md)。
