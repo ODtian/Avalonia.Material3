@@ -82,8 +82,10 @@ public sealed class MaterialSliderPresenter : Control
         var geometry = Geometry;
         var lower = Position(owner.Value);
         var upper = owner is MaterialRangeSlider range ? Position(range.UpperValue) : lower;
-        var lowerGap = MaterialSliderGeometry.Gap(ThumbWidth(0));
-        var upperGap = MaterialSliderGeometry.Gap(ThumbWidth(owner is MaterialRangeSlider ? 1 : 0));
+        // ThumbContent keeps a4-DIP layout box while the focused/pressed ink narrows to2.
+        // The track follows the layout box, retaining the same8-DIP exclusion in every state.
+        var lowerGap = MaterialSliderGeometry.Gap(4);
+        var upperGap = MaterialSliderGeometry.Gap(4);
         var center = (geometry.Start + geometry.End) / 2;
         var leadingEnd = lower - lowerGap;
         var trailingStart = upper + upperGap;
@@ -115,8 +117,6 @@ public sealed class MaterialSliderPresenter : Control
         if (trailingStop) context.DrawEllipse(owner.Foreground, null, new Point(geometry.End - geometry.CapInset, geometry.Axis), 2, 2);
         DrawHandle(context, lower, 0);
         if (owner is MaterialRangeSlider) DrawHandle(context, upper, 1);
-        if (owner.IsEffectivelyEnabled && owner.IsPointerOver && !owner.IsDragging)
-            context.DrawEllipse(null, new Pen(owner.Foreground, 1), new Point(owner.ActiveUpper ? upper : lower, geometry.Axis), 12, 24);
     }
 
     private void DrawSegment(DrawingContext context, double start, double end, IBrush? brush, bool active = false,
@@ -167,8 +167,6 @@ public sealed class MaterialSliderPresenter : Control
         var brush = _owner!.Foreground;
         var width = ThumbWidth(index);
         context.DrawRectangle(brush, null, new Rect(x - width / 2, Geometry.Axis - 22, width, 44), width / 2, width / 2);
-        if (Focused(index) && _owner.IsEffectivelyEnabled)
-            context.DrawRectangle(null, new Pen(brush, 3), new Rect(x - 9, Geometry.Axis - 27, 18, 54), 9, 9);
     }
 
     private readonly record struct LabelLayout(FormattedText Text, Rect Rect);

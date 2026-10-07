@@ -19,6 +19,7 @@ public class MaterialOverlayHost : ContentControl
     public static readonly DirectProperty<MaterialOverlayHost, int> OpenCountProperty =
         AvaloniaProperty.RegisterDirect<MaterialOverlayHost, int>(nameof(OpenCount), host => host.OpenCount);
     private readonly List<MaterialOverlaySession> _sessions = [];
+    private readonly HashSet<MaterialOverlayLayer> _exiting = [];
     private Panel? _layer;
     private MaterialOverlayContentPresenter? _presenter;
     private TopLevel? _root;
@@ -48,7 +49,7 @@ public class MaterialOverlayHost : ContentControl
         _outsidePress = null;
         _root = null;
         try { ForceFinishFrom(0, MaterialOverlayCloseReason.HostDetached); }
-        finally { base.OnDetachedFromVisualTree(e); }
+        finally { ClearExiting(); base.OnDetachedFromVisualTree(e); }
     }
 
     private void RootGotFocus(object? sender, FocusChangedEventArgs e)
@@ -66,6 +67,7 @@ public class MaterialOverlayHost : ContentControl
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        ClearExiting();
         if (_layer is not null) _layer.Children.Clear();
         base.OnApplyTemplate(e);
         _layer = e.NameScope.Find<Panel>("PART_OverlayLayer");
@@ -149,8 +151,14 @@ public class MaterialOverlayHost : ContentControl
                 anchor.DetachedFromVisualTree -= handler;
                 session.AnchorDetachedHandler = null;
             }
-            _layer?.Children.Remove(session.Layer);
-            session.Layer.Container.Child = null;
+            if (!forced && session.Layer.Presentation?.FreezeExit(session.Content, () => RemoveExiting(session.Layer)) == true)
+                _exiting.Add(session.Layer);
+            else
+            {
+                _layer?.Children.Remove(session.Layer);
+                session.Layer.Container.Child = null;
+                session.Layer.Presentation?.Dispose();
+            }
             UpdateModality();
             RaisePropertyChanged(OpenCountProperty, oldCount, OpenCount);
             if (!forced && session.Options.RestoreFocus)
@@ -164,6 +172,15 @@ public class MaterialOverlayHost : ContentControl
         }
         finally { session.Complete(result); }
         return true;
+    }
+    private void RemoveExiting(MaterialOverlayLayer layer)
+    {
+        _exiting.Remove(layer); _layer?.Children.Remove(layer);
+        layer.Container.Child = null; layer.Presentation?.Dispose();
+    }
+    private void ClearExiting()
+    {
+        foreach (var layer in _exiting.ToArray()) RemoveExiting(layer);
     }
 
     private void ForceFinishFrom(int index, MaterialOverlayCloseReason reason)
