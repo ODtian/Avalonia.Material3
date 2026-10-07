@@ -2,6 +2,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
+using Avalonia.Platform;
 using SkiaSharp;
 
 namespace Avalonia.Material3.Controls;
@@ -36,13 +37,16 @@ internal sealed class MaterialPatternedRippleDraw(Rect rectangle, Point touch, d
         {
             // Other backends receive the same SkSL evaluated on a CPU surface.
             var scale = Math.Max(.001, density);
-            using var surface = SKSurface.Create(new SKImageInfo(Math.Max(1, (int)Math.Ceiling(rectangle.Width * scale)),
-                Math.Max(1, (int)Math.Ceiling(rectangle.Height * scale)), SKColorType.Bgra8888, SKAlphaType.Premul));
-            surface.Canvas.Clear(SKColors.Transparent);
-            surface.Canvas.Scale((float)scale); surface.Canvas.Translate((float)-rectangle.X, (float)-rectangle.Y);
-            Draw(surface.Canvas, scale, 1);
-            using var image = surface.Snapshot(); using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-            using var stream = data.AsStream(); using var bitmap = new Bitmap(stream);
+            var size = new PixelSize(Math.Max(1, (int)Math.Ceiling(rectangle.Width * scale)), Math.Max(1, (int)Math.Ceiling(rectangle.Height * scale)));
+            using var bitmap = new WriteableBitmap(size, new Vector(96 * scale, 96 * scale), PixelFormat.Bgra8888, AlphaFormat.Premul);
+            using (var storage = bitmap.Lock())
+            {
+                using var surface = SKSurface.Create(new SKImageInfo(size.Width, size.Height, SKColorType.Bgra8888, SKAlphaType.Premul),
+                    storage.Address, storage.RowBytes);
+                surface.Canvas.Clear(SKColors.Transparent);
+                surface.Canvas.Scale((float)scale); surface.Canvas.Translate((float)-rectangle.X, (float)-rectangle.Y);
+                Draw(surface.Canvas, scale, 1);
+            }
             context.DrawBitmap(bitmap, rectangle);
         }
     }

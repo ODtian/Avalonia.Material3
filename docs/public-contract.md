@@ -26,6 +26,8 @@ preview.5 增加两种官方 ripple 配方：`MaterialRippleStyle.Solid` 为 Com
 
 Patterned通过Avalonia.Skia的typed绘制lease运行完整锁定AOSP shader，按实际像素密度使用2.1物理像素noise grid；其他绘制backend使用同一shader的CPU raster路径。Avalonia.Skia12.1.3进入库的依赖闭包。Shader作为程序集内嵌资产发布，原生AOT使用静态typed SkiaSharp接口。Gallery的“Ripple”按钮切换两种配方。
 
+原生ripple输入为单一颜色：press与hover/focus/drag使用配置alpha覆盖颜色输入alpha，控件与祖先Opacity仍作用于整个绘制结果。公开Foreground采用gradient或其他非单色brush时，两种选择统一回退到Solid配方，保留该brush的空间颜色；推进与绘制使用同一配方。键盘焦点迁移取消原控件的键盘波纹，仍按相应配方完成退出。
+
 ## 完整组件契约
 
 组件命名空间 `Avalonia.Material3.Controls`，令牌 `Avalonia.Material3.Tokens`，主题 `Avalonia.Material3.Themes`。公开属性/插槽、状态、输入/自动化语义、模板部件与明确投影详见：

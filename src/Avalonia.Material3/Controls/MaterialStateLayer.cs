@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.VisualTree;
 using System.Collections.Specialized;
 
@@ -30,7 +31,7 @@ internal sealed class MaterialStateLayer : Control
     private double _hover = .08, _focus = .10, _press = .10, _drag = .16;
     private bool _reduced;
     private bool _wasDragging;
-    private MaterialRippleStyle _themeStyle, _style;
+    private MaterialRippleStyle _themeStyle, _style, _effectiveStyle;
     private bool _initializing;
     private readonly List<IDisposable> _resources = [];
     private static readonly Avalonia.Animation.Easings.SplineEasing RadiusEasing = new(.4, 0, .2, 1);
@@ -88,16 +89,31 @@ internal sealed class MaterialStateLayer : Control
     private void OwnerChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == MaterialRipple.StyleProperty) UpdateStyle();
+        if (change.Property == IsKeyboardFocusWithinProperty && _owner?.IsKeyboardFocusWithin == false)
+            CancelKeyboardRipples();
         if (change.Property == IsPointerOverProperty || change.Property == IsKeyboardFocusWithinProperty ||
             change.Property == IsEffectivelyEnabledProperty || change.Property == Button.IsPressedProperty
             || change.Property == MaterialContentItem.IsInteractiveProperty) UpdateState();
     }
+    private void CancelKeyboardRipples()
+    {
+        if (!_ripples.Any(ripple => ripple.Key.HasValue && !ripple.Released.HasValue)) return;
+        _frames.Sample();
+        foreach (var ripple in _ripples.Where(ripple => ripple.Key.HasValue)) ripple.Released ??= _frames.Elapsed.TotalSeconds;
+        _frames.SetRunning(true); InvalidateVisual();
+    }
     private void UpdateStyle()
     {
         var style = _owner?.GetValue(MaterialRipple.StyleProperty) ?? _themeStyle;
-        if (_style == style) return;
-        if (style == MaterialRippleStyle.Patterned) MaterialPatternedRippleDraw.Prepare();
-        _style = style; _ripples.Clear(); UpdateState(); InvalidateVisual();
+        var effective = style == MaterialRippleStyle.Patterned && Background is ISolidColorBrush ? MaterialRippleStyle.Patterned : MaterialRippleStyle.Solid;
+        if (_style == style && _effectiveStyle == effective) return;
+        if (effective == MaterialRippleStyle.Patterned) MaterialPatternedRippleDraw.Prepare();
+        _style = style; _effectiveStyle = effective; _ripples.Clear(); UpdateState(); InvalidateVisual();
+    }
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == BackgroundProperty) UpdateStyle();
     }
     private void ClassesChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateState();
     private void UpdateState()
@@ -160,28 +176,30 @@ internal sealed class MaterialStateLayer : Control
         var time = frame.Elapsed.TotalSeconds;
         var stateFraction = _stateDuration == 0 ? 1 : Math.Clamp((time - _stateStart) / _stateDuration, 0, 1);
         _alpha = _fromAlpha + (_toAlpha - _fromAlpha) * stateFraction;
-        var enter = _style == MaterialRippleStyle.Patterned ? .450 : .225;
-        var exit = _style == MaterialRippleStyle.Patterned ? .375 : .150;
+        var enter = _effectiveStyle == MaterialRippleStyle.Patterned ? .450 : .225;
+        var exit = _effectiveStyle == MaterialRippleStyle.Patterned ? .375 : .150;
         _ripples.RemoveAll(ripple => ripple.Released is { } released && (_reduced || time >= Math.Max(released, ripple.Start + enter) + exit));
         InvalidateVisual();
-        return stateFraction < 1 || _ripples.Any(ripple => ripple.Released.HasValue || !_reduced && time < ripple.Start + (_style == MaterialRippleStyle.Patterned ? 7 : .225));
+        return stateFraction < 1 || _ripples.Any(ripple => ripple.Released.HasValue || !_reduced && time < ripple.Start + (_effectiveStyle == MaterialRippleStyle.Patterned ? 7 : .225));
     }
     public override void Render(DrawingContext context)
     {
         if (Background is null || Bounds.Width <= 0 || Bounds.Height <= 0) return;
         var rect = new Rect(Bounds.Size);
+        IBrush paint = Background is ISolidColorBrush input
+            ? new ImmutableSolidColorBrush(Color.FromRgb(input.Color.R, input.Color.G, input.Color.B)) : Background;
         using var clip = context.PushClip(new RoundedRect(rect, CornerRadius));
-        if (_alpha > 0) using (context.PushOpacity(_alpha)) context.DrawRectangle(Background, null, rect);
+        if (_alpha > 0) using (context.PushOpacity(_alpha)) context.DrawRectangle(paint, null, rect);
         var time = _frames.Elapsed.TotalSeconds;
         foreach (var ripple in _ripples)
         {
             var age = Math.Max(0, time - ripple.Start);
-            if (_style == MaterialRippleStyle.Patterned && Background is ISolidColorBrush color)
+            if (_effectiveStyle == MaterialRippleStyle.Patterned && Background is ISolidColorBrush color)
             {
                 var progress = _reduced ? ripple.Released.HasValue ? 1 : .5 : ripple.Released is { } patternedReleased && time >= Math.Max(patternedReleased, ripple.Start + .450)
                     ? .5 + .5 * Math.Clamp((time - Math.Max(patternedReleased, ripple.Start + .450)) / .375, 0, 1)
                     : .5 * RadiusEasing.Ease(Math.Clamp(age / .450, 0, 1));
-                var alphaByte = (byte)Math.Clamp(Math.Round(color.Color.A * color.Opacity * _press, MidpointRounding.AwayFromZero), 0, 255);
+                var alphaByte = (byte)Math.Clamp(Math.Round(255 * _press, MidpointRounding.AwayFromZero), 0, 255);
                 var noiseFrom = (float)ripple.NoiseStart; var noiseTo = (float)(ripple.NoiseStart + 32);
                 var noise = noiseFrom + (noiseTo - noiseFrom) * (float)Math.Clamp(age / 7, 0, 1);
                 context.Custom(new MaterialPatternedRippleDraw(rect, ripple.Origin, ripple.EndRadius, progress,
@@ -200,7 +218,7 @@ internal sealed class MaterialStateLayer : Control
             var radius = ripple.StartRadius + (ripple.EndRadius - ripple.StartRadius) * eased;
             var center = new Point(ripple.Origin.X + (rect.Center.X - ripple.Origin.X) * radiusFraction,
                 ripple.Origin.Y + (rect.Center.Y - ripple.Origin.Y) * radiusFraction);
-            using (context.PushOpacity(_press * alpha)) context.DrawEllipse(Background, null, center, radius, radius);
+            using (context.PushOpacity(_press * alpha)) context.DrawEllipse(paint, null, center, radius, radius);
         }
     }
     private sealed class Observer(Action<object?> next) : IObserver<object?>
