@@ -63,6 +63,7 @@
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
     <Setter Property="MaxWidth" Value="360" />
+    <Style Selector="^:range"><Setter Property="MaxWidth" Value="Infinity" /></Style>
     <Setter Property="Template">
       <ControlTemplate>
         <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">

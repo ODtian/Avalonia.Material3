@@ -214,6 +214,7 @@ public class DateTimePickerScenarioTests
         var peer = ControlAutomationPeer.CreatePeerForElement(selected);
         Assert.Contains("2024", peer.GetName());
         Assert.IsAssignableFrom<IToggleProvider>(peer);
+        picker.SelectionMode = MaterialDateSelectionMode.Single; host.Render();
         host.Click(picker.GetVisualDescendants().OfType<MaterialButton>().Single(b => ControlAutomationPeer.CreatePeerForElement(b).GetName()!.StartsWith("Choose year")));
         var year = picker.GetVisualDescendants().OfType<MaterialCalendarYear>().Single(y => y.Year == 2024);
         year.BringIntoView(); host.Render(); host.Click(year);
@@ -377,7 +378,8 @@ public class DateTimePickerScenarioTests
         var start = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(d => d.Date == new DateOnly(2024, 2, 29));
         host.Click(start);
         Assert.False(picker.IsValid);
-        host.Click(picker.GetVisualDescendants().OfType<MaterialButton>().Single(b => ControlAutomationPeer.CreatePeerForElement(b).GetName() == "Next month"));
+        var months=picker.GetVisualDescendants().OfType<ScrollViewer>().Single(s=>s.IsEffectivelyVisible&&s.VerticalScrollBarVisibility==ScrollBarVisibility.Auto);
+        months.Offset += new Vector(0,336); host.Render();
         var end = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(d => d.Date == new DateOnly(2024, 3, 2));
         host.Click(end);
         Assert.True(picker.IsValid);

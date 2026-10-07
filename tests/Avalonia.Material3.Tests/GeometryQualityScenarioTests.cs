@@ -33,7 +33,7 @@ public class GeometryQualityScenarioTests
         using var host = new GeometryHost(picker, 360, 640);
         host.Theme.Motion = new MaterialMotion { ReduceMotion = reduced }; host.Render();
         var days = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().ToArray();
-        Rect Day(int day) => GeometryHost.Box(days.Single(d => d.Date.Day == day), host.Window);
+        Rect Day(int day) => GeometryHost.Box(days.Single(d => d.Date == new DateOnly(2024, 2, day)), host.Window);
         void Click(int day)
         {
             var point = Day(day).Center; host.Window.MouseDown(point, MouseButton.Left); host.Window.MouseUp(point, MouseButton.Left); host.Render();
@@ -74,7 +74,7 @@ public class GeometryQualityScenarioTests
             FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
         using var host = new GeometryHost(picker, 360, 640);
         var days = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().ToArray();
-        Rect Day(int value) => GeometryHost.Box(days.Single(d => d.Date.Day == value), host.Window);
+        Rect Day(int value) => GeometryHost.Box(days.Single(d => d.Date == new DateOnly(2024, 2, value)), host.Window);
         var start = Day(first); var end = Day(last);
         var band = Color.Parse("#E8DEF8"); var surface = Color.Parse("#ECE6F0");
         // February2024 starts Thursday:9..16 begins at(264,52), ends(264,100)
@@ -223,7 +223,7 @@ public class GeometryQualityScenarioTests
             SelectedDate = new(2024, 2, 7), RangeEnd = new(2024, 2, 24),
             FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
         using var host = new GeometryHost(picker, 360, 640);
-        var start = GeometryHost.Box(picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(d => d.Date.Day == 7), host.Window);
+        var start = GeometryHost.Box(picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(d => d.Date == new DateOnly(2024, 2, 7)), host.Window);
         var pixels = host.Offscreen(scale);
         Color At(double dx, double dy) => pixels[(int)((start.Left + dx) * scale), (int)((start.Top + dy) * scale)];
         Assert.Equal(Color.Parse("#E8DEF8"), At(rtl ? 14 : 34, 5));
@@ -287,15 +287,15 @@ public class GeometryQualityScenarioTests
             FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
         using var host = new GeometryHost(picker, 360, 640);
         var days = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().ToArray();
-        var start = GeometryHost.Box(days.Single(d => d.Date.Day == 7), host.Window);
-        var end = GeometryHost.Box(days.Single(d => d.Date.Day == 24), host.Window);
+        var start = GeometryHost.Box(days.Single(d => d.Date == new DateOnly(2024, 2, 7)), host.Window);
+        var end = GeometryHost.Box(days.Single(d => d.Date == new DateOnly(2024, 2, 24)), host.Window);
         Assert.Equal(new Size(48, 48), start.Size);
         Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(start.Left + (rtl ? 14 : 34), start.Top + 5));
         Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(start.Left + (rtl ? 34 : 14), start.Top + 5));
         Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(end.Left + (rtl ? 34 : 14), end.Top + 5));
         Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(end.Left + (rtl ? 14 : 34), end.Top + 5));
         // Weekly backing is deliberately rectangular; outside the40-high band is not selected.
-        var middle = GeometryHost.Box(days.Single(d => d.Date.Day == 14), host.Window);
+        var middle = GeometryHost.Box(days.Single(d => d.Date == new DateOnly(2024, 2, 14)), host.Window);
         Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(middle.Left + 1, middle.Top + 5));
         Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(middle.Left + 1, middle.Top + 2));
         picker.RangeEnd = picker.SelectedDate; host.Render();
@@ -310,10 +310,13 @@ public class GeometryQualityScenarioTests
             SelectedDate = new(2024, 2, 7), RangeEnd = new(2024, 2, 24) };
         using var host = new GeometryHost(picker, 360, 900);
         host.Theme.Typography = host.Theme.Typography with { Scale = 2 }; host.Render();
-        var day = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(d => d.Date.Day == 7);
+        Assert.Equal(new DateOnly(2024, 2, 1), picker.DisplayMonth);
+        var day = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(d => d.Date == new DateOnly(2024, 2, 7));
         var box = GeometryHost.Box(day, host.Window);
         // BodyLarge line48 requires a48 circle plus two4 gutters: readable56-square target.
         Assert.Equal(new Size(56, 56), box.Size);
+        var weekday=picker.GetVisualDescendants().OfType<TextBlock>().Single(t=>t.Text=="W");
+        Assert.Equal(box.Center.X,GeometryHost.Box(weekday,host.Window).Center.X);
         Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Left + 5, box.Center.Y));
         Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(box.Left + 50, box.Top + 9));
         Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(box.Left + 6, box.Top + 9));
