@@ -20,7 +20,8 @@ public class MaterialAppBarPanel : Panel
         Owner = null;
         base.OnDetachedFromVisualTree(e);
     }
-    private void OwnerChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => InvalidateMeasure();
+    private void OwnerChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    { if (e.Property != MaterialTopAppBar.CurrentBackgroundProperty) InvalidateMeasure(); }
     private double _topHeight;
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -29,6 +30,18 @@ public class MaterialAppBarPanel : Panel
         Children[0].Measure(new Size(Math.Max(0, width * .3), double.PositiveInfinity));
         Children[1].Measure(new Size(Math.Max(0, width * .45), double.PositiveInfinity));
         _topHeight = Math.Max(64, Math.Max(Children[0].DesiredSize.Height, Children[1].DesiredSize.Height) + 8);
+        if (Children[2] is MaterialAppBarTitleLanes lanes)
+        {
+            var start = Math.Max(16, Children[0].DesiredSize.Width + 8);
+            var end = Math.Max(16, Children[1].DesiredSize.Width + 8);
+            var laneBudget = double.IsFinite(availableSize.Height) ? Math.Max(owner.NominalHeight, availableSize.Height * .5) : owner.NominalHeight * 2;
+            lanes.MeasureLanes(Math.Max(0, width - start - end), Math.Max(0, width - 32), Math.Max(28, laneBudget - _topHeight));
+            _topHeight = Math.Max(_topHeight, lanes.CollapsedContentHeight + 8);
+            var laneExpandedHeight = owner.IsTwoRow ? Math.Max(owner.NominalHeight, _topHeight + lanes.ExpandedContentHeight) : _topHeight;
+            owner.SetMeasuredHeights(_topHeight, laneExpandedHeight);
+            lanes.Measure(new Size(width, owner.RenderedHeight));
+            return new Size(width, owner.RenderedHeight);
+        }
         var expandedTitle = owner.IsTwoRow && !owner.UsesCollapsedTitle;
         var titleStart = Math.Max(16, Children[0].DesiredSize.Width + 8);
         var titleEnd = Math.Max(16, Children[1].DesiredSize.Width + 8);
@@ -56,6 +69,13 @@ public class MaterialAppBarPanel : Panel
         var actions = Children[1].DesiredSize.Width;
         Arrange(Children[0], 4, 4, navigation, _topHeight - 8);
         Arrange(Children[1], finalSize.Width - actions - 4, 4, actions, _topHeight - 8);
+        if (Children[2] is MaterialAppBarTitleLanes lanes)
+        {
+            Arrange(lanes, 0, 0, finalSize.Width, finalSize.Height);
+            lanes.ArrangeLanes(finalSize, _topHeight, Math.Max(16, navigation + 8), Math.Max(16, actions + 8),
+                owner.CenterTitle || owner.Variant == MaterialTopAppBarVariant.CenterAligned);
+            return finalSize;
+        }
         var expanded = owner.IsTwoRow && !owner.UsesCollapsedTitle;
         var start = expanded && owner.CollapsedFraction == 0 ? 16 : Math.Max(16, navigation + 8);
         var available = Math.Max(0, finalSize.Width - start - (expanded && owner.CollapsedFraction == 0 ? 16 : Math.Max(16, actions + 8)));
