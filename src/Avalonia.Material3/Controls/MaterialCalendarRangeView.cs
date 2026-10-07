@@ -137,7 +137,7 @@ internal sealed class MaterialCalendarMonthsPanel : Panel
             if (_realized.ContainsKey(index)) continue;
             var month = MonthAt(index);
             var title = MaterialPickerSupport.Text("TitleSmall", "OnSurfaceVariant");
-            title.Text = month.ToString("MMMM yyyy", _owner.DateCulture);
+            title.Text = month.ToString(_owner.DateCulture.DateTimeFormat.YearMonthPattern, _owner.DateCulture);
             title.Margin = new Thickness(24, 20, 0, 8);
             var item = new StackPanel { Children = { title, new MaterialCalendarMonthView(_owner, month) } };
             _realized.Add(index, item); Children.Add(item);
