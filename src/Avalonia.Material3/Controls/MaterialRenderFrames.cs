@@ -160,7 +160,7 @@ internal sealed class MaterialFrameLease : IDisposable
     }
     private void Synchronize()
     {
-        var enabled = _ignoreOwnerEnabled ? _owner.GetVisualParent() is not InputElement parent || parent.IsEffectivelyEnabled : _owner.IsEffectivelyEnabled;
+        var enabled = _ignoreOwnerEnabled || _owner.IsEffectivelyEnabled;
         _eligible = _attached && _running && _owner.IsEffectivelyVisible && enabled;
         if (_eligible && !_authored.HasValue) _hub?.Add(this);
         else _hub?.Remove(this);

@@ -13,6 +13,7 @@
   <ItemGroup>
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/carousel-keylines.json" LogicalName="M3.CarouselKeylines.json" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/public-api.txt" LogicalName="M3.PublicApi.txt" Condition="Exists('$(MSBuildThisFileDirectory)ReferenceVectors/public-api.txt')" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/resource-keys.txt" LogicalName="M3.ResourceKeys.txt" Condition="Exists('$(MSBuildThisFileDirectory)ReferenceVectors/resource-keys.txt')" />
   </ItemGroup>

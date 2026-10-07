@@ -69,7 +69,15 @@ public class MaterialTopAppBar : TemplatedControl
     };
     private ContentPresenter? _navigationPresenter;
     private readonly List<(MaterialIconButton Icon, Style Role)> _navigationIcons = [];
-    public MaterialTopAppBar() => UpdatePresentation();
+    private readonly MaterialMotionBrush _containerColor;
+    private readonly MaterialMotionSettings _motion;
+    private static readonly Avalonia.Animation.Easings.SplineEasing ContainerColorEasing = new(.4, 0, 1, 1);
+    public MaterialTopAppBar()
+    {
+        _containerColor = new(this, null, PaintBackground);
+        _motion = new(this, UpdateBackground);
+        UpdatePresentation();
+    }
     private void ClearNavigationRole()
     {
         foreach (var (icon, role) in _navigationIcons) icon.Styles.Remove(role);
@@ -145,13 +153,12 @@ public class MaterialTopAppBar : TemplatedControl
     private void UpdateBackground()
     {
         var fraction = IsTwoRow ? CollapsedFraction : IsScrolled ? 1 : 0;
-        IBrush? brush = fraction <= 0 ? Background : fraction >= 1 ? ScrolledBackground : Background;
-        if (fraction is > 0 and < 1 && Background is ISolidColorBrush rest && ScrolledBackground is ISolidColorBrush scrolled)
-        {
-            byte Blend(byte a, byte b) => (byte)Math.Round(a + (b - a) * fraction, MidpointRounding.AwayFromZero);
-            brush = new Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromArgb(Blend(rest.Color.A, scrolled.Color.A), Blend(rest.Color.R, scrolled.Color.R), Blend(rest.Color.G, scrolled.Color.G), Blend(rest.Color.B, scrolled.Color.B)),
-                rest.Opacity + (scrolled.Opacity - rest.Opacity) * fraction);
-        }
+        if (_containerColor is null || _motion is null) return;
+        if (IsTwoRow) _containerColor.Snap(MaterialMotionBrush.Interpolate(Background, ScrolledBackground, ContainerColorEasing.Ease(fraction)));
+        else _containerColor.Set(IsScrolled ? ScrolledBackground : Background, _motion.DefaultEffects);
+    }
+    private void PaintBackground(IBrush? brush)
+    {
         if (_currentBackground is ISolidColorBrush previous && brush is ISolidColorBrush next && previous.Color == next.Color && previous.Opacity == next.Opacity) return;
         SetAndRaise(CurrentBackgroundProperty, ref _currentBackground, brush);
     }

@@ -151,7 +151,7 @@ public class MotionQualityScenarioTests
         { Title = "Photograph " + i, Image = CarouselRefreshScenarioTests.Picture(Brushes.Green) }).ToArray();
         var carousel = new MaterialCarousel
         {
-            ItemsSource = items, Height = 200, ItemSpacing = 8, AnimationTime = TimeSpan.Zero,
+            ItemsSource = items, Height = 200, ItemSpacing = 8, AnimationTime = TimeSpan.Zero, MotionDuration = TimeSpan.FromMilliseconds(200),
             ItemTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<MaterialCarouselItem>((item, _) =>
             {
                 var image = new Image { Source = item!.Image, Stretch = Stretch.UniformToFill };
@@ -162,15 +162,15 @@ public class MotionQualityScenarioTests
         host.Window.Content = carousel;
         host.Capture();
         var item = carousel.CurrentItem;
-        Assert.Equal(243, images[0].Bounds.Width);
+        Assert.Equal(187.2, images[0].Bounds.Width, 4);
         carousel.Layout = MaterialCarouselLayout.Hero;
         host.Capture();
-        Assert.Equal(243, images[0].Bounds.Width); // first frame is the actually presented old plan
+        Assert.Equal(187.2, images[0].Bounds.Width, 4); // explicit authored transition starts from the actually presented plan
         for (var i = 1; i < 12; i++)
         {
             carousel.AnimationTime = TimeSpan.FromMilliseconds(i * 200.0 / 12);
             host.Capture();
-            Assert.InRange(images[0].Bounds.Width, 243, 344);
+            Assert.InRange(images[0].Bounds.Width, 187.2, 352);
             Assert.Equal(200, carousel.Bounds.Height);
             Assert.Same(item, carousel.CurrentItem);
             var center = images[0].TranslatePoint(new Point(images[0].Bounds.Width / 2, 60), host.Window)!.Value;
@@ -179,7 +179,7 @@ public class MotionQualityScenarioTests
         }
         carousel.AnimationTime = TimeSpan.FromMilliseconds(200);
         host.Capture();
-        Assert.Equal(344, images[0].Bounds.Width, 4);
+        Assert.Equal(352, images[0].Bounds.Width, 4);
         Assert.All(images, image => Assert.NotNull(image.Parent));
     }
 

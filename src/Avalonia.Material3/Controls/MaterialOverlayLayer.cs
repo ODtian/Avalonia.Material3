@@ -16,7 +16,7 @@ internal sealed class MaterialOverlayLayer : Panel
     internal MaterialOverlayLayer(MaterialOverlayHost host, MaterialOverlayOptions options, Border scrim, Border container)
     {
         this.host = host; this.options = options; this.scrim = scrim; Container = container;
-        if (container.Child is MaterialMenu or MaterialTooltip or MaterialSnackbar or MaterialDialog or MaterialNavigationDrawer) Presentation = new(this);
+        if (container.Child is MaterialMenu or MaterialTooltip or MaterialSnackbar or MaterialDialog or MaterialNavigationDrawer or MaterialSheet) Presentation = new(this);
     }
     protected override AutomationPeer OnCreateAutomationPeer() => new MaterialOverlayScopeAutomationPeer(this);
     private Rect? _anchorBounds;
