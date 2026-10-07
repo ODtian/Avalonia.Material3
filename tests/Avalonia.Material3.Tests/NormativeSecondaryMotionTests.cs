@@ -11,6 +11,28 @@ namespace Avalonia.Material3.Tests;
 
 public class NormativeSecondaryMotionTests
 {
+    [AvaloniaFact]
+    public async Task Refresh_indicator_travels_to_its_threshold_before_fully_entering_the_viewport()
+    {
+        using var host = new ButtonHost();
+        host.Theme.Motion = new MaterialMotion();
+        var refresh = new MaterialPullToRefresh { Width = 240, Height = 160, Content = new Border { Background = Avalonia.Media.Brushes.Blue } };
+        host.Window.Content = refresh;
+        host.Capture();
+        var nearThreshold = refresh.TranslatePoint(new Point(120, 70), host.Window)!.Value;
+        var rest = host.PixelAt(nearThreshold);
+        Assert.True(refresh.RequestRefresh());
+        await Task.Delay(25);
+        host.Capture();
+        var early = host.PixelAt(nearThreshold);
+        // The standard shadow can darken blue while the opaque indicator remains above this point.
+        Assert.Equal(rest.R, early.R); Assert.Equal(rest.G, early.G);
+        await Task.Delay(220);
+        host.Capture();
+        Assert.NotEqual(rest, host.PixelAt(nearThreshold));
+        Assert.Equal(1, refresh.DistanceFraction);
+    }
+
     [AvaloniaTheory]
     [InlineData(MaterialTopAppBarVariant.Small)]
     [InlineData(MaterialTopAppBarVariant.Large)]
