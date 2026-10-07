@@ -4,7 +4,7 @@ using Avalonia.Material3.Tokens;
 namespace Avalonia.Material3.Controls;
 
 /// <summary>Template-only spring projection. Input/automation remain on the owning Button.</summary>
-internal sealed class MaterialShapeBorder : Border
+internal sealed class MaterialShapeBorder : MaterialElevationBorder
 {
     public static readonly StyledProperty<CornerRadius> ShapeCornerRadiusProperty =
         AvaloniaProperty.Register<MaterialShapeBorder, CornerRadius>(nameof(ShapeCornerRadius));

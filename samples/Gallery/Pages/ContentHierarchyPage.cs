@@ -72,7 +72,7 @@ public sealed class ContentHierarchyPage : StackPanel
         });
 
         var first = Row("entry-1", "One line / 一行", MaterialListLines.One);
-        first.Leading = new TextBlock { Text = "●", FontSize = 24 };
+        first.Leading = new MaterialSymbol { Symbol = "circle", Filled = true, Size = 24 };
         first.Trailing = new MaterialBadge { Count = 3 };
         var second = Row("entry-2", "Two lines / 带图片的条目", MaterialListLines.Two);
         second.Image = Preview(56);
