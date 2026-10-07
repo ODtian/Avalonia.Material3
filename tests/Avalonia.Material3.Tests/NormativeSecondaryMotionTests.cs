@@ -11,6 +11,28 @@ namespace Avalonia.Material3.Tests;
 
 public class NormativeSecondaryMotionTests
 {
+    [AvaloniaTheory]
+    [InlineData(MaterialTopAppBarVariant.Small)]
+    [InlineData(MaterialTopAppBarVariant.Large)]
+    public async Task App_bar_color_uses_the_matching_one_or_two_row_source_recipe(MaterialTopAppBarVariant variant)
+    {
+        using var host = new ButtonHost();
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultEffects = new(1, 100) } };
+        var bar = new MaterialTopAppBar { Variant = variant, ScrollBehavior = MaterialAppBarScrollBehavior.ExitUntilCollapsed,
+            Background = Avalonia.Media.Brushes.Black, ScrolledBackground = Avalonia.Media.Brushes.White };
+        host.Window.Content = bar;
+        host.Capture();
+        bar.ApplyScrollDelta((bar.ExpandedHeight - bar.CollapsedHeight) / 2, 32);
+        if (variant == MaterialTopAppBarVariant.Small) await Task.Delay(100);
+        host.Capture();
+        var color = ((Avalonia.Media.ISolidColorBrush)bar.CurrentBackground!).Color;
+        // FastOutLinearIn(.5)=.324815, then black→white Oklab lerp gives sRGB#343434.
+        Assert.InRange(color.R, variant == MaterialTopAppBarVariant.Small ? (byte)14 : (byte)48,
+            variant == MaterialTopAppBarVariant.Small ? (byte)100 : (byte)56);
+        Assert.Equal(color.R, color.G);
+        Assert.Equal(color.G, color.B);
+    }
+
     [AvaloniaFact]
     public async Task Disabled_checkbox_programmatic_selection_finishes_painting_its_mark()
     {
