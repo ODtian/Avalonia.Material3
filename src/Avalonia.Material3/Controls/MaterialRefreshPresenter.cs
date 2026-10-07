@@ -12,8 +12,21 @@ public sealed class MaterialRefreshPresenter : Panel
     public MaterialPullToRefresh? Refresh { get => GetValue(RefreshProperty); set => SetValue(RefreshProperty, value); }
     private Border? _standard;
     private MaterialLoadingIndicator? _loading;
+    private MaterialLoadingIndicator? _loadingBusy;
+    private Border? _loadingContainer;
+    private readonly RotateTransform _pullRotation = new();
     private MaterialCircularProgressIndicator? _spinner;
     private RefreshArrow? _arrow;
+    private readonly MaterialMotionSettings _motion;
+    private readonly MaterialMotionValue _busyMix;
+    private readonly MaterialMotionValue _arrowAlpha;
+    private bool _initialized;
+    public MaterialRefreshPresenter()
+    {
+        _busyMix = new(this, 0, _ => PaintFeedback());
+        _arrowAlpha = new(this, .3, value => { if (_arrow is not null) _arrow.Alpha = value; });
+        _motion = new(this, Update);
+    }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -23,6 +36,7 @@ public sealed class MaterialRefreshPresenter : Panel
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (Refresh is { } owner) owner.FeedbackChanged -= Update;
+        _initialized = false;
         base.OnDetachedFromVisualTree(e);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -48,21 +62,44 @@ public sealed class MaterialRefreshPresenter : Panel
             _standard = new Border { Width = 40, Height = 40, CornerRadius = new CornerRadius(9999), Child = content };
             _standard.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
             _standard.Bind(Border.BoxShadowProperty, new DynamicResourceExtension("M3.Elevation.Shadow2"));
-            _loading = new MaterialLoadingIndicator { IsContained = true, Width = 48, Height = 48 };
+            _loading = new MaterialLoadingIndicator { IsContained = true, IsIndeterminate = false, Width = 48, Height = 48,
+                RenderTransform = _pullRotation, RenderTransformOrigin = RelativePoint.Center };
+            _loadingBusy = new MaterialLoadingIndicator { IsContained = true, IsIndeterminate = true, Width = 48, Height = 48 };
+            _loadingContainer = new Border { Width = 48, Height = 48, CornerRadius = new CornerRadius(24),
+                Child = new Grid { Children = { _loading, _loadingBusy } } };
+            _loadingContainer.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.PrimaryContainerBrush"));
             Children.Add(_standard);
-            Children.Add(_loading);
+            Children.Add(_loadingContainer);
         }
         var busy = owner.Status is MaterialProgressStatus.Running or MaterialProgressStatus.Paused;
-        _standard.IsVisible = !owner.IsExpressive && owner.DistanceFraction > 0;
-        _loading!.IsVisible = owner.IsExpressive && owner.DistanceFraction > 0;
-        _loading.Status = busy ? owner.Status : MaterialProgressStatus.Running;
-        _loading.IsIndeterminate = busy;
-        _loading.Value = Math.Min(owner.DistanceFraction, 1);
-        _arrow!.IsVisible = !busy;
-        _arrow.Fraction = owner.DistanceFraction;
-        _spinner!.IsVisible = busy;
-        _spinner.Status = owner.Status == MaterialProgressStatus.Paused ? MaterialProgressStatus.Paused : MaterialProgressStatus.Running;
+        _standard.IsVisible = !owner.IsExpressive && owner.PresentedDistanceFraction > 0;
+        _loadingContainer!.IsVisible = owner.IsExpressive && owner.PresentedDistanceFraction > 0;
+        _loadingBusy!.Status = owner.Status == MaterialProgressStatus.Paused ? MaterialProgressStatus.Paused : MaterialProgressStatus.Running;
+        _loading!.Value = Math.Min(owner.PresentedDistanceFraction, 1);
+        _pullRotation.Angle = -Math.Max(0, owner.PresentedDistanceFraction - 1) * 180;
+        _arrow!.Fraction = owner.PresentedDistanceFraction;
+        var arrowAlpha = owner.PresentedDistanceFraction >= 1 ? 1 : .3;
+        if (!_initialized)
+        {
+            _busyMix.Snap(busy ? 1 : 0); _arrowAlpha.Snap(arrowAlpha); _initialized = true;
+        }
+        else
+        {
+            _busyMix.Spring(busy ? 1 : 0, _motion.DefaultEffects);
+            _arrowAlpha.Spring(arrowAlpha, _motion.DefaultEffects);
+        }
+        PaintFeedback();
+        _spinner!.Status = owner.Status == MaterialProgressStatus.Paused ? MaterialProgressStatus.Paused : MaterialProgressStatus.Running;
         InvalidateArrange();
+    }
+    private void PaintFeedback()
+    {
+        if (_arrow is null || _spinner is null) return;
+        var mix = Math.Clamp(_busyMix.Value, 0, 1);
+        _arrow.Opacity = 1 - mix; _arrow.IsVisible = mix < 1;
+        _spinner.Opacity = mix; _spinner.IsVisible = mix > 0;
+        if (_loading is not null) { _loading.Opacity = 1 - mix; _loading.IsVisible = mix < 1; }
+        if (_loadingBusy is not null) { _loadingBusy.Opacity = mix; _loadingBusy.IsVisible = mix > 0; }
     }
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -75,7 +112,7 @@ public sealed class MaterialRefreshPresenter : Panel
         {
             var width = child.Width;
             var height = child.Height;
-            var offset = Math.Min((Refresh?.DistanceFraction ?? 0) * (Refresh?.Threshold ?? 80), finalSize.Height);
+            var offset = Math.Min((Refresh?.PresentedDistanceFraction ?? 0) * (Refresh?.Threshold ?? 80), finalSize.Height);
             child.Arrange(new Rect((finalSize.Width - width) / 2, offset - height, width, height));
         }
         return finalSize;
@@ -83,6 +120,8 @@ public sealed class MaterialRefreshPresenter : Panel
     private sealed class RefreshArrow : Control
     {
         private double _fraction;
+        private double _alpha = .3;
+        internal double Alpha { get => _alpha; set { _alpha = value; InvalidateVisual(); } }
         public double Fraction { get => _fraction; set { _fraction = value; InvalidateVisual(); } }
         public override void Render(DrawingContext context)
         {
@@ -92,7 +131,7 @@ public sealed class MaterialRefreshPresenter : Panel
             var tension = linear - linear * linear / 4;
             var rotation = (-.25 + .4 * adjusted + tension) * .5;
             var sweep = adjusted * .8 * 2 * Math.PI;
-            var start = rotation * 2 * Math.PI;
+            var start = rotation * 2 * Math.PI + rotation * Math.PI / 180;
             var radius = 6.75;
             var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
             var geometry = new StreamGeometry();
@@ -105,22 +144,21 @@ public sealed class MaterialRefreshPresenter : Panel
                     if (i == 0) path.BeginFigure(point, false); else path.LineTo(point);
                 }
             }
-            using (context.PushOpacity(Fraction >= 1 ? 1 : .3))
+            using (context.PushOpacity(Math.Clamp(Alpha, 0, 1)))
             {
-                context.DrawGeometry(null, new Pen(brush, 2.5, lineCap: PenLineCap.Round), geometry);
-                var end = start + sweep;
-                var tip = center + new Vector(Math.Cos(end), Math.Sin(end)) * radius;
-                var tangent = new Vector(-Math.Sin(end), Math.Cos(end));
-                var radial = new Vector(Math.Cos(end), Math.Sin(end));
+                context.DrawGeometry(null, new Pen(brush, 2.5, lineCap: PenLineCap.Flat), geometry);
+                var arrowAngle = start + sweep - 2.5 * Math.PI / 180;
+                Point RotateArrow(double x, double y) => center + new Vector(
+                    x * Math.Cos(arrowAngle) - y * Math.Sin(arrowAngle),
+                    x * Math.Sin(arrowAngle) + y * Math.Cos(arrowAngle));
                 var arrow = new StreamGeometry();
                 using (var path = arrow.Open())
                 {
-                    path.BeginFigure(tip + tangent * (5 * adjusted), true);
-                    path.LineTo(tip - tangent * (5 * adjusted) + radial * (5 * adjusted));
-                    path.LineTo(tip - tangent * (5 * adjusted) - radial * (5 * adjusted));
-                    path.EndFigure(true);
+                    path.BeginFigure(RotateArrow(radius - 5 * adjusted, -2.5), false);
+                    path.LineTo(RotateArrow(radius, 5 * adjusted - 2.5));
+                    path.LineTo(RotateArrow(radius + 5 * adjusted, -2.5));
                 }
-                context.DrawGeometry(brush, null, arrow);
+                context.DrawGeometry(null, new Pen(brush, 2.5, lineCap: PenLineCap.Flat), arrow);
             }
         }
     }
