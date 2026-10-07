@@ -24,7 +24,7 @@ public class MaterialTopAppBar : TemplatedControl
     public static readonly DirectProperty<MaterialTopAppBar, double> CollapsedHeightProperty = AvaloniaProperty.RegisterDirect<MaterialTopAppBar, double>(nameof(CollapsedHeight), c => c.CollapsedHeight);
     public static readonly DirectProperty<MaterialTopAppBar, double> CollapsedFractionProperty = AvaloniaProperty.RegisterDirect<MaterialTopAppBar, double>(nameof(CollapsedFraction), c => c.CollapsedFraction);
     public static readonly DirectProperty<MaterialTopAppBar, bool> IsScrolledProperty = AvaloniaProperty.RegisterDirect<MaterialTopAppBar, bool>(nameof(IsScrolled), c => c.IsScrolled);
-    private double _expandedHeight = 64, _collapsedHeight = 64, _collapsedFraction, _collapse, _lastOffset;
+    private double _expandedHeight = 64, _collapsedHeight = 64, _collapsedFraction, _collapse, _lastOffset, _contentOffset;
     private bool _isScrolled;
     private ScrollViewer? _subscribedScroll;
     private ScrollViewer? _watchedScroll;
@@ -128,6 +128,7 @@ public class MaterialTopAppBar : TemplatedControl
     {
         if (!double.IsFinite(delta) || !double.IsFinite(contentOffset) || contentOffset < 0) throw new ArgumentOutOfRangeException(nameof(delta));
         var old = _collapse;
+        _contentOffset = contentOffset;
         if (ScrollBehavior != MaterialAppBarScrollBehavior.Pinned && (delta >= 0 || ScrollBehavior == MaterialAppBarScrollBehavior.EnterAlways || contentOffset <= 0))
             _collapse = Math.Clamp(_collapse + delta, 0, ExpandedHeight - CollapsedHeight);
         SetAndRaise(IsScrolledProperty, ref _isScrolled, contentOffset > .01);
@@ -139,6 +140,7 @@ public class MaterialTopAppBar : TemplatedControl
     {
         _collapse = 0;
         _lastOffset = 0;
+        _contentOffset = 0;
         SetAndRaise(IsScrolledProperty, ref _isScrolled, false);
         UpdateScrollPresentation();
         InvalidateMeasure();
@@ -155,7 +157,7 @@ public class MaterialTopAppBar : TemplatedControl
         var fraction = IsTwoRow ? CollapsedFraction : IsScrolled ? 1 : 0;
         if (_containerColor is null || _motion is null) return;
         if (IsTwoRow) _containerColor.Snap(MaterialMotionBrush.Interpolate(Background, ScrolledBackground, ContainerColorEasing.Ease(fraction)));
-        else _containerColor.Set(IsScrolled ? ScrolledBackground : Background, _motion.DefaultEffects);
+        else _containerColor.Set(_contentOffset / Math.Max(1, CollapsedHeight) > .01 ? ScrolledBackground : Background, _motion.DefaultEffects);
     }
     private void PaintBackground(IBrush? brush)
     {
@@ -206,6 +208,7 @@ public class MaterialTopAppBar : TemplatedControl
     }
     private void ObserveOffset(double offset)
     {
+        _contentOffset = offset;
         var delta = offset - _lastOffset;
         _lastOffset = offset;
         if (ScrollBehavior == MaterialAppBarScrollBehavior.ExitUntilCollapsed)
