@@ -51,10 +51,12 @@ public class FinalQualityReviewScenarioTests
         host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { FastSpatial = new(1, 50) } };
         var icon = new Border { Width = 24, Height = 24, Background = Avalonia.Media.Brushes.Red };
         var fab = new MaterialFab { Content = icon };
-        host.Window.Content = new StackPanel { Children = { fab } };
+        var toolbar = new MaterialToolbar { FloatingAction = fab, CollapseBehavior = MaterialToolbarCollapseBehavior.WholeToolbar };
+        toolbar.Items.Add(new MaterialIconButton { Content = "Action" });
+        host.Window.Content = new StackPanel { Children = { toolbar } };
         host.Capture();
         var initial = fab.Bounds.Width;
-        fab.Size = MaterialFabSize.Medium;
+        toolbar.IsExpanded = false;
         var greatest = initial;
         for (var frame = 0; frame < 80; frame++)
         {

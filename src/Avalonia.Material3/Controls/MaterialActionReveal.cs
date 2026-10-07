@@ -5,27 +5,33 @@ using Avalonia.Material3.Tokens;
 namespace Avalonia.Material3.Controls;
 
 /// <summary>Private bounded reveal. Semantic input closes immediately; presentation has a stable measured target.</summary>
-internal sealed class MaterialActionReveal : Decorator
+internal sealed class MaterialActionReveal : Decorator, IMaterialActionDisclosure
 {
     public static readonly StyledProperty<bool> IsExpandedProperty = AvaloniaProperty.Register<MaterialActionReveal, bool>(nameof(IsExpanded), true);
     public static readonly StyledProperty<bool> RevealFromEndProperty = AvaloniaProperty.Register<MaterialActionReveal, bool>(nameof(RevealFromEnd));
     public static readonly StyledProperty<Orientation> OrientationProperty = AvaloniaProperty.Register<MaterialActionReveal, Orientation>(nameof(Orientation));
     public static readonly StyledProperty<MaterialSpring> SpatialSpringProperty = AvaloniaProperty.Register<MaterialActionReveal, MaterialSpring>(nameof(SpatialSpring), new(1, 1400), validate: value => value is { IsValid: true });
     public static readonly StyledProperty<MaterialSpring> EffectsSpringProperty = AvaloniaProperty.Register<MaterialActionReveal, MaterialSpring>(nameof(EffectsSpring), new(1, 3800), validate: value => value is { IsValid: true });
+    public static readonly StyledProperty<bool> FadeContentProperty = AvaloniaProperty.Register<MaterialActionReveal, bool>(nameof(FadeContent), true);
     public bool RevealFromEnd { get => GetValue(RevealFromEndProperty); set => SetValue(RevealFromEndProperty, value); }
     public bool IsExpanded { get => GetValue(IsExpandedProperty); set => SetValue(IsExpandedProperty, value); }
     public Orientation Orientation { get => GetValue(OrientationProperty); set => SetValue(OrientationProperty, value); }
     public MaterialSpring SpatialSpring { get => GetValue(SpatialSpringProperty); set => SetValue(SpatialSpringProperty, value); }
     public MaterialSpring EffectsSpring { get => GetValue(EffectsSpringProperty); set => SetValue(EffectsSpringProperty, value); }
+    public bool FadeContent { get => GetValue(FadeContentProperty); set => SetValue(FadeContentProperty, value); }
     protected override Type StyleKeyOverride => typeof(Decorator);
     private readonly MaterialFrameLease _frames;
     private bool _attached, _hasFullSize;
     private double _extent = 1, _alpha = 1, _target = 1, _fromExtent, _fromAlpha;
+    private double _rawExtent = 1, _extentVelocity, _alphaVelocity, _fromExtentVelocity, _fromAlphaVelocity;
     private Size _fullSize, _constraint, _rootSize;
     private Control? _measuredChild;
     internal double RevealFraction => _extent;
+    internal double FullMajor => Orientation == Orientation.Horizontal ? _fullSize.Width : _fullSize.Height;
     internal bool IsRevealing => _frames.IsRunning;
     internal event Action? Settled;
+    bool IMaterialActionDisclosure.IsRevealing => IsRevealing;
+    event Action? IMaterialActionDisclosure.Settled { add => Settled += value; remove => Settled -= value; }
 
     public MaterialActionReveal()
     {
@@ -49,18 +55,19 @@ internal sealed class MaterialActionReveal : Decorator
     {
         base.OnPropertyChanged(change);
         if (change.Property == ChildProperty) _hasFullSize = false;
-        if (change.Property == IsExpandedProperty || change.Property == SpatialSpringProperty || change.Property == EffectsSpringProperty)
+        if (change.Property == IsExpandedProperty || change.Property == SpatialSpringProperty || change.Property == EffectsSpringProperty || change.Property == FadeContentProperty)
         {
             if (_frames is null) return;
             if (_frames.IsRunning) _frames.Sample();
             IsEnabled = IsHitTestVisible = IsExpanded;
             _target = IsExpanded ? 1 : 0;
             if (!_attached || (SpatialSpring.IsInstant && EffectsSpring.IsInstant)
-                || (_extent == _target && _alpha == _target)) Snap();
+                || (_rawExtent == _target && _alpha == (FadeContent ? _target : 1) && _extentVelocity == 0 && _alphaVelocity == 0)) Snap();
             else
             {
-                _fromExtent = _extent;
+                _fromExtent = _rawExtent;
                 _fromAlpha = _alpha;
+                _fromExtentVelocity = _extentVelocity; _fromAlphaVelocity = _alphaVelocity;
                 IsVisible = true;
                 _frames.Restart();
                 _frames.SetRunning(true);
@@ -77,7 +84,8 @@ internal sealed class MaterialActionReveal : Decorator
     {
         var wasMoving = _frames?.IsRunning == true;
         _frames?.SetRunning(false);
-        _extent = _alpha = _target;
+        _rawExtent = _extent = _target; _alpha = FadeContent ? _target : 1;
+        _extentVelocity = _alphaVelocity = 0;
         Opacity = _alpha;
         IsVisible = _target > 0;
         IsEnabled = IsHitTestVisible = IsExpanded;
@@ -87,25 +95,26 @@ internal sealed class MaterialActionReveal : Decorator
     private bool Advance(MaterialFrame frame)
     {
         var seconds = frame.Elapsed.TotalSeconds;
-        var spatial = MaterialSpringResponse.Evaluate(seconds, SpatialSpring);
-        var effects = MaterialSpringResponse.Evaluate(seconds, EffectsSpring);
-        if (!double.IsFinite(spatial) || !double.IsFinite(effects)) { Complete(); return false; }
-        static double Project(double current, double from, double target, double response)
-        {
-            var bounded = Math.Clamp(from + (target - from) * response, 0, 1);
-            // Extent is a reveal, not an unbounded spatial translation. Once a clip reaches its edge
-            // it cannot recoil while the independent effects track finishes. Keep the same spring curve.
-            return target > from ? Math.Max(current, bounded) : Math.Min(current, bounded);
-        }
-        _extent = Project(_extent, _fromExtent, _target, spatial);
-        _alpha = Project(_alpha, _fromAlpha, _target, effects);
-        if (seconds >= 10 || (Math.Abs(_extent - _target) < .001 && Math.Abs(_alpha - _target) < .001))
+        (_rawExtent, _extentVelocity) = MaterialSpringResponse.Sample(seconds, _fromExtent, _target, _fromExtentVelocity, SpatialSpring);
+        var alphaTarget = FadeContent ? _target : 1;
+        (_alpha, _alphaVelocity) = MaterialSpringResponse.Sample(seconds, _fromAlpha, alphaTarget, _fromAlphaVelocity, EffectsSpring);
+        _extent = Math.Clamp(_rawExtent, 0, 1); _alpha = Math.Clamp(_alpha, 0, 1);
+        var scale = Math.Max(1, FullMajor);
+        if (!double.IsFinite(_rawExtent) || !double.IsFinite(_alpha) || seconds >= 10
+            || Math.Abs(_rawExtent - _target) * scale < 1 && Math.Abs(_extentVelocity) * scale < 62.5
+                && Math.Abs(_alpha - alphaTarget) < .01 && Math.Abs(_alphaVelocity) < .625)
         { Complete(); return false; }
         Opacity = _alpha;
         InvalidateMeasure();
         return true;
     }
     protected override Size MeasureOverride(Size availableSize)
+    {
+        MeasureFullTarget(availableSize);
+        return Orientation == Orientation.Horizontal ? new Size(_fullSize.Width * _extent, _fullSize.Height)
+            : new Size(_fullSize.Width, _fullSize.Height * _extent);
+    }
+    internal Size MeasureFullTarget(Size availableSize)
     {
         var rootSize = TopLevel.GetTopLevel(this)?.ClientSize ?? availableSize;
         if (!_hasFullSize || Child != _measuredChild || Child?.IsMeasureValid == false
@@ -119,8 +128,7 @@ internal sealed class MaterialActionReveal : Decorator
             _rootSize = rootSize;
             _hasFullSize = true;
         }
-        return Orientation == Orientation.Horizontal ? new Size(_fullSize.Width * _extent, _fullSize.Height)
-            : new Size(_fullSize.Width, _fullSize.Height * _extent);
+        return _fullSize;
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
