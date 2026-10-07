@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Material3.Tokens;
-using Avalonia.Threading;
 
 namespace Avalonia.Material3.Controls;
 
@@ -18,8 +16,8 @@ internal sealed class MaterialShapeBorder : Border
     public MaterialSpring ShapeSpring { get => GetValue(ShapeSpringProperty); set => SetValue(ShapeSpringProperty, value); }
     protected override Type StyleKeyOverride => typeof(Border);
 
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(16) };
-    private readonly Stopwatch _elapsed = new();
+    private readonly MaterialFrameLease _frames;
+    private Size _lastSize;
     private CornerRadius _from;
     private CornerRadius _target;
     private MaterialSpring _activeSpring = new(1, 1600);
@@ -27,7 +25,7 @@ internal sealed class MaterialShapeBorder : Border
     private double _previousProgress;
     private double _previousTime;
 
-    public MaterialShapeBorder() => _timer.Tick += (_, _) => Advance();
+    public MaterialShapeBorder() => _frames = MaterialRenderFrames.Bind(this, Advance);
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs args)
     {
@@ -47,15 +45,27 @@ internal sealed class MaterialShapeBorder : Border
     {
         base.OnPropertyChanged(change);
         if (change.Property == BoundsProperty)
-            UpdateShape(false); // Layout changes establish a new finite shape; never tween saturated token radii.
+        {
+            if (_lastSize == Bounds.Size) return;
+            _lastSize = Bounds.Size;
+            if (_frames?.IsRunning == true)
+            {
+                // A concurrent width/size transition changes normalization, not the shape track's epoch.
+                // Keep its current finite paint and retarget the finite endpoint without restarting/snap.
+                _target = Resolve(ShapeCornerRadius);
+                SetCurrentValue(CornerRadiusProperty, Resolve(CornerRadius));
+            }
+            else UpdateShape(false);
+        }
         else if (change.Property == ShapeCornerRadiusProperty || change.Property == ShapeSpringProperty)
             UpdateShape(true);
     }
 
     private void UpdateShape(bool animate)
     {
-        if (_timer.IsEnabled)
-            Advance();
+        if (_frames is null) return;
+        if (_frames.IsRunning)
+            _frames.Sample();
         var target = Resolve(ShapeCornerRadius);
         Stop();
         if (!animate || !_attached || ShapeSpring.IsInstant || CornerRadius == target)
@@ -67,13 +77,13 @@ internal sealed class MaterialShapeBorder : Border
         _target = target;
         _activeSpring = ShapeSpring;
         _previousProgress = _previousTime = 0;
-        _elapsed.Restart();
-        _timer.Start();
+        _frames.Restart();
+        _frames.SetRunning(true);
     }
 
-    private void Advance()
+    private bool Advance(MaterialFrame frame)
     {
-        var time = _elapsed.Elapsed.TotalSeconds;
+        var time = frame.Elapsed.TotalSeconds;
         var progress = MaterialSpringResponse.Evaluate(time, _activeSpring);
         var amplitude = Math.Max(Math.Max(Math.Abs(_from.TopLeft - _target.TopLeft), Math.Abs(_from.TopRight - _target.TopRight)),
             Math.Max(Math.Abs(_from.BottomRight - _target.BottomRight), Math.Abs(_from.BottomLeft - _target.BottomLeft)));
@@ -82,7 +92,7 @@ internal sealed class MaterialShapeBorder : Border
         {
             SetCurrentValue(CornerRadiusProperty, _target);
             Stop();
-            return;
+            return false;
         }
         static double Mix(double start, double end, double progress) => Math.Max(0, start + (end - start) * progress);
         SetCurrentValue(CornerRadiusProperty, Resolve(new CornerRadius(
@@ -90,6 +100,7 @@ internal sealed class MaterialShapeBorder : Border
             Mix(_from.BottomRight, _target.BottomRight, progress), Mix(_from.BottomLeft, _target.BottomLeft, progress))));
         _previousProgress = progress;
         _previousTime = time;
+        return true;
     }
 
     private CornerRadius Resolve(CornerRadius radius)
@@ -118,7 +129,6 @@ internal sealed class MaterialShapeBorder : Border
 
     private void Stop()
     {
-        _timer.Stop();
-        _elapsed.Stop();
+        _frames?.SetRunning(false);
     }
 }

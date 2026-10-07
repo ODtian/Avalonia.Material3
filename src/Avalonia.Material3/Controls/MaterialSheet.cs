@@ -8,7 +8,6 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Templates;
 using Avalonia.Automation.Peers;
 using Avalonia.Material3.Tokens;
-using System.Diagnostics;
 
 namespace Avalonia.Material3.Controls;
 
@@ -97,9 +96,11 @@ public abstract class MaterialSheet : ContentControl
     private ScrollViewer? _bodyScroll;
     private ScrollViewer? _gestureScroll;
     private bool _isSettling;
-    private readonly DispatcherTimer _motionTimer = new() { Interval = TimeSpan.FromMilliseconds(16) };
-    private readonly Stopwatch _motionTime = new();
+    private readonly MaterialFrameLease _frames;
+    private MaterialSpring _activeSpring = MaterialSpringScheme.Expressive.DefaultSpatial;
     private double _motionFrom, _motionTo, _motionExtent;
+    private bool _hasNatural, _detentsPartial, _detentsHidden;
+    private double _naturalWidth, _naturalHeight;
     private Window? _window;
     private Grid? _layout;
     private Control? _header;
@@ -114,7 +115,7 @@ public abstract class MaterialSheet : ContentControl
         AddHandler(PointerPressedEvent, HandlePointerPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerMovedEvent, HandlePointerMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerReleasedEvent, HandlePointerReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
-        _motionTimer.Tick += (_, _) => AdvanceMotion();
+        _frames = MaterialRenderFrames.Bind(this, AdvanceMotion);
     }
     protected virtual bool IsSide => false;
     public MaterialOverlaySession? Session { get; private set; }
@@ -231,6 +232,11 @@ public abstract class MaterialSheet : ContentControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == ContentProperty || change.Property == ContentTemplateProperty || change.Property == HeaderProperty
+            || change.Property == ActionsProperty || change.Property == HeaderTemplateProperty || change.Property == ActionsTemplateProperty
+            || change.Property == TitleProperty || change.Property == PaddingProperty || change.Property == FontSizeProperty
+            || change.Property == FontFamilyProperty || change.Property == FontWeightProperty || change.Property == TextBlock.LineHeightProperty)
+            _hasNatural = false;
         if (change.Property == ExpandedExtentProperty || change.Property == PeekExtentProperty || change.Property == IsPartialEnabledProperty ||
             change.Property == MinimumExtentProperty || change.Property == MaximumExtentProperty || change.Property == AvailableSizeProperty)
         {
@@ -246,12 +252,17 @@ public abstract class MaterialSheet : ContentControl
         if (change.Property == AllowDismissProperty) CancelDrag();
         if (change.Property.Name == nameof(IsEffectivelyEnabled) && !IsEffectivelyEnabled) CancelDrag();
         if (change.Property == ContentProperty || change.Property == ScrollSourceProperty) CancelDrag();
-        if (change.Property == SpatialSpringProperty && SpatialSpring.IsInstant) { StopMotion(); InvalidateMeasure(); }
+        if (change.Property == SpatialSpringProperty)
+        {
+            if (SpatialSpring.IsInstant) { StopMotion(); InvalidateMeasure(); }
+            else if (IsSettling) StartMotion();
+        }
     }
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         CancelDrag();
         StopMotion();
+        _hasNatural = false;
         base.OnApplyTemplate(e);
         _bodyScroll = e.NameScope.Find<ScrollViewer>("PART_BodyScroll");
         _layout = e.NameScope.Find<Grid>("SheetLayout");
@@ -390,27 +401,35 @@ public abstract class MaterialSheet : ContentControl
     private double StateExtent => State == MaterialSheetState.Hidden ? 0 : State == MaterialSheetState.Expanded ? _expanded : _partial;
     private void StartMotion()
     {
+        var wasSettling = IsSettling;
+        if (wasSettling) _frames.Sample();
+        var from = wasSettling ? _motionExtent : VisibleExtent;
         StopMotion();
         if (SpatialSpring.IsInstant || TopLevel.GetTopLevel(this) is null || _available <= 0 || State == MaterialSheetState.Hidden) return;
-        _motionFrom = _motionExtent = VisibleExtent;
+        _motionFrom = _motionExtent = from;
         _motionTo = StateExtent;
+        _activeSpring = SpatialSpring;
         if (Math.Abs(_motionFrom - _motionTo) < 0.1) return;
         SetAndRaise(IsSettlingProperty, ref _isSettling, true);
-        _motionTime.Restart(); _motionTimer.Start();
+        _frames.Restart(); _frames.SetRunning(true);
         InvalidateMeasure();
     }
     private void StopMotion()
     {
-        _motionTimer.Stop(); _motionTime.Stop();
+        _frames?.SetRunning(false);
         SetAndRaise(IsSettlingProperty, ref _isSettling, false);
     }
-    private void AdvanceMotion()
+    private bool AdvanceMotion(MaterialFrame frame)
     {
-        var seconds = _motionTime.Elapsed.TotalSeconds;
-        var fraction = MaterialSpringResponse.Evaluate(seconds, SpatialSpring);
-        _motionExtent = Math.Clamp(_motionFrom + (_motionTo - _motionFrom) * fraction, 0, _expanded);
-        if (!double.IsFinite(fraction) || seconds >= 10 || seconds > 0.1 && Math.Abs(_motionExtent - _motionTo) < 0.1) StopMotion();
+        var seconds = frame.Elapsed.TotalSeconds;
+        var fraction = MaterialSpringResponse.Evaluate(seconds, _activeSpring);
+        var next = Math.Clamp(_motionFrom + (_motionTo - _motionFrom) * fraction, 0, _expanded);
+        var speed = frame.Delta.TotalSeconds > 0 ? Math.Abs(next - _motionExtent) / frame.Delta.TotalSeconds : double.PositiveInfinity;
+        var settled = !double.IsFinite(fraction) || seconds >= 10 || seconds > .1 && Math.Abs(next - _motionTo) < .1 && speed < 1;
+        _motionExtent = settled ? _motionTo : next;
+        if (settled) StopMotion();
         InvalidateMeasure();
+        return !settled;
     }
     private void UpdatePseudoClasses()
     {
@@ -424,18 +443,41 @@ public abstract class MaterialSheet : ContentControl
     {
         if (AvailableSize is { } declared) availableSize = new Size(Math.Min(availableSize.Width, declared.Width), Math.Min(availableSize.Height, declared.Height));
         if (!double.IsFinite(availableSize.Height) || !double.IsFinite(availableSize.Width)) throw new InvalidOperationException("Sheets require a bounded host or a finite AvailableSize.");
-        var natural = base.MeasureOverride(new Size(availableSize.Width, double.PositiveInfinity));
         var available = IsSide ? availableSize.Width : availableSize.Height;
-        var wanted = double.IsNaN(ExpandedExtent) ? IsSide ? 256 : natural.Height : ExpandedExtent;
+        var wanted = ExpandedExtent;
+        if (double.IsNaN(wanted))
+        {
+            if (IsSide) wanted = 256;
+            else
+            {
+                // Natural content changes propagate invalidity through the template child. Animated
+                // extent invalidates only this owner: don't alternate infinite/finite passes each frame.
+                var childInvalid = VisualChildren.Count > 0 && VisualChildren[0] is Control { IsMeasureValid: false };
+                if (!_hasNatural || _naturalWidth != availableSize.Width || childInvalid)
+                {
+                    _naturalHeight = base.MeasureOverride(new Size(availableSize.Width, double.PositiveInfinity)).Height;
+                    _naturalWidth = availableSize.Width;
+                    _hasNatural = true;
+                }
+                wanted = _naturalHeight;
+            }
+        }
         var minimum = Math.Max(MinimumExtent, !IsModal && !IsSide ? PeekExtent : 0);
         var expanded = Math.Min(available, Math.Max(minimum, Math.Min(MaximumExtent, wanted)));
         var partial = IsModal ? Math.Min(availableSize.Height / 2, expanded) : Math.Min(availableSize.Height, PeekExtent);
         if (State == MaterialSheetState.PartiallyExpanded && _available > 0 && _expanded == _partial && expanded > partial)
             SetState(MaterialSheetState.Expanded);
-        var detents = new List<MaterialSheetDetent> { new(MaterialSheetState.Expanded, available - expanded) };
-        if (!IsSide && IsPartialEnabled) detents.Add(new(MaterialSheetState.PartiallyExpanded, available - partial));
-        if (IsModal || AllowDismiss) detents.Add(new(MaterialSheetState.Hidden, available));
-        if (!_detents.SequenceEqual(detents)) SetAndRaise(DetentsProperty, ref _detents, detents.AsReadOnly());
+        var includePartial = !IsSide && IsPartialEnabled;
+        var includeHidden = IsModal || AllowDismiss;
+        if (_detents.Count == 0 || _expanded != expanded || _partial != partial || _available != available
+            || _detentsPartial != includePartial || _detentsHidden != includeHidden)
+        {
+            var detents = new List<MaterialSheetDetent>(3) { new(MaterialSheetState.Expanded, available - expanded) };
+            if (includePartial) detents.Add(new(MaterialSheetState.PartiallyExpanded, available - partial));
+            if (includeHidden) detents.Add(new(MaterialSheetState.Hidden, available));
+            SetAndRaise(DetentsProperty, ref _detents, detents.AsReadOnly());
+            _detentsPartial = includePartial; _detentsHidden = includeHidden;
+        }
         if (_expanded != expanded || _partial != partial || _available != available) StopMotion();
         _expanded = expanded; _partial = partial; _available = available;
         var extent = IsDragging ? Math.Clamp(_dragExtent, 0, expanded) : IsSettling ? _motionExtent : StateExtent;

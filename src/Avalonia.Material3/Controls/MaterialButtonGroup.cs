@@ -4,8 +4,6 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Automation.Peers;
 using Avalonia.Material3.Tokens;
-using Avalonia.Threading;
-using System.Diagnostics;
 
 namespace Avalonia.Material3.Controls;
 
@@ -45,22 +43,15 @@ public partial class MaterialButtonGroup : Panel
     private MaterialGroupButton? _expanding;
     private double _expansion, _from, _target;
     private MaterialSpring _spring = new(.6, 1500);
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(16) };
-    private readonly Stopwatch _elapsed = new();
+    private readonly MaterialFrameLease _frames;
+    private MaterialSpring _activeSpring = new(.6, 1500);
+    private double[] _widths = [];
     private IDisposable? _springSubscription;
     public MaterialButtonGroup()
     {
+        _frames = MaterialRenderFrames.Bind(this, AdvanceExpansion);
         Children.CollectionChanged += TrackChildren;
         InitializeOverflow();
-        _timer.Tick += (_, _) =>
-        {
-            var t = _elapsed.Elapsed.TotalSeconds;
-            var response = MaterialSpringResponse.Evaluate(t, _spring);
-            _expansion = Math.Clamp(_from + (_target - _from) * response, 0, 1.5);
-            if (!double.IsFinite(response) || t >= 10 || (t > .25 && Math.Abs(_expansion - _target) < .0001))
-            { _expansion = _target; _timer.Stop(); }
-            InvalidateArrange();
-        };
     }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -69,6 +60,7 @@ public partial class MaterialButtonGroup : Panel
         {
             if (value is MaterialSpring spring)
             {
+                if (_frames.IsRunning) _frames.Sample();
                 _spring = spring;
                 RetargetExpansion(_target);
             }
@@ -76,16 +68,34 @@ public partial class MaterialButtonGroup : Panel
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _timer.Stop(); _elapsed.Stop(); _springSubscription?.Dispose(); _springSubscription = null;
+        _frames.SetRunning(false); _springSubscription?.Dispose(); _springSubscription = null;
         CloseOverflow(false);
         base.OnDetachedFromVisualTree(e);
     }
     private void RetargetExpansion(double target)
     {
-        _target = target; _timer.Stop();
-        if (_spring.IsInstant) _expansion = target;
-        else { _from = _expansion; _elapsed.Restart(); _timer.Start(); }
+        if (_frames.IsRunning) _frames.Sample();
+        _target = target;
+        _frames.SetRunning(false);
+        if (_spring.IsInstant || Math.Abs(_expansion - target) < .0000001) _expansion = target;
+        else
+        {
+            _from = _expansion;
+            _activeSpring = _spring;
+            _frames.Restart();
+            _frames.SetRunning(true);
+        }
         InvalidateArrange();
+    }
+    private bool AdvanceExpansion(MaterialFrame frame)
+    {
+        var t = frame.Elapsed.TotalSeconds;
+        var response = MaterialSpringResponse.Evaluate(t, _activeSpring);
+        var next = Math.Clamp(_from + (_target - _from) * response, 0, 1.5);
+        var settled = !double.IsFinite(response) || t >= 10 || (t > .25 && Math.Abs(next - _target) < .0001);
+        _expansion = settled ? _target : next;
+        InvalidateArrange();
+        return !settled;
     }
     private sealed class SpringObserver(Action<object?> changed) : IObserver<object?>
     {
@@ -264,42 +274,55 @@ public partial class MaterialButtonGroup : Panel
     protected override Size ArrangeOverride(Size finalSize)
     {
         double y = 0;
+        var spacing = Spacing;
+        var horizontal = Orientation == Avalonia.Layout.Orientation.Horizontal;
         foreach (var row in _rows)
         {
-            var height = row.Max(c => c.DesiredSize.Height);
-            double offset = 5;
-            var widths = row.Select(c => this is MaterialSegmentedButtonGroup && Orientation == Avalonia.Layout.Orientation.Horizontal
-                ? (finalSize.Width - 10 - (row.Count - 1) * Spacing) / row.Count : c.DesiredSize.Width).ToArray();
-            var active = _expanding is null ? -1 : row.IndexOf(_expanding);
-            if (active >= 0 && Orientation == Avalonia.Layout.Orientation.Horizontal && Variant == MaterialButtonGroupVariant.Unconnected && this is not MaterialSegmentedButtonGroup)
+            if (_widths.Length < row.Count) _widths = new double[row.Count];
+            double height = 0, offset = 5;
+            var active = -1;
+            for (var i = 0; i < row.Count; i++)
             {
-                var neighbors = new[] { active - 1, active + 1 }.Where(i => i >= 0 && i < row.Count).ToArray();
-                var delta = Math.Min(widths[active] * ExpandedRatio * _expansion, neighbors.Sum(i => Math.Min(16, Math.Max(0, widths[i] - 48))));
-                var compression = neighbors.Select(i => Math.Min(delta / neighbors.Length, Math.Min(16, Math.Max(0, widths[i] - 48)))).ToArray();
-                var remaining = delta - compression.Sum();
-                for (var n = 0; n < neighbors.Length; n++)
-                {
-                    var extra = Math.Min(remaining, Math.Min(16, Math.Max(0, widths[neighbors[n]] - 48)) - compression[n]);
-                    compression[n] += extra; remaining -= extra;
-                    widths[neighbors[n]] -= compression[n];
-                }
-                widths[active] += delta - remaining;
+                var child = row[i];
+                height = Math.Max(height, child.DesiredSize.Height);
+                _widths[i] = this is MaterialSegmentedButtonGroup && horizontal
+                    ? (finalSize.Width - 10 - (row.Count - 1) * spacing) / row.Count : child.DesiredSize.Width;
+                if (child == _expanding) active = i;
             }
-            foreach (var child in row)
+            if (active >= 0 && horizontal && Variant == MaterialButtonGroupVariant.Unconnected && this is not MaterialSegmentedButtonGroup)
             {
-                var width = Orientation == Avalonia.Layout.Orientation.Vertical ? finalSize.Width - 10 : widths[row.IndexOf(child)];
-                // Avalonia mirrors the group at the LTR/RTL boundary. Keep layout/shape coordinates logical.
-                var x = offset;
-                child.Arrange(new Rect(x, y, width, height));
-                offset += width + Spacing;
-                if (child is MaterialGroupButton button)
+                var left = active - 1;
+                var right = active + 1;
+                var leftCap = left >= 0 ? Math.Min(16, Math.Max(0, _widths[left] - 48)) : 0;
+                var rightCap = right < row.Count ? Math.Min(16, Math.Max(0, _widths[right] - 48)) : 0;
+                var count = (left >= 0 ? 1 : 0) + (right < row.Count ? 1 : 0);
+                var delta = Math.Min(_widths[active] * ExpandedRatio * _expansion, leftCap + rightCap);
+                var share = count > 0 ? delta / count : 0;
+                var compressLeft = Math.Min(share, leftCap);
+                var compressRight = Math.Min(share, rightCap);
+                var remaining = delta - compressLeft - compressRight;
+                var extra = Math.Min(remaining, leftCap - compressLeft);
+                compressLeft += extra;
+                compressRight += Math.Min(remaining - extra, rightCap - compressRight);
+                if (left >= 0) _widths[left] -= compressLeft;
+                if (right < row.Count) _widths[right] -= compressRight;
+                _widths[active] += compressLeft + compressRight;
+            }
+            for (var i = 0; i < row.Count; i++)
+            {
+                var child = row[i];
+                var width = horizontal ? _widths[i] : finalSize.Width - 10;
+                if (child is MaterialGroupButton button && (button.RowFirst != (i == 0) || button.RowLast != (i == row.Count - 1)))
                 {
-                    button.RowFirst = row.First() == child;
-                    button.RowLast = row.Last() == child;
+                    button.RowFirst = i == 0;
+                    button.RowLast = i == row.Count - 1;
                     button.UpdateGroupShape();
                 }
+                // Logical layout crosses Avalonia's RTL mirror once; no per-frame array or IndexOf scan.
+                child.Arrange(new Rect(offset, y, width, height));
+                offset += width + spacing;
             }
-            y += height + Math.Max(2, Spacing);
+            y += height + Math.Max(2, spacing);
         }
         return finalSize;
     }

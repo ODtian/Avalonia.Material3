@@ -1,7 +1,5 @@
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Material3.Tokens;
-using Avalonia.Threading;
 
 namespace Avalonia.Material3.Controls;
 
@@ -20,13 +18,14 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     private double _iconExtent = 24;
     public double Extent => _extent;
     public double IconExtent => _iconExtent;
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(16) };
-    private readonly Stopwatch _elapsed = new();
+    private readonly MaterialFrameLease _frames;
+    private MaterialSpring _activeSpring = new(1, 1400);
+    private double _toExtent = 56, _toIcon = 24;
     private double _fromExtent;
     private double _fromIcon;
     private bool _attached;
     protected override Type StyleKeyOverride => typeof(Decorator);
-    public MaterialFabGeometryPresenter() => _timer.Tick += (_, _) => Advance();
+    public MaterialFabGeometryPresenter() => _frames = MaterialRenderFrames.Bind(this, Advance);
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -43,30 +42,41 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     {
         base.OnPropertyChanged(e);
         if (e.Property != TargetExtentProperty && e.Property != TargetIconSizeProperty && e.Property != SpringProperty) return;
-        if (!_attached || Spring.IsInstant) { Snap(); return; }
-        if (_timer.IsEnabled) Advance();
+        if (_frames is null) return;
+        if (_frames.IsRunning) _frames.Sample();
+        if (!_attached || Spring.IsInstant || (Extent == TargetExtent && IconExtent == TargetIconSize)) { Snap(); return; }
         _fromExtent = Extent;
         _fromIcon = IconExtent;
-        _elapsed.Restart();
-        _timer.Start();
+        _toExtent = TargetExtent;
+        _toIcon = TargetIconSize;
+        _activeSpring = Spring;
+        _frames.Restart();
+        _frames.SetRunning(true);
     }
     private void Snap()
     {
-        Stop();
-        SetAndRaise(ExtentProperty, ref _extent, TargetExtent);
-        SetAndRaise(IconExtentProperty, ref _iconExtent, TargetIconSize);
+        _toExtent = TargetExtent;
+        _toIcon = TargetIconSize;
+        Complete();
     }
-    private void Stop() { _timer.Stop(); _elapsed.Stop(); }
-    private void Advance()
+    private void Complete()
     {
-        var seconds = _elapsed.Elapsed.TotalSeconds;
-        var progress = MaterialSpringResponse.Evaluate(seconds, Spring);
-        if (!double.IsFinite(progress)) { Snap(); return; }
+        Stop();
+        SetAndRaise(ExtentProperty, ref _extent, _toExtent);
+        SetAndRaise(IconExtentProperty, ref _iconExtent, _toIcon);
+    }
+    private void Stop() => _frames?.SetRunning(false);
+    private bool Advance(MaterialFrame frame)
+    {
+        var seconds = frame.Elapsed.TotalSeconds;
+        var progress = MaterialSpringResponse.Evaluate(seconds, _activeSpring);
+        if (!double.IsFinite(progress)) { Complete(); return false; }
         // Clamp the UI projection, keeping positive targets even with underdamped host overrides.
-        var extent = _fromExtent + (TargetExtent - _fromExtent) * Math.Clamp(progress, 0, 1);
-        var icon = _fromIcon + (TargetIconSize - _fromIcon) * Math.Clamp(progress, 0, 1);
-        if (seconds >= 10 || (Math.Abs(extent - TargetExtent) < 0.01 && Math.Abs(icon - TargetIconSize) < 0.01)) { Snap(); return; }
+        var extent = _fromExtent + (_toExtent - _fromExtent) * Math.Clamp(progress, 0, 1);
+        var icon = _fromIcon + (_toIcon - _fromIcon) * Math.Clamp(progress, 0, 1);
+        if (seconds >= 10 || (Math.Abs(extent - _toExtent) < 0.01 && Math.Abs(icon - _toIcon) < 0.01)) { Complete(); return false; }
         SetAndRaise(ExtentProperty, ref _extent, extent);
         SetAndRaise(IconExtentProperty, ref _iconExtent, icon);
+        return true;
     }
 }

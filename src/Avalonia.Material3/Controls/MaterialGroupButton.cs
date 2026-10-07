@@ -26,6 +26,9 @@ public class MaterialGroupButton : MaterialButton
     public object? SelectionIcon { get => GetValue(SelectionIconProperty); set => SetValue(SelectionIconProperty, value); }
     private double _full = 9999, _small = 8, _extraSmall = 4;
     private readonly List<IDisposable> _resources = [];
+    private MaterialButtonGroup? _observedGroup;
+    private MaterialGroupSelectionMode _observedMode;
+    private bool _observedToggle, _wasTall;
     protected override Type StyleKeyOverride => typeof(MaterialGroupButton);
     protected override Avalonia.Automation.Peers.AutomationPeer OnCreateAutomationPeer() => new MaterialGroupItemAutomationPeer(this);
 
@@ -54,12 +57,19 @@ public class MaterialGroupButton : MaterialButton
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
-        if (e.Property == IsPressedProperty || e.Property == IsCheckedProperty || e.Property == CornerRadiusProperty || e.Property == BoundsProperty)
+        if (e.Property == IsPressedProperty || e.Property == IsCheckedProperty || e.Property == CornerRadiusProperty
+            || (e.Property == BoundsProperty && _wasTall != (Bounds.Height > ContainerHeight + 10.01)))
             UpdateGroupShape();
     }
     internal void UpdateGroupShape()
     {
-        GroupStateChanged?.Invoke();
+        var mode = Group?.SelectionMode ?? MaterialGroupSelectionMode.None;
+        if (_observedGroup != Group || _observedMode != mode || _observedToggle != IsToggle)
+        {
+            _observedGroup = Group; _observedMode = mode; _observedToggle = IsToggle;
+            GroupStateChanged?.Invoke();
+        }
+        _wasTall = Bounds.Height > ContainerHeight + 10.01;
         var segmented = Group is MaterialSegmentedButtonGroup;
         PseudoClasses.Set(":segmented", segmented);
         PseudoClasses.Set(":connected", Group?.Variant == MaterialButtonGroupVariant.Connected);
@@ -68,10 +78,9 @@ public class MaterialGroupButton : MaterialButton
             SetAndRaise(GroupCornerRadiusProperty, ref _groupCornerRadius, CornerRadius);
             return;
         }
-        var buttons = Group.Buttons.Where(button => button.IsVisible).ToArray();
         var vertical = Group.Orientation == Avalonia.Layout.Orientation.Vertical;
-        var first = vertical ? buttons.FirstOrDefault() == this : RowFirst;
-        var last = vertical ? buttons.LastOrDefault() == this : RowLast;
+        var first = vertical ? IsVerticalEdge(true) : RowFirst;
+        var last = vertical ? IsVerticalEdge(false) : RowLast;
         var inner = segmented ? 0 : IsPressed ? _extraSmall : _small;
         var full = Bounds.Height > ContainerHeight + 10.01 ? Math.Min(_full, ContainerHeight / 2) : _full;
         CornerRadius target;
@@ -83,6 +92,14 @@ public class MaterialGroupButton : MaterialButton
             target = new CornerRadius(first ? full : inner, last ? full : inner, last ? full : inner, first ? full : inner);
         }
         SetAndRaise(GroupCornerRadiusProperty, ref _groupCornerRadius, target);
+    }
+    private bool IsVerticalEdge(bool first)
+    {
+        if (Group is null) return false;
+        var children = Group.Children;
+        for (var i = first ? 0 : children.Count - 1; first ? i < children.Count : i >= 0; i += first ? 1 : -1)
+            if (children[i] is MaterialGroupButton { IsVisible: true } button) return button == this;
+        return false;
     }
     private sealed class ShapeObserver(Action<object?> changed) : IObserver<object?>
     {

@@ -7,9 +7,7 @@ using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
-using System.Diagnostics;
 using Avalonia.Animation.Easings;
-using Avalonia.Threading;
 
 namespace Avalonia.Material3.Controls;
 
@@ -61,12 +59,14 @@ public sealed class MaterialCarousel : TemplatedControl
     private Point _start;
     private double _gestureInitialPosition;
     private double _dragFraction;
-    private double _presentationPosition, _settleFrom, _settleStart;
-    private bool _animating, _attached;
-    private readonly Stopwatch _clock = Stopwatch.StartNew();
-    private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromMilliseconds(16) };
-    public MaterialCarousel() { _timer.Tick += (_, _) => Advance(); }
+    private double _presentationPosition, _settleFrom, _settleTo, _settleStart, _layoutStart, _layoutProgress = 1;
+    private bool _animating, _layoutAnimating, _attached;
+    private readonly MaterialFrameLease _frames;
+    public MaterialCarousel() => _frames = MaterialRenderFrames.Bind(this, Advance);
     internal event Action? PresentationChanged;
+    internal event Action? ContentChanged;
+    internal event Action? LayoutChanged;
+    internal double LayoutProgress => _layoutProgress;
     internal IReadOnlyList<MaterialCarouselItem> ItemList => _items;
     static MaterialCarousel() => FocusableProperty.OverrideDefaultValue<MaterialCarousel>(true);
     public IEnumerable<MaterialCarouselItem>? ItemsSource { get => GetValue(ItemsSourceProperty); set => SetValue(ItemsSourceProperty, value); }
@@ -103,6 +103,7 @@ public sealed class MaterialCarousel : TemplatedControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (_frames is null) return;
         if (change.Property == ItemsSourceProperty)
         {
             if (_collection is not null) _collection.CollectionChanged -= ItemsChanged;
@@ -112,21 +113,30 @@ public sealed class MaterialCarousel : TemplatedControl
         }
         if (change.Property == CurrentIndexProperty)
         {
+            if (_frames.IsRunning) _frames.Sample();
             _settleFrom = _presentationPosition;
-            _settleStart = Now;
+            _settleTo = CurrentIndex;
+            _settleStart = _frames.Elapsed.TotalMilliseconds;
             _animating = true;
-            Advance();
+            Advance(new(_frames.Elapsed, TimeSpan.Zero, false));
+            _frames.SetRunning(_animating || _layoutAnimating);
             UpdatePosition();
         }
-        if (change.Property == AnimationTimeProperty || change.Property == MotionDurationProperty || change.Property == MotionEasingProperty) Advance();
+        if (change.Property == AnimationTimeProperty) _frames.SetTime(AnimationTime);
+        if (change.Property == MotionDurationProperty || change.Property == MotionEasingProperty) _frames.Sample();
         if (change.Property == IsEffectivelyEnabledProperty && !IsEffectivelyEnabled) CancelGesture();
         if (change.Property == LayoutProperty || change.Property == PreferredItemWidthProperty || change.Property == ItemSpacingProperty || change.Property == CornerRadiusProperty || change.Property == FlowDirectionProperty)
         {
             CancelGesture();
-            PresentationChanged?.Invoke();
+            _layoutAnimating = _attached && IsEffectivelyEnabled && MotionDuration > TimeSpan.Zero
+                && change.Property != FlowDirectionProperty && change.Property != CornerRadiusProperty;
+            _layoutStart = _frames.Elapsed.TotalMilliseconds;
+            _layoutProgress = _layoutAnimating ? 0 : 1;
+            LayoutChanged?.Invoke();
+            _frames.SetRunning(_animating || _layoutAnimating);
         }
         if (change.Property == EmptyTextProperty) DescribePosition();
-        if (change.Property == ItemTemplateProperty || change.Property == EmptyTextProperty) PresentationChanged?.Invoke();
+        if (change.Property == ItemTemplateProperty || change.Property == EmptyTextProperty) ContentChanged?.Invoke();
     }
     private void ItemsChanged(object? sender, NotifyCollectionChangedEventArgs e) => ReloadItems();
     private void ReloadItems()
@@ -140,9 +150,13 @@ public sealed class MaterialCarousel : TemplatedControl
         if (retainedIndex >= 0) SetCurrentValue(CurrentIndexProperty, retainedIndex);
         CoerceValue(CurrentIndexProperty);
         FinishAnimation();
+        _layoutAnimating = false; _layoutProgress = 1;
+        _frames.SetRunning(false);
         UpdatePosition();
+        ContentChanged?.Invoke();
+        LayoutChanged?.Invoke();
     }
-    private void ItemChanged(object? sender, AvaloniaPropertyChangedEventArgs e) { DescribePosition(); PresentationChanged?.Invoke(); }
+    private void ItemChanged(object? sender, AvaloniaPropertyChangedEventArgs e) { DescribePosition(); ContentChanged?.Invoke(); }
     private void UpdatePosition()
     {
         var previous = _current;
@@ -150,7 +164,6 @@ public sealed class MaterialCarousel : TemplatedControl
         SetAndRaise(CanMoveNextProperty, ref _canNext, _items.Count > 0 && CurrentIndex < _items.Count - 1);
         SetAndRaise(CanMovePreviousProperty, ref _canPrevious, _items.Count > 0 && CurrentIndex > 0);
         DescribePosition();
-        PresentationChanged?.Invoke();
         if (!ReferenceEquals(previous, _current)) CurrentItemChanged?.Invoke(this, EventArgs.Empty);
     }
     private void DescribePosition() => SetAndRaise(PositionDescriptionProperty, ref _positionDescription, _current is null ? EmptyText : $"{CurrentIndex + 1} of {_items.Count}: {_current.Title}; {_current.State}");
@@ -200,9 +213,8 @@ public sealed class MaterialCarousel : TemplatedControl
         _dragFraction = Layout == MaterialCarouselLayout.Uncontained ? movement : Math.Clamp(movement, -1, 1);
         if (Layout != MaterialCarouselLayout.Uncontained && (!CanMoveNext && _dragFraction > 0 || !CanMovePrevious && _dragFraction < 0)) _dragFraction = 0;
         _animating = false;
-        _timer.Stop();
+        _frames.SetRunning(_layoutAnimating);
         SetPresentation(Math.Clamp(_gestureInitialPosition + _dragFraction, 0, Math.Max(0, _items.Count - 1)));
-        PresentationChanged?.Invoke();
         e.Handled = true;
     }
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
@@ -220,7 +232,7 @@ public sealed class MaterialCarousel : TemplatedControl
         {
             SetCurrentValue(CurrentIndexProperty, (int)Math.Round(position, MidpointRounding.AwayFromZero));
             _animating = false;
-            _timer.Stop();
+            _frames.SetRunning(_layoutAnimating);
             SetPresentation(position);
         }
         else if (fraction >= .25) MoveNext();
@@ -239,29 +251,49 @@ public sealed class MaterialCarousel : TemplatedControl
         FinishAnimation();
         if (Layout == MaterialCarouselLayout.Uncontained) SetPresentation(freePosition);
         if (pointer?.Captured == this) pointer.Capture(null);
-        PresentationChanged?.Invoke();
     }
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e) { CancelGesture(); base.OnPointerCaptureLost(e); }
-    private double Now => AnimationTime?.TotalMilliseconds ?? _clock.Elapsed.TotalMilliseconds;
-    private void SetPresentation(double value)
+    private bool SetPresentation(double value, bool notify = true)
     {
+        if (_presentationPosition == value) return false;
         SetAndRaise(PresentationPositionProperty, ref _presentationPosition, value);
-        PresentationChanged?.Invoke();
+        if (notify) PresentationChanged?.Invoke();
+        return true;
     }
-    private void Advance()
+    private bool Advance(MaterialFrame frame)
     {
-        if (!_animating) return;
-        if (MotionDuration == TimeSpan.Zero || !IsEffectivelyEnabled || !_attached) { FinishAnimation(); return; }
-        var progress = Math.Clamp((Now - _settleStart) / MotionDuration.TotalMilliseconds, 0, 1);
-        if (progress >= 1 || Now < _settleStart) { FinishAnimation(); return; }
-        SetPresentation(_settleFrom + (CurrentIndex - _settleFrom) * MotionEasing.Ease(progress));
-        if (AnimationTime is null) _timer.Start(); else _timer.Stop();
+        var changed = false;
+        var instant = frame.Rewound || MotionDuration == TimeSpan.Zero || !IsEffectivelyEnabled || !_attached;
+        var time = frame.Elapsed.TotalMilliseconds;
+        if (_animating)
+        {
+            var progress = instant ? 1 : Math.Clamp((time - _settleStart) / MotionDuration.TotalMilliseconds, 0, 1);
+            if (progress >= 1) _animating = false;
+            changed |= SetPresentation(_settleFrom + (_settleTo - _settleFrom) * MotionEasing.Ease(progress), false);
+        }
+        if (_layoutAnimating)
+        {
+            var progress = instant ? 1 : Math.Clamp((time - _layoutStart) / MotionDuration.TotalMilliseconds, 0, 1);
+            var next = MotionEasing.Ease(progress);
+            changed |= next != _layoutProgress;
+            _layoutProgress = next;
+            if (progress >= 1) _layoutAnimating = false;
+        }
+        if (changed) PresentationChanged?.Invoke();
+        return _animating || _layoutAnimating;
     }
-    private void FinishAnimation() { _animating = false; _timer.Stop(); SetPresentation(CurrentIndex); }
+    private void FinishAnimation()
+    {
+        _animating = false;
+        SetPresentation(CurrentIndex);
+        _frames?.SetRunning(_layoutAnimating);
+    }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _attached = false;
         CancelGesture();
+        _layoutAnimating = false; _layoutProgress = 1;
+        _frames.SetRunning(false);
         if (_collection is not null) _collection.CollectionChanged -= ItemsChanged;
         foreach (var item in _items.Distinct()) item.PropertyChanged -= ItemChanged;
         base.OnDetachedFromVisualTree(e);
@@ -270,6 +302,7 @@ public sealed class MaterialCarousel : TemplatedControl
     {
         base.OnAttachedToVisualTree(e);
         _attached = true;
+        _frames.SetTime(AnimationTime);
         if (_collection is not null) { _collection.CollectionChanged -= ItemsChanged; _collection.CollectionChanged += ItemsChanged; }
         ReloadItems();
     }

@@ -37,6 +37,7 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
     public string ExpandLabel { get => GetValue(ExpandLabelProperty); set => SetValue(ExpandLabelProperty, value); }
     public string CollapseLabel { get => GetValue(CollapseLabelProperty); set => SetValue(CollapseLabelProperty, value); }
     private MaterialExpansionButton? _toggle;
+    private MaterialActionReveal? _reveal;
     private TopLevel? _topLevel;
     private bool _restoreFocus = true;
     Control IMaterialExpansion.ExpansionControl => this;
@@ -57,7 +58,10 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         if (_toggle is not null) { _toggle.Click -= ToggleClicked; _toggle.Expansion = null; }
+        if (_reveal is not null) _reveal.Settled -= RevealSettled;
         base.OnApplyTemplate(e);
+        _reveal = e.NameScope.Find<MaterialActionReveal>("MenuReveal");
+        if (_reveal is not null) _reveal.Settled += RevealSettled;
         _toggle = e.NameScope.Find<MaterialExpansionButton>("PART_Toggle");
         if (_toggle is not null) { _toggle.Expansion = this; _toggle.Click += ToggleClicked; }
         UpdateToggleName();
@@ -86,6 +90,11 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
         try { SetCurrentValue(IsExpandedProperty, false); }
         finally { _restoreFocus = true; }
     }
+    private void RevealSettled() => Dispatcher.UIThread.Post(() =>
+    {
+        if (IsExpanded && _topLevel is not null && Items.FirstOrDefault(item => item.IsEffectivelyEnabled && item.IsVisible) is { IsFocused: true } first)
+            first.BringIntoView();
+    }, DispatcherPriority.Loaded);
     private void ToggleClicked(object? sender, RoutedEventArgs e) => SetCurrentValue(IsExpandedProperty, !IsExpanded);
     private void ActionClicked(object? sender, RoutedEventArgs e)
     {
@@ -132,7 +141,9 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
                     {
                         var first = Items.FirstOrDefault(item => item.IsEffectivelyEnabled && item.IsVisible);
                         first?.Focus(NavigationMethod.Tab);
-                        first?.BringIntoView();
+                        // Focus semantics are immediate, but scrolling a zero/partial viewport must not
+                        // chase the reveal clip. Keyboard navigation still explicitly scrolls its target.
+                        if (_reveal?.IsRevealing != true) first?.BringIntoView();
                     }
                 }, DispatcherPriority.Loaded);
             else if (_restoreFocus) _toggle?.Focus(NavigationMethod.Tab);

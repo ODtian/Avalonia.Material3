@@ -19,7 +19,8 @@ public class MaterialExtendedFab : MaterialFab
     protected override double GetContainerSize(MaterialFabSize size) => size == MaterialFabSize.Small ? 56 : base.GetContainerSize(size);
     protected override double GetIconSize(MaterialFabSize size) => size == MaterialFabSize.Large ? 32 : base.GetIconSize(size);
     public double IconSpacing => Size switch { MaterialFabSize.Medium => 12, MaterialFabSize.Large => 16, MaterialFabSize.Small => 8, _ => 12 };
-    public Thickness ContentPadding => !IsExpanded ? default : Size switch
+    public Thickness ContentPadding => !IsExpanded ? default : ExpandedContentPadding;
+    internal Thickness ExpandedContentPadding => Size switch
     {
         MaterialFabSize.Medium => new(26, 12), MaterialFabSize.Large => new(28, 16),
         MaterialFabSize.Small => new(16, 8), _ => new(16, 8, 20, 8)
