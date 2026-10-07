@@ -45,7 +45,7 @@
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
   </ControlTheme>
-  <!-- Pinned AndroidX CheckboxTokens 14_1_0: 18 container, 2 outline, 40 state layer; 48 target. -->
+  <!-- Pinned Checkbox.kt M3 stylingFix=true:18 canvas,2 stroke,40 state layer;48 target. -->
   <ControlTheme x:Key="{x:Type controls:MaterialCheckBox}" TargetType="controls:MaterialCheckBox" BasedOn="{StaticResource M3.SelectionInteraction}">
     <Setter Property="MinWidth" Value="48" />
     <Setter Property="MinHeight" Value="48" />
@@ -69,9 +69,8 @@
                     BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
             <Border x:Name="Box" Width="18" Height="18" CornerRadius="2" BorderThickness="2"
                     BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" />
-            <Path x:Name="Check" Width="12" Height="10" Data="M 0,5 L 4,9 L 12,1" StrokeThickness="2"
-                  Stroke="{DynamicResource M3.OnPrimaryBrush}" IsVisible="False" />
-            <Border x:Name="Mixed" Width="10" Height="2" Background="{DynamicResource M3.OnPrimaryBrush}" IsVisible="False" />
+            <controls:MaterialCheckboxGlyph x:Name="Check" Width="18" Height="18" Value="{TemplateBinding IsChecked}"
+                  CheckBrush="{DynamicResource M3.OnPrimaryBrush}" />
           </Grid>
           <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
             <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
@@ -93,17 +92,8 @@
     <Style Selector="^:error:checked:not(:disabled), ^:error:indeterminate:not(:disabled)">
       <Setter Property="Background" Value="{DynamicResource M3.ErrorBrush}" />
     </Style>
-    <Style Selector="^:error:not(:disabled) /template/ Path#Check">
-      <Setter Property="Stroke" Value="{DynamicResource M3.OnErrorBrush}" />
-    </Style>
-    <Style Selector="^:error:not(:disabled) /template/ Border#Mixed">
-      <Setter Property="Background" Value="{DynamicResource M3.OnErrorBrush}" />
-    </Style>
-    <Style Selector="^:checked /template/ Path#Check">
-      <Setter Property="IsVisible" Value="True" />
-    </Style>
-    <Style Selector="^:indeterminate /template/ Border#Mixed">
-      <Setter Property="IsVisible" Value="True" />
+    <Style Selector="^:error:not(:disabled) /template/ controls|MaterialCheckboxGlyph#Check">
+      <Setter Property="CheckBrush" Value="{DynamicResource M3.OnErrorBrush}" />
     </Style>
     <Style Selector="^:disabled">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
@@ -114,11 +104,8 @@
     <Style Selector="^:disabled /template/ Border#Box">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
-    <Style Selector="^:disabled /template/ Path#Check">
-      <Setter Property="Stroke" Value="{DynamicResource M3.SurfaceBrush}" />
-    </Style>
-    <Style Selector="^:disabled /template/ Border#Mixed">
-      <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
+    <Style Selector="^:disabled /template/ controls|MaterialCheckboxGlyph#Check">
+      <Setter Property="CheckBrush" Value="{DynamicResource M3.SurfaceBrush}" />
     </Style>
   </ControlTheme>
   <!-- RadioButtonTokens v0_117: 20 icon, 40 state layer; 48 target. -->
