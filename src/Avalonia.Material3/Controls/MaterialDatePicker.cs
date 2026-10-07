@@ -114,8 +114,8 @@ public class MaterialDatePicker : TemplatedControl
     public Control Surface { get; }
     // Establish local Text priority before native editing. Default-value coercion during error-style
     // reevaluation otherwise clears TextBox's Undo stack even though the visible string is unchanged.
-    public MaterialTextField StartInput { get; } = new() { Variant = MaterialTextFieldVariant.Outlined, Text = "" };
-    public MaterialTextField EndInput { get; } = new() { Variant = MaterialTextFieldVariant.Outlined, Text = "" };
+    public MaterialTextField StartInput { get; } = new MaterialDateInputField { Variant = MaterialTextFieldVariant.Outlined, Text = "" };
+    public MaterialTextField EndInput { get; } = new MaterialDateInputField { Variant = MaterialTextFieldVariant.Outlined, Text = "" };
     public bool IsValid => _isValid;
     public string? ValidationMessage => _validationMessage;
     public MaterialOverlaySession? Session => _dialog?.Session;

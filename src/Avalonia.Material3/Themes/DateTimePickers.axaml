@@ -47,7 +47,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-        <Border x:Name="YearFace" Margin="4,6" MinHeight="36" CornerRadius="999" Background="{TemplateBinding Background}"
+        <Border x:Name="YearFace" Margin="0,6" MinHeight="36" CornerRadius="999" Background="{TemplateBinding Background}"
                 BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
           <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                             Foreground="{TemplateBinding Foreground}" />
