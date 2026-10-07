@@ -18,6 +18,33 @@ namespace Avalonia.Material3.Tests;
 public class DateTimePickerScenarioTests
 {
     [AvaloniaFact]
+    public void Time_dialog_default_title_reserves_its_gap_and_tracks_mode_while_custom_title_wins()
+    {
+        using var host = new DialogHost();
+        var picker = new MaterialTimePicker { SelectedTime = new(7,7), Layout = MaterialTimePickerLayout.Vertical };
+        picker.Show(host.Overlay); host.Render();
+        var dialog=host.Window.GetVisualDescendants().OfType<MaterialDialog>().Single();
+        var title=dialog.GetVisualDescendants().OfType<TextBlock>().Single(t=>t.IsEffectivelyVisible&&t.Text=="Select time");
+        var hour=picker.GetVisualDescendants().OfType<MaterialTimeSelector>().First();
+        Assert.Equal(20,GeometryHost.Box(hour,host.Window).Top-GeometryHost.Box(title,host.Window).Bottom);
+        Assert.Equal(Avalonia.Media.Color.Parse("#1D1B20"),((Avalonia.Media.ISolidColorBrush)title.Foreground!).Color);
+        picker.Mode=MaterialTimePickerMode.Input;host.Render();Assert.Equal("Enter time",title.Text);
+        picker.Labels=picker.Labels with {Title="Select time"};host.Render();Assert.Equal("Select time",title.Text);
+    }
+    [AvaloniaFact]
+    public void Short_horizontal_time_dialog_keeps_its_footer_inside_the_content_insets()
+    {
+        using var host = new DialogHost(800, 350);
+        var picker = new MaterialTimePicker { Height = 230, Layout = MaterialTimePickerLayout.Horizontal, SelectedTime = new(7, 7) };
+        picker.Show(host.Overlay); host.Render();
+        var dialog = host.Window.GetVisualDescendants().OfType<MaterialDialog>().Single();
+        var mode = host.Window.GetVisualDescendants().OfType<MaterialIconButton>().Single(b => ControlAutomationPeer.CreatePeerForElement(b).GetName() == picker.Labels.InputMode);
+        var confirm = host.Button(dialog, picker.Labels.Confirm);
+        var box = GeometryHost.Box(dialog, host.Window);
+        Assert.Equal(24, GeometryHost.Box(mode, host.Window).Left - box.Left);
+        Assert.Equal(24, box.Right - GeometryHost.Box(confirm, host.Window).Right);
+    }
+    [AvaloniaFact]
     public void Horizontal_clock_dial_does_not_stretch_the_standard_time_selector_recipe()
     {
         using var host = new DialogHost();
