@@ -13,6 +13,26 @@ namespace Avalonia.Material3.Tests;
 public class NativePickerStructureScenarioTests
 {
     [AvaloniaFact]
+    public void Range_viewport_consumes_the_finite_body_and_the_date_dialog_owns_its_actions()
+    {
+        var picker=new MaterialDatePicker {SelectionMode=MaterialDateSelectionMode.Range,DisplayMonth=new(2024,2,1)};
+        using(var host=new GeometryHost(picker,600,600))
+        {
+            var scroll=picker.GetVisualDescendants().OfType<ScrollViewer>().Single(s=>s.IsEffectivelyVisible&&s.Bounds.Height>100&&s.VerticalScrollBarVisibility==Avalonia.Controls.Primitives.ScrollBarVisibility.Auto);
+            Assert.Equal(600,GeometryHost.Box(scroll,host.Window).Bottom);
+        }
+        using var dialogHost=new DialogHost(800,800);
+        picker=new MaterialDatePicker {SelectionMode=MaterialDateSelectionMode.Range,DisplayMonth=new(2024,2,1)};
+        picker.Show(dialogHost.Overlay);dialogHost.Render();
+        var dialog=dialogHost.Window.GetVisualDescendants().OfType<MaterialDialog>().Single();
+        var body=picker.GetVisualDescendants().OfType<ScrollViewer>().Single(s=>s.IsEffectivelyVisible&&s.Bounds.Height>100&&s.VerticalScrollBarVisibility==Avalonia.Controls.Primitives.ScrollBarVisibility.Auto);
+        var confirm=dialogHost.Button(dialog,picker.Labels.Confirm);
+        var bounds=GeometryHost.Box(dialog,dialogHost.Window);
+        Assert.Equal(360,bounds.Width);Assert.Equal(568,bounds.Height);
+        Assert.Equal(GeometryHost.Box(confirm,dialogHost.Window).Top,GeometryHost.Box(body,dialogHost.Window).Bottom);
+        Assert.Equal(8,bounds.Bottom-GeometryHost.Box(confirm,dialogHost.Window).Bottom);
+    }
+    [AvaloniaFact]
     public void Range_header_uses_its_own_title_placeholders_and_year_format()
     {
         var picker=new MaterialDatePicker {SelectionMode=MaterialDateSelectionMode.Range,DisplayMonth=new(2024,2,1),Culture=System.Globalization.CultureInfo.GetCultureInfo("en-US")};
@@ -77,7 +97,7 @@ public class NativePickerStructureScenarioTests
             host.Window.MouseDown(point,MouseButton.Left);host.Window.MouseUp(point,MouseButton.Left);host.Render();
         }
         Assert.Equal(new DateOnly(2024,2,29),picker.SelectedDate);Assert.Equal(new DateOnly(2024,3,2),picker.RangeEnd);
-        var scroll=picker.GetVisualDescendants().OfType<ScrollViewer>().Single(s=>s.IsEffectivelyVisible&&s.VerticalScrollBarVisibility==Avalonia.Controls.Primitives.ScrollBarVisibility.Auto);
+        var scroll=picker.GetVisualDescendants().OfType<ScrollViewer>().Single(s=>s.IsEffectivelyVisible&&s.Bounds.Height>100&&s.VerticalScrollBarVisibility==Avalonia.Controls.Primitives.ScrollBarVisibility.Auto);
         scroll.Offset+=new Vector(0,336);host.Render();
         Assert.Equal(new DateOnly(2024,3,1),picker.DisplayMonth);
         picker.MinimumDate=new(2024,2,1);host.Render();Assert.Equal(new DateOnly(2024,3,1),picker.DisplayMonth);

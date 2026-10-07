@@ -68,7 +68,7 @@ internal sealed class MaterialPickerModePanel : Panel
     protected override Size MeasureOverride(Size availableSize)
     {
         _calendar.IsVisible = _inputs.IsVisible = true;
-        _calendar.Measure(new Size(availableSize.Width, double.PositiveInfinity)); _inputs.Measure(new Size(availableSize.Width, double.PositiveInfinity));
+        _calendar.Measure(availableSize); _inputs.Measure(new Size(availableSize.Width, double.PositiveInfinity));
         _calendarSize = _calendar.DesiredSize; _inputSize = _inputs.DesiredSize;
         if (!_initialized) { _initialized = true; Start(true); }
         else if (_pending) { _pending = false; Start(false); }

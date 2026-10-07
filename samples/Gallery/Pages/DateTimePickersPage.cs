@@ -86,7 +86,7 @@ public sealed class DateTimePickersPage : UserControl
     private MaterialDatePicker Date(MaterialDateSelectionMode selection, MaterialDatePickerMode mode)
     {
         var picker = new MaterialDatePicker { SelectionMode = selection, Mode = mode, Culture = Culture,
-            InputFormat = Pattern(), DisplayFormat = "ddd, MMM d", DisplayMonth = new(2024, 2, 1),
+            InputFormat = Pattern(), DisplayMonth = new(2024, 2, 1),
             MinimumDate = new(2024, 2, 1), MaximumDate = new(2024, 3, 31),
             Today = new(2024, 2, 29), SelectableDate = date => date != new DateOnly(2024, 2, 20),
             SelectedDate = selection == MaterialDateSelectionMode.Single ? SavedDate : SavedRange.Start,
@@ -113,8 +113,7 @@ public sealed class DateTimePickersPage : UserControl
     }
     public MaterialOverlaySession OpenTime(bool is24Hour, MaterialTimePickerMode mode)
     {
-        ActiveTimePicker = new MaterialTimePicker { Is24Hour = is24Hour, Mode = mode, SelectedTime = SavedTime, Culture = Culture,
-            Layout = is24Hour && Overlay.Bounds.Width >= 720 ? MaterialTimePickerLayout.Horizontal : MaterialTimePickerLayout.Vertical };
+        ActiveTimePicker = new MaterialTimePicker { Is24Hour = is24Hour, Mode = mode, SelectedTime = SavedTime, Culture = Culture };
         AutomationProperties.SetAutomationId(ActiveTimePicker.HourInput, "TimeHourInput");
         AutomationProperties.SetAutomationId(ActiveTimePicker.MinuteInput, "TimeMinuteInput");
         var session = ActiveTimePicker.Show(Overlay);
