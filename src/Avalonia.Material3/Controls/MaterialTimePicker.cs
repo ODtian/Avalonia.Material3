@@ -226,7 +226,7 @@ public class MaterialTimePicker : TemplatedControl
         Grid.SetColumn(_period, horizontalPeriod ? 0 : 3); Grid.SetRow(_period, horizontalPeriod ? 1 : 0);
         _period.Columns = horizontalPeriod ? 2 : 1;
         _period.MinWidth = horizontalPeriod ? 216 : 52;
-        _period.Margin = horizontalPeriod ? new Thickness(0, 16, 0, 0) : new Thickness(12, 0, 0, 0);
+        _period.Margin = horizontalPeriod ? new Thickness(0, 16, 0, 0) : new Thickness(4, 0, 0, 0);
         _period.VerticalAlignment = VerticalAlignment.Top;
         _hourSelector.Content = (Is24Hour ? _lastTime.Hour : (_lastTime.Hour + 11) % 12 + 1).ToString("00", Culture);
         _minuteSelector.Content = _lastTime.Minute.ToString("00", Culture);

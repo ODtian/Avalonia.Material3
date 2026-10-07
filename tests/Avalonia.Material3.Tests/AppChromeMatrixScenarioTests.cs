@@ -52,6 +52,7 @@ public class AppChromeMatrixScenarioTests
         var layout = new MaterialNavigationDrawerLayout { Drawer = drawer, Content = new Border { Background = Brushes.Transparent } };
         var overlays = new MaterialOverlayHost { Content = layout, FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
         using var host = new ChromeHost(overlays, 200, 300);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
         host.Theme.Typography = new MaterialTypography { Scale = 2 };
         drawer.IsOpen = true; host.Layout();
         Assert.Equal(200, drawer.Bounds.Width);
