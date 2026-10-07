@@ -19,7 +19,9 @@ public enum MaterialTimePickerPart { Hour, Minute }
 public enum MaterialTimePickerLayout { Vertical, Horizontal }
 public sealed record MaterialTimePickerLabels
 {
-    public string Title { get; init; } = "Select time";
+    private string _title = "Select time";
+    internal bool HasCustomTitle { get; private init; }
+    public string Title { get => _title; init { _title = value; HasCustomTitle = true; } }
     public string Hour { get; init; } = "Hour";
     public string Minute { get; init; } = "Minute";
     public string ClockMode { get; init; } = "Show clock";
@@ -256,38 +258,38 @@ public class MaterialTimePicker : TemplatedControl
         if (_dialog is not null)
         {
             _dialog.IsConfirmEnabled = IsValid && IsEffectivelyEnabled;
-            _dialog.Title=Labels.Title;
+            _dialog.Title=DialogTitle;
             _mode.IsEnabled=IsEffectivelyEnabled;
             _dialog.ConfirmText = Labels.Confirm; _dialog.CancelText = Labels.Cancel;
             _dialog.MaxWidth = horizontal ? 584 : 400;
             if(_confirmAction is { } confirm){confirm.IsEnabled=IsValid&&IsEffectivelyEnabled;confirm.Content=Labels.Confirm;AutomationProperties.SetName(confirm,Labels.Confirm);}
             if(_cancelAction is { } cancel){cancel.Content=Labels.Cancel;AutomationProperties.SetName(cancel,Labels.Cancel);}
-            AutomationProperties.SetName(_dialog, Labels.Title);
+            AutomationProperties.SetName(_dialog, DialogTitle);
         }
         DraftChanged?.Invoke(this, EventArgs.Empty);
     }
     public MaterialOverlaySession Show(MaterialOverlayHost host, MaterialOverlayOptions? options = null)
     {
         if (_dialog?.IsOpen == true) throw new InvalidOperationException("Picker is already open.");
-        var dialog = new MaterialDialog { Content = this, Title=Labels.Title, Padding = new Thickness(0), MaxWidth = _horizontal ? 584 : 400,
+        var dialog = new MaterialDialog { Content = this, Title=DialogTitle, Padding = new Thickness(0), MaxWidth = _horizontal ? 584 : 400,
             ConfirmText = Labels.Confirm, CancelText = Labels.Cancel, IsConfirmEnabled = IsValid && IsEffectivelyEnabled };
         _dialog = dialog;
         _cancelAction=MaterialPickerSupport.Action(Labels.Cancel,()=>dialog.Cancel());
         _confirmAction=MaterialPickerSupport.Action(Labels.Confirm,()=>dialog.Confirm());
-        var footer=new DockPanel {HorizontalSpacing=8,MinWidth=Mode==MaterialTimePickerMode.Clock&&!Is24Hour?272:256};
+        var footer=new DockPanel {HorizontalSpacing=8};
         _footer=footer;
         DockPanel.SetDock(_mode,Dock.Left);DockPanel.SetDock(_confirmAction,Dock.Right);DockPanel.SetDock(_cancelAction,Dock.Right);
         footer.Children.Add(_mode);footer.Children.Add(_confirmAction);footer.Children.Add(_cancelAction);footer.Children.Add(new Border());
         dialog.Actions=footer;
         dialog.Template=new FuncControlTemplate<MaterialDialog>((owner,scope)=>
         {
-            var title=MaterialPickerSupport.Text("LabelMedium","OnSurfaceVariant");title.Bind(TextBlock.TextProperty,owner.GetObservable(MaterialDialog.TitleProperty));
+            var title=MaterialPickerSupport.Text("LabelMedium");title.Margin=new Thickness(0,0,0,20);title.Bind(TextBlock.TextProperty,owner.GetObservable(MaterialDialog.TitleProperty));
             var body=new ContentPresenter {HorizontalContentAlignment=HorizontalAlignment.Center};body.Bind(ContentPresenter.ContentProperty,owner.GetObservable(ContentControl.ContentProperty));
             var surface=new Border {Child=new MaterialTimeDialogPanel(title,body,footer)};
             surface.Bind(Border.BackgroundProperty,owner.GetObservable(BackgroundProperty));surface.Bind(Border.CornerRadiusProperty,owner.GetObservable(CornerRadiusProperty));
             MaterialPickerSupport.Resource(surface,Border.BoxShadowProperty,"Elevation.Shadow3");return surface;
         });
-        AutomationProperties.SetName(dialog, Labels.Title);
+        AutomationProperties.SetName(dialog, DialogTitle);
         dialog.Confirming += (_, args) => { args.Cancel = !IsValid || !IsEffectivelyEnabled; if (!args.Cancel) args.Value = SelectedTime; };
         MaterialOverlaySession session;
         try { session = dialog.Show(host, options ?? new MaterialOverlayOptions { InitialFocus = Mode == MaterialTimePickerMode.Input ? HourInput : _hourSelector }); }
@@ -338,9 +340,10 @@ public class MaterialTimePicker : TemplatedControl
             else (ActivePart==MaterialTimePickerPart.Hour?_hourSelector:_minuteSelector).Focus();
         }
     }
+    private string DialogTitle => Labels.HasCustomTitle ? Labels.Title : Mode == MaterialTimePickerMode.Clock ? "Select time" : "Enter time";
     private sealed class TimePickerPeer(MaterialTimePicker owner) : ControlAutomationPeer(owner)
     {
-        protected override string? GetNameCore() => base.GetNameCore() ?? owner.Labels.Title;
+        protected override string? GetNameCore() => base.GetNameCore() ?? owner.DialogTitle;
         protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Group;
     }
 }
