@@ -65,10 +65,8 @@ public class MaterialDatePicker : TemplatedControl
     private readonly TextBlock _error = MaterialPickerSupport.Text("BodySmall", "Error");
     private readonly Grid _header;
     private readonly MaterialIconButton _mode;
-    private readonly Avalonia.Controls.Shapes.Path _keyboardIcon = new() { Width = 24, Height = 24, Stretch = Media.Stretch.Uniform,
-        Data = Media.Geometry.Parse("M2,4 L22,4 L22,20 L2,20 Z M4,6 L4,18 L20,18 L20,6 Z M6,8 L8,8 L8,10 L6,10 Z M10,8 L12,8 L12,10 L10,10 Z M14,8 L16,8 L16,10 L14,10 Z M6,12 L8,12 L8,14 L6,14 Z M10,12 L12,12 L12,14 L10,14 Z M14,12 L18,12 L18,14 L14,14 Z") };
-    private readonly Avalonia.Controls.Shapes.Path _calendarIcon = new() { Width = 24, Height = 24, Stretch = Media.Stretch.Uniform,
-        Data = Media.Geometry.Parse("M3,4 L6,4 L6,2 L8,2 L8,4 L16,4 L16,2 L18,2 L18,4 L21,4 L21,22 L3,22 Z M5,10 L5,20 L19,20 L19,10 Z M7,12 L11,12 L11,16 L7,16 Z") };
+    private readonly MaterialSymbol _keyboardIcon = new() { Symbol = "keyboard", Size = 24 };
+    private readonly MaterialSymbol _calendarIcon = new() { Symbol = "calendar_month", Size = 24 };
     private readonly StackPanel _inputs;
     private readonly StackPanel _calendar = new() { Spacing = 4, Margin = new Thickness(12, 0, 12, 12) };
     private readonly Grid _days = new() { ColumnDefinitions = new ColumnDefinitions("*,*,*,*,*,*,*"), MinWidth = 336 };
@@ -111,15 +109,18 @@ public class MaterialDatePicker : TemplatedControl
     public MaterialDatePicker()
     {
         _mode = new MaterialIconButton();
-        MaterialPickerSupport.Resource(_keyboardIcon, Avalonia.Controls.Shapes.Shape.FillProperty, "OnSurfaceVariantBrush");
-        MaterialPickerSupport.Resource(_calendarIcon, Avalonia.Controls.Shapes.Shape.FillProperty, "OnSurfaceVariantBrush");
+        MaterialPickerSupport.Resource(_keyboardIcon, MaterialSymbol.ForegroundProperty, "OnSurfaceVariantBrush");
+        MaterialPickerSupport.Resource(_calendarIcon, MaterialSymbol.ForegroundProperty, "OnSurfaceVariantBrush");
         _mode.Click += (_, _) => SetCurrentValue(ModeProperty,
             Mode == MaterialDatePickerMode.Calendar ? MaterialDatePickerMode.Input : MaterialDatePickerMode.Calendar);
         _inputs = new StackPanel { Spacing = 16, Margin = new Thickness(24, 10, 24, 24), Children = { StartInput, EndInput } };
         _previous = MaterialPickerSupport.Action(Labels.PreviousMonth, () => NavigateMonth(-1));
         _next = MaterialPickerSupport.Action(Labels.NextMonth, () => NavigateMonth(1));
         _month = MaterialPickerSupport.Action(Labels.ChooseYear, () => { _choosingYear = !_choosingYear; RefreshCalendar(); });
-        _previous.Content = "‹"; _next.Content = "›";
+        _month.ContentTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<string>((text, _) =>
+            new TextBlock { Text = text, TextWrapping = Media.TextWrapping.Wrap });
+        _previous.Content = new MaterialSymbol { Symbol = "chevron_left", Size = 24 };
+        _next.Content = new MaterialSymbol { Symbol = "chevron_right", Size = 24 };
         var navigation = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), MinHeight = 56 };
         Grid.SetColumn(_month, 1); Grid.SetColumn(_next, 2);
         navigation.Children.Add(_previous); navigation.Children.Add(_month); navigation.Children.Add(_next);
@@ -293,7 +294,10 @@ public class MaterialDatePicker : TemplatedControl
             var isEnd = date == RangeEnd;
             Grid.SetColumn(band, isStart ? 1 : 0);
             Grid.SetColumnSpan(band, isStart || isEnd ? 1 : 2);
-            band.CornerRadius = new(isStart ? 20 : 0, isEnd ? 20 : 0, isEnd ? 20 : 0, isStart ? 20 : 0);
+            // Pinned DateRangePicker.drawRangeBackground is rectangular, beginning/ending at
+            // endpoint centers. The selected circle supplies the outward rounded cap; rounding
+            // a half-cell instead removes the joining corner (and creates a false range notch).
+            band.CornerRadius = default;
             var status = date == SelectedDate ? SelectionMode == MaterialDateSelectionMode.Single ? Labels.Selected : Labels.RangeStart
                 : date == RangeEnd && SelectionMode == MaterialDateSelectionMode.Range ? Labels.RangeEnd : button.IsInRange ? Labels.InRange : "";
             if (button.IsToday) status += " " + Labels.Today;

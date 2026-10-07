@@ -41,7 +41,13 @@ public class DateTimePickerScenarioTests
         Assert.True(action.Bounds.Width >= 48); Assert.True(action.Bounds.Height >= 48);
         var icon = Assert.IsAssignableFrom<Control>(action.Content);
         Assert.True(icon.Bounds.Width >= 20); Assert.True(icon.Bounds.Height >= 20);
-        var brush = icon is Avalonia.Controls.Shapes.Shape shape ? shape.Fill : ((PathIcon)icon).Foreground;
+        var brush = icon switch
+        {
+            Avalonia.Controls.Shapes.Shape shape => shape.Fill,
+            MaterialSymbol symbol => symbol.Foreground,
+            PathIcon path => path.Foreground,
+            _ => icon.GetValue(TextBlock.ForegroundProperty)
+        };
         Assert.NotNull(brush);
         Assert.Equal(Color.Parse("#49454F"), ((ISolidColorBrush)brush).Color);
         using (var frame = host.Window.CaptureRenderedFrame())

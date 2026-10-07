@@ -65,7 +65,7 @@ public class MaterialTimePicker : TemplatedControl
     private readonly Grid _clockSelectors;
     private readonly WrapPanel _adjust;
     private readonly Grid _fields;
-    private readonly UniformGrid _period = new() { Columns = 2, MinWidth = 216, HorizontalAlignment = HorizontalAlignment.Center };
+    private readonly MaterialTimePeriodPanel _period;
     private MaterialDialog? _dialog;
     public TimeOnly? SelectedTime { get => GetValue(SelectedTimeProperty); set => SetValue(SelectedTimeProperty, value); }
     public MaterialTimePickerMode Mode { get => GetValue(ModeProperty); set => SetValue(ModeProperty, value); }
@@ -92,8 +92,8 @@ public class MaterialTimePicker : TemplatedControl
         _mode = MaterialPickerSupport.Action(Labels.InputMode, () => SetCurrentValue(ModeProperty, Mode == MaterialTimePickerMode.Clock ? MaterialTimePickerMode.Input : MaterialTimePickerMode.Clock));
         _am = new MaterialTimePeriodButton { Content = "AM" }; _am.Click += (_, _) => SetPeriod(false);
         _pmButton = new MaterialTimePeriodButton { Content = "PM" }; _pmButton.Click += (_, _) => SetPeriod(true);
-        _period.Children.Add(_am); _period.Children.Add(_pmButton);
-        var separator = MaterialPickerSupport.Text("DisplayLarge"); separator.Text = ":"; separator.Margin = new Thickness(4, 4, 4, 0); separator.VerticalAlignment = VerticalAlignment.Top;
+        _period = new MaterialTimePeriodPanel(_am, _pmButton) { MinWidth = 52, HorizontalAlignment = HorizontalAlignment.Center };
+        var separator = Separator(72);
         _hourSelector.Click += (_, _) =>
         {
             SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Hour);
@@ -105,8 +105,13 @@ public class MaterialTimePicker : TemplatedControl
             _minuteSelector.SetCurrentValue(MaterialButton.IsCheckedProperty, true);
         };
         _hourSelector.VerticalAlignment = _minuteSelector.VerticalAlignment = VerticalAlignment.Top;
-        var clockSeparator = MaterialPickerSupport.Text("DisplayLarge"); clockSeparator.Text = ":"; clockSeparator.Margin = new Thickness(4, 0);
-        _clockSelectors = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,Auto"), Children = { _hourSelector, clockSeparator, _minuteSelector } };
+        var clockSeparator = Separator(80);
+        _hourSelector.PropertyChanged += (_, change) =>
+        {
+            if (change.Property == BoundsProperty) clockSeparator.MinHeight = Math.Max(80, _hourSelector.Bounds.Height);
+        };
+        _clockSelectors = new Grid { UseLayoutRounding = false, FlowDirection = Avalonia.Media.FlowDirection.LeftToRight,
+            ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,Auto"), Children = { _hourSelector, clockSeparator, _minuteSelector } };
         Grid.SetColumn(clockSeparator, 1); Grid.SetColumn(_minuteSelector, 2);
         _dial.HorizontalAlignment = HorizontalAlignment.Center;
         _clock.Children.Add(_clockSelectors); _clock.Children.Add(_dial);
@@ -119,7 +124,8 @@ public class MaterialTimePicker : TemplatedControl
             if (args.Part == MaterialTimePickerPart.Hour) SelectHour(Is24Hour ? args.Value : args.Value % 12 + (_pm ? 12 : 0), args.Complete);
             else SelectMinute(args.Value);
         };
-        _fields = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,Auto"), Children = { HourInput, separator, MinuteInput, _period } };
+        _fields = new Grid { FlowDirection = Avalonia.Media.FlowDirection.LeftToRight,
+            ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,Auto"), Children = { HourInput, separator, MinuteInput, _period } };
         Grid.SetColumn(separator, 1); Grid.SetColumn(MinuteInput, 2);
         Grid.SetColumn(_period, 3);
         var inputs = new StackPanel { Spacing = 8, Children = { _fields, _clock } };
@@ -131,6 +137,14 @@ public class MaterialTimePicker : TemplatedControl
         MinuteInput.GotFocus += (_, _) => SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Minute);
         HourInput.KeyDown += (sender, e) => { if (e.Key == Key.Enter && HourValid(out _)) { MinuteInput.Focus(); e.Handled = true; } };
         _ready = true; SynchronizeText(); Refresh();
+    }
+    private static Border Separator(double height)
+    {
+        var text = MaterialPickerSupport.Text("DisplayLarge");
+        text.Text = ":"; text.TextAlignment = Avalonia.Media.TextAlignment.Center;
+        // This is the pinned DisplaySeparator optical offset, not a font-specific margin patch.
+        text.RenderTransform = new Avalonia.Media.TranslateTransform(0, -4);
+        return new Border { Width = 24, MinHeight = height, VerticalAlignment = VerticalAlignment.Top, Child = text };
     }
     private void SynchronizeText()
     {
@@ -201,7 +215,7 @@ public class MaterialTimePicker : TemplatedControl
         _clock.RowDefinitions[2].Height = horizontal ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
         Grid.SetRow(_dial, horizontal ? 0 : 1); Grid.SetColumn(_dial, horizontal ? 1 : 0); Grid.SetRowSpan(_dial, horizontal ? 3 : 1);
         Grid.SetRow(_adjust, 2);
-        _dial.Margin = horizontal ? new Thickness(24, 0, 0, 0) : new Thickness(0, 24, 0, 24);
+        _dial.Margin = horizontal ? new Thickness(36, 0, 0, 0) : new Thickness(0, 36, 0, 24);
         var horizontalPeriod = Mode == MaterialTimePickerMode.Clock && horizontal;
         var periodParent = Mode == MaterialTimePickerMode.Input ? _fields : horizontal ? _clock : _clockSelectors;
         if (_period.Parent != periodParent)
@@ -212,7 +226,7 @@ public class MaterialTimePicker : TemplatedControl
         Grid.SetColumn(_period, horizontalPeriod ? 0 : 3); Grid.SetRow(_period, horizontalPeriod ? 1 : 0);
         _period.Columns = horizontalPeriod ? 2 : 1;
         _period.MinWidth = horizontalPeriod ? 216 : 52;
-        _period.Margin = horizontalPeriod ? new Thickness(0, 12, 0, 0) : new Thickness(8, 0, 0, 0);
+        _period.Margin = horizontalPeriod ? new Thickness(0, 16, 0, 0) : new Thickness(12, 0, 0, 0);
         _period.VerticalAlignment = VerticalAlignment.Top;
         _hourSelector.Content = (Is24Hour ? _lastTime.Hour : (_lastTime.Hour + 11) % 12 + 1).ToString("00", Culture);
         _minuteSelector.Content = _lastTime.Minute.ToString("00", Culture);

@@ -36,29 +36,34 @@
     <Setter Property="Template"><ControlTemplate>
       <Grid Background="Transparent">
         <Grid x:Name="Group" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*" VerticalAlignment="Center">
-          <Border x:Name="Indicator" Grid.ColumnSpan="2" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Width="56" MinHeight="32" HorizontalAlignment="Center">
-            <Border x:Name="StateLayer" Background="{DynamicResource M3.OnSecondaryContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Opacity="0" IsHitTestVisible="False">
-              <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-            </Border>
+          <Border x:Name="Indicator" Grid.ColumnSpan="2" Background="Transparent" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Width="56" MinHeight="32" HorizontalAlignment="Center">
+            <Grid>
+              <controls:MaterialNavigationSelectionPresenter IsSelected="{TemplateBinding IsSelected}" Brush="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" />
+              <Border x:Name="StateLayer" Background="{DynamicResource M3.OnSecondaryContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Opacity="0" IsHitTestVisible="False">
+                <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
+              </Border>
+            </Grid>
           </Border>
-          <Viewbox x:Name="Icon" Grid.ColumnSpan="2" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <ContentPresenter Content="{TemplateBinding DisplayIcon}" ContentTemplate="{TemplateBinding IconTemplate}" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
-          </Viewbox>
-          <ContentPresenter x:Name="Badge" Grid.ColumnSpan="2" Content="{TemplateBinding Badge}" ContentTemplate="{TemplateBinding BadgeTemplate}"
-                            IsVisible="{TemplateBinding Badge, Converter={x:Static converters:ObjectConverters.IsNotNull}}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="24,-2,0,0" IsHitTestVisible="False" />
+          <controls:MaterialNavigationIconPanel x:Name="IconFrame" Grid.ColumnSpan="2" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Viewbox x:Name="Icon" Width="24" Height="24">
+              <ContentPresenter Content="{TemplateBinding DisplayIcon}" ContentTemplate="{TemplateBinding IconTemplate}" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+            </Viewbox>
+            <ContentPresenter x:Name="Badge" Content="{TemplateBinding Badge}" ContentTemplate="{TemplateBinding BadgeTemplate}"
+                              IsVisible="{TemplateBinding Badge, Converter={x:Static converters:ObjectConverters.IsNotNull}}" IsHitTestVisible="False" />
+          </controls:MaterialNavigationIconPanel>
           <ContentPresenter x:Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="2" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="4,4,4,0"
                             LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
         </Grid>
-        <Border x:Name="TabIndicator" Height="3" CornerRadius="3,3,0,0" Background="{DynamicResource M3.PrimaryBrush}" Width="{Binding Bounds.Width, ElementName=PART_ContentPresenter}" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="False" IsHitTestVisible="False" />
+        <controls:MaterialNavigationSelectionPresenter x:Name="TabIndicator" Height="3" CornerRadius="3,3,0,0" Brush="{DynamicResource M3.PrimaryBrush}"
+             IsSelected="{TemplateBinding IsSelected}" Width="{Binding Bounds.Width, ElementName=PART_ContentPresenter}" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsVisible="False" />
         <Border x:Name="FocusRing" Margin="2" BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3" CornerRadius="{DynamicResource M3.Shape.CornerSmall}" IsVisible="False" IsHitTestVisible="False" />
       </Grid>
     </ControlTemplate></Setter>
     <Style Selector="^:horizontal /template/ Border#Indicator"><Setter Property="Width" Value="NaN" /><Setter Property="MinHeight" Value="40" /><Setter Property="HorizontalAlignment" Value="Stretch" /></Style>
-    <Style Selector="^:horizontal /template/ Viewbox#Icon"><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="16,0,0,0" /></Style>
+    <Style Selector="^:horizontal /template/ controls|MaterialNavigationIconPanel#IconFrame"><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="16,0,0,0" /></Style>
     <Style Selector="^:horizontal /template/ ContentPresenter#PART_ContentPresenter">
       <Setter Property="Grid.Row" Value="0" /><Setter Property="Grid.Column" Value="1" /><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="4,0,16,0" />
     </Style>
-    <Style Selector="^:horizontal /template/ ContentPresenter#Badge"><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="36,0,0,0" /><Setter Property="HorizontalAlignment" Value="Left" /></Style>
     <Style Selector="^:rail:horizontal">
       <Setter Property="MinHeight" Value="56" /><Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
       <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelLargeLetterSpacing}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.LabelLargeLineHeight}" />
@@ -90,8 +95,8 @@
     <Style Selector="^:secondary:selected /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:tabs:pointerover:not(:selected), ^:tabs:focus-visible:not(:selected), ^:tabs:pressed:not(:selected)"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:tabs:pointerover:not(:selected) /template/ Viewbox#Icon ContentPresenter, ^:tabs:focus-visible:not(:selected) /template/ Viewbox#Icon ContentPresenter, ^:tabs:pressed:not(:selected) /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:tabs:selected /template/ Border#TabIndicator"><Setter Property="IsVisible" Value="True" /></Style>
-    <Style Selector="^:secondary /template/ Border#TabIndicator"><Setter Property="Width" Value="NaN" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Height" Value="2" /><Setter Property="CornerRadius" Value="0" /></Style>
+    <Style Selector="^:tabs /template/ controls|MaterialNavigationSelectionPresenter#TabIndicator"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:secondary /template/ controls|MaterialNavigationSelectionPresenter#TabIndicator"><Setter Property="Width" Value="NaN" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Height" Value="2" /><Setter Property="CornerRadius" Value="0" /></Style>
     <Style Selector="^:pointerover /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:focus-visible /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>

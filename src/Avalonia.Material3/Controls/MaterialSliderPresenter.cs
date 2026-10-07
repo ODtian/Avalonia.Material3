@@ -15,29 +15,22 @@ public sealed class MaterialSliderPresenter : Control
     internal void Attach(MaterialSlider? owner)
     {
         _owner = owner;
-        VisualChildren.Clear();
-        LogicalChildren.Clear();
-        _endpoints.Clear();
+        VisualChildren.Clear(); LogicalChildren.Clear(); _endpoints.Clear();
         if (owner is MaterialRangeSlider range)
         {
             _endpoints.AddRange(range.EndpointControls);
-            foreach (var endpoint in _endpoints)
-            {
-                VisualChildren.Add(endpoint);
-                LogicalChildren.Add(endpoint);
-            }
+            foreach (var endpoint in _endpoints) { VisualChildren.Add(endpoint); LogicalChildren.Add(endpoint); }
         }
-        InvalidateMeasure();
-        InvalidateVisual();
+        InvalidateMeasure(); InvalidateVisual();
     }
 
     private bool Vertical => _owner?.Orientation == Orientation.Vertical;
-    private double Length => Vertical ? Bounds.Height : Bounds.Width;
-    private double Breadth => Vertical ? Bounds.Width : Bounds.Height;
+    private MaterialSliderGeometry Geometry => new(Vertical ? Bounds.Height : Bounds.Width, Vertical ? Bounds.Width : Bounds.Height);
     private double LabelSpace => _owner is { ValueLabelVisibility: not SliderValueLabelVisibility.Never } ? _owner.FontSize * 1.5 + 24 : 0;
-    private double TrackY => Breadth - 32;
-    private double Position(double value) => 24 + _owner!.Fraction(value) * Math.Max(0, Length - 48);
-    private double PhysicalPosition(double value) => _owner!.ReverseDirection ? Length - Position(value) : Position(value);
+    private double Position(double value) => Geometry.Thumb(_owner!.Fraction(value), _owner.Step > 0);
+    private double PhysicalPosition(double value) => _owner!.ReverseDirection ? Geometry.Length - Position(value) : Position(value);
+    private bool Focused(int index) => index == 0 && _owner!.IsFocused || _endpoints.Count > index && _endpoints[index].IsFocused;
+    private double ThumbWidth(int index) => Focused(index) || _owner!.IsDragging && (index == 1) == _owner.ActiveUpper ? 2 : 4;
 
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -49,13 +42,12 @@ public sealed class MaterialSliderPresenter : Control
     {
         if (_owner is MaterialRangeSlider range)
         {
-            var length = Vertical ? finalSize.Height : finalSize.Width;
-            var breadth = Vertical ? finalSize.Width : finalSize.Height;
+            var geometry = new MaterialSliderGeometry(Vertical ? finalSize.Height : finalSize.Width, Vertical ? finalSize.Width : finalSize.Height);
             for (var i = 0; i < 2; i++)
             {
-                var position = 24 + range.Fraction(i == 0 ? range.LowerValue : range.UpperValue) * Math.Max(0, length - 48);
-                if (range.ReverseDirection) position = length - position;
-                var center = Vertical ? new Point(breadth - 32, length - position) : new Point(position, breadth - 32);
+                var position = geometry.Thumb(range.Fraction(i == 0 ? range.LowerValue : range.UpperValue), range.Step > 0);
+                if (range.ReverseDirection) position = geometry.Length - position;
+                var center = Vertical ? new Point(geometry.Axis, geometry.Length - position) : new Point(position, geometry.Axis);
                 _endpoints[i].Arrange(new Rect(center.X - 24, center.Y - 24, 48, 48));
             }
         }
@@ -71,108 +63,116 @@ public sealed class MaterialSliderPresenter : Control
             ? (owner.ReverseDirection ? new Matrix(0, 1, 1, 0, 0, 0) : new Matrix(0, -1, 1, 0, 0, Bounds.Height))
             : (owner.ReverseDirection ? new Matrix(-1, 0, 0, 1, Bounds.Width, 0) : Matrix.Identity);
         using (context.PushTransform(transform)) DrawTrack(context);
-
         var showLabel = owner.ValueLabelVisibility == SliderValueLabelVisibility.Always ||
-            (owner.ValueLabelVisibility == SliderValueLabelVisibility.OnInteraction && (owner.IsDragging || owner.IsKeyboardFocusWithin));
+            owner.ValueLabelVisibility == SliderValueLabelVisibility.OnInteraction && (owner.IsDragging || owner.IsKeyboardFocusWithin);
         if (!showLabel) return;
+        var lower = Label(PhysicalPosition(owner.Value), owner.ValueText);
         if (owner is MaterialRangeSlider range)
         {
-            DrawLabel(context, PhysicalPosition(range.LowerValue), range.ValueText, false);
-            DrawLabel(context, PhysicalPosition(range.UpperValue), owner.FormatValue(range.UpperValue), true);
+            var upper = Label(PhysicalPosition(range.UpperValue), owner.FormatValue(range.UpperValue));
+            if (lower.Rect.Intersects(upper.Rect)) Separate(ref lower, ref upper);
+            DrawLabel(context, lower); DrawLabel(context, upper);
         }
-        else DrawLabel(context, PhysicalPosition(owner.Value), owner.ValueText, null);
+        else DrawLabel(context, lower);
     }
 
     private void DrawTrack(DrawingContext context)
     {
         var owner = _owner!;
-        var start = 24d;
-        var end = Math.Max(start, Length - 24);
+        var geometry = Geometry;
         var lower = Position(owner.Value);
         var upper = owner is MaterialRangeSlider range ? Position(range.UpperValue) : lower;
+        var lowerGap = MaterialSliderGeometry.Gap(ThumbWidth(0));
+        var upperGap = MaterialSliderGeometry.Gap(ThumbWidth(owner is MaterialRangeSlider ? 1 : 0));
+        var center = (geometry.Start + geometry.End) / 2;
+        var leadingEnd = lower - lowerGap;
+        var trailingStart = upper + upperGap;
+        var leadingStop = false;
         if (owner.CenteredTrack && owner is not MaterialRangeSlider)
         {
-            var center = (start + end) / 2;
-            if (lower < center)
-            {
-                DrawSegment(context, start, lower - 8, owner.Background, trailingHandle: true);
-                DrawSegment(context, lower + 8, center, owner.Foreground, true, leadingHandle: true);
-                DrawSegment(context, center, end, owner.Background);
-            }
-            else
-            {
-                DrawSegment(context, start, Math.Min(center, lower - 8), owner.Background, trailingHandle: lower == center);
-                DrawSegment(context, center, lower - 8, owner.Foreground, true, trailingHandle: true);
-                DrawSegment(context, lower + 8, end, owner.Background, leadingHandle: true);
-            }
+            leadingEnd = Math.Min(lower, center) - (lower < center ? lowerGap : 0);
+            trailingStart = Math.Max(lower, center) + (lower >= center ? lowerGap : 0);
+            DrawSegment(context, geometry.Start, leadingEnd, owner.Background, trailingHandle: lower <= center);
+            DrawSegment(context, Math.Min(lower, center) + (lower < center ? lowerGap : 0),
+                Math.Max(lower, center) - (lower > center ? lowerGap : 0), owner.Foreground, true, true, true);
+            leadingStop = leadingEnd > geometry.Start + geometry.CapInset;
         }
         else
         {
-            if (owner is MaterialRangeSlider) DrawSegment(context, start, lower - 8, owner.Background, trailingHandle: true);
-            DrawSegment(context, owner is MaterialRangeSlider ? lower + 8 : start, upper - 8, owner.Foreground, true,
-                leadingHandle: owner is MaterialRangeSlider, trailingHandle: true);
-            DrawSegment(context, upper + 8, end, owner.Background, leadingHandle: true);
+            if (owner is MaterialRangeSlider)
+            {
+                DrawSegment(context, geometry.Start, leadingEnd, owner.Background, trailingHandle: true);
+                leadingStop = leadingEnd > geometry.Start + geometry.CapInset;
+            }
+            DrawSegment(context, owner is MaterialRangeSlider ? lower + lowerGap : geometry.Start,
+                upper - upperGap, owner.Foreground, true, owner is MaterialRangeSlider, true);
         }
+        DrawSegment(context, trailingStart, geometry.End, owner.Background, leadingHandle: !(owner.CenteredTrack && lower < center));
+        var trailingStop = trailingStart < geometry.End - geometry.CapInset;
         using var activeOpacity = context.PushOpacity(owner.IsEffectivelyEnabled ? 1 : owner.DisabledActiveOpacity);
-        if (owner.ShowMarks) DrawMarks(context, start, end, lower, upper);
-        DrawHandle(context, lower, owner.IsFocused || (_endpoints.Count > 0 && _endpoints[0].IsFocused), !owner.ActiveUpper);
-        if (owner is MaterialRangeSlider) DrawHandle(context, upper, _endpoints[1].IsFocused, owner.ActiveUpper);
+        if (owner.ShowMarks) DrawMarks(context, lower, upper, lowerGap, upperGap, leadingStop, trailingStop);
+        if (leadingStop) context.DrawEllipse(owner.Foreground, null, new Point(geometry.Start + geometry.CapInset, geometry.Axis), 2, 2);
+        if (trailingStop) context.DrawEllipse(owner.Foreground, null, new Point(geometry.End - geometry.CapInset, geometry.Axis), 2, 2);
+        DrawHandle(context, lower, 0);
+        if (owner is MaterialRangeSlider) DrawHandle(context, upper, 1);
         if (owner.IsEffectivelyEnabled && owner.IsPointerOver && !owner.IsDragging)
-            context.DrawEllipse(null, new Pen(owner.Foreground, 1), new Point(owner.ActiveUpper ? upper : lower, TrackY), 12, 24);
-        context.DrawEllipse(owner.Foreground, null, new Point(end, TrackY), 2, 2);
+            context.DrawEllipse(null, new Pen(owner.Foreground, 1), new Point(owner.ActiveUpper ? upper : lower, geometry.Axis), 12, 24);
     }
 
     private void DrawSegment(DrawingContext context, double start, double end, IBrush? brush, bool active = false,
         bool leadingHandle = false, bool trailingHandle = false)
     {
         if (end <= start) return;
-        using var opacity = context.PushOpacity(_owner!.IsEffectivelyEnabled ? 1 :
-            active ? _owner.DisabledActiveOpacity : _owner.DisabledInactiveOpacity);
+        using var opacity = context.PushOpacity(_owner!.IsEffectivelyEnabled ? 1 : active ? _owner.DisabledActiveOpacity : _owner.DisabledInactiveOpacity);
         var leading = leadingHandle ? 2 : 8;
         var trailing = trailingHandle ? 2 : 8;
-        var rect = new RoundedRect(new Rect(start, TrackY - 8, end - start, 16), new CornerRadius(leading, trailing, trailing, leading));
-        context.DrawRectangle(brush, null, rect);
+        context.DrawRectangle(brush, null, new RoundedRect(new Rect(start, Geometry.Axis - 8, end - start, 16),
+            new CornerRadius(leading, trailing, trailing, leading)));
     }
 
-    private void DrawMarks(DrawingContext context, double start, double end, double lower, double upper)
+    private void DrawMarks(DrawingContext context, double lower, double upper, double lowerGap, double upperGap, bool leadingStop, bool trailingStop)
     {
         var owner = _owner!;
+        var geometry = Geometry;
         IEnumerable<double> marks = owner.Marks;
         if (owner.Marks.Count == 0 && owner.Step > 0 && owner.Maximum > owner.Minimum)
         {
-            // Thin densely spaced visual ticks without changing the set of selectable values.
+            // Thin densely spaced visual ticks without changing the selectable values.
             var count = owner.StepIndex(owner.Maximum);
-            var limit = Math.Clamp((int)Math.Min(4095, Math.Max(1, (end - start) / 4)), 1, 4095);
+            var limit = Math.Clamp((int)Math.Min(4095, Math.Max(1, (geometry.End - geometry.Start) / 4)), 1, 4095);
             var ticks = new List<double> { owner.Minimum };
             if (double.IsFinite(count))
             {
                 var stride = Math.Max(1, Math.Ceiling(count / limit));
-                for (var i = 1; i <= limit && i * stride < count; i++)
-                    ticks.Add(owner.ValueAtFraction(i * stride / count));
+                for (var i = 1; i <= limit && i * stride < count; i++) ticks.Add(owner.ValueAtFraction(i * stride / count));
             }
-            ticks.Add(owner.Maximum);
-            marks = ticks;
+            ticks.Add(owner.Maximum); marks = ticks;
         }
         foreach (var value in marks.Where(value => value >= owner.Minimum && value <= owner.Maximum).Take(4096))
         {
-            var x = Position(value);
-            if (Math.Abs(x - lower) < 8 || (owner is MaterialRangeSlider && Math.Abs(x - upper) < 8)) continue;
+            var fraction = owner.Fraction(value);
+            if (fraction == 0 && leadingStop || fraction == 1 && trailingStop) continue;
+            var x = geometry.Tick(fraction);
+            if (Math.Abs(x - lower) <= lowerGap || owner is MaterialRangeSlider && Math.Abs(x - upper) <= upperGap) continue;
+            var center = (geometry.Start + geometry.End) / 2;
+            if (owner.CenteredTrack && owner is not MaterialRangeSlider && Math.Abs(x - center) <= lowerGap) continue;
             var selected = owner is MaterialRangeSlider ? x >= lower && x <= upper :
-                owner.CenteredTrack ? x >= Math.Min(lower, (start + end) / 2) && x <= Math.Max(lower, (start + end) / 2) : x <= lower;
-            context.DrawEllipse(selected ? owner.ValueIndicatorForeground : owner.Foreground, null, new Point(x, TrackY), 2, 2);
+                owner.CenteredTrack ? x >= Math.Min(lower, center) && x <= Math.Max(lower, center) : x <= lower;
+            context.DrawEllipse(selected ? owner.Background : owner.Foreground, null, new Point(x, geometry.Axis), 2, 2);
         }
     }
 
-    private void DrawHandle(DrawingContext context, double x, bool focused, bool active)
+    private void DrawHandle(DrawingContext context, double x, int index)
     {
         var brush = _owner!.Foreground;
-        var width = (_owner.IsDragging && active) || focused ? 2 : 4;
-        context.DrawRectangle(brush, null, new Rect(x - width / 2d, TrackY - 22, width, 44), 2, 2);
-        if (focused && _owner.IsEffectivelyEnabled)
-            context.DrawRectangle(null, new Pen(brush, 3), new Rect(x - 9, TrackY - 27, 18, 54), 9, 9);
+        var width = ThumbWidth(index);
+        context.DrawRectangle(brush, null, new Rect(x - width / 2, Geometry.Axis - 22, width, 44), width / 2, width / 2);
+        if (Focused(index) && _owner.IsEffectivelyEnabled)
+            context.DrawRectangle(null, new Pen(brush, 3), new Rect(x - 9, Geometry.Axis - 27, 18, 54), 9, 9);
     }
 
-    private void DrawLabel(DrawingContext context, double handle, string value, bool? upper)
+    private readonly record struct LabelLayout(FormattedText Text, Rect Rect);
+    private LabelLayout Label(double handle, string value)
     {
         var owner = _owner!;
         var text = new FormattedText(value, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
@@ -180,21 +180,34 @@ public sealed class MaterialSliderPresenter : Control
         var width = Math.Min(Bounds.Width, text.Width + 16);
         var height = text.Height + 12;
         var x = Math.Clamp(handle - width / 2, 0, Math.Max(0, Bounds.Width - width));
-        var y = TrackY - 22 - 12 - height;
+        var y = Geometry.Axis - 22 - 12 - height;
         if (Vertical)
         {
-            x = Math.Max(0, TrackY - 12 - width);
-            y = Math.Clamp(Length - handle - height / 2, 0, Math.Max(0, Length - height));
+            x = Math.Max(0, Geometry.Axis - 12 - width);
+            y = Math.Clamp(Geometry.Length - handle - height / 2, 0, Math.Max(0, Geometry.Length - height));
         }
-        else if (upper.HasValue)
-        {
-            // Separate coincident endpoint labels instead of drawing one on top of the other.
-            var trailing = upper.Value ^ owner.ReverseDirection;
-            x = trailing ? Math.Max(x, Bounds.Width / 2) : Math.Min(x, Math.Max(0, Bounds.Width / 2 - width));
-            x = Math.Clamp(x, 0, Math.Max(0, Bounds.Width - width));
-        }
-        var rect = new Rect(x, y, width, height);
-        context.DrawRectangle(owner.ValueIndicatorBrush, null, rect, height / 2, height / 2);
-        using (context.PushClip(rect)) context.DrawText(text, new Point(x + 8, y + 6));
+        return new(text, new Rect(x, y, width, height));
+    }
+
+    private void Separate(ref LabelLayout lower, ref LabelLayout upper)
+    {
+        var first = Vertical ? lower.Rect.Center.Y <= upper.Rect.Center.Y : lower.Rect.Center.X <= upper.Rect.Center.X;
+        var a = first ? lower : upper;
+        var b = first ? upper : lower;
+        var aSpan = Vertical ? a.Rect.Height : a.Rect.Width;
+        var bSpan = Vertical ? b.Rect.Height : b.Rect.Width;
+        var length = Vertical ? Bounds.Height : Bounds.Width;
+        var midpoint = Vertical ? (a.Rect.Center.Y + b.Rect.Center.Y) / 2 : (a.Rect.Center.X + b.Rect.Center.X) / 2;
+        var aStart = Math.Clamp(midpoint - aSpan - 1, 0, Math.Max(0, length - aSpan - bSpan - 2));
+        var bStart = Math.Min(length - bSpan, aStart + aSpan + 2);
+        a = a with { Rect = Vertical ? new Rect(a.Rect.X, aStart, a.Rect.Width, aSpan) : new Rect(aStart, a.Rect.Y, aSpan, a.Rect.Height) };
+        b = b with { Rect = Vertical ? new Rect(b.Rect.X, bStart, b.Rect.Width, bSpan) : new Rect(bStart, b.Rect.Y, bSpan, b.Rect.Height) };
+        if (first) { lower = a; upper = b; } else { lower = b; upper = a; }
+    }
+
+    private void DrawLabel(DrawingContext context, LabelLayout label)
+    {
+        context.DrawRectangle(_owner!.ValueIndicatorBrush, null, label.Rect, label.Rect.Height / 2, label.Rect.Height / 2);
+        using (context.PushClip(label.Rect)) context.DrawText(label.Text, label.Rect.TopLeft + new Vector(8, 6));
     }
 }

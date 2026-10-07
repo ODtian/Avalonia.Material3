@@ -85,11 +85,12 @@ public class MaterialSlider : TemplatedControl
     internal double KeyboardIncrement => Step > 0 ? Step : Maximum / 100 - Minimum / 100;
     internal double PointFraction(Point point)
     {
-        var fraction = Orientation == Orientation.Horizontal
-            ? (point.X - 24) / Math.Max(1, Bounds.Width - 48)
-            : (Bounds.Height - 24 - point.Y) / Math.Max(1, Bounds.Height - 48);
+        var vertical = Orientation == Orientation.Vertical;
+        var geometry = new MaterialSliderGeometry(vertical ? Bounds.Height : Bounds.Width, vertical ? Bounds.Width : Bounds.Height);
+        var position = vertical ? Bounds.Height - point.Y : point.X;
         // Pointer coordinates are already logical: Avalonia mirrors the LTR/RTL visual boundary.
-        return Math.Clamp(ReverseDirection ? 1 - fraction : fraction, 0, 1);
+        if (ReverseDirection) position = geometry.Length - position;
+        return geometry.Fraction(position, Step > 0);
     }
 
     private MaterialSliderPresenter? _presenter;

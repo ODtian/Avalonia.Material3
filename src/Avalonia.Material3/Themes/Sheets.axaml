@@ -70,8 +70,11 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Background="Transparent">
-          <Border x:Name="Focus" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="2" CornerRadius="8" Margin="4" IsVisible="False" />
-          <Border x:Name="State" Background="{DynamicResource M3.OnSurfaceBrush}" Opacity="0" CornerRadius="8" Margin="4" />
+          <Border x:Name="Focus" Width="40" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center"
+                  BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="2" CornerRadius="8" IsVisible="False" />
+          <Border x:Name="State" Width="{Binding Bounds.Width, ElementName=Marker}" Height="{Binding Bounds.Height, ElementName=Marker}"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource M3.OnSurfaceBrush}"
+                  Opacity="0" CornerRadius="{Binding CornerRadius, ElementName=Marker}" />
           <Border x:Name="Marker" Width="32" Height="4" CornerRadius="2" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource M3.OnSurfaceVariantBrush}" />
         </Grid>
       </ControlTemplate>
@@ -83,6 +86,7 @@
     <Style Selector="^:dragging /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
     <Style Selector="^:disabled /template/ Border#Marker"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     <Style Selector="^:vertical"><Setter Property="MinHeight" Value="56" /></Style>
+    <Style Selector="^:vertical /template/ Border#Focus"><Setter Property="Height" Value="48" /></Style>
     <Style Selector="^:vertical /template/ Border#Marker">
       <Setter Property="Width" Value="4" /><Setter Property="Height" Value="48" />
       <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />

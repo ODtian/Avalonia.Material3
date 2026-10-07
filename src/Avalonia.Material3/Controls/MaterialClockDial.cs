@@ -95,6 +95,8 @@ public class MaterialClockDial : Panel
         foreach (var number in Children) number.Measure(new Size(48 * Scale, 48 * Scale));
         return new Size(256 * Scale, 256 * Scale);
     }
+    internal Point SelectorCenter => Position(Value);
+    internal double SelectorRadius => 24 * Scale;
     private Point Position(int number)
     {
         var index = ActivePart == MaterialTimePickerPart.Minute ? number / 5d : number % 12;

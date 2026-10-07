@@ -35,11 +35,11 @@ public class ReviewPhysicalScenarioTests
         else if (rtl) range.FlowDirection = FlowDirection.RightToLeft;
         host.Render();
         var box = Physical(range, host.Window);
-        // Short labels have ample space: physical centers86.4/273.6, not two central/swapped bubbles.
-        var lowerFraction = rtl ^ reverse ? .8 : .2;
-        var upperFraction = rtl ^ reverse ? .2 : .8;
-        var lowerX = box.Left + 24 + lowerFraction * (box.Width - 48);
-        var upperX = box.Left + 24 + upperFraction * (box.Width - 48);
+        // Pinned Slider.kt interior discrete domain:360 outer24..336, cap centers32..328.
+        // Worked20/80% positions91.2/268.8; only root placement is read back from the control.
+        Assert.Equal(360, box.Width);
+        var lowerX = box.Left + (rtl ^ reverse ? 268.8 : 91.2);
+        var upperX = box.Left + (rtl ^ reverse ? 91.2 : 268.8);
         Assert.Equal(Color.Parse("#322F35"), Pixel(host.Window, new(lowerX, box.Bottom - 70)));
         Assert.Equal(Color.Parse("#322F35"), Pixel(host.Window, new(upperX, box.Bottom - 70)));
         Assert.Equal(Color.Parse("#FEF7FF"), Pixel(host.Window, new(box.Center.X, box.Bottom - 70)));
@@ -138,11 +138,14 @@ public class ReviewPhysicalScenarioTests
         Assert.Equal(2, endpoints.Length);
         var lower = endpoints.Single(c => ControlAutomationPeer.CreatePeerForElement(c)!.GetName() == "Lower value");
         var upper = endpoints.Single(c => ControlAutomationPeer.CreatePeerForElement(c)!.GetName() == "Upper value");
-        // Standard layout rounding may move a center by at most half a DIP at scale1.
-        Assert.InRange(Physical(lower, host.Window).Center.X, box.Left + 24 + (reverse ? .2 : .8) * (box.Width - 48) - .5, box.Left + 24 + (reverse ? .2 : .8) * (box.Width - 48) + .5);
-        Assert.InRange(Physical(upper, host.Window).Center.X, box.Left + 24 + (reverse ? .8 : .2) * (box.Width - 48) - .5, box.Left + 24 + (reverse ? .8 : .2) * (box.Width - 48) + .5);
-        var left = new Point(box.Left + 24 + .1 * (box.Width - 48), box.Bottom - 32);
-        var right = new Point(box.Right - 24 - .1 * (box.Width - 48), box.Bottom - 32);
+        // Pinned discrete20/80% centers91.2/268.8; retain the existing half-DIP raster tolerance.
+        Assert.Equal(360, box.Width);
+        var lowerX = box.Left + (reverse ? 91.2 : 268.8);
+        var upperX = box.Left + (reverse ? 268.8 : 91.2);
+        Assert.InRange(Physical(lower, host.Window).Center.X, lowerX - .5, lowerX + .5);
+        Assert.InRange(Physical(upper, host.Window).Center.X, upperX - .5, upperX + .5);
+        var left = new Point(box.Left + 61.6, box.Bottom - 32);
+        var right = new Point(box.Left + 298.4, box.Bottom - 32);
         host.Window.MouseDown(left, MouseButton.Left); host.Window.MouseUp(left, MouseButton.Left);
         Assert.Equal(reverse ? 10 : 20, range.LowerValue);
         Assert.Equal(reverse ? 80 : 90, range.UpperValue);
@@ -165,18 +168,19 @@ public class ReviewPhysicalScenarioTests
         else slider.FlowDirection = FlowDirection.RightToLeft;
         host.Render();
         var box = Physical(slider, host.Window);
-        var left = new Point(box.Left + 24 + .1 * (box.Width - 48), box.Bottom - 32);
-        var right = new Point(box.Right - 24 - .1 * (box.Width - 48), box.Bottom - 32);
+        Assert.Equal(360, box.Width);
+        var left = new Point(box.Left + 61.6, box.Bottom - 32);
+        var right = new Point(box.Left + 298.4, box.Bottom - 32);
         host.Window.MouseDown(left, MouseButton.Left); host.Window.MouseUp(left, MouseButton.Left);
         Assert.Equal(reverse ? 10 : 90, slider.Value);
         host.Window.MouseDown(right, MouseButton.Left); host.Window.MouseUp(right, MouseButton.Left);
         Assert.Equal(reverse ? 90 : 10, slider.Value);
         slider.Value = 70; host.Render();
-        var handleX = box.Left + 24 + (reverse ? .7 : .3) * (box.Width - 48);
+        var handleX = box.Left + (reverse ? 239.2 : 120.8);
         Assert.Equal(Color.Parse("#6750A4"), Pixel(host.Window, new(handleX, box.Bottom - 48)));
         slider.Focus(); host.Key(PhysicalKey.ArrowRight);
         Assert.Equal(reverse ? 80 : 60, slider.Value);
-        var movedX = box.Left + 24 + (reverse ? .8 : .4) * (box.Width - 48);
+        var movedX = box.Left + (reverse ? 268.8 : 150.4);
         Assert.True(movedX > handleX);
         Assert.Equal(Color.Parse("#6750A4"), Pixel(host.Window, new(movedX, box.Bottom - 48)));
     }
