@@ -27,10 +27,8 @@
                   Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid>
-              <Border x:Name="ChipLayer" Background="{TemplateBinding Foreground}" Opacity="0"
-                      CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False">
-                <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-              </Border>
+              <c:MaterialStateLayer x:Name="ChipLayer" Background="{TemplateBinding Foreground}" Opacity="0"
+                      CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False" />
               <DockPanel Margin="{TemplateBinding Padding}" HorizontalSpacing="8">
                 <Border DockPanel.Dock="Left" Width="24" Height="24" VerticalAlignment="Center" ClipToBounds="True" CornerRadius="{DynamicResource M3.Shape.CornerFull}"
                         IsVisible="{TemplateBinding Avatar, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
@@ -89,10 +87,10 @@
     <Style Selector="^:pressed /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
     <Style Selector="^:elevated:pressed /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
     <Style Selector="^:dragged /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
-    <Style Selector="^:pointerover /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:dragged /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
+    <Style Selector="^:pointerover /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:dragged /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
     <Style Selector="^:focus-visible /template/ Border#ChipFocus"><Setter Property="IsVisible" Value="True" /></Style>
     <Style Selector="^:disabled">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
@@ -102,7 +100,7 @@
     <Style Selector="^:disabled /template/ c|MaterialSymbol#Check"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     <Style Selector="^:disabled:checked, ^:disabled:elevated"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /></Style>
     <Style Selector="^:disabled /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
-    <Style Selector="^:disabled /template/ Border#ChipLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="0" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="M3.Search.Editor" TargetType="c:MaterialTextField" BasedOn="{StaticResource {x:Type c:MaterialTextField}}">
     <Setter Property="Background" Value="Transparent" />

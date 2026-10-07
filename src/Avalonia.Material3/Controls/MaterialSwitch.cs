@@ -30,66 +30,59 @@ public class MaterialSwitch : ToggleSwitch
     /// <summary>Visible and accessible error explanation when IsError is true.</summary>
     public string? ErrorText { get => GetValue(ErrorTextProperty); set => SetValue(ErrorTextProperty, value); }
 
-    private IDisposable? _durationSubscription;
-    private IDisposable? _easingSubscription;
-    private TimeSpan _duration;
-    private Easing _easing = new LinearEasing();
+    private readonly MaterialMotionSettings _motion;
+    private readonly MaterialMotionValue _travel;
+    private readonly MaterialMotionValue _size;
     private Panel? _moving;
     private Ellipse? _thumb;
+    private bool _painting;
+    public MaterialSwitch()
+    {
+        _travel = new(this, 0, value =>
+        {
+            if (_moving is null) return;
+            _painting = true;
+            try { Canvas.SetLeft(_moving, value); }
+            finally { _painting = false; }
+        });
+        _size = new(this, 16, value => { if (_thumb is not null) _thumb.Width = _thumb.Height = value; });
+        _motion = new(this, UpdateMotion);
+    }
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        if (_moving is not null) _moving.PropertyChanged -= MovingChanged;
         _moving = e.NameScope.Find<Panel>("PART_MovingKnobs");
         _thumb = e.NameScope.Find<Ellipse>("Thumb");
+        if (_moving is not null) _moving.PropertyChanged += MovingChanged;
+        _travel.Snap(IsChecked == true ? 20 : 0);
+        _size.Snap(IsPressed ? 28 : IsChecked == true || OffIcon is not null ? 24 : 16);
         UpdateMotion();
     }
-    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    private void MovingChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
-        base.OnAttachedToVisualTree(e);
-        _durationSubscription = this.GetResourceObservable("M3.Motion.DurationShort4").Subscribe(new MotionObserver(value =>
-        {
-            _duration = value is TimeSpan duration ? duration : TimeSpan.Zero;
-            UpdateMotion();
-        }));
-        _easingSubscription = this.GetResourceObservable("M3.Motion.EasingStandard").Subscribe(new MotionObserver(value =>
-        {
-            _easing = value is Easing easing ? easing : new LinearEasing();
-            UpdateMotion();
-        }));
+        if (!_painting && IsPressed && change.Property == Canvas.LeftProperty && _moving is not null)
+            _travel.Snap(Canvas.GetLeft(_moving));
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _durationSubscription?.Dispose(); _durationSubscription = null;
-        _easingSubscription?.Dispose(); _easingSubscription = null;
+        _travel.Snap(IsChecked == true ? 20 : 0);
+        _size.Snap(IsChecked == true || OffIcon is not null ? 24 : 16);
         if (_moving is not null) _moving.Transitions = null;
         if (_thumb is not null) _thumb.Transitions = null;
         base.OnDetachedFromVisualTree(e);
     }
     private void UpdateMotion()
     {
-        // Native ToggleSwitch removes/reinstates these transitions itself during thumb drag.
-        // Clearing existing transition instances also snaps an in-flight live ReduceMotion change.
-        var instant = IsPressed || !IsEffectivelyEnabled || _duration <= TimeSpan.Zero;
-        var knobs = instant ? null : new Transitions { new DoubleTransition { Property = Canvas.LeftProperty, Duration = _duration, Easing = _easing } };
-        if (instant && _moving is not null) _moving.Transitions = null;
-        SetValue(KnobTransitionsProperty, knobs!, BindingPriority.Style);
+        if (_motion is null) return;
+        SetValue(KnobTransitionsProperty, null!, BindingPriority.Style);
+        if (_moving is not null) _moving.Transitions = null;
         if (_thumb is not null)
-        {
             _thumb.Transitions = null;
-            if (!instant) _thumb.Transitions = new Transitions
-            {
-                new DoubleTransition { Property = WidthProperty, Duration = _duration, Easing = _easing },
-                new DoubleTransition { Property = HeightProperty, Duration = _duration, Easing = _easing },
-                new BrushTransition { Property = Shape.FillProperty, Duration = _duration, Easing = _easing }
-            };
-        }
-    }
-    private sealed class MotionObserver(Action<object?> update) : IObserver<object?>
-    {
-        public void OnNext(object? value) => update(value);
-        public void OnCompleted() { }
-        public void OnError(Exception error) { }
+        var size = IsPressed ? 28 : IsChecked == true || OffIcon is not null ? 24 : 16;
+        if (IsPressed) { _size.Snap(size); _travel.Snap(IsChecked == true ? 20 : 0); }
+        else { _size.Spring(size, _motion.FastSpatial); _travel.Spring(IsChecked == true ? 20 : 0, _motion.FastSpatial); }
     }
 
     protected override Type StyleKeyOverride => typeof(MaterialSwitch);
@@ -102,7 +95,7 @@ public class MaterialSwitch : ToggleSwitch
             PseudoClasses.Set(":error", IsError);
         else if (change.Property == OffIconProperty)
             PseudoClasses.Set(":off-icon", OffIcon is not null);
-        if (change.Property == IsPressedProperty || change.Property == IsEffectivelyEnabledProperty)
+        if (change.Property == IsPressedProperty || change.Property == IsCheckedProperty || change.Property == OffIconProperty)
             UpdateMotion();
     }
 

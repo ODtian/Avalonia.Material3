@@ -11,9 +11,7 @@
       </ContentPresenter>
       <Grid Margin="{TemplateBinding RevealTranslation}">
       <Border x:Name="Container" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" />
-      <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{TemplateBinding CornerRadius}">
-        <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-      </Border>
+      <c:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{TemplateBinding CornerRadius}" />
       <StackPanel>
         <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" Margin="{TemplateBinding Padding}">
           <ContentPresenter x:Name="Leading" Content="{TemplateBinding Leading}" ContentTemplate="{TemplateBinding LeadingTemplate}" TextBlock.Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" VerticalAlignment="Center" Margin="0,0,12,0" IsVisible="{Binding Leading, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />
