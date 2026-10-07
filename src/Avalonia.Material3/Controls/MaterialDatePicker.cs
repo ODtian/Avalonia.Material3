@@ -312,6 +312,9 @@ public class MaterialDatePicker : TemplatedControl
             AutomationProperties.SetName(button, date.ToString("D", DateCulture));
             AutomationProperties.SetItemStatus(button, status);
         }
+        // Range visibility and half-cell spans change the children's arrange geometry
+        // while the month grid retains the same desired size.
+        _days.InvalidateArrange();
         if (_choosingYear && _years.Children.Count == 0)
         {
             for (var year = MinimumDate.Year; year <= MaximumDate.Year; year++)

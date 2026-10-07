@@ -21,6 +21,47 @@ namespace Avalonia.Material3.Tests;
 public class GeometryQualityScenarioTests
 {
     [AvaloniaTheory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Native_date_range_reselection_updates_every_week_band_and_endpoint_join(bool rtl, bool reduced)
+    {
+        var picker = new MaterialDatePicker { Width = 360, SelectionMode = MaterialDateSelectionMode.Range,
+            Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US"), DisplayMonth = new(2024, 2, 1),
+            SelectedDate = new(2024, 2, 10), RangeEnd = new(2024, 2, 12),
+            FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
+        using var host = new GeometryHost(picker, 360, 640);
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = reduced }; host.Render();
+        var days = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().ToArray();
+        Rect Day(int day) => GeometryHost.Box(days.Single(d => d.Date.Day == day), host.Window);
+        void Click(int day)
+        {
+            var point = Day(day).Center; host.Window.MouseDown(point, MouseButton.Left); host.Window.MouseUp(point, MouseButton.Left); host.Render();
+        }
+        void Check(int first, int last)
+        {
+            Assert.Equal(new DateOnly(2024, 2, first), picker.SelectedDate); Assert.Equal(new DateOnly(2024, 2, last), picker.RangeEnd);
+            var band = Color.Parse("#E8DEF8"); var surface = Color.Parse("#ECE6F0");
+            for (var day = 1; day <= 29; day++)
+            {
+                if (day == first || day == last) continue;
+                var box = Day(day);
+                var expected = day > first && day < last ? band : surface;
+                Assert.Equal(expected, host.Pixel(box.Left + 1, box.Top + 5));
+                Assert.Equal(expected, host.Pixel(box.Right - 1, box.Top + 5));
+            }
+            var start = Day(first); var end = Day(last);
+            Assert.Equal(band, host.Pixel(start.Left + (rtl ? 14 : 34), start.Top + 5));
+            Assert.Equal(surface, host.Pixel(start.Left + (rtl ? 34 : 14), start.Top + 5));
+            Assert.Equal(band, host.Pixel(end.Left + (rtl ? 34 : 14), end.Top + 5));
+            Assert.Equal(surface, host.Pixel(end.Left + (rtl ? 14 : 34), end.Top + 5));
+        }
+        Check(10, 12);
+        Click(7); Click(24); Check(7, 24);
+        Click(9); Click(16); Check(9, 16);
+    }
+
+    [AvaloniaTheory]
     [InlineData(9, 16, false)]
     [InlineData(9, 16, true)]
     [InlineData(7, 24, false)]
