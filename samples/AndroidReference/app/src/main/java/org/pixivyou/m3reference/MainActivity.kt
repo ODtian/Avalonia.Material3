@@ -54,7 +54,11 @@ class MainActivity : ComponentActivity() {
             val configuration = remember(baseConfiguration, localeTag) {
                 Configuration(baseConfiguration).apply { if (localeTag != null) setLocales(LocaleList.forLanguageTags(localeTag)) }
             }
-            val localizedContext = remember(baseContext, configuration) { baseContext.createConfigurationContext(configuration) }
+            val localizedContext = remember(baseContext, configuration) {
+                android.view.ContextThemeWrapper(baseContext, R.style.ReferenceTheme).apply {
+                    applyOverrideConfiguration(configuration)
+                }
+            }
             CompositionLocalProvider(LocalContext provides localizedContext, LocalConfiguration provides configuration,
                 LocalResources provides localizedContext.resources, LocalProvidableLocaleList provides androidx.compose.ui.text.intl.LocaleList(configuration.locales.toLanguageTags())) {
                 ReferenceApp(initialScene, initialDark, palette)
