@@ -3,6 +3,11 @@
 package org.pixivyou.m3reference
 
 import android.os.Bundle
+import android.content.res.Configuration
+import android.os.LocaleList
+import android.os.Build
+import android.os.SystemClock
+import android.view.MotionEvent
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +23,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.platform.LocalProvidableLocaleList
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.input.pointer.motionEventSpy
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.state.ToggleableState
@@ -32,14 +44,27 @@ class MainActivity : ComponentActivity() {
         val initialScene = intent.getStringExtra("scene") ?: "home"
         val initialDark = intent.getBooleanExtra("dark", false)
         val palette = intent.getStringExtra("palette") ?: "expressive"
+        val localeTag = intent.getStringExtra("locale")
         // The release defaults are preserved; this explicit flag selects the M3 checkbox
         // migration branch for comparison with a library implementing the new M3 styling.
         ComposeMaterial3Flags.isCheckboxStylingFixEnabled = intent.getBooleanExtra("checkboxM3", false)
-        setContent { ReferenceApp(initialScene, initialDark, palette) }
+        setContent {
+            val baseContext = LocalContext.current
+            val baseConfiguration = LocalConfiguration.current
+            val configuration = remember(baseConfiguration, localeTag) {
+                Configuration(baseConfiguration).apply { if (localeTag != null) setLocales(LocaleList.forLanguageTags(localeTag)) }
+            }
+            val localizedContext = remember(baseContext, configuration) { baseContext.createConfigurationContext(configuration) }
+            CompositionLocalProvider(LocalContext provides localizedContext, LocalConfiguration provides configuration,
+                LocalResources provides localizedContext.resources, LocalProvidableLocaleList provides androidx.compose.ui.text.intl.LocaleList(configuration.locales.toLanguageTags())) {
+                ReferenceApp(initialScene, initialDark, palette)
+            }
+        }
+        window.decorView.post { Log.i("M3Reference", "activityDecorHardwareAccelerated=${window.decorView.isHardwareAccelerated}") }
     }
 }
 
-private val scenes = listOf("date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "slider", "fields", "buttons", "fab", "progress", "carousel", "navigation", "overlays")
+private val scenes = listOf("date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays")
 
 @Composable
 private fun ReferenceApp(initialScene: String, initialDark: Boolean, palette: String) {
@@ -48,10 +73,17 @@ private fun ReferenceApp(initialScene: String, initialDark: Boolean, palette: St
     MaterialExpressiveTheme(colorScheme = if (dark) darkColorScheme() else if (palette == "classic") lightColorScheme() else expressiveLightColorScheme()) {
         val colors = MaterialTheme.colorScheme
         val density = LocalDensity.current
+        val view = LocalView.current
+        val locale = LocalLocale.current
         LaunchedEffect(dark, palette) {
-            Log.i("M3Reference", "material3=1.5.0-alpha29 scene=$initialScene dark=$dark palette=$palette density=${density.density} fontScale=${density.fontScale} checkboxM3=${ComposeMaterial3Flags.isCheckboxStylingFixEnabled} timeToggle=${ComposeMaterial3Flags.isUpdatedTimepickerToggleEnabled} colors=$colors")
+            Log.i("M3Reference", "material3=1.5.0-alpha29 sdk=${Build.VERSION.SDK_INT} scene=$initialScene dark=$dark palette=$palette locale=${locale.toLanguageTag()} density=${density.density} fontScale=${density.fontScale} checkboxM3=${ComposeMaterial3Flags.isCheckboxStylingFixEnabled} timeToggle=${ComposeMaterial3Flags.isUpdatedTimepickerToggleEnabled} colors=$colors")
+            view.post { Log.i("M3Reference", "composeRootHardwareAccelerated=${view.isHardwareAccelerated} rootClass=${view.javaClass.name}") }
         }
-        Surface(Modifier.fillMaxSize().semantics { testTagsAsResourceId = true }) {
+        Surface(Modifier.fillMaxSize().motionEventSpy { event ->
+            if (event.actionMasked == MotionEvent.ACTION_DOWN || event.actionMasked == MotionEvent.ACTION_UP || event.actionMasked == MotionEvent.ACTION_CANCEL) {
+                Log.i("M3Reference", "pointer action=${event.actionMasked} eventUptime=${event.eventTime} observedUptime=${SystemClock.uptimeMillis()} x=${event.x} y=${event.y} rawX=${event.rawX} rawY=${event.rawY}")
+            }
+        }.semantics { testTagsAsResourceId = true }) {
             Scaffold(topBar = {
                 TopAppBar(title = { Text("M3 · $scene") }, navigationIcon = {
                     if (scene != "home") IconButton(onClick = { scene = "home" }, modifier = Modifier.testTag("home")) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Home") }

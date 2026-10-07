@@ -28,11 +28,28 @@ import com.google.android.material.sidesheet.SideSheetDialog
 internal fun ExtendedScene(scene: String) {
     when (scene) {
         "buttons" -> ButtonsScene()
+        "ripple" -> RippleScene()
         "fab" -> FabScene()
         "progress" -> ProgressScene()
         "carousel" -> CarouselScene()
         "navigation" -> NavigationScene()
         "overlays" -> OverlaysScene()
+    }
+}
+
+@Composable
+private fun RippleScene() = SceneColumn {
+    var count by remember { mutableIntStateOf(0) }
+    Text("Pressed $count", Modifier.testTag("ripple-count"))
+    Text("Hold and release the official buttons", style = MaterialTheme.typography.titleMedium)
+    Button(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-filled")) { Text("Filled button") }
+    ElevatedButton(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-elevated")) { Text("Elevated button") }
+    FilledTonalButton(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-tonal")) { Text("Tonal button") }
+    OutlinedButton(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-outlined")) { Text("Outlined button") }
+    TextButton(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-text")) { Text("Text button") }
+    Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+        IconButton(onClick = { count++ }, modifier = Modifier.testTag("ripple-icon")) { Icon(Icons.Default.Edit, "Icon button") }
+        FloatingActionButton(onClick = { count++ }, modifier = Modifier.testTag("ripple-fab")) { Icon(Icons.Default.Add, "FAB") }
     }
 }
 
