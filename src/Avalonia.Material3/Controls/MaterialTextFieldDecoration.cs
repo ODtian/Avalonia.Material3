@@ -139,7 +139,7 @@ internal sealed class MaterialTextFieldDecoration : Panel
             child.Measure(new Size(width, double.PositiveInfinity));
             child.Arrange(new Rect(x, y, Math.Min(width, child.DesiredSize.Width), child.DesiredSize.Height));
         }
-        ProjectLabel();
+        ProjectLabel(finalSize.Height);
         ConfigureDecorationTransitions();
         Children[0].InvalidateVisual();
         return finalSize;
@@ -178,7 +178,7 @@ internal sealed class MaterialTextFieldDecoration : Panel
                 control.Transitions = new Transitions { new DoubleTransition { Property = OpacityProperty, Duration = _duration, Easing = _easing } };
         }
     }
-    private void ProjectLabel()
+    private void ProjectLabel(double? arrangedHeight = null)
     {
         if (Field is not { } field) return;
         var resting = Children.OfType<TextBlock>().FirstOrDefault(child => child.Name == "RestingLabel");
@@ -186,7 +186,8 @@ internal sealed class MaterialTextFieldDecoration : Panel
         if (resting is null || floating is null || floating.FontSize <= 0 || resting.FontSize <= 0) return;
         var p = Math.Clamp(LabelProgress, 0, 1);
         var lineHeight = double.IsFinite(field.LineHeight) && field.LineHeight > 0 ? field.LineHeight : field.FontSize * 1.5;
-        var restY = OutlineTop + (Bounds.Height - OutlineTop - lineHeight) / 2;
+        // The framework commits this panel's Bounds after ArrangeOverride returns.
+        var restY = OutlineTop + ((arrangedHeight ?? Bounds.Height) - OutlineTop - lineHeight) / 2;
         var floatY = field.Variant == MaterialTextFieldVariant.Outlined ? 0 : field.Padding.Top;
         var y = restY + (floatY - restY) * p;
         var size = resting.FontSize + (floating.FontSize - resting.FontSize) * p;
