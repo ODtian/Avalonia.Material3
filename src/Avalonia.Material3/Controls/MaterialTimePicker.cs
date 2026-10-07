@@ -281,14 +281,7 @@ public class MaterialTimePicker : TemplatedControl
         DockPanel.SetDock(_mode,Dock.Left);DockPanel.SetDock(_confirmAction,Dock.Right);DockPanel.SetDock(_cancelAction,Dock.Right);
         footer.Children.Add(_mode);footer.Children.Add(_confirmAction);footer.Children.Add(_cancelAction);footer.Children.Add(new Border());
         dialog.Actions=footer;
-        dialog.Template=new FuncControlTemplate<MaterialDialog>((owner,scope)=>
-        {
-            var title=MaterialPickerSupport.Text("LabelMedium");title.Margin=new Thickness(0,0,0,20);title.Bind(TextBlock.TextProperty,owner.GetObservable(MaterialDialog.TitleProperty));
-            var body=new ContentPresenter {HorizontalContentAlignment=HorizontalAlignment.Center};body.Bind(ContentPresenter.ContentProperty,owner.GetObservable(ContentControl.ContentProperty));
-            var surface=new Border {Child=new MaterialTimeDialogPanel(title,body,footer)};
-            surface.Bind(Border.BackgroundProperty,owner.GetObservable(BackgroundProperty));surface.Bind(Border.CornerRadiusProperty,owner.GetObservable(CornerRadiusProperty));
-            MaterialPickerSupport.Resource(surface,Border.BoxShadowProperty,"Elevation.Shadow3");return surface;
-        });
+        dialog.UseTimePickerTemplate();
         AutomationProperties.SetName(dialog, DialogTitle);
         dialog.Confirming += (_, args) => { args.Cancel = !IsValid || !IsEffectivelyEnabled; if (!args.Cancel) args.Value = SelectedTime; };
         MaterialOverlaySession session;

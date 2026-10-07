@@ -51,6 +51,7 @@ public class MaterialDialog : ContentControl
     public MaterialOverlaySession? Session { get; private set; }
     public event EventHandler<MaterialDialogConfirmingEventArgs>? Confirming;
     protected override Type StyleKeyOverride => typeof(MaterialDialog);
+    internal void UseTimePickerTemplate() => PseudoClasses.Set(":time-picker", true);
     protected override AutomationPeer OnCreateAutomationPeer() => new MaterialDialogAutomationPeer(this);
 
     /// <summary>Present once; default full-screen placement follows Mode. Host options can explicitly override placement.</summary>
