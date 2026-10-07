@@ -71,11 +71,26 @@ public class MaterialTopAppBar : TemplatedControl
     private readonly List<(MaterialIconButton Icon, Style Role)> _navigationIcons = [];
     private readonly MaterialMotionBrush _containerColor;
     private readonly MaterialMotionSettings _motion;
+    private readonly MaterialFrameLease _settlement;
+    private enum SettlementPhase { None, Waiting, Decay, Snap }
+    private SettlementPhase _settlementPhase;
+    private MaterialSplineDecay _scrollDecay;
+    private double _settlementFrom, _settlementTarget, _scrollVelocity;
+    private TimeSpan _lastScrollTime;
+    private IPointer? _dragPointer;
+    private IPointer? _sourcePointer;
+    private bool _wheelPending;
+    private Point _dragPoint;
+    private ulong _dragTimestamp;
     private static readonly Avalonia.Animation.Easings.SplineEasing ContainerColorEasing = new(.4, 0, 1, 1);
     public MaterialTopAppBar()
     {
         _containerColor = new(this, null, PaintBackground);
         _motion = new(this, UpdateBackground);
+        _settlement = MaterialRenderFrames.Bind(this, AdvanceSettlement);
+        AddHandler(PointerPressedEvent, BarPressed, RoutingStrategies.Tunnel);
+        AddHandler(PointerMovedEvent, BarMoved, RoutingStrategies.Tunnel);
+        AddHandler(PointerReleasedEvent, BarReleased, RoutingStrategies.Tunnel);
         UpdatePresentation();
     }
     private void ClearNavigationRole()
@@ -128,16 +143,19 @@ public class MaterialTopAppBar : TemplatedControl
     {
         if (!double.IsFinite(delta) || !double.IsFinite(contentOffset) || contentOffset < 0) throw new ArgumentOutOfRangeException(nameof(delta));
         var old = _collapse;
+        StopSettlement();
         _contentOffset = contentOffset;
         if (ScrollBehavior != MaterialAppBarScrollBehavior.Pinned && (delta >= 0 || ScrollBehavior == MaterialAppBarScrollBehavior.EnterAlways || contentOffset <= 0))
             _collapse = Math.Clamp(_collapse + delta, 0, ExpandedHeight - CollapsedHeight);
         SetAndRaise(IsScrolledProperty, ref _isScrolled, contentOffset > .01);
         UpdateScrollPresentation();
         InvalidateMeasure();
+        if (delta != 0 && _dragPointer is null && _sourcePointer is null) WaitForScrollEnd();
         return _collapse - old;
     }
     public void ResetScroll()
     {
+        StopSettlement();
         _collapse = 0;
         _lastOffset = 0;
         _contentOffset = 0;
@@ -169,6 +187,9 @@ public class MaterialTopAppBar : TemplatedControl
         if (_subscribedScroll is not { } old) return;
         old.ScrollChanged -= ScrollChanged;
         old.RemoveHandler(PointerWheelChangedEvent, ScrollWheel);
+        old.RemoveHandler(PointerPressedEvent, SourcePressed);
+        old.RemoveHandler(PointerReleasedEvent, SourceReleased);
+        _sourcePointer = null; _wheelPending = false;
         _subscribedScroll = null;
     }
     private void StartScroll()
@@ -187,6 +208,8 @@ public class MaterialTopAppBar : TemplatedControl
         _subscribedScroll = scroll;
         scroll.ScrollChanged += ScrollChanged;
         scroll.AddHandler(PointerWheelChangedEvent, ScrollWheel, RoutingStrategies.Tunnel);
+        scroll.AddHandler(PointerPressedEvent, SourcePressed, RoutingStrategies.Tunnel, handledEventsToo: true);
+        scroll.AddHandler(PointerReleasedEvent, SourceReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
         ObserveOffset(scroll.Offset.Y);
     }
     private void SourceAttached(object? sender, VisualTreeAttachmentEventArgs e)
@@ -208,6 +231,11 @@ public class MaterialTopAppBar : TemplatedControl
     }
     private void ObserveOffset(double offset)
     {
+        StopSettlement();
+        var now = MaterialRenderFrames.Now;
+        var deltaTime = (now - _lastScrollTime).TotalSeconds;
+        _scrollVelocity = deltaTime is > 0 and < .1 ? (offset - _lastOffset) / deltaTime : 0;
+        _lastScrollTime = now;
         _contentOffset = offset;
         var delta = offset - _lastOffset;
         _lastOffset = offset;
@@ -219,14 +247,103 @@ public class MaterialTopAppBar : TemplatedControl
             InvalidateMeasure();
         }
         else ApplyScrollDelta(delta, offset);
+        if (_wheelPending) WaitForScrollEnd();
     }
     private void ScrollWheel(object? sender, PointerWheelEventArgs e)
     {
+        _wheelPending = true; WaitForScrollEnd();
         if (ScrollBehavior == MaterialAppBarScrollBehavior.ExitUntilCollapsed && e.Delta.Y > 0 && _subscribedScroll is { Offset.Y: <= 0 } && _collapse > 0)
             e.Handled = ApplyScrollDelta(-e.Delta.Y * 48, 0) != 0;
     }
+    private void SourcePressed(object? sender, PointerPressedEventArgs e)
+    {
+        _sourcePointer = e.Pointer; StopSettlement(); _scrollVelocity = 0; _lastScrollTime = MaterialRenderFrames.Now;
+    }
+    private void SourceReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_sourcePointer != e.Pointer) return;
+        _sourcePointer = null;
+        StartSettlement((MaterialRenderFrames.Now - _lastScrollTime).TotalMilliseconds <= 100 ? _scrollVelocity : 0);
+    }
+    private void BarPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (ScrollBehavior == MaterialAppBarScrollBehavior.Pinned || !IsEffectivelyEnabled || MaterialGestureOwnership.IsInteractive(e.Source)
+            || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        StopSettlement(); _dragPointer = e.Pointer; _dragPoint = e.GetPosition(TopLevel.GetTopLevel(this)); _dragTimestamp = e.Timestamp;
+        _scrollVelocity = 0; e.Pointer.Capture(this); e.Handled = true;
+    }
+    private void BarMoved(object? sender, PointerEventArgs e)
+    {
+        if (e.Pointer != _dragPointer) return;
+        var point = e.GetPosition(TopLevel.GetTopLevel(this)); var delta = _dragPoint.Y - point.Y;
+        _scrollVelocity = e.Timestamp > _dragTimestamp ? delta * 1000 / (e.Timestamp - _dragTimestamp) : 0;
+        _dragPoint = point; _dragTimestamp = e.Timestamp;
+        ApplyScrollDelta(delta, _contentOffset); e.Handled = true;
+    }
+    private void BarReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (e.Pointer != _dragPointer) return;
+        _dragPointer = null; e.Pointer.Capture(null);
+        StartSettlement(e.Timestamp - _dragTimestamp <= 100 ? _scrollVelocity : 0); e.Handled = true;
+    }
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    { _dragPointer = null; base.OnPointerCaptureLost(e); }
+    private void StopSettlement()
+    {
+        _settlementPhase = SettlementPhase.None; _settlement?.SetRunning(false);
+    }
+    private void WaitForScrollEnd()
+    {
+        // Avalonia wheel/adapter deltas expose no end phase. A quiet frame interval
+        // maps that input stream to the same reference settlement as pointer release.
+        if (_settlement is null || ScrollBehavior == MaterialAppBarScrollBehavior.Pinned || _dragPointer is not null || _sourcePointer is not null) return;
+        _settlementPhase = SettlementPhase.Waiting; _settlement.Restart(); _settlement.SetRunning(true);
+    }
+    private void PaintCollapse(double value)
+    {
+        _collapse = Math.Clamp(value, 0, ExpandedHeight - CollapsedHeight);
+        UpdateScrollPresentation(); InvalidateMeasure();
+    }
+    private void StartSettlement(double velocity)
+    {
+        StopSettlement();
+        if (ScrollBehavior == MaterialAppBarScrollBehavior.Pinned || CollapsedFraction < .01 || CollapsedFraction == 1 || VisualRoot is null) return;
+        _settlementFrom = _collapse;
+        _settlementTarget = CollapsedFraction < .5 ? 0 : ExpandedHeight - CollapsedHeight;
+        if (_motion.DefaultEffects.IsInstant) { PaintCollapse(_settlementTarget); return; }
+        _scrollDecay = new(velocity);
+        _settlementPhase = Math.Abs(velocity) > 1 ? SettlementPhase.Decay : SettlementPhase.Snap;
+        _settlement.Restart(); _settlement.SetRunning(true);
+    }
+    private bool AdvanceSettlement(MaterialFrame frame)
+    {
+        if (_settlementPhase == SettlementPhase.None) return false;
+        if (_settlementPhase == SettlementPhase.Waiting)
+        {
+            if (frame.Elapsed.TotalMilliseconds < 150) return true;
+            _wheelPending = false; StartSettlement(0); return _settlementPhase != SettlementPhase.None;
+        }
+        if (_motion.DefaultEffects.IsInstant) { PaintCollapse(_settlementTarget); _settlementPhase = SettlementPhase.None; return false; }
+        var time = frame.Elapsed.TotalSeconds;
+        if (_settlementPhase == SettlementPhase.Decay)
+        {
+            var sample = _scrollDecay.Sample(time); var raw = _settlementFrom + sample.Position;
+            PaintCollapse(raw);
+            if (time >= _scrollDecay.Duration || Math.Abs(raw - _collapse) > .5)
+            {
+                _settlementFrom = _collapse; _settlementTarget = CollapsedFraction < .5 ? 0 : ExpandedHeight - CollapsedHeight;
+                _settlementPhase = SettlementPhase.Snap; _settlement.Restart();
+            }
+            return true;
+        }
+        var snap = MaterialSpringResponse.Sample(time, _settlementFrom, _settlementTarget, 0, _motion.DefaultEffects);
+        var finished = Math.Abs(snap.Value - _settlementTarget) < .01 && Math.Abs(snap.Velocity) < .625;
+        PaintCollapse(finished ? _settlementTarget : snap.Value);
+        if (finished) _settlementPhase = SettlementPhase.None;
+        return !finished;
+    }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); StartScroll(); UpdateNavigationRole(); }
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { StopWatchingScroll(); ClearNavigationRole(); base.OnDetachedFromVisualTree(e); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { StopSettlement(); _dragPointer?.Capture(null); _dragPointer = null; StopWatchingScroll(); ClearNavigationRole(); base.OnDetachedFromVisualTree(e); }
     private void UpdatePresentation()
     {
         var fraction = CollapsedFraction;

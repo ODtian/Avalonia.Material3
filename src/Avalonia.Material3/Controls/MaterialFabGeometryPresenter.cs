@@ -32,6 +32,7 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     private double _fromExtent;
     private double _fromIcon;
     private double _extentVelocity, _iconVelocity, _fromExtentVelocity, _fromIconVelocity;
+    private double _checkedProgress, _checkedTarget, _fromCheckedProgress, _checkedVelocity, _fromCheckedVelocity;
     private bool _attached;
     private MaterialExpansionButton? _toggle;
     private MaterialShapeBorder? _container;
@@ -62,14 +63,14 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     }
     private void ToggleChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
+        if (change.Property == MaterialExpansionButton.IsExpandedProperty) Retarget();
         if (change.Property == MaterialFab.BackgroundProperty || change.Property == MaterialFab.ForegroundProperty
             || change.Property == MaterialExpansionButton.IsExpandedProperty || change.Property == MaterialFab.SizeProperty) PaintToggle();
     }
     private void PaintToggle()
     {
         if (_toggle is not { Expansion: MaterialFabMenu } toggle || _container is null) return;
-        var closedIcon = toggle.ClosedIconSize;
-        var progress = closedIcon == 20 ? toggle.IsExpanded ? 1 : 0 : (closedIcon - IconExtent) / (closedIcon - 20);
+        var progress = _checkedProgress;
         IBrush? Role(string name) => this.TryFindResource("M3." + name + "Brush", ActualThemeVariant, out var resource) ? resource as IBrush : null;
         _container.SetCurrentValue(Border.BackgroundProperty, MaterialMotionBrush.Interpolate(Role("PrimaryContainer"), Role("Primary"), progress));
         _icon?.SetCurrentValue(ContentPresenter.ForegroundProperty, MaterialMotionBrush.Interpolate(Role("OnPrimaryContainer"), Role("OnPrimary"), progress));
@@ -83,9 +84,22 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     {
         base.OnPropertyChanged(e);
         if (e.Property != TargetExtentProperty && e.Property != TargetIconSizeProperty && e.Property != SpringProperty && e.Property != AnimateGeometryProperty) return;
+        Retarget();
+    }
+    private void Retarget()
+    {
         if (_frames is null) return;
         SetAndRaise(ShapeMotionSpringProperty, ref _shapeSpring, AnimateGeometry ? Spring : Spring with { IsInstant = true });
         if (_frames.IsRunning) _frames.Sample();
+        if (_toggle is { Expansion: MaterialFabMenu } menuToggle)
+        {
+            var target = menuToggle.IsExpanded ? 1 : 0;
+            if (!AnimateGeometry || !_attached || Spring.IsInstant) { Snap(); return; }
+            if (_checkedTarget == target && _activeSpring == Spring && _frames.IsRunning) return;
+            _fromCheckedProgress = _checkedProgress; _fromCheckedVelocity = _checkedVelocity;
+            _checkedTarget = target; _activeSpring = Spring;
+            _frames.Restart(); _frames.SetRunning(true); return;
+        }
         if (!AnimateGeometry || !_attached || Spring.IsInstant || (Extent == TargetExtent && IconExtent == TargetIconSize && _extentVelocity == 0 && _iconVelocity == 0)) { Snap(); return; }
         _fromExtent = Extent;
         _fromIcon = IconExtent;
@@ -98,14 +112,24 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     }
     private void Snap()
     {
+        if (_toggle is { Expansion: MaterialFabMenu } toggle)
+        {
+            _checkedTarget = toggle.IsExpanded ? 1 : 0;
+            _toExtent = toggle.ClosedContainerSize + (56 - toggle.ClosedContainerSize) * _checkedTarget;
+            _toIcon = toggle.ClosedIconSize + (20 - toggle.ClosedIconSize) * _checkedTarget;
+        }
+        else
+        {
         _toExtent = TargetExtent;
         _toIcon = TargetIconSize;
+        }
         Complete();
     }
     private void Complete()
     {
         Stop();
         _extentVelocity = _iconVelocity = 0;
+        _checkedProgress = _checkedTarget; _checkedVelocity = 0;
         SetAndRaise(ExtentProperty, ref _extent, _toExtent);
         SetAndRaise(IconExtentProperty, ref _iconExtent, _toIcon);
         PaintToggle();
@@ -114,6 +138,16 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     private bool Advance(MaterialFrame frame)
     {
         var seconds = frame.Elapsed.TotalSeconds;
+        if (_toggle is { Expansion: MaterialFabMenu } toggle)
+        {
+            var sample = MaterialSpringResponse.Sample(seconds, _fromCheckedProgress, _checkedTarget, _fromCheckedVelocity, _activeSpring);
+            _checkedProgress = sample.Value; _checkedVelocity = sample.Velocity;
+            if (seconds >= 10 || Math.Abs(sample.Value - _checkedTarget) < .01 && Math.Abs(sample.Velocity) < .625)
+            { Snap(); return false; }
+            SetAndRaise(ExtentProperty, ref _extent, Math.Max(0, toggle.ClosedContainerSize + (56 - toggle.ClosedContainerSize) * _checkedProgress));
+            SetAndRaise(IconExtentProperty, ref _iconExtent, Math.Max(0, toggle.ClosedIconSize + (20 - toggle.ClosedIconSize) * _checkedProgress));
+            PaintToggle(); return true;
+        }
         var extentSample = MaterialSpringResponse.Sample(seconds, _fromExtent, _toExtent, _fromExtentVelocity, _activeSpring);
         var iconSample = MaterialSpringResponse.Sample(seconds, _fromIcon, _toIcon, _fromIconVelocity, _activeSpring);
         _extentVelocity = extentSample.Velocity; _iconVelocity = iconSample.Velocity;
