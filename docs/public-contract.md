@@ -18,7 +18,9 @@
 </Application>
 ```
 
-**在创建内容之前**安装主题；UI 线程设置控件/主题属性。无需 FluentTheme。字体默认平台字体，无捆绑 Roboto/中文字体；字体资源、许可、fallback 与平台输入/Back/IME/insets 由宿主提供。
+**在创建内容之前**安装主题；UI 线程设置控件/主题属性。无需 FluentTheme。消费方文档字体默认平台字体，控件包不捆绑 Roboto/中文文档字体；字体资源、许可、fallback 与平台输入/Back/IME/insets 由宿主提供。
+
+preview.3 新增独立于文档字阶的真实 `MaterialSymbol` 图标 Module，捆绑锁定 Google Material Symbols Rounded 的 FILL0/FILL1 资产及 Apache-2.0 许可；[图标消费契约](components/m3-symbols.md)。Gallery 自身另以 OFL 许可捆绑静态 Roboto/Noto Sans SC 演示字体，但不覆盖消费方 Typography、不安装系统字体；字体尺度不冒充物理 DPI。
 
 ## 完整组件契约
 

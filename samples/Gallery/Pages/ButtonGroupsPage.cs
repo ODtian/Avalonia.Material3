@@ -82,8 +82,8 @@ public sealed class ButtonGroupsPage : StackPanel
         foreach (var mode in new[] { MaterialGroupSelectionMode.Single, MaterialGroupSelectionMode.Multiple })
         {
             var group = new MaterialSegmentedButtonGroup { SelectionMode = mode };
-            group.Children.Add(new MaterialGroupButton { Content = "List", LeadingIcon = "≡", IsChecked = true });
-            group.Children.Add(new MaterialGroupButton { Content = "Grid", LeadingIcon = "▦" });
+            group.Children.Add(new MaterialGroupButton { Content = "List", LeadingIcon = Symbols.Create("view_list", 18), IsChecked = true });
+            group.Children.Add(new MaterialGroupButton { Content = "Grid", LeadingIcon = Symbols.Create("grid_view", 18) });
             group.Children.Add(new MaterialGroupButton { Content = "Disabled", IsEnabled = false });
             Children.Add(group);
         }
@@ -99,7 +99,7 @@ public sealed class ButtonGroupsPage : StackPanel
             {
                 var split = new MaterialSplitButton { Variant = variant, Size = size };
                 split.MainButton.Content = $"{variant} {size}";
-                split.MainButton.LeadingIcon = "+";
+                split.MainButton.LeadingIcon = Symbols.Create("add");
                 split.MainButton.Command = PrimarySplit.MainButton.Command;
                 AutomationProperties.SetName(split.SecondaryButton, $"{variant} {size} options");
                 _splits.Add(split); Children.Add(split);

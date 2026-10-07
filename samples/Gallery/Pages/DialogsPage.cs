@@ -36,7 +36,7 @@ public sealed class DialogsPage : UserControl
         FullScreenButton.Click += (_, _) => Edit(MaterialDialogMode.FullScreen, FullScreenButton);
         LongButton.Click += (_, _) => Present(new MaterialDialog
         {
-            Title = "Review long content / 长内容", Icon = "ⓘ", ConfirmText = "Accept",
+            Title = "Review long content / 长内容", Icon = Symbols.Create("info"), ConfirmText = "Accept",
             Content = string.Join("\n", Enumerable.Repeat("Generic reference text / 中文混排. Resize the window, scale text, or scroll while actions remain reachable.", 60))
         }, LongButton);
         NestedButton.Click += (_, _) =>
@@ -76,7 +76,7 @@ public sealed class DialogsPage : UserControl
     {
         var editor = new MaterialTextField { Name = "DialogEditor", Label = "Display name", Text = "Sample", SupportingText = "Enter a non-empty name", Variant = MaterialTextFieldVariant.Outlined };
         Editor = editor;
-        var dialog = new MaterialDialog { Mode = mode, Title = "Edit details", Icon = "☆", ConfirmText = "Save", Content = editor };
+        var dialog = new MaterialDialog { Mode = mode, Title = "Edit details", Icon = Symbols.Create("star"), ConfirmText = "Save", Content = editor };
         dialog.Confirming += (_, args) =>
         {
             args.Cancel = string.IsNullOrWhiteSpace(editor.Text);

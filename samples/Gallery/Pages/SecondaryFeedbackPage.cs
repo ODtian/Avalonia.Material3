@@ -110,7 +110,7 @@ public sealed class SecondaryFeedbackPage : UserControl
     }
     private static MaterialMenu BuildMenu(MaterialMenuVariant variant = MaterialMenuVariant.Standard)
     {
-        var copy = new MaterialMenuItem { Content = "Copy", Value = "copied", LeadingIcon = "▣" };
+        var copy = new MaterialMenuItem { Content = "Copy", Value = "copied", LeadingIcon = Symbols.Create("content_copy", 20) };
         AutomationProperties.SetAutomationId(copy, "MenuCopy");
         var pdf = new MaterialMenuItem { Content = "PDF / 文档", Value = "pdf" };
         AutomationProperties.SetAutomationId(pdf, "MenuPdf");
@@ -132,7 +132,7 @@ public sealed class SecondaryFeedbackPage : UserControl
         var small = new MaterialMenuItem { Content = "Compact", GroupName = "density", ToggleMode = MaterialMenuToggleMode.Radio, IsChecked = true, StaysOpenOnClick = true };
         var large = new MaterialMenuItem { Content = "Comfortable", GroupName = "density", ToggleMode = MaterialMenuToggleMode.Radio, StaysOpenOnClick = true };
         large.Click += (_, _) => Result.Text = "Menu: comfortable selected";
-        var icon = new MaterialMenuItem { Content = "↓", IsIconOnly = true, Value = "download" };
+        var icon = new MaterialMenuItem { Content = Symbols.Create("download", 20), IsIconOnly = true, Value = "download" };
         AutomationProperties.SetName(icon, "Download");
         return new MaterialMenu
         {

@@ -22,7 +22,7 @@ public class MaterialGroupButton : MaterialButton
     /// <summary>Current target shape for group templates; effective full radii are normalized to rendered bounds by the theme.</summary>
     public CornerRadius GroupCornerRadius => _groupCornerRadius;
     public static readonly StyledProperty<object?> SelectionIconProperty =
-        AvaloniaProperty.Register<MaterialGroupButton, object?>(nameof(SelectionIcon), "✓");
+        AvaloniaProperty.Register<MaterialGroupButton, object?>(nameof(SelectionIcon), new MaterialSymbolSource("check"));
     public object? SelectionIcon { get => GetValue(SelectionIconProperty); set => SetValue(SelectionIconProperty, value); }
     private double _full = 9999, _small = 8, _extraSmall = 4;
     private readonly List<IDisposable> _resources = [];

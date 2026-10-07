@@ -70,7 +70,7 @@
               <controls:MaterialButton x:Name="PART_ActionButton" Variant="Text" Content="{TemplateBinding ActionContent}" ContentTemplate="{TemplateBinding ActionTemplate}"
                                        IsEnabled="{TemplateBinding CanInvokeAction}"
                                        IsVisible="{TemplateBinding ActionContent, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
-              <controls:MaterialIconButton x:Name="PART_DismissButton" Content="×" AutomationProperties.Name="{TemplateBinding DismissText}" Foreground="{DynamicResource M3.InverseOnSurfaceBrush}" />
+              <controls:MaterialIconButton x:Name="PART_DismissButton" AutomationProperties.Name="{TemplateBinding DismissText}" Foreground="{DynamicResource M3.InverseOnSurfaceBrush}"><controls:MaterialSymbol Symbol="close" /></controls:MaterialIconButton>
             </controls:MaterialFeedbackPanel>
           </ScrollViewer>
         </Border>
@@ -132,7 +132,7 @@
           </Border>
           <Border x:Name="Focus" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="2" CornerRadius="{TemplateBinding CornerRadius}" IsVisible="False" IsHitTestVisible="False" />
           <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" Margin="{TemplateBinding Padding}">
-            <TextBlock x:Name="Check" Text="✓" Width="20" Margin="0,0,12,0" VerticalAlignment="Center" IsVisible="False" />
+            <controls:MaterialSymbol x:Name="Check" Symbol="check" Size="20" Margin="0,0,12,0" VerticalAlignment="Center" IsVisible="False" />
             <Viewbox Grid.Column="1" Width="20" Height="20" Margin="0,0,12,0" IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
               <ContentPresenter Content="{TemplateBinding LeadingIcon}" Foreground="{TemplateBinding IconForeground}" />
             </Viewbox>
@@ -151,7 +151,7 @@
             <Viewbox Grid.Column="4" Width="20" Height="20" Margin="12,0,0,0" IsVisible="{TemplateBinding TrailingIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
               <ContentPresenter Content="{TemplateBinding TrailingIcon}" Foreground="{TemplateBinding IconForeground}" />
             </Viewbox>
-            <TextBlock Grid.Column="5" x:Name="Arrow" Text="›" FontSize="20" Margin="12,0,0,0" VerticalAlignment="Center" IsVisible="False" />
+            <controls:MaterialSymbol Grid.Column="5" x:Name="Arrow" Symbol="chevron_right" Size="20" Margin="12,0,0,0" VerticalAlignment="Center" IsVisible="False" />
           </Grid>
         </Grid>
       </ControlTemplate>
@@ -173,7 +173,7 @@
     <Style Selector="^:vibrant:checked"><Setter Property="Background" Value="{DynamicResource M3.TertiaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryBrush}" /><Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnTertiaryBrush}" /><Setter Property="IconForeground" Value="{DynamicResource M3.OnTertiaryBrush}" /></Style>
     <Style Selector="^:legacy"><Setter Property="Padding" Value="12" /><Setter Property="ContentTemplate" Value="{StaticResource M3.Menu.LegacyLabel}" /></Style>
     <Style Selector="^:legacy:checked"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /><Setter Property="IconForeground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /><Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
-    <Style Selector="^:submenu /template/ TextBlock#Arrow"><Setter Property="IsVisible" Value="True" /></Style>
-    <Style Selector="^:checked /template/ TextBlock#Check"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:submenu /template/ controls|MaterialSymbol#Arrow"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:checked /template/ controls|MaterialSymbol#Check"><Setter Property="IsVisible" Value="True" /></Style>
   </ControlTheme>
 </ResourceDictionary>

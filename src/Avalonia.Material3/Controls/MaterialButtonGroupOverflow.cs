@@ -95,7 +95,7 @@ public partial class MaterialButtonGroup
             entry.Bind(MaterialButton.IsCheckedProperty, original.GetObservable(MaterialButton.IsCheckedProperty));
             if (original.Content is string)
                 entry.Bind(MaterialButton.ContentProperty, original.GetObservable(MaterialButton.ContentProperty));
-            entry.LeadingIcon = original.IsToggle && original.IsChecked ? "✓" : null;
+            entry.LeadingIcon = original.IsToggle && original.IsChecked ? new MaterialSymbol { Symbol = "check", Size = 20 } : null;
             entry.Click += (_, _) => { original.ActivateFromOverflow(); CloseOverflow(); };
             _overflowEntries.Add(entry); panel.Children.Add(entry);
         }

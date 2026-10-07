@@ -73,9 +73,59 @@ public class FoundationVisualScenarioTests
             var signature = new byte[4]; font.ReadExactly(signature);
             Assert.Equal(new byte[] { 0, 1, 0, 0 }, signature);
         }
+        using var codepoints = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Icons/MaterialSymbolsRounded.codepoints"));
+        using var codepointReader = new StreamReader(codepoints);
+        var canonical = codepointReader.ReadToEnd().Replace("\r\n", "\n");
+        Assert.Equal("225BD09137103CB7746BC93DC08D08764C9F0C3BD04F4B958D4A3C3C19432DD6",
+            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(canonical))));
         using var manifest = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Icons/manifest.json"));
         using var reader = new StreamReader(manifest);
         Assert.Contains("737e3324305806514d7909874fa1818ae1808232", reader.ReadToEnd());
+    }
+
+    [AvaloniaFact]
+    public void Selected_outlined_button_keeps_its_content_and_outer_layout_registration()
+    {
+        using var host = new ButtonHost();
+        var label = new TextBlock { Text = "Stable content", Width = 140, Height = 24 };
+        var button = new MaterialButton { Content = label, Variant = MaterialButtonVariant.Outlined, IsToggle = true };
+        host.Window.Content = new StackPanel { Margin = new Thickness(24), Children = { button } };
+        host.Capture();
+        var before = new Rect(label.TranslatePoint(default, host.Window)!.Value, label.Bounds.Size);
+        var envelope = button.Bounds;
+        button.IsChecked = true;
+        host.Capture();
+        Assert.Equal(envelope, button.Bounds);
+        Assert.Equal(before, new Rect(label.TranslatePoint(default, host.Window)!.Value, label.Bounds.Size));
+    }
+
+    [AvaloniaFact]
+    public void Filter_selection_replaces_one_reserved_icon_lane_without_moving_label_or_sibling()
+    {
+        using var host = new ButtonHost();
+        var label = new TextBlock { Text = "Filter content", Width = 100, Height = 20 };
+        var chip = new MaterialChip { ChipVariant = MaterialChipVariant.Filter, Content = label };
+        var sibling = new TextBlock { Text = "Below" };
+        host.Window.Content = new StackPanel { Children = { chip, sibling } };
+        host.Capture();
+        var before = label.TranslatePoint(default, host.Window); var envelope = chip.Bounds; var below = sibling.Bounds;
+        chip.IsChecked = true; host.Capture();
+        Assert.Equal(envelope, chip.Bounds);
+        Assert.Equal(before, label.TranslatePoint(default, host.Window));
+        Assert.Equal(below, sibling.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Segmented_selection_keeps_a_single_icon_lane_and_label_registration()
+    {
+        using var host = new ButtonHost();
+        var label = new TextBlock { Text = "Option", Width = 100, Height = 20 };
+        var option = new MaterialGroupButton { Content = label };
+        host.Window.Content = new MaterialSegmentedButtonGroup { AllowEmptySelection = true, Children = { option } };
+        host.Capture();
+        var before = label.TranslatePoint(default, host.Window);
+        option.IsChecked = true; host.Capture();
+        Assert.Equal(before, label.TranslatePoint(default, host.Window));
     }
 
     private static byte[] Mask(Window window, Control visual)

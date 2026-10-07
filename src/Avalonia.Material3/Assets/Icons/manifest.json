@@ -4,6 +4,7 @@
   "license": "Apache-2.0",
   "originalSha256": "95b24392bb49efd1bc3e92cff4e2452ad094461bab7c97e7d8723fab97e330ca",
   "codepointsSha256": "225bd09137103cb7746bc93dc08d08764c9f0c3bd04f4b958d4a3c3c19432dd6",
+  "codepointsSha256Definition": "SHA256 of UTF-8 text with canonical LF line endings; raw Windows checkout/package bytes may have CRLF. Font hashes are always exact raw binary bytes.",
   "fontTools": "4.53.0",
   "modification": "Static FILL instances, renamed families; GRAD0/opsz24/wght400. No icon redrawing.",
   "instances": [

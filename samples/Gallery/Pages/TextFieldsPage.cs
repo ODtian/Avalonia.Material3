@@ -43,8 +43,8 @@ public sealed class TextFieldsPage : StackPanel
         var amount = Field("Amount / 金额", "Affixes and icons are not part of Text.", MaterialTextFieldVariant.Outlined);
         amount.PrefixText = "¥";
         amount.SuffixText = "CNY";
-        amount.InnerLeftContent = new TextBlock { Text = "◈", FontSize = 24, Width = 24 };
-        amount.InnerRightContent = new TextBlock { Text = "✓", FontSize = 24, Width = 24 };
+        amount.InnerLeftContent = Symbols.Create("attach_money");
+        amount.InnerRightContent = Symbols.Create("check");
         amount.ShowCounter = true;
 
         var password = Field("Password / 密码", "Password remains hidden from the automation value provider.");
@@ -52,11 +52,11 @@ public sealed class TextFieldsPage : StackPanel
         password.ShowClearButton = true;
         password.PlaceholderText = "At least eight characters";
         AutomationProperties.SetAutomationId(password, "TextField.Password");
-        var reveal = new MaterialButton { Content = "◉", FontSize = 24, Padding = new Thickness(12) };
+        var reveal = new MaterialIconButton { Content = Symbols.Create("visibility") };
         reveal.Click += (_, _) =>
         {
             password.RevealPassword = !password.RevealPassword;
-            reveal.Content = password.RevealPassword ? "○" : "◉";
+            reveal.Content = Symbols.Create(password.RevealPassword ? "visibility_off" : "visibility");
             AutomationProperties.SetName(reveal, password.RevealPassword ? "Hide password" : "Show password");
         };
         AutomationProperties.SetName(reveal, "Show password");

@@ -101,7 +101,7 @@ public sealed class SearchChipsPage : StackPanel
         forms.Add(full); Children.Add(full);
         SearchForms = forms.AsReadOnly();
         var outlined = forms.Single(form => form.Mode == MaterialSearchMode.OutlinedAutocomplete);
-        outlined.CandidateTemplate = new FuncDataTemplate<MaterialSearchToken>((token, _) => new TextBlock { Text = "→ " + token?.Label + " / Preview", TextWrapping = TextWrapping.Wrap });
+        outlined.CandidateTemplate = new FuncDataTemplate<MaterialSearchToken>((token, _) => new TextBlock { Text = token?.Label + " / Preview", TextWrapping = TextWrapping.Wrap });
         AddText("Read-only saved query (submit remains available) and disabled retained query");
         Children.Add(new MaterialSearch { Label = "Saved query", Text = "中文 Atlas", IsReadOnly = true });
         Children.Add(new MaterialSearch { Label = "Disabled query", Text = "Retained / 保留", IsEnabled = false });
@@ -115,7 +115,7 @@ public sealed class SearchChipsPage : StackPanel
             {
                 var chip = new MaterialChip { ChipVariant = variant, Content = state == "Long label" ? Long.Label : variant + " / " + state,
                     IsElevated = state == "Elevated", IsChecked = state == "Selected" && variant is MaterialChipVariant.Input or MaterialChipVariant.Filter,
-                    IsEnabled = state != "Disabled", LeadingIcon = new TextBlock { Text = "+" },
+                    IsEnabled = state != "Disabled", LeadingIcon = Symbols.Create("add", 18),
                     RemoveButtonLabel = "Remove " + variant + " " + state, HorizontalAlignment = HorizontalAlignment.Stretch };
                 if (variant == MaterialChipVariant.Input && state == "Flat") chip.Avatar = new TextBlock { Text = "A" };
                 chip.Click += (_, _) =>

@@ -7,9 +7,10 @@
         <ControlTemplate>
           <Grid Background="Transparent">
             <c:MaterialShapeBorder x:Name="Container" Margin="0,5" MinHeight="{TemplateBinding ContainerHeight}"
-                 VerticalAlignment="Center" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                 BorderThickness="{TemplateBinding BorderThickness}" ShapeCornerRadius="{TemplateBinding GroupCornerRadius}"
+                 VerticalAlignment="Center" Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding GroupCornerRadius}"
                  ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
+              <c:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                      CornerRadius="{Binding CornerRadius, ElementName=Container}">
               <Grid>
                 <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
                         CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False">
@@ -17,7 +18,10 @@
                 </Border>
                 <DockPanel x:Name="GroupContent" HorizontalAlignment="Center" Margin="{TemplateBinding Padding}" HorizontalSpacing="{TemplateBinding IconSpacing}">
                   <Viewbox x:Name="SelectionIcon" DockPanel.Dock="Left" Width="18" Height="18" IsVisible="False" VerticalAlignment="Center">
-                    <ContentPresenter Content="{TemplateBinding SelectionIcon}" />
+                    <Grid>
+                      <ContentPresenter x:Name="SelectedGlyph" Content="{TemplateBinding SelectionIcon}" Opacity="0" />
+                      <ContentPresenter x:Name="UnselectedGlyph" Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}" />
+                    </Grid>
                   </Viewbox>
                   <Viewbox x:Name="LeadingIcon" DockPanel.Dock="Left" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}"
                            VerticalAlignment="Center" IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
@@ -32,6 +36,7 @@
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="Center" RecognizesAccessKey="True" />
                 </DockPanel>
               </Grid>
+              </c:MaterialInsetBorder>
             </c:MaterialShapeBorder>
             <c:MaterialShapeBorder x:Name="FocusRing" Margin="-5,0" IsVisible="False" IsHitTestVisible="False"
                   BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
@@ -47,6 +52,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="12,8" />
       </Style>
+      <Style Selector="^:segmented /template/ c|MaterialInsetBorder#Stroke"><Setter Property="ReservedBorderThickness" Value="1" /></Style>
       <Style Selector="^:segmented:checked:not(:disabled)">
         <Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" />
@@ -54,8 +60,10 @@
       <Style Selector="^:segmented /template/ Border#Container, ^:segmented:pointerover /template/ Border#Container">
         <Setter Property="BoxShadow" Value="none" />
       </Style>
-      <Style Selector="^:segmented:checked /template/ Viewbox#SelectionIcon"><Setter Property="IsVisible" Value="True" /></Style>
-      <Style Selector="^:segmented:checked /template/ Viewbox#LeadingIcon"><Setter Property="IsVisible" Value="False" /></Style>
+      <Style Selector="^:segmented /template/ Viewbox#SelectionIcon"><Setter Property="IsVisible" Value="True" /></Style>
+      <Style Selector="^:segmented /template/ Viewbox#LeadingIcon"><Setter Property="IsVisible" Value="False" /></Style>
+      <Style Selector="^:segmented:checked /template/ ContentPresenter#SelectedGlyph"><Setter Property="Opacity" Value="1" /></Style>
+      <Style Selector="^:segmented:checked /template/ ContentPresenter#UnselectedGlyph"><Setter Property="Opacity" Value="0" /></Style>
       <Style Selector="^:segmented:not(:checked) /template/ Viewbox#LeadingIcon"><Setter Property="Width" Value="18" /><Setter Property="Height" Value="18" /></Style>
       <Style Selector="^:segmented:disabled">
         <Setter Property="Background" Value="Transparent" />

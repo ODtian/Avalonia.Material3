@@ -119,7 +119,7 @@ public sealed class ContentNavigationPage : Grid
             var body = new TextBlock { Text = label + " content — This is a real host-owned page, not a label-only navigation result. 通用页面内容。", TextWrapping = TextWrapping.Wrap };
             AutomationProperties.SetAutomationId(body, id + "-content-" + i);
             page.Children.Add(body);
-            var item = new MaterialNavigationItem { Content = label, Icon = i == 0 ? "⌂" : i == 1 ? "▤" : "☆", SelectedIcon = i == 0 ? "⌂" : i == 1 ? "▣" : "★", PageContent = page };
+            var item = new MaterialNavigationItem { Content = label, Icon = Symbols.Create(i == 0 ? "home" : i == 1 ? "view_list" : "star"), SelectedIcon = Symbols.Create(i == 0 ? "home" : i == 1 ? "view_list" : "star", filled: true), PageContent = page };
             AutomationProperties.SetAutomationId(item, "navigation-" + id + "-" + i);
             if (i == 1)
             {

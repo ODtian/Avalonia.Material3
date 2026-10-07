@@ -52,6 +52,7 @@ public class MaterialButton : Button
 
     public MaterialButton()
     {
+        DataTemplates.Add(MaterialSymbolTemplate.Instance);
         UpdateSizePseudoClasses();
         UpdateVariantPseudoClasses();
     }
