@@ -1,4 +1,8 @@
 using Avalonia.Controls;
+using Avalonia.Automation;
+using Avalonia.Headless;
+using Avalonia.Input;
+using Avalonia.VisualTree;
 using Avalonia.Headless.XUnit;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
@@ -40,5 +44,31 @@ public class NormativeGlyphScenarioTests
     {
         public override void Render(DrawingContext context) =>
             context.DrawLine(new Pen(Brushes.White, 2, lineCap: PenLineCap.Square), new Point(19.5, 24), new Point(28.5, 24));
+    }
+
+    [AvaloniaFact]
+    public void List_disclosure_uses_the_official_twenty_four_dip_artwork_in_both_states()
+    {
+        var row = new MaterialListItem { Title = "Entry", IsExpandable = true, ExpandedContent = "Details" };
+        using var host = new GeometryHost(row, 320, 180);
+        var action = row.GetVisualDescendants().OfType<MaterialButton>().Single(b => AutomationProperties.GetName(b) == "Toggle expanded content");
+        action.Background = Brushes.White; action.Foreground = Brushes.Black;
+        foreach (var symbol in new[] { "expand_more", "expand_less" })
+        {
+            host.Render();
+            var center = action.TranslatePoint(new Point(action.Bounds.Width / 2, action.Bounds.Height / 2), host.Window)!.Value;
+            var actual = host.Offscreen(1);
+            using var reference = new GeometryHost(new MaterialSymbol { Symbol = symbol, Size = 24, Foreground = Brushes.Black }, 48, 48);
+            var expected = reference.Offscreen(1);
+            for (var y = 0; y < 24; y++)
+            for (var x = 0; x < 24; x++)
+                Assert.Equal(expected[x + 12, y + 12].R < 80, actual[(int)(center.X - 12) + x, (int)(center.Y - 12) + y].R < 80);
+            if (symbol == "expand_more")
+            {
+                host.Window.MouseDown(center, MouseButton.Left); host.Window.MouseUp(center, MouseButton.Left);
+                Assert.True(row.IsExpanded);
+                host.Window.MouseMove(new Point(1, 1));
+            }
+        }
     }
 }

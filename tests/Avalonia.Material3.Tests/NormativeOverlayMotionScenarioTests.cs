@@ -138,14 +138,20 @@ public class NormativeOverlayMotionScenarioTests
         // Literal pinned recipes use.8→1 scale/FastSpatial and0→1 alpha/FastEffects.
         Assert.Equal(.8, surface.TransformToVisual(host.Window)!.Value.M11, 5);
         Assert.Equal(0, EffectiveOpacity(surface));
-        host.Render();
         var scales = new List<double>(); var alphas = new List<double>();
-        for (var frame = 0; frame < 28; frame++)
+        var observed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        TimeSpan? started = null;
+        void Sample(TimeSpan time)
         {
-            await Task.Delay(16); host.Render();
+            started ??= time;
             scales.Add(surface.TransformToVisual(host.Window)!.Value.M11);
             alphas.Add(EffectiveOpacity(surface));
+            if (time - started.Value >= TimeSpan.FromMilliseconds(700)) observed.TrySetResult();
+            else host.Window.RequestAnimationFrame(Sample);
         }
+        host.Window.RequestAnimationFrame(Sample);
+        host.Render();
+        await observed.Task.WaitAsync(TimeSpan.FromSeconds(10));
         Assert.Contains(scales, value => value > .8 && value < 1);
         Assert.Contains(alphas, value => value > 0 && value < 1);
         Assert.InRange(scales[^1], .99, 1.03);

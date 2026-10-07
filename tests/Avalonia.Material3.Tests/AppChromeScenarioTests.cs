@@ -55,7 +55,7 @@ public class AppChromeScenarioTests
         var bar = new MaterialTopAppBar { Title = "Collection", Subtitle = subtitle, Variant = variant };
         using var host = new ChromeHost(bar);
         Assert.Equal(height, bar.Bounds.Height);
-        Assert.Equal(font, bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Collection").FontSize);
+        Assert.Equal(font, bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Collection" && text.IsEffectivelyVisible && text.GetVisualAncestors().All(parent => parent.Opacity > 0)).FontSize);
     }
 
     [AvaloniaFact]
@@ -72,7 +72,7 @@ public class AppChromeScenarioTests
         host.Layout();
         Assert.True(bar.Bounds.Height == 64, $"height={bar.Bounds.Height}, fraction={bar.CollapsedFraction}, offset={scroll.Offset}, extent={scroll.Extent}, viewport={scroll.Viewport}, source={bar.ScrollSource == scroll}");
         Assert.Equal(1, bar.CollapsedFraction);
-        Assert.Equal(22, bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Collection").FontSize);
+        Assert.Equal(22, bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Collection" && text.IsEffectivelyVisible && text.GetVisualAncestors().All(parent => parent.Opacity > 0)).FontSize);
         scroll.Offset = new Vector(0, 20);
         host.Layout();
         Assert.Equal(92, bar.Bounds.Height);
@@ -345,9 +345,9 @@ public class AppChromeScenarioTests
         using var host = new ChromeHost(bar);
         bar.ApplyScrollDelta(44, 44); host.Layout();
         Assert.Equal(.5, bar.CollapsedFraction);
-        Assert.Equal(Color.Parse("#F9F2FB"), ((ISolidColorBrush)bar.CurrentBackground!).Color);
+        Assert.Equal(Color.Parse("#FAF4FC"), ((ISolidColorBrush)bar.CurrentBackground!).Color);
         host.Window.RequestedThemeVariant = ThemeVariant.Dark; host.Layout();
-        Assert.Equal(Color.Parse("#1B191F"), ((ISolidColorBrush)bar.CurrentBackground!).Color);
+        Assert.Equal(Color.Parse("#18161C"), ((ISolidColorBrush)bar.CurrentBackground!).Color);
     }
 
     [AvaloniaFact]
@@ -425,7 +425,7 @@ public class AppChromeScenarioTests
     {
         var bar = new MaterialTopAppBar { Variant = MaterialTopAppBarVariant.LargeFlexible, Title = "Collection", Subtitle = "Updated today", CenterTitle = true };
         using var host = new ChromeHost(bar);
-        foreach (var text in bar.GetVisualDescendants().OfType<TextBlock>().Where(text => text.Text is "Collection" or "Updated today"))
+        foreach (var text in bar.GetVisualDescendants().OfType<TextBlock>().Where(text => (text.Text is "Collection" or "Updated today") && text.IsEffectivelyVisible && text.GetVisualAncestors().All(parent => parent.Opacity > 0)))
         {
             var glyphCenter = text.TranslatePoint(new Point(text.TextLayout.WidthIncludingTrailingWhitespace / 2, 0), host.Window)!.Value.X;
             // Integer slot placement plus rounded glyph extent can differ by up to one DIP.
@@ -457,7 +457,7 @@ public class AppChromeScenarioTests
         var bar = new MaterialTopAppBar { Variant = variant, Title = "Collection", Subtitle = "Updated today", ScrollBehavior = MaterialAppBarScrollBehavior.EnterAlways };
         using var host = new ChromeHost(bar);
         bar.ApplyScrollDelta(500, 500); host.Layout();
-        var subtitle = bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Updated today");
+        var subtitle = bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Updated today" && text.IsEffectivelyVisible && text.GetVisualAncestors().All(parent => parent.Opacity > 0));
         Assert.True(subtitle.IsEffectivelyVisible);
         Assert.Equal(12, subtitle.FontSize);
         Assert.Equal(16, subtitle.LineHeight);
@@ -474,7 +474,7 @@ public class AppChromeScenarioTests
         var bar = new MaterialTopAppBar { Variant = variant, Title = "Collection", NavigationContent = navigation, ScrollBehavior = MaterialAppBarScrollBehavior.EnterAlways };
         using var host = new ChromeHost(bar);
         if (variant == MaterialTopAppBarVariant.Medium) { bar.ApplyScrollDelta(500, 500); host.Layout(); }
-        var title = bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Collection");
+        var title = bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Collection" && text.IsEffectivelyVisible && text.GetVisualAncestors().All(parent => parent.Opacity > 0));
         var navRight = navigation.TranslatePoint(default, host.Window)!.Value.X + navigation.Bounds.Width;
         var titleLeft = title.TranslatePoint(default, host.Window)!.Value.X;
         Assert.Equal(4, titleLeft - navRight);

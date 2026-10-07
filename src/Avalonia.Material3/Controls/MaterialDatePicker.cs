@@ -73,6 +73,9 @@ public class MaterialDatePicker : TemplatedControl
     private readonly Grid _week = new() { ColumnDefinitions = new ColumnDefinitions("*,*,*,*,*,*,*"), MinWidth = 336 };
     private readonly UniformGrid _years = new() { Columns = 3 };
     private readonly ScrollViewer _calendarScroll;
+    private readonly MaterialCalendarYearPanel _yearPanel;
+    private readonly MaterialCalendarMonthPanel _monthPanel;
+    private readonly MaterialPickerModePanel _modePanel;
     private readonly MaterialButton _previous, _next, _month;
     private bool _choosingYear;
     private DateOnly? _builtMonth;
@@ -124,18 +127,22 @@ public class MaterialDatePicker : TemplatedControl
         var navigation = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), MinHeight = 56 };
         Grid.SetColumn(_month, 1); Grid.SetColumn(_next, 2);
         navigation.Children.Add(_previous); navigation.Children.Add(_month); navigation.Children.Add(_next);
+        _monthPanel = new(new StackPanel { Children = { _week, _days } });
         _calendarScroll = new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, Content = new StackPanel { Children = { _week, _days } } };
-        _calendar.Children.Add(navigation); _calendar.Children.Add(_calendarScroll);
-        _calendar.Children.Add(new ScrollViewer { Content = _years, MaxHeight = 288, IsVisible = false });
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, Content = _monthPanel };
+        var yearScroll = new ScrollViewer { Content = _years, MaxHeight = 335 };
+        MaterialPickerSupport.Resource(yearScroll, BackgroundProperty, "SurfaceContainerHighBrush");
+        _yearPanel = new(_calendarScroll, yearScroll);
+        _calendar.Children.Add(navigation); _calendar.Children.Add(_yearPanel);
         _header = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto"), ColumnDefinitions = new ColumnDefinitions("*,Auto"),
             Margin = new Thickness(24, 16, 12, 12), MinHeight = 92 };
         Grid.SetColumnSpan(_title, 2); Grid.SetRow(_headline, 1); Grid.SetRow(_mode, 1); Grid.SetColumn(_mode, 1);
         _headline.Margin = new Thickness(0, 8, 8, 0);
         _header.Children.Add(_title); _header.Children.Add(_headline); _header.Children.Add(_mode);
+        _modePanel = new(this, _calendar, _inputs);
         Surface = new StackPanel { Spacing = 8, Children =
         {
-            _header, _calendar, _inputs, _error
+            _header, _modePanel, _error
         }};
         _error.Margin = new Thickness(24, 0, 24, 12);
         AutomationProperties.SetLiveSetting(_error, AutomationLiveSetting.Polite);
@@ -187,7 +194,6 @@ public class MaterialDatePicker : TemplatedControl
         MaterialPickerSupport.Resource(_headline, TextBlock.FontWeightProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "FontWeight");
         MaterialPickerSupport.Resource(_headline, TextBlock.LineHeightProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "LineHeight");
         MaterialPickerSupport.Resource(_headline, TextBlock.LetterSpacingProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "LetterSpacing");
-        _inputs.IsVisible = Mode == MaterialDatePickerMode.Input;
         EndInput.IsVisible = SelectionMode == MaterialDateSelectionMode.Range;
         StartInput.Label = Labels.StartDate; EndInput.Label = Labels.EndDate;
         StartInput.SupportingText = EndInput.SupportingText = Pattern;
@@ -239,13 +245,14 @@ public class MaterialDatePicker : TemplatedControl
         if (index < 0 || index >= 9999 * 12) return false;
         var candidate = new DateOnly((int)(index / 12 + 1), (int)(index % 12 + 1), 1);
         if (candidate > MaximumDate || candidate.AddDays(DateTime.DaysInMonth(candidate.Year, candidate.Month) - 1) < MinimumDate) return false;
-        SetCurrentValue(DisplayMonthProperty, candidate); return true;
+        if (SelectionMode == MaterialDateSelectionMode.Single && offset != 0) _monthPanel.Capture(Math.Sign(offset));
+        SetCurrentValue(DisplayMonthProperty, candidate);
+        if (SelectionMode == MaterialDateSelectionMode.Single && offset != 0) _monthPanel.Scroll();
+        return true;
     }
     private void RefreshCalendar()
     {
-        _calendar.IsVisible = Mode == MaterialDatePickerMode.Calendar;
-        _calendarScroll.IsVisible = !_choosingYear;
-        _calendar.Children[2].IsVisible = _choosingYear;
+        _yearPanel.Update(_choosingYear);
         _month.Content = DisplayMonth.ToString("MMMM yyyy", DateCulture);
         AutomationProperties.SetName(_month, Labels.ChooseYear + ": " + _month.Content);
         AutomationProperties.SetName(_previous, Labels.PreviousMonth); AutomationProperties.SetName(_next, Labels.NextMonth);
@@ -285,9 +292,10 @@ public class MaterialDatePicker : TemplatedControl
             var button = (MaterialCalendarDay)cell.Children[1];
             var date = button.Date;
             button.IsEnabled = IsDateAvailable(date);
+            button.AnimateContainer = SelectionMode == MaterialDateSelectionMode.Single || date == SelectedDate;
+            button.IsInRange = SelectionMode == MaterialDateSelectionMode.Range && SelectedDate is { } start && RangeEnd is { } end && date >= start && date <= end;
             button.IsChecked = date == SelectedDate || SelectionMode == MaterialDateSelectionMode.Range && date == RangeEnd;
             button.IsToday = date == Today;
-            button.IsInRange = SelectionMode == MaterialDateSelectionMode.Range && SelectedDate is { } start && RangeEnd is { } end && date >= start && date <= end;
             band.IsVisible = button.IsInRange && SelectedDate != RangeEnd;
             MaterialPickerSupport.Resource(band, Border.BackgroundProperty, "SecondaryContainerBrush");
             var isStart = date == SelectedDate;
@@ -401,6 +409,7 @@ public class MaterialDatePicker : TemplatedControl
         }
         else if (change.Property == SelectedDateProperty || change.Property == RangeEndProperty)
             SynchronizeText();
+        if (change.Property == ModeProperty) _modePanel.Prepare();
         Refresh();
         if (change.Property == ModeProperty && TopLevel.GetTopLevel(this) is not null)
         { if (Mode == MaterialDatePickerMode.Input) StartInput.Focus(); else _month.Focus(); }
