@@ -125,12 +125,14 @@ public class ReviewFixTrajectoryScenarioTests
         Assert.Equal(72, search.HeaderHeight);
     }
 
-    [AvaloniaFact]
-    public async Task App_bar_settles_an_intermediate_collapse_after_native_scroll_release()
+    [AvaloniaTheory]
+    [InlineData(MaterialAppBarScrollBehavior.EnterAlways)]
+    [InlineData(MaterialAppBarScrollBehavior.ExitUntilCollapsed)]
+    public async Task App_bar_settles_an_intermediate_collapse_after_native_scroll_release(MaterialAppBarScrollBehavior behavior)
     {
         var scroll = new ScrollViewer { Content = new Border { Height = 1500 } };
         var bar = new MaterialTopAppBar { Variant = MaterialTopAppBarVariant.Large, Title = "Page",
-            ScrollBehavior = MaterialAppBarScrollBehavior.EnterAlways, ScrollSource = scroll };
+            ScrollBehavior = behavior, ScrollSource = scroll };
         var layout = new DockPanel { Children = { bar, scroll } }; DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top);
         using var host = new GeometryHost(layout, 400, 400);
         host.Theme.Motion = new MaterialMotion(); host.Render();
@@ -139,6 +141,9 @@ public class ReviewFixTrajectoryScenarioTests
         scroll.Offset = new Vector(0, 30); host.Render();
         Assert.InRange(bar.CollapsedFraction, .1, .49);
         host.Window.MouseUp(point, MouseButton.Left);
+        // Native scroll presenters may publish a final inertial offset after release.
+        await Task.Delay(20); scroll.Offset = new Vector(0, 31); host.Render();
+        if (behavior == MaterialAppBarScrollBehavior.ExitUntilCollapsed) Assert.InRange(bar.CollapsedFraction, .1, .49);
         for (var i = 0; i < 40 && bar.CollapsedFraction is > .01 and < .99; i++)
         { await Task.Delay(20); host.Render(); }
         Assert.True(bar.CollapsedFraction < .01 || bar.CollapsedFraction > .99);

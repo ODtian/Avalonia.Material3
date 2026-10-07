@@ -79,7 +79,6 @@ public class MaterialTopAppBar : TemplatedControl
     private TimeSpan _lastScrollTime;
     private IPointer? _dragPointer;
     private IPointer? _sourcePointer;
-    private bool _wheelPending;
     private Point _dragPoint;
     private ulong _dragTimestamp;
     private static readonly Avalonia.Animation.Easings.SplineEasing ContainerColorEasing = new(.4, 0, 1, 1);
@@ -189,7 +188,7 @@ public class MaterialTopAppBar : TemplatedControl
         old.RemoveHandler(PointerWheelChangedEvent, ScrollWheel);
         old.RemoveHandler(PointerPressedEvent, SourcePressed);
         old.RemoveHandler(PointerReleasedEvent, SourceReleased);
-        _sourcePointer = null; _wheelPending = false;
+        _sourcePointer = null;
         _subscribedScroll = null;
     }
     private void StartScroll()
@@ -247,11 +246,11 @@ public class MaterialTopAppBar : TemplatedControl
             InvalidateMeasure();
         }
         else ApplyScrollDelta(delta, offset);
-        if (_wheelPending) WaitForScrollEnd();
+        WaitForScrollEnd();
     }
     private void ScrollWheel(object? sender, PointerWheelEventArgs e)
     {
-        _wheelPending = true; WaitForScrollEnd();
+        WaitForScrollEnd();
         if (ScrollBehavior == MaterialAppBarScrollBehavior.ExitUntilCollapsed && e.Delta.Y > 0 && _subscribedScroll is { Offset.Y: <= 0 } && _collapse > 0)
             e.Handled = ApplyScrollDelta(-e.Delta.Y * 48, 0) != 0;
     }
@@ -321,7 +320,7 @@ public class MaterialTopAppBar : TemplatedControl
         if (_settlementPhase == SettlementPhase.Waiting)
         {
             if (frame.Elapsed.TotalMilliseconds < 150) return true;
-            _wheelPending = false; StartSettlement(0); return _settlementPhase != SettlementPhase.None;
+            StartSettlement(0); return _settlementPhase != SettlementPhase.None;
         }
         if (_motion.DefaultEffects.IsInstant) { PaintCollapse(_settlementTarget); _settlementPhase = SettlementPhase.None; return false; }
         var time = frame.Elapsed.TotalSeconds;
