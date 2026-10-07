@@ -30,6 +30,13 @@ public class MaterialNavigationDrawerLayout : ContentControl
     private readonly MaterialMotionSettings _motion;
     private bool _presentationInitialized;
     internal double PresentationFraction => Math.Max(0, _presentation.Value);
+    internal void SetDrawerGesture(double offset)
+    {
+        var width = Drawer?.Bounds.Width ?? 0;
+        _presentation.Snap(width > 0 ? Math.Clamp(1 + offset / width, 0, 1) : 0);
+    }
+    internal void RestoreDrawerGesture() => _presentation.Spring(Drawer?.IsOpen == true ? 1 : 0,
+        Drawer?.IsOpen == true ? _motion.DefaultSpatial : _motion.FastEffects);
     public MaterialNavigationDrawerLayout()
     {
         _presentation = new(this, 0, _ => PresentationChanged());

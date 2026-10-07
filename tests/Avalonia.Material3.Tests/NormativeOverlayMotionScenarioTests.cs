@@ -4,12 +4,31 @@ using Avalonia.Material3.Controls;
 using Avalonia.Material3.Tokens;
 using Avalonia.Media;
 using Avalonia.VisualTree;
+using Avalonia.Headless;
 using Xunit;
 
 namespace Avalonia.Material3.Tests;
 
 public class NormativeOverlayMotionScenarioTests
 {
+    [AvaloniaFact]
+    public void Drawer_swipe_close_starts_from_the_dragged_surface_and_retains_its_scrim_fraction()
+    {
+        using var host = new FeedbackHost();
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true }; host.Render();
+        var drawer = new MaterialNavigationDrawer { Mode = MaterialNavigationDrawerMode.Modal };
+        drawer.Show(host.Overlay); host.Render();
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with {
+            DefaultSpatial = new(.8, 10), FastEffects = new(1, 1) } }; host.Render();
+        var start = new Point(180, 300);
+        using var touch = host.Window.TouchBegin(start);
+        host.Window.TouchMove(touch, start - new Vector(220, 0)); host.Render();
+        host.Window.TouchEnd(touch, start - new Vector(220, 0)); host.Render();
+        Assert.Equal(0, host.Overlay.OpenCount);
+        // After220-DIP travel, the360-DIP surface ends at140;200 remains dimmed host body.
+        Assert.InRange(host.PixelAt(new Point(200, 300)).G, (byte)0, (byte)230);
+    }
+
     [AvaloniaFact]
     public void Closing_snackbar_keeps_its_captured_location_when_the_host_grows()
     {

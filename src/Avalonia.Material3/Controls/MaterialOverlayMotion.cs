@@ -89,6 +89,17 @@ internal sealed class MaterialOverlayMotion : IDisposable
         PaintOffset(_offset.Value);
         if (!_arranged) { _arranged = true; Refresh(); }
     }
+    internal double DrawerOffset => _offset.Value * (_layer.Container.Bounds.Width > 0 ? _layer.Container.Bounds.Width : _drawerWidth);
+    internal void SetDrawerGesture(double offset)
+    {
+        if (_exiting || _recipe != Recipe.Drawer) return;
+        var width = _layer.Container.Bounds.Width > 0 ? _layer.Container.Bounds.Width : _drawerWidth;
+        _offset.Snap(width > 0 ? Math.Clamp(offset / width, -1, 0) : 0);
+    }
+    internal void RestoreDrawerGesture()
+    {
+        if (!_exiting && _recipe == Recipe.Drawer) _offset.Spring(0, _settings.DefaultSpatial);
+    }
     internal bool FreezeExit(Control content, Action release)
     {
         if (_settings.FastEffects.IsInstant || content.Bounds.Width <= 0 || content.Bounds.Height <= 0) return false;
