@@ -105,6 +105,7 @@ public abstract class MaterialSheet : ContentControl
     private Grid? _layout;
     private Control? _header;
     private Control? _actions;
+    private MaterialIconButton? _closeButton;
     private bool _compact;
     private bool _isModal;
     private MaterialSheetEdge _modalEdge;
@@ -249,7 +250,8 @@ public abstract class MaterialSheet : ContentControl
             CancelDrag(); StopMotion(); UpdatePseudoClasses(); InvalidateMeasure();
         }
         if (change.Property == IsDraggableProperty || change.Property == IsEnabledProperty) { if (!IsDraggable || !IsEffectivelyEnabled) CancelDrag(); }
-        if (change.Property == AllowDismissProperty) CancelDrag();
+        if (change.Property == AllowDismissProperty) { CancelDrag(); UpdateCloseButton(); }
+        if (change.Property == IsModalProperty) UpdateCloseButton();
         if (change.Property.Name == nameof(IsEffectivelyEnabled) && !IsEffectivelyEnabled) CancelDrag();
         if (change.Property == ContentProperty || change.Property == ScrollSourceProperty) CancelDrag();
         if (change.Property == SpatialSpringProperty)
@@ -260,6 +262,7 @@ public abstract class MaterialSheet : ContentControl
     }
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        if (_closeButton is not null) _closeButton.Click -= CloseButtonClicked;
         CancelDrag();
         StopMotion();
         _hasNatural = false;
@@ -268,7 +271,15 @@ public abstract class MaterialSheet : ContentControl
         _layout = e.NameScope.Find<Grid>("SheetLayout");
         _header = e.NameScope.Find<Control>("SheetHeader");
         _actions = e.NameScope.Find<Control>("SheetActions");
+        _closeButton = e.NameScope.Find<MaterialIconButton>("PART_CloseButton");
+        if (_closeButton is not null) _closeButton.Click += CloseButtonClicked;
+        UpdateCloseButton();
         if (_layout is not null) _layout.RowDefinitions = new RowDefinitions(_compact ? "Auto,Auto,Auto,Auto" : "Auto,Auto,*,Auto");
+    }
+    private void CloseButtonClicked(object? sender, RoutedEventArgs e) => Dismiss();
+    private void UpdateCloseButton()
+    {
+        if (_closeButton is not null) _closeButton.IsEnabled = IsModal || AllowDismiss;
     }
     private void HandlePointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -280,13 +291,17 @@ public abstract class MaterialSheet : ContentControl
         _pressedHandle = path.OfType<MaterialSheetDragHandle>().FirstOrDefault();
         if (_pressedHandle is { } targetHandle && targetHandle.Sheet != this) { _pressedHandle = null; return; }
         var handle = _pressedHandle is not null;
-        _bodyGesture = !handle;
+        _bodyGesture = !handle && !IsSide;
         _gestureScroll = null;
         if (!handle)
         {
-            if (!IsDraggable || IsSide || e.Pointer.Type == PointerType.Mouse || path.OfType<Control>().Any(control => control.Focusable && control is not ScrollViewer)) return;
-            _gestureScroll = ScrollSource is { } declared && this.IsVisualAncestorOf(declared) ? declared : path.OfType<ScrollViewer>().FirstOrDefault() ?? _bodyScroll;
-            if (_gestureScroll is null || !path.Contains(_gestureScroll)) return;
+            if (!IsDraggable || path.OfType<Control>().Any(control => control.Focusable && control is not ScrollViewer)) return;
+            if (!IsSide)
+            {
+                if (e.Pointer.Type == PointerType.Mouse) return;
+                _gestureScroll = ScrollSource is { } declared && this.IsVisualAncestorOf(declared) ? declared : path.OfType<ScrollViewer>().FirstOrDefault() ?? _bodyScroll;
+                if (_gestureScroll is null || !path.Contains(_gestureScroll)) return;
+            }
         }
         _pointer = e.Pointer;
         _pressPoint = _lastPoint = e.GetPosition(TopLevel.GetTopLevel(this));

@@ -20,6 +20,106 @@ namespace Avalonia.Material3.Tests;
 // Native device DPI is recorded separately; this fixture honestly asserts its actual RenderScaling.
 public class GeometryQualityScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(9, 16, false)]
+    [InlineData(9, 16, true)]
+    [InlineData(7, 24, false)]
+    [InlineData(9, 10, false)]
+    public void Pinned_date_range_literal_endpoint_and_week_edge_masks_match_the_selected_dates(int first, int last, bool rtl)
+    {
+        var picker = new MaterialDatePicker { Width = 360, SelectionMode = MaterialDateSelectionMode.Range,
+            Culture = System.Globalization.CultureInfo.GetCultureInfo("en-US"), DisplayMonth = new(2024, 2, 1),
+            SelectedDate = new(2024, 2, first), RangeEnd = new(2024, 2, last),
+            FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
+        using var host = new GeometryHost(picker, 360, 640);
+        var days = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().ToArray();
+        Rect Day(int value) => GeometryHost.Box(days.Single(d => d.Date.Day == value), host.Window);
+        var start = Day(first); var end = Day(last);
+        var band = Color.Parse("#E8DEF8"); var surface = Color.Parse("#ECE6F0");
+        // February2024 starts Thursday:9..16 begins at(264,52), ends(264,100)
+        // in the336×288 grid. Rectangle widths72/264 join40-DIP circles at their centers.
+        Assert.Equal(band, host.Pixel(start.Left + (rtl ? 14 : 34), start.Top + 5));
+        Assert.Equal(surface, host.Pixel(start.Left + (rtl ? 34 : 14), start.Top + 5));
+        Assert.Equal(band, host.Pixel(end.Left + (rtl ? 34 : 14), end.Top + 5));
+        Assert.Equal(surface, host.Pixel(end.Left + (rtl ? 14 : 34), end.Top + 5));
+        if (last > 10)
+        {
+            var saturday = Day(10); var sunday = Day(11);
+            Assert.Equal(band, host.Pixel(saturday.Left + (rtl ? 1 : 47), saturday.Top + 5));
+            Assert.Equal(band, host.Pixel(sunday.Left + (rtl ? 47 : 1), sunday.Top + 5));
+            Assert.Equal(surface, host.Pixel(saturday.Left + (rtl ? 1 : 47), saturday.Top + 2));
+            Assert.Equal(surface, host.Pixel(sunday.Left + (rtl ? 47 : 1), sunday.Top + 2));
+        }
+    }
+
+    [AvaloniaFact]
+    public async Task Updated_time_period_toggle_uses_primary_roles_a_four_dip_visual_gap_and_fast_spatial_morph()
+    {
+        var picker = new MaterialTimePicker { SelectedTime = new(7, 7) };
+        using var host = new GeometryHost(picker, 400, 680);
+        var periods = picker.GetVisualDescendants().OfType<MaterialTimePeriodButton>().ToArray();
+        var am = GeometryHost.Box(periods[0], host.Window);
+        var pm = GeometryHost.Box(periods[1], host.Window);
+        // TimePicker updated=true:52×38 faces within80, visual gap4; native targets48.
+        Assert.Equal(48, am.Height); Assert.Equal(48, pm.Height);
+        Assert.Equal(42, pm.Top - am.Top);
+        Assert.Equal(Color.Parse("#EADDFF"), host.Pixel(am.Left + 8, am.Top + 13));
+        Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(am.Center.X, am.Top + 44));
+        Assert.Equal(FontWeight.Bold, periods[0].FontWeight);
+        Assert.Equal(new CornerRadius(12), periods[0].CornerRadius);
+        // A public FastSpatial override lengthens the same spring for reliable raster sampling.
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { FastSpatial = new(.6, 64) } }; host.Render();
+        picker.SetPeriod(true);
+        Assert.Equal(new TimeOnly(19, 7), picker.SelectedTime);
+        Assert.Equal(FontWeight.Bold, periods[1].FontWeight);
+        // A checked face changes color immediately; its19→12-DIP corners morph in fixed bounds.
+        var firstFrame = host.Pixel(pm.Left + 3, pm.Top + 10);
+        Assert.Equal(Color.Parse("#ECE6F0"), firstFrame);
+        var frames = new HashSet<Color> { firstFrame };
+        for (var frame = 0; frame < 35; frame++)
+        {
+            await Task.Delay(16);
+            Assert.Equal(pm, GeometryHost.Box(periods[1], host.Window));
+            frames.Add(host.Pixel(pm.Left + 3, pm.Top + 10));
+        }
+        Assert.Equal(Color.Parse("#EADDFF"), host.Pixel(pm.Left + 3, pm.Top + 10));
+        Assert.True(frames.Count > 1);
+    }
+
+    [AvaloniaFact]
+    public void Standard_slider_hover_focus_and_dense_press_paint_only_the_normative_44_dip_handle()
+    {
+        var slider = new MaterialSlider { Width = 320, Height = 64, Value = 50,
+            ValueLabelVisibility = SliderValueLabelVisibility.Never };
+        using var host = new GeometryHost(slider, 320, 64);
+        // AndroidX ThumbContent: fixed4×44 layout; painted2×44 on Focus/Press/Drag.
+        // The default opacity focus theme leaves the optional inset-ring branch inactive.
+        var surface = Color.Parse("#FEF7FF");
+        var primary = Color.Parse("#6750A4");
+        Assert.Equal(primary, host.Pixel(158, 15));
+        host.Window.MouseMove(new Point(160, 32)); host.Render();
+        Assert.Equal(surface, host.Pixel(154, 32)); // untouched8-DIP track gap
+        for (var x = 146; x < 157; x++)
+        for (var y = 8; y < 23; y++) Assert.Equal(surface, host.Pixel(x, y));
+        Assert.Equal(primary, host.Pixel(158, 15)); // hover keeps4-DIP width
+        slider.Focus(NavigationMethod.Tab); host.Render();
+        Assert.Equal(surface, host.Pixel(158, 15));
+        Assert.Equal(primary, host.Pixel(159, 15));
+        Assert.Equal(surface, host.Pixel(151, 15));
+        Assert.Equal(surface, host.Pixel(167, 32)); // gap uses the fixed4-DIP layout
+        Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(169, 32));
+        for (var press = 0; press < 12; press++)
+        {
+            host.Window.MouseDown(new Point(160, 32), MouseButton.Left); host.Render();
+            Assert.Equal(surface, host.Pixel(158, 15));
+            Assert.Equal(primary, host.Pixel(159, 15));
+            Assert.Equal(surface, host.Pixel(151, 15));
+            Assert.Equal(surface, host.Pixel(167, 32));
+            host.Window.MouseUp(new Point(160, 32), MouseButton.Left); host.Render();
+            Assert.Equal(50, slider.Value);
+        }
+    }
+
     [AvaloniaFact]
     public void Discrete_slider_marks_thumbs_targets_and_pointer_values_share_the_inset_cap_domain()
     {
@@ -240,8 +340,9 @@ public class GeometryQualityScenarioTests
         var am = GeometryHost.Box(periods[0], host.Window);
         var pm = GeometryHost.Box(periods[1], host.Window);
         Assert.True(am.Height >= 48 && pm.Height >= 48);
-        Assert.Equal(am.Bottom, pm.Top);
-        Assert.Equal(Color.Parse("#FFD8E4"), host.Pixel(am.Left + 2, am.Bottom - 2));
+        // Historical scenario identity retained; the complete updated toggle replaces its legacy oracle.
+        Assert.Equal(42, pm.Top - am.Top);
+        Assert.Equal(Color.Parse("#EADDFF"), host.Pixel(am.Left + 8, am.Top + 13));
         host.Window.MouseDown(pm.Center, MouseButton.Left); host.Window.MouseUp(pm.Center, MouseButton.Left);
         Assert.Equal(new TimeOnly(19, 7), picker.SelectedTime);
         host.Render();
