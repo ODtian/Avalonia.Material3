@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AvaloniaVersion>12.1.3</AvaloniaVersion>
-    <Material3Version>0.1.0-preview.3</Material3Version>
+    <Material3Version>0.1.0-preview.4</Material3Version>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
