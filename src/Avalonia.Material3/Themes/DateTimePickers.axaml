@@ -52,7 +52,7 @@
           <ContentPresenter Content="{TemplateBinding Content}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                             Foreground="{TemplateBinding Foreground}" />
         </Border>
-        <c:MaterialStateLayer Margin="4,6" CornerRadius="999" Background="{TemplateBinding Foreground}" IsHitTestVisible="False" />
+        <c:MaterialStateLayer Margin="0,6" CornerRadius="999" Background="{TemplateBinding Foreground}" IsHitTestVisible="False" />
         </Grid>
       </ControlTemplate>
     </Setter>
