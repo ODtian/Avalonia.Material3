@@ -24,6 +24,7 @@ internal sealed class MaterialOverlayMotion : IDisposable
     private bool _arranged;
     private Action? _release;
     private Snapshot? _snapshot;
+    internal Rect? ExitBounds { get; private set; }
     internal MaterialOverlayMotion(MaterialOverlayLayer layer)
     {
         _layer = layer;
@@ -92,6 +93,7 @@ internal sealed class MaterialOverlayMotion : IDisposable
     {
         if (_settings.FastEffects.IsInstant || content.Bounds.Width <= 0 || content.Bounds.Height <= 0) return false;
         var density = TopLevel.GetTopLevel(content)?.RenderScaling ?? 1;
+        ExitBounds = _layer.Container.Bounds;
         _snapshot = new Snapshot(_layer, density);
         _layer.Container.Child = _snapshot; // Original content is immediately reusable/unparented.
         // The attached-layer raster already includes the presented scale/alpha.

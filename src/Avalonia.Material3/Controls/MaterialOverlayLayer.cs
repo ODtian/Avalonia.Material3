@@ -39,6 +39,10 @@ internal sealed class MaterialOverlayLayer : Panel
     protected override Size ArrangeOverride(Size finalSize)
     {
         scrim.Arrange(new Rect(finalSize));
+        if (Presentation?.ExitBounds is { } frozen)
+        {
+            Container.Arrange(frozen); Presentation.UpdateGeometry(); return finalSize;
+        }
         var m = options.Margin;
         var width = Math.Max(0, finalSize.Width - m.Left - m.Right);
         var height = Math.Max(0, finalSize.Height - m.Top - m.Bottom);
