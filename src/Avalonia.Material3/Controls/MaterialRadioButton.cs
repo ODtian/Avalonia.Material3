@@ -1,6 +1,8 @@
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
@@ -10,6 +12,39 @@ namespace Avalonia.Material3.Controls;
 [PseudoClasses(":error")]
 public class MaterialRadioButton : RadioButton
 {
+    private readonly MaterialMotionValue _dotMotion;
+    private readonly MaterialMotionSettings _motion;
+    private readonly MaterialMotionBrush _color;
+    private Ellipse? _dot;
+    private Border? _ring;
+    public MaterialRadioButton()
+    {
+        _dotMotion = new(this, 0, PaintDot);
+        _color = new(this, null, value => { if (_dot is not null) _dot.Fill = value; if (_ring is not null) _ring.BorderBrush = value; });
+        _motion = new(this, UpdateDot);
+    }
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _dot = e.NameScope.Find<Ellipse>("Dot");
+        _ring = e.NameScope.Find<Border>("Ring");
+        _dotMotion.Snap(IsChecked == true ? 6 : 0);
+        _color.Snap(BorderBrush);
+    }
+    private void UpdateDot()
+    {
+        if (_motion is null || _dot is null) return;
+        _dotMotion.Spring(IsChecked == true ? 6 : 0, _motion.FastSpatial);
+        if (IsEffectivelyEnabled) _color.Set(BorderBrush, _motion.DefaultEffects);
+        else _color.Snap(BorderBrush);
+    }
+    private void PaintDot(double radius)
+    {
+        if (_dot is null) return;
+        var diameter = Math.Max(0, 2 * (radius - 1));
+        _dot.Width = _dot.Height = diameter;
+        _dot.IsVisible = diameter > 0;
+    }
     public static readonly StyledProperty<bool> IsErrorProperty = MaterialCheckBox.IsErrorProperty.AddOwner<MaterialRadioButton>();
     public static readonly StyledProperty<string?> ErrorTextProperty = MaterialCheckBox.ErrorTextProperty.AddOwner<MaterialRadioButton>();
 
@@ -32,6 +67,7 @@ public class MaterialRadioButton : RadioButton
         base.OnPropertyChanged(change);
         if (change.Property == IsErrorProperty)
             PseudoClasses.Set(":error", IsError);
+        if (change.Property == IsCheckedProperty || change.Property == BorderBrushProperty || change.Property == IsEffectivelyEnabledProperty) UpdateDot();
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

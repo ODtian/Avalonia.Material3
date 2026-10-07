@@ -72,18 +72,18 @@
         <Grid Background="Transparent">
           <Border x:Name="Focus" Width="40" Height="40" HorizontalAlignment="Center" VerticalAlignment="Center"
                   BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="2" CornerRadius="8" IsVisible="False" />
-          <Border x:Name="State" Width="{Binding Bounds.Width, ElementName=Marker}" Height="{Binding Bounds.Height, ElementName=Marker}"
+          <controls:MaterialStateLayer x:Name="State" Width="{Binding Bounds.Width, ElementName=Marker}" Height="{Binding Bounds.Height, ElementName=Marker}"
                   HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource M3.OnSurfaceBrush}"
                   Opacity="0" CornerRadius="{Binding CornerRadius, ElementName=Marker}" />
           <Border x:Name="Marker" Width="32" Height="4" CornerRadius="2" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource M3.OnSurfaceVariantBrush}" />
         </Grid>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
-    <Style Selector="^:focus /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:dragging /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
+
+    <Style Selector="^:focus /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pointerover /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:dragging /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
     <Style Selector="^:disabled /template/ Border#Marker"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     <Style Selector="^:vertical"><Setter Property="MinHeight" Value="56" /></Style>
     <Style Selector="^:vertical /template/ Border#Focus"><Setter Property="Height" Value="48" /></Style>

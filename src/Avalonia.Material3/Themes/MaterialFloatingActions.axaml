@@ -27,10 +27,8 @@
                        Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                        ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
               <Grid>
-                <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False"
-                        CornerRadius="{Binding CornerRadius, ElementName=Container}">
-                  <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-                </Border>
+                <c:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False"
+                        CornerRadius="{Binding CornerRadius, ElementName=Container}" />
                 <Viewbox Width="{Binding IconExtent, ElementName=Geometry}" Height="{Binding IconExtent, ElementName=Geometry}">
                   <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                                     HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
@@ -48,14 +46,14 @@
       <Style Selector="^:small"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" /></Style>
       <Style Selector="^:medium"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeIncreased}" /></Style>
       <Style Selector="^:large"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" /></Style>
-      <Style Selector="^:pointerover /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+      <Style Selector="^:pointerover /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
       <Style Selector="^:pointerover /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
-      <Style Selector="^:focus-visible /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-      <Style Selector="^:focus-visible /template/ Border#FocusRing"><Setter Property="IsVisible" Value="True" /></Style>
-      <Style Selector="^:pressed /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+      <Style Selector="^:focus-visible /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+
+      <Style Selector="^:pressed /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
       <Style Selector="^:pressed /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
       <Style Selector="^:disabled"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
-      <Style Selector="^:disabled /template/ Border#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
+      <Style Selector="^:disabled /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
       <Style Selector="^:disabled /template/ Border#Container"><Setter Property="BoxShadow" Value="none" /></Style>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialExtendedFab}" TargetType="c:MaterialExtendedFab" BasedOn="{StaticResource {x:Type c:MaterialFab}}">
@@ -72,9 +70,7 @@
                        ShapeCornerRadius="{TemplateBinding CornerRadius}" ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}"
                        BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
               <Grid>
-                <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{Binding CornerRadius, ElementName=Container}">
-                  <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-                </Border>
+                <c:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{Binding CornerRadius, ElementName=Container}" />
                 <c:MaterialExtendedFabPanel HorizontalAlignment="Center">
                   <Viewbox Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}" VerticalAlignment="Center"
                            IsVisible="{TemplateBinding Icon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">

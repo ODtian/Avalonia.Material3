@@ -9,12 +9,11 @@ internal sealed class MaterialMotionBrush
 {
     private readonly MaterialMotionValue[] _channels;
     private readonly Action<IBrush?> _paint;
-    private IBrush? _target;
     private bool _solid;
     internal IBrush? Value { get; private set; }
     internal MaterialMotionBrush(Control owner, IBrush? initial, Action<IBrush?> paint)
     {
-        Value = _target = initial; _paint = paint;
+        Value = initial; _paint = paint;
         var color = Coordinates((initial as ISolidColorBrush)?.Color ?? default);
         _channels = [
             new(owner, color.Alpha, _ => Paint()), new(owner, color.L, _ => Paint()),
@@ -22,7 +21,6 @@ internal sealed class MaterialMotionBrush
     }
     internal void Set(IBrush? target, MaterialSpring spring)
     {
-        _target = target;
         _solid = target is ISolidColorBrush;
         if (target is not ISolidColorBrush brush)
         {

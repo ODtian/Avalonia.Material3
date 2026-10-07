@@ -1,6 +1,7 @@
 using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
+using Avalonia.Controls.Primitives;
 
 namespace Avalonia.Material3.Controls;
 
@@ -8,6 +9,29 @@ namespace Avalonia.Material3.Controls;
 [PseudoClasses(":error")]
 public class MaterialCheckBox : CheckBox
 {
+    private readonly MaterialMotionSettings _motion;
+    private readonly MaterialMotionBrush _fill;
+    private readonly MaterialMotionBrush _border;
+    private Border? _box;
+    public MaterialCheckBox()
+    {
+        _fill = new(this, null, value => { if (_box is not null) _box.Background = value; });
+        _border = new(this, null, value => { if (_box is not null) _box.BorderBrush = value; });
+        _motion = new(this, UpdateColors);
+    }
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _box = e.NameScope.Find<Border>("Box");
+        _fill.Snap(Background); _border.Snap(BorderBrush);
+    }
+    private void UpdateColors()
+    {
+        if (_motion is null || _box is null) return;
+        var spring = IsChecked == false ? _motion.FastEffects : _motion.DefaultEffects;
+        if (IsEffectivelyEnabled) { _fill.Set(Background, spring); _border.Set(BorderBrush, spring); }
+        else { _fill.Snap(Background); _border.Snap(BorderBrush); }
+    }
     public static readonly StyledProperty<bool> IsErrorProperty =
         AvaloniaProperty.Register<MaterialCheckBox, bool>(nameof(IsError));
     public static readonly StyledProperty<string?> ErrorTextProperty =
@@ -26,5 +50,8 @@ public class MaterialCheckBox : CheckBox
         base.OnPropertyChanged(change);
         if (change.Property == IsErrorProperty)
             PseudoClasses.Set(":error", IsError);
+        if (change.Property == BackgroundProperty || change.Property == BorderBrushProperty ||
+            change.Property == IsCheckedProperty || change.Property == IsEffectivelyEnabledProperty)
+            UpdateColors();
     }
 }
