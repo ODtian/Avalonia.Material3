@@ -61,6 +61,11 @@ public sealed class MaterialCarousel : TemplatedControl
     private Point _start;
     private double _gestureInitialPosition;
     private double _dragFraction;
+    private double _pointerVelocity, _lastPrimary;
+    private ulong _lastPointerTimestamp;
+    private MaterialSplineDecay _decay;
+    private double _decayStride;
+    private bool _decaying, _freeFling;
     private double _presentationPosition, _settleFrom, _settleTo, _settleStart, _settleVelocity, _fromVelocity, _layoutStart, _layoutProgress = 1;
     private bool _animating, _layoutAnimating, _attached;
     private readonly MaterialFrameLease _frames;
@@ -121,7 +126,7 @@ public sealed class MaterialCarousel : TemplatedControl
         }
         if (change.Property == CurrentIndexProperty)
         {
-            AnimatePosition(CurrentIndex);
+            if (!_freeFling) AnimatePosition(CurrentIndex);
             UpdatePosition();
         }
         if (change.Property == AnimationTimeProperty) _frames.SetTime(AnimationTime);
@@ -198,6 +203,7 @@ public sealed class MaterialCarousel : TemplatedControl
         _gestureInitialPosition = _presentationPosition;
         _animating = false; _settleVelocity = 0;
         _pointer = e.Pointer;
+        _lastPointerTimestamp = e.Timestamp; _lastPrimary = _pointerVelocity = 0;
         _dragFraction = 0;
         _pressedItem = (e.Source as Visual)?.GetSelfAndVisualAncestors().OfType<Border>().Select(b => b.Tag).OfType<MaterialCarouselItem>().FirstOrDefault();
         e.Pointer.Capture(this);
@@ -211,6 +217,9 @@ public sealed class MaterialCarousel : TemplatedControl
         var vertical = Layout == MaterialCarouselLayout.FullScreen;
         var primary = vertical ? delta.Y : delta.X;
         var cross = vertical ? delta.X : delta.Y;
+        if (e.Timestamp > _lastPointerTimestamp)
+            _pointerVelocity = -(primary - _lastPrimary) * 1000 / (e.Timestamp - _lastPointerTimestamp);
+        _lastPrimary = primary; _lastPointerTimestamp = e.Timestamp;
         if (_dragFraction == 0 && (Math.Abs(primary) < 12 || Math.Abs(primary) < Math.Abs(cross) * 1.5)) return;
         // Owner-local coordinates already cross Avalonia's RTL mirror: logical negative means forward.
         var movement = -primary / Math.Max(.001, vertical ? Bounds.Height : ItemStride > 0 ? ItemStride : Math.Min(PreferredItemWidth, Bounds.Width));
@@ -230,19 +239,32 @@ public sealed class MaterialCarousel : TemplatedControl
         var tappedItem = _pressedItem;
         var delta = e.GetPosition(this) - _start;
         var tap = Math.Abs(delta.X) <= 12 && Math.Abs(delta.Y) <= 12;
+        var velocity = e.Timestamp - _lastPointerTimestamp > 100 ? 0 : _pointerVelocity;
         CancelGesture();
         SetPresentation(position);
         if (Layout == MaterialCarouselLayout.Uncontained && !tap && Math.Abs(fraction) > 0)
         {
-            SetCurrentValue(CurrentIndexProperty, (int)Math.Round(position, MidpointRounding.AwayFromZero));
-            _animating = false;
-            _frames.SetRunning(_layoutAnimating);
-            SetPresentation(position);
+            _freeFling = true;
+            try { SetCurrentValue(CurrentIndexProperty, (int)Math.Round(position, MidpointRounding.AwayFromZero)); }
+            finally { _freeFling = false; }
+            _decayStride = Math.Max(.001, ItemStride > 0 ? ItemStride : PreferredItemWidth);
+            _decay = new(velocity);
+            _settleVelocity = velocity / _decayStride;
+            AnimatePosition(Math.Clamp(position + _decay.Distance / _decayStride, 0, Math.Max(0, _items.Count - 1)), decay: true);
         }
-        else if (fraction >= .25) MoveNext();
-        else if (fraction <= -.25) MovePrevious();
         else if (tap && tappedItem is not null && _items.IndexOf(tappedItem) is var index && index >= 0) { if (!MoveTo(index)) FinishAnimation(); }
-        else AnimatePosition(CurrentIndex);
+        else
+        {
+            var stride = Math.Max(.001, Layout == MaterialCarouselLayout.FullScreen ? Bounds.Height : ItemStride > 0 ? ItemStride : PreferredItemWidth);
+            _settleVelocity = velocity / stride;
+            // PagerDefaults:400 DIP/s selects the bound in the fling direction;
+            // low velocity uses the0.5 positional threshold. atMost(1) has no decay approach.
+            var target = Math.Abs(velocity) >= 400
+                ? velocity > 0 ? (int)Math.Ceiling(position) : (int)Math.Floor(position)
+                : fraction > .5 ? CurrentIndex + 1 : fraction < -.5 ? CurrentIndex - 1 : CurrentIndex;
+            target = Math.Clamp(target, Math.Max(0, CurrentIndex - 1), Math.Min(Math.Max(0, _items.Count - 1), CurrentIndex + 1));
+            if (!MoveTo(target)) AnimatePosition(target);
+        }
         e.Handled = Math.Abs(fraction) > 0;
     }
     private void CancelGesture()
@@ -272,7 +294,17 @@ public sealed class MaterialCarousel : TemplatedControl
         if (_animating)
         {
             double value;
-            if (instant) { value = _settleTo; _settleVelocity = 0; _animating = false; }
+            if (instant) { value = _settleTo; _settleVelocity = 0; _animating = _decaying = false; }
+            else if (_decaying)
+            {
+                var elapsed = Math.Max(0, (time - _settleStart) / 1000);
+                var sample = _decay.Sample(elapsed);
+                var raw = _settleFrom + sample.Position / _decayStride;
+                value = Math.Clamp(raw, 0, Math.Max(0, _items.Count - 1));
+                _settleVelocity = sample.Velocity / _decayStride;
+                if (elapsed >= _decay.Duration || value != raw)
+                { _animating = _decaying = false; _settleVelocity = 0; }
+            }
             else if (HasDurationOverride)
             {
                 var progress = Math.Clamp((time - _settleStart) / MotionDuration.TotalMilliseconds, 0, 1);
@@ -287,6 +319,12 @@ public sealed class MaterialCarousel : TemplatedControl
                 { value = _settleTo; _settleVelocity = 0; _animating = false; }
             }
             changed |= SetPresentation(value, false);
+            if (!_animating && Layout == MaterialCarouselLayout.Uncontained)
+            {
+                _freeFling = true;
+                try { SetCurrentValue(CurrentIndexProperty, (int)Math.Round(value, MidpointRounding.AwayFromZero)); }
+                finally { _freeFling = false; }
+            }
         }
         if (_layoutAnimating)
         {
@@ -301,13 +339,14 @@ public sealed class MaterialCarousel : TemplatedControl
     }
     private void FinishAnimation()
     {
-        _animating = false; _settleVelocity = 0;
+        _animating = _decaying = false; _settleVelocity = 0;
         SetPresentation(CurrentIndex);
         _frames?.SetRunning(_layoutAnimating);
     }
-    private void AnimatePosition(double target)
+    private void AnimatePosition(double target, bool decay = false)
     {
         if (_frames.IsRunning) _frames.Sample();
+        _decaying = decay && !HasDurationOverride;
         _settleFrom = _presentationPosition; _fromVelocity = _settleVelocity;
         _settleTo = target; _settleStart = _frames.Elapsed.TotalMilliseconds;
         _animating = true;

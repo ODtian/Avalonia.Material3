@@ -69,4 +69,20 @@ public class ReviewFixTrajectoryScenarioTests
         sheet.Expand(); await Task.Delay(60); host.Render();
         Assert.Equal(viewport, body.Viewport);
     }
+
+    [AvaloniaFact]
+    public async Task Uncontained_carousel_retains_release_velocity_in_its_rendered_position()
+    {
+        var carousel = new MaterialCarousel { Layout = MaterialCarouselLayout.Uncontained,
+            ItemsSource = Enumerable.Range(0, 8).Select(i => new MaterialCarouselItem { Title = i.ToString() }) };
+        using var host = new GeometryHost(carousel, 400, 200);
+        host.Theme.Motion = new MaterialMotion(); host.Render();
+        var start = new Point(220, 80);
+        host.Window.MouseDown(start, MouseButton.Left); await Task.Delay(25);
+        host.Window.MouseMove(start - new Vector(35, 0), RawInputModifiers.LeftMouseButton);
+        host.Window.MouseUp(start - new Vector(35, 0), MouseButton.Left);
+        var released = carousel.PresentationPosition;
+        await Task.Delay(80); host.Render();
+        Assert.True(carousel.PresentationPosition > released + .01);
+    }
 }
