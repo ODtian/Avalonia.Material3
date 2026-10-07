@@ -1,6 +1,8 @@
 # Reproducible candidate / publication process
 
-Authority: `Directory.Build.props` Material3Version **0.1.0-preview.2**. This implementation produces a local verified artifact only. Coordinator owns integration/tracker/push; maintainer owns immutable tag, rights/license, public publication and feed proof. No tag/upload/NuGet publication is represented as completed.
+Authority: `Directory.Build.props` Material3Version **0.1.0-preview.3**. This implementation produces a local verified artifact only. Coordinator owns integration/tracker/push; maintainer owns immutable tag, rights/license, public publication and feed proof. No tag/upload/NuGet publication is represented as completed.
+
+当前候选包含图标、布局与动效反馈修复；人工复验按 [manual-quality-feedback.md](verification/manual-quality-feedback.md) 逐项记录。preview.1 / preview.2 的历史产物和验证 provenance 保留，当前候选以本次 manifest 的源码 SHA、包 hash 和发布目录为准。
 
 ## Gates
 

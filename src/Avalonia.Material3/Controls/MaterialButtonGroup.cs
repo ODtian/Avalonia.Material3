@@ -49,6 +49,9 @@ public partial class MaterialButtonGroup : Panel
     private IDisposable? _springSubscription;
     public MaterialButtonGroup()
     {
+        // Symmetric spring widths and origins must share one continuous layout axis.
+        // Children inherit this local layout policy; text/stroke rendering retains its own rasterization.
+        UseLayoutRounding = false;
         _frames = MaterialRenderFrames.Bind(this, AdvanceExpansion);
         Children.CollectionChanged += TrackChildren;
         InitializeOverflow();

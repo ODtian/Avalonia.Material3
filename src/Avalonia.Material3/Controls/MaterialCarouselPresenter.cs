@@ -57,7 +57,18 @@ public sealed class MaterialCarouselPresenter : Panel
         _listening.PresentationChanged -= FrameChanged;
         _listening = null;
     }
-    private void FrameChanged() => InvalidateArrange();
+    private void FrameChanged()
+    {
+        if (_modeSnapshot && Carousel?.LayoutProgress >= 1)
+        {
+            // The larger measurement envelope stays fixed during motion; release it once
+            // the smaller recipe is fully presented so wrapping content gets its real width.
+            _modeSnapshot = false;
+            _forceArrange = true; // Synchronize parked native content with the completed recipe too.
+            InvalidateMeasure();
+        }
+        else InvalidateArrange();
+    }
     private void LayoutChanged()
     {
         _modeSnapshot = _havePresented && Carousel?.LayoutProgress < 1 && _presented.Length == Children.Count;
@@ -276,7 +287,13 @@ public sealed class MaterialCarouselPresenter : Panel
 internal sealed class MaterialCarouselTile : Border
 {
     internal object? Signature;
-    internal double MeasureWidth, ContentWidth;
+    private double _measureWidth;
+    internal double MeasureWidth
+    {
+        get => _measureWidth;
+        set { if (_measureWidth != value) { _measureWidth = value; InvalidateMeasure(); } }
+    }
+    internal double ContentWidth;
     protected override Size MeasureOverride(Size availableSize)
     {
         Child?.Measure(new Size(MeasureWidth, availableSize.Height));

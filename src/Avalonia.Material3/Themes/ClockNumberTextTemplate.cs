@@ -20,19 +20,26 @@ internal sealed class MaterialClockLabel(string text) : Control
     private MaterialClockDial? Dial => this.GetVisualAncestors().OfType<MaterialClockDial>().FirstOrDefault();
     private static readonly StyledProperty<IBrush?> SelectedBrushProperty = AvaloniaProperty.Register<MaterialClockLabel, IBrush?>("SelectedBrush");
     private TextLayout? _normal, _selected;
+    private MaterialClockNumber? _subscribedNumber;
+    private MaterialClockDial? _subscribedDial;
     private (Typeface Typeface, double Size, double Height, double Tracking, IBrush? Normal, IBrush? Selected) _key;
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         MaterialPickerSupport.Resource(this, SelectedBrushProperty, "OnPrimaryBrush");
-        if (Number is { } number) number.PropertyChanged += NumberChanged;
-        if (Dial is { } dial) dial.PropertyChanged += DialChanged;
+        _subscribedNumber = Number;
+        _subscribedDial = Dial;
+        if (_subscribedNumber is { } number) number.PropertyChanged += NumberChanged;
+        if (_subscribedDial is { } dial) dial.PropertyChanged += DialChanged;
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        if (Number is { } number) number.PropertyChanged -= NumberChanged;
-        if (Dial is { } dial) dial.PropertyChanged -= DialChanged;
+        // Panel removal has already severed ancestor links when this callback runs.
+        if (_subscribedNumber is { } number) number.PropertyChanged -= NumberChanged;
+        if (_subscribedDial is { } dial) dial.PropertyChanged -= DialChanged;
+        _subscribedNumber = null;
+        _subscribedDial = null;
         base.OnDetachedFromVisualTree(e);
         ClearLayouts();
     }

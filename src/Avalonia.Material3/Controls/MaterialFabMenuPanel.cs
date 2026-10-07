@@ -5,6 +5,7 @@ namespace Avalonia.Material3.Controls;
 
 internal sealed class MaterialFabMenuPanel : Panel
 {
+    public MaterialFabMenuPanel() => UseLayoutRounding = false;
     public static readonly StyledProperty<MaterialActionAnchor> AnchorProperty = AvaloniaProperty.Register<MaterialFabMenuPanel, MaterialActionAnchor>(nameof(Anchor));
     public MaterialActionAnchor Anchor { get => GetValue(AnchorProperty); set => SetValue(AnchorProperty, value); }
     private bool AtTop => Anchor is MaterialActionAnchor.TopStart or MaterialActionAnchor.TopEnd;

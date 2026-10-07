@@ -29,6 +29,7 @@ internal sealed class MaterialActionReveal : Decorator
 
     public MaterialActionReveal()
     {
+        UseLayoutRounding = false;
         ClipToBounds = true;
         _frames = MaterialRenderFrames.Bind(this, Advance, ignoreOwnerEnabled: true);
     }

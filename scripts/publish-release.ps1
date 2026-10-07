@@ -36,7 +36,7 @@ try {
             $outputs += @{ mode=$mode; host=$hostName; executable=$executable; sha256=(Get-FileHash $executable -Algorithm SHA256).Hash; bytes=(Get-Item $executable).Length; directoryBytes=(Get-ChildItem $output -File -Recurse | Measure-Object Length -Sum).Sum; files=$inventory; inventorySha256=$inventoryHash }
             if ($NativeSmoke) {
                 if (!$IsWindows) { throw 'Windows NativeAOT runtime requires Windows.' }
-                & powershell.exe -NoProfile -File "$PSScriptRoot/windows-gallery-smoke.ps1" -Executable $executable -Evidence "$run/native-$hostName-$mode"
+                & pwsh -NoProfile -File "$PSScriptRoot/windows-gallery-smoke.ps1" -Executable $executable -Evidence "$run/native-$hostName-$mode"
                 if ($LASTEXITCODE -ne 0) { throw "Published native scenario failed: $hostName/$mode" }
             }
         }

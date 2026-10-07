@@ -5,6 +5,7 @@ namespace Avalonia.Material3.Controls;
 
 internal sealed class MaterialToolbarLayoutPanel : Panel
 {
+    public MaterialToolbarLayoutPanel() => UseLayoutRounding = false;
     public static readonly StyledProperty<Orientation> OrientationProperty = AvaloniaProperty.Register<MaterialToolbarLayoutPanel, Orientation>(nameof(Orientation));
     public static readonly StyledProperty<MaterialToolbarFabPosition> FloatingActionPositionProperty = AvaloniaProperty.Register<MaterialToolbarLayoutPanel, MaterialToolbarFabPosition>(nameof(FloatingActionPosition));
     public Orientation Orientation { get => GetValue(OrientationProperty); set => SetValue(OrientationProperty, value); }
