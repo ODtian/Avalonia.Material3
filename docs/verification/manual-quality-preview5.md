@@ -12,3 +12,15 @@ Time structure separates the inline display/dial from the dialog title and foote
 Ripple supports `MaterialRippleStyle.Solid` and `Patterned` through `MaterialTheme.RippleStyle` and inherited `MaterialRipple.Style`. Desktop starts Solid; Android starts Patterned. The gallery exposes both modes. Solid retains the official common ripple trajectory; Patterned executes the complete AOSP shader, including the radial gradient and procedural sparkles. The exact shader and timing source hashes are in the primary-source manifest.
 
 Producer, package, executable and final focused gate evidence are recorded in the candidate manifest. Native screenshot/video manifests retain app identity, configuration, hashes and capture timing. Windows frame captures retain the owned PID/HWND, actual frame timestamps and measured DPI.
+
+## Verified candidate
+
+Producer: `1069630773172764853471092515580ce6d6905f`. Version: `0.1.0-preview.5`. Source and fresh package each passed the same 147 focused scenarios. SDK API/parameter compatibility uses the immutable preview.1 package. NativeAOT/full-trim `win-x64` Gallery passed strict analyzers and the actual 17-page UIA/keyboard/action pass. Final picker captures cover portrait/wide clocks, date7–24/date9–16 in both themes, date/time native inputs and 200% date typography; the rendered output was inspected.
+
+- [Candidate manifest](../../artifacts/v5-10696307/preview5.json)
+- Package SHA256: `19803C068114A89D675B17B2B2E00B22D3B7ED67B6EDB21FA2A4C5E7B60CC3FB`
+- Gallery.exe SHA256: `761CE7E3A9AB8188B9DA9EB54387FDAEBCF9B3A49FA4B08CB28C9A699E01DBCC`
+- Root evidence directory: `artifacts/v5-10696307`, including source/package TRX, compiler binlog, published inventory, `native-windows`, `pickers-native` and `final-verification.json`.
+- Native app SHA256: `FC22667B53B8ADB5CA5A5AC91AE34CFE3BEC33AE566BA7B80CD3BB4D1E6F59FD`; beta01 source commit `e91004b68d54a1759959127062762c39d31286ec`.
+
+Native evidence lives in `F:/PixivYou/analysis/m3-native-reference/evidence/native-beta01` and `native-beta01-motion`; raw1240×2772 screenshots,620×1386 encoder videos, actual input uptime and manifests identify their capture inputs. Windows final captures measured120DPI. The source/template contracts and original Kotlin keyline vectors supplement these concrete platform observations.
