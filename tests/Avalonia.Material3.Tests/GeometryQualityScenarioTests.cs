@@ -105,7 +105,7 @@ public class GeometryQualityScenarioTests
         Assert.Equal(48, am.Height); Assert.Equal(48, pm.Height);
         Assert.Equal(42, pm.Top - am.Top);
         Assert.Equal(Color.Parse("#EADDFF"), host.Pixel(am.Left + 8, am.Top + 13));
-        Assert.Equal(Color.Parse("#ECE6F0"), host.Pixel(am.Center.X, am.Top + 44));
+        Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(am.Center.X, am.Top + 44));
         Assert.Equal(FontWeight.Bold, periods[0].FontWeight);
         Assert.Equal(new CornerRadius(12), periods[0].CornerRadius);
         // A public FastSpatial override lengthens the same spring for reliable raster sampling.
@@ -115,7 +115,7 @@ public class GeometryQualityScenarioTests
         Assert.Equal(FontWeight.Bold, periods[1].FontWeight);
         // A checked face changes color immediately; its19→12-DIP corners morph in fixed bounds.
         var firstFrame = host.Pixel(pm.Left + 3, pm.Top + 10);
-        Assert.Equal(Color.Parse("#ECE6F0"), firstFrame);
+        Assert.Equal(Color.Parse("#FEF7FF"), firstFrame);
         var frames = new HashSet<Color> { firstFrame };
         for (var frame = 0; frame < 35; frame++)
         {
