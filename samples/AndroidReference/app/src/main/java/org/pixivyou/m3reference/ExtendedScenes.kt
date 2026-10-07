@@ -42,13 +42,14 @@ private fun RippleScene() = SceneColumn {
     var count by remember { mutableIntStateOf(0) }
     Text("Pressed $count", Modifier.testTag("ripple-count"))
     Text("Hold and release the official buttons", style = MaterialTheme.typography.titleMedium)
-    Button(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-filled")) { Text("Filled button") }
-    ElevatedButton(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-elevated")) { Text("Elevated button") }
-    FilledTonalButton(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-tonal")) { Text("Tonal button") }
-    OutlinedButton(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-outlined")) { Text("Outlined button") }
-    TextButton(onClick = { count++ }, modifier = Modifier.fillMaxWidth().testTag("ripple-text")) { Text("Text button") }
+    NativeReferenceButton(ReferenceButtonFamily.Filled, { count++ }, Modifier.fillMaxWidth().testTag("ripple-filled")) { Text("Filled button") }
+    NativeReferenceButton(ReferenceButtonFamily.Elevated, { count++ }, Modifier.fillMaxWidth().testTag("ripple-elevated")) { Text("Elevated button") }
+    NativeReferenceButton(ReferenceButtonFamily.Tonal, { count++ }, Modifier.fillMaxWidth().testTag("ripple-tonal")) { Text("Tonal button") }
+    NativeReferenceButton(ReferenceButtonFamily.Outlined, { count++ }, Modifier.fillMaxWidth().testTag("ripple-outlined")) { Text("Outlined button") }
+    NativeReferenceButton(ReferenceButtonFamily.Text, { count++ }, Modifier.fillMaxWidth().testTag("ripple-text")) { Text("Text button") }
     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-        IconButton(onClick = { count++ }, modifier = Modifier.testTag("ripple-icon")) { Icon(Icons.Default.Edit, "Icon button") }
+        if (LocalNativeExpressiveButtons.current) IconButton(onClick = { count++ }, shapes = IconButtonDefaults.shapes(), modifier = Modifier.testTag("ripple-icon")) { Icon(Icons.Default.Edit, "Icon button") }
+        else IconButton(onClick = { count++ }, modifier = Modifier.testTag("ripple-icon")) { Icon(Icons.Default.Edit, "Icon button") }
         FloatingActionButton(onClick = { count++ }, modifier = Modifier.testTag("ripple-fab")) { Icon(Icons.Default.Add, "FAB") }
     }
 }
@@ -88,8 +89,33 @@ private fun ButtonsScene() = SceneColumn {
         ReferenceSplitButton(label, height, elevated = true, onSave = { saves++ })
     }
     ReferenceSplitButton("Save to Local", SplitButtonDefaults.SmallContainerHeight, elevated = false, onSave = { saves++ })
-    ElevatedButton(onClick = { saves++ }, modifier = Modifier.testTag("elevated-button")) { Icon(Icons.Default.Add, null); Spacer(Modifier.width(ButtonDefaults.IconSpacing)); Text("Elevated") }
+    NativeReferenceButton(ReferenceButtonFamily.Elevated, { saves++ }, Modifier.testTag("elevated-button")) { Icon(Icons.Default.Add, null); Spacer(Modifier.width(ButtonDefaults.IconSpacing)); Text("Elevated") }
     ElevatedCard(Modifier.fillMaxWidth()) { Text("Elevated card", Modifier.padding(24.dp)) }
+}
+
+private enum class ReferenceButtonFamily { Filled, Elevated, Tonal, Outlined, Text }
+
+// Select a complete official overload; all values and motion remain its own defaults.
+@Composable
+private fun NativeReferenceButton(family: ReferenceButtonFamily, onClick: () -> Unit, modifier: Modifier, content: @Composable RowScope.() -> Unit) {
+    if (LocalNativeExpressiveButtons.current) {
+        val shapes = ButtonDefaults.shapes()
+        when (family) {
+            ReferenceButtonFamily.Filled -> Button(onClick = onClick, shapes = shapes, modifier = modifier, content = content)
+            ReferenceButtonFamily.Elevated -> ElevatedButton(onClick = onClick, shapes = shapes, modifier = modifier, content = content)
+            ReferenceButtonFamily.Tonal -> FilledTonalButton(onClick = onClick, shapes = shapes, modifier = modifier, content = content)
+            ReferenceButtonFamily.Outlined -> OutlinedButton(onClick = onClick, shapes = shapes, modifier = modifier, content = content)
+            ReferenceButtonFamily.Text -> TextButton(onClick = onClick, shapes = shapes, modifier = modifier, content = content)
+        }
+    } else {
+        when (family) {
+            ReferenceButtonFamily.Filled -> Button(onClick = onClick, modifier = modifier, content = content)
+            ReferenceButtonFamily.Elevated -> ElevatedButton(onClick = onClick, modifier = modifier, content = content)
+            ReferenceButtonFamily.Tonal -> FilledTonalButton(onClick = onClick, modifier = modifier, content = content)
+            ReferenceButtonFamily.Outlined -> OutlinedButton(onClick = onClick, modifier = modifier, content = content)
+            ReferenceButtonFamily.Text -> TextButton(onClick = onClick, modifier = modifier, content = content)
+        }
+    }
 }
 
 @Composable

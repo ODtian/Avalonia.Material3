@@ -10,8 +10,8 @@ android {
         applicationId = "org.pixivyou.m3reference"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.5.0-alpha29-reference"
+        versionCode = 2
+        versionName = "1.5.0-beta01-reference"
     }
     buildFeatures { compose = true }
     compileOptions {
@@ -21,7 +21,8 @@ android {
 }
 dependencies {
     implementation("androidx.activity:activity-compose:1.11.0")
-    implementation("androidx.compose.material3:material3:1.5.0-alpha29")
+    implementation("androidx.compose.material3:material3:1.5.0-beta01")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
     implementation("com.google.android.material:material:1.14.0")
 }
+
