@@ -2,6 +2,7 @@
                     xmlns:controls="using:Avalonia.Material3.Controls" xmlns:themes="using:Avalonia.Material3.Themes" xmlns:converters="using:Avalonia.Data.Converters">
   <themes:NavigationLabelTemplate x:Key="M3.Navigation.LabelTemplate" />
   <ControlTheme x:Key="{x:Type controls:MaterialNavigation}" TargetType="controls:MaterialNavigation">
+    <Setter Property="UseLayoutRounding" Value="False" />
     <Setter Property="ItemsPanel"><ItemsPanelTemplate><controls:MaterialNavigationPanel /></ItemsPanelTemplate></Setter>
     <Setter Property="Template"><ControlTemplate>
       <DockPanel>
@@ -13,14 +14,14 @@
         <ContentPresenter Content="{TemplateBinding SelectedContent}" ContentTemplate="{TemplateBinding SelectedContentTemplate}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
       </DockPanel>
     </ControlTemplate></Setter>
-    <Style Selector="^:bar /template/ Border#Header"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
+    <Style Selector="^:bar"><Setter Property="ClipToBounds" Value="False" /></Style>
     <Style Selector="^:bar:horizontal /template/ Border#Header"><Setter Property="MinHeight" Value="64" /></Style>
     <Style Selector="^:rail /template/ Border#Header">
       <Setter Property="DockPanel.Dock" Value="Left" /><Setter Property="MinHeight" Value="0" />
       <Setter Property="MinWidth" Value="80" /><Setter Property="MaxWidth" Value="360" />
       <Setter Property="Padding" Value="0,44,0,0" /><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
     </Style>
-    <Style Selector="^:rail:expanded /template/ Border#Header"><Setter Property="MinWidth" Value="220" /><Setter Property="MaxWidth" Value="360" /></Style>
+    <Style Selector="^:rail:expanded /template/ Border#Header"><Setter Property="MinWidth" Value="0" /><Setter Property="MaxWidth" Value="360" /></Style>
     <Style Selector="^:tabs /template/ Border#Header"><Setter Property="DockPanel.Dock" Value="Top" /><Setter Property="MinHeight" Value="48" /><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.SurfaceVariantBrush}" /><Setter Property="BorderThickness" Value="0,0,0,1" /></Style>
     <Style Selector="^:tabs:scrollable /template/ ScrollViewer#PART_HeaderScrollViewer"><Setter Property="HorizontalScrollBarVisibility" Value="Auto" /></Style>
     <Style Selector="^:primary:scrollable /template/ ItemsPresenter#PART_ItemsPresenter"><Setter Property="Margin" Value="52,0" /></Style>
@@ -44,12 +45,12 @@
           </Border>
           <controls:MaterialNavigationIconPanel x:Name="IconFrame" Grid.ColumnSpan="2" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Viewbox x:Name="Icon" Width="24" Height="24">
-              <ContentPresenter Content="{TemplateBinding DisplayIcon}" ContentTemplate="{TemplateBinding IconTemplate}" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+              <controls:MaterialNavigationColorPresenter Content="{TemplateBinding DisplayIcon}" ContentTemplate="{TemplateBinding IconTemplate}" TargetBrush="{DynamicResource M3.OnSurfaceVariantBrush}" IsSelected="{TemplateBinding IsSelected}" />
             </Viewbox>
             <ContentPresenter x:Name="Badge" Content="{TemplateBinding Badge}" ContentTemplate="{TemplateBinding BadgeTemplate}"
                               IsVisible="{TemplateBinding Badge, Converter={x:Static converters:ObjectConverters.IsNotNull}}" IsHitTestVisible="False" />
           </controls:MaterialNavigationIconPanel>
-          <ContentPresenter x:Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="2" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="4,4,4,0"
+          <controls:MaterialNavigationColorPresenter TargetBrush="{TemplateBinding Foreground}" IsSelected="{TemplateBinding IsSelected}" x:Name="PART_ContentPresenter" Grid.Row="1" Grid.ColumnSpan="2" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="4,4,4,0"
                             LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
         </Grid>
         <controls:MaterialNavigationSelectionPresenter x:Name="TabIndicator" Height="3" CornerRadius="3,3,0,0" Brush="{DynamicResource M3.PrimaryBrush}"
@@ -59,7 +60,7 @@
     </ControlTemplate></Setter>
     <Style Selector="^:horizontal /template/ Border#Indicator"><Setter Property="Width" Value="NaN" /><Setter Property="MinHeight" Value="40" /><Setter Property="HorizontalAlignment" Value="Stretch" /></Style>
     <Style Selector="^:horizontal /template/ controls|MaterialNavigationIconPanel#IconFrame"><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="16,0,0,0" /></Style>
-    <Style Selector="^:horizontal /template/ ContentPresenter#PART_ContentPresenter">
+    <Style Selector="^:horizontal /template/ controls|MaterialNavigationColorPresenter#PART_ContentPresenter">
       <Setter Property="Grid.Row" Value="0" /><Setter Property="Grid.Column" Value="1" /><Setter Property="Grid.ColumnSpan" Value="1" /><Setter Property="Margin" Value="4,0,16,0" />
     </Style>
     <Style Selector="^:rail:horizontal">
@@ -67,9 +68,9 @@
       <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelLargeLetterSpacing}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.LabelLargeLineHeight}" />
     </Style>
     <Style Selector="^:rail:horizontal /template/ Border#Indicator"><Setter Property="MinHeight" Value="56" /></Style>
-    <Style Selector="^:rail:horizontal /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Margin" Value="8,0,16,0" /><Setter Property="HorizontalContentAlignment" Value="Left" /></Style>
+    <Style Selector="^:rail:horizontal /template/ controls|MaterialNavigationColorPresenter#PART_ContentPresenter"><Setter Property="Margin" Value="8,0,16,0" /><Setter Property="HorizontalContentAlignment" Value="Left" /></Style>
     <Style Selector="^:selected"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.SecondaryBrush}" /></Style>
-    <Style Selector="^:selected /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
+    <Style Selector="^:selected /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
     <Style Selector="^:tabs">
       <Setter Property="MinHeight" Value="48" /><Setter Property="Background" Value="Transparent" />
       <Setter Property="FontFamily" Value="{DynamicResource M3.TitleSmallFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleSmallFontSize}" />
@@ -85,23 +86,24 @@
     <Style Selector="^:tabs /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="CornerRadius" Value="0" /><Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:primary:selected /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
     <Style Selector="^:tabs:not(:icon) /template/ Viewbox#Icon"><Setter Property="IsVisible" Value="False" /></Style>
-    <Style Selector="^:tabs /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="Margin" Value="16,4,16,8" /></Style>
-    <Style Selector="^:tabs:not(:icon) /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="Grid.Row" Value="0" /><Setter Property="Grid.Column" Value="0" /><Setter Property="Grid.ColumnSpan" Value="2" /></Style>
+    <Style Selector="^:tabs /template/ controls|MaterialNavigationColorPresenter#PART_ContentPresenter"><Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="Margin" Value="16,4,16,8" /></Style>
+    <Style Selector="^:tabs:not(:icon) /template/ controls|MaterialNavigationColorPresenter#PART_ContentPresenter"><Setter Property="Grid.Row" Value="0" /><Setter Property="Grid.Column" Value="0" /><Setter Property="Grid.ColumnSpan" Value="2" /></Style>
     <Style Selector="^:primary:selected"><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
-    <Style Selector="^:primary:selected /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
+    <Style Selector="^:primary:selected /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
     <Style Selector="^:secondary:selected"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:secondary:selected /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:secondary:selected /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:tabs:pointerover:not(:selected), ^:tabs:focus-visible:not(:selected), ^:tabs:pressed:not(:selected)"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:tabs:pointerover:not(:selected) /template/ Viewbox#Icon ContentPresenter, ^:tabs:focus-visible:not(:selected) /template/ Viewbox#Icon ContentPresenter, ^:tabs:pressed:not(:selected) /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:tabs /template/ controls|MaterialNavigationSelectionPresenter#TabIndicator"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:tabs:pointerover:not(:selected) /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter, ^:tabs:focus-visible:not(:selected) /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter, ^:tabs:pressed:not(:selected) /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:secondary /template/ controls|MaterialNavigationSelectionPresenter#TabIndicator"><Setter Property="Width" Value="NaN" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Height" Value="2" /><Setter Property="CornerRadius" Value="0" /></Style>
     <Style Selector="^:pointerover /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:focus-visible /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
 
     <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
-    <Style Selector="^:disabled /template/ Viewbox#Icon ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+    <Style Selector="^:disabled /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
     <Style Selector="^:disabled /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
     <Style Selector="^:disabled /template/ Border#FocusRing"><Setter Property="IsVisible" Value="False" /></Style>
   </ControlTheme>
 </ResourceDictionary>
+
+

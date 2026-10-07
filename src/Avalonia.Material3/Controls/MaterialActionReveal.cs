@@ -1,6 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Material3.Tokens;
+using Avalonia.Media;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
 
@@ -12,6 +14,10 @@ internal sealed class MaterialActionReveal : Decorator
     public static readonly StyledProperty<Orientation> OrientationProperty = AvaloniaProperty.Register<MaterialActionReveal, Orientation>(nameof(Orientation));
     public static readonly StyledProperty<MaterialSpring> SpatialSpringProperty = AvaloniaProperty.Register<MaterialActionReveal, MaterialSpring>(nameof(SpatialSpring), new(1, 1400), validate: value => value is { IsValid: true });
     public static readonly StyledProperty<MaterialSpring> EffectsSpringProperty = AvaloniaProperty.Register<MaterialActionReveal, MaterialSpring>(nameof(EffectsSpring), new(1, 3800), validate: value => value is { IsValid: true });
+    public static readonly StyledProperty<BoxShadows> ElevationShadowProperty = AvaloniaProperty.Register<MaterialActionReveal, BoxShadows>(nameof(ElevationShadow));
+    public static readonly StyledProperty<CornerRadius> ShadowCornerRadiusProperty = AvaloniaProperty.Register<MaterialActionReveal, CornerRadius>(nameof(ShadowCornerRadius));
+    public BoxShadows ElevationShadow { get => GetValue(ElevationShadowProperty); set => SetValue(ElevationShadowProperty, value); }
+    public CornerRadius ShadowCornerRadius { get => GetValue(ShadowCornerRadiusProperty); set => SetValue(ShadowCornerRadiusProperty, value); }
     public bool RevealFromEnd { get => GetValue(RevealFromEndProperty); set => SetValue(RevealFromEndProperty, value); }
     public bool IsExpanded { get => GetValue(IsExpandedProperty); set => SetValue(IsExpandedProperty, value); }
     public Orientation Orientation { get => GetValue(OrientationProperty); set => SetValue(OrientationProperty, value); }
@@ -23,9 +29,13 @@ internal sealed class MaterialActionReveal : Decorator
     private double _extent = 1, _alpha = 1, _target = 1, _fromExtent, _fromAlpha;
     private Size _fullSize, _constraint, _rootSize;
     private Control? _measuredChild;
+    private Control? _shadowClipChild;
+    private Geometry? _savedChildClip;
     internal double RevealFraction => _extent;
     internal bool IsRevealing => _frames.IsRunning;
     internal event Action? Settled;
+
+    static MaterialActionReveal() => AffectsRender<MaterialActionReveal>(ElevationShadowProperty, ShadowCornerRadiusProperty);
 
     public MaterialActionReveal()
     {
@@ -48,7 +58,15 @@ internal sealed class MaterialActionReveal : Decorator
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ChildProperty) _hasFullSize = false;
+        if (change.Property == ChildProperty) { ReleaseShadowClip(); _hasFullSize = false; }
+        if (change.Property == ElevationShadowProperty)
+        {
+            // Only the decorative elevation overflows; the original reveal rectangle
+            // is applied to the foreground child in its local coordinates below.
+            SetCurrentValue(ClipToBoundsProperty, ElevationShadow == default);
+            if (ElevationShadow == default) ReleaseShadowClip();
+            InvalidateArrange();
+        }
         if (change.Property == IsExpandedProperty || change.Property == SpatialSpringProperty || change.Property == EffectsSpringProperty)
         {
             if (_frames is null) return;
@@ -128,6 +146,32 @@ internal sealed class MaterialActionReveal : Decorator
         var height = Orientation == Orientation.Vertical ? Math.Max(finalSize.Height, _fullSize.Height) : finalSize.Height;
         Child?.Arrange(new Rect(RevealFromEnd && Orientation == Orientation.Horizontal ? finalSize.Width - width : 0,
             RevealFromEnd && Orientation == Orientation.Vertical ? finalSize.Height - height : 0, width, height));
+        if (ElevationShadow != default && Child is { } child)
+        {
+            if (_shadowClipChild != child)
+            {
+                ReleaseShadowClip(); _shadowClipChild = child; _savedChildClip = child.Clip;
+            }
+            var clip = new RectangleGeometry(new Rect(finalSize).TransformToAABB(this.TransformToVisual(child)!.Value));
+            child.SetCurrentValue(ClipProperty, _savedChildClip is null ? clip : new CombinedGeometry(GeometryCombineMode.Intersect, _savedChildClip, clip));
+        }
         return finalSize;
+    }
+
+    public override void Render(DrawingContext context)
+    {
+        base.Render(context);
+        if (ElevationShadow == default) return;
+        var maximum = Math.Min(Bounds.Width, Bounds.Height) / 2;
+        double Radius(double value) => Math.Min(value, maximum);
+        var rounded = new RoundedRect(new Rect(Bounds.Size), Radius(ShadowCornerRadius.TopLeft), Radius(ShadowCornerRadius.TopRight),
+            Radius(ShadowCornerRadius.BottomRight), Radius(ShadowCornerRadius.BottomLeft));
+        context.DrawRectangle(null, null, rounded, ElevationShadow);
+    }
+
+    private void ReleaseShadowClip()
+    {
+        if (_shadowClipChild is { } child) child.SetCurrentValue(ClipProperty, _savedChildClip);
+        _shadowClipChild = null; _savedChildClip = null;
     }
 }

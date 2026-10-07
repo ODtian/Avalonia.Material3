@@ -24,7 +24,7 @@ public class MaterialTopAppBar : TemplatedControl
     public static readonly DirectProperty<MaterialTopAppBar, double> CollapsedHeightProperty = AvaloniaProperty.RegisterDirect<MaterialTopAppBar, double>(nameof(CollapsedHeight), c => c.CollapsedHeight);
     public static readonly DirectProperty<MaterialTopAppBar, double> CollapsedFractionProperty = AvaloniaProperty.RegisterDirect<MaterialTopAppBar, double>(nameof(CollapsedFraction), c => c.CollapsedFraction);
     public static readonly DirectProperty<MaterialTopAppBar, bool> IsScrolledProperty = AvaloniaProperty.RegisterDirect<MaterialTopAppBar, bool>(nameof(IsScrolled), c => c.IsScrolled);
-    private double _expandedHeight = 64, _collapsedHeight = 64, _collapsedFraction, _collapse, _lastOffset;
+    private double _expandedHeight = 64, _collapsedHeight = 64, _collapsedFraction, _collapse, _lastOffset, _contentOffset;
     private bool _isScrolled;
     private ScrollViewer? _subscribedScroll;
     private ScrollViewer? _watchedScroll;
@@ -69,7 +69,15 @@ public class MaterialTopAppBar : TemplatedControl
     };
     private ContentPresenter? _navigationPresenter;
     private readonly List<(MaterialIconButton Icon, Style Role)> _navigationIcons = [];
-    public MaterialTopAppBar() => UpdatePresentation();
+    private readonly MaterialMotionBrush _containerColor;
+    private readonly MaterialMotionSettings _motion;
+    private static readonly Avalonia.Animation.Easings.SplineEasing ContainerColorEasing = new(.4, 0, 1, 1);
+    public MaterialTopAppBar()
+    {
+        _containerColor = new(this, null, PaintBackground);
+        _motion = new(this, UpdateBackground);
+        UpdatePresentation();
+    }
     private void ClearNavigationRole()
     {
         foreach (var (icon, role) in _navigationIcons) icon.Styles.Remove(role);
@@ -120,6 +128,7 @@ public class MaterialTopAppBar : TemplatedControl
     {
         if (!double.IsFinite(delta) || !double.IsFinite(contentOffset) || contentOffset < 0) throw new ArgumentOutOfRangeException(nameof(delta));
         var old = _collapse;
+        _contentOffset = contentOffset;
         if (ScrollBehavior != MaterialAppBarScrollBehavior.Pinned && (delta >= 0 || ScrollBehavior == MaterialAppBarScrollBehavior.EnterAlways || contentOffset <= 0))
             _collapse = Math.Clamp(_collapse + delta, 0, ExpandedHeight - CollapsedHeight);
         SetAndRaise(IsScrolledProperty, ref _isScrolled, contentOffset > .01);
@@ -131,6 +140,7 @@ public class MaterialTopAppBar : TemplatedControl
     {
         _collapse = 0;
         _lastOffset = 0;
+        _contentOffset = 0;
         SetAndRaise(IsScrolledProperty, ref _isScrolled, false);
         UpdateScrollPresentation();
         InvalidateMeasure();
@@ -145,13 +155,12 @@ public class MaterialTopAppBar : TemplatedControl
     private void UpdateBackground()
     {
         var fraction = IsTwoRow ? CollapsedFraction : IsScrolled ? 1 : 0;
-        IBrush? brush = fraction <= 0 ? Background : fraction >= 1 ? ScrolledBackground : Background;
-        if (fraction is > 0 and < 1 && Background is ISolidColorBrush rest && ScrolledBackground is ISolidColorBrush scrolled)
-        {
-            byte Blend(byte a, byte b) => (byte)Math.Round(a + (b - a) * fraction, MidpointRounding.AwayFromZero);
-            brush = new Avalonia.Media.Immutable.ImmutableSolidColorBrush(Color.FromArgb(Blend(rest.Color.A, scrolled.Color.A), Blend(rest.Color.R, scrolled.Color.R), Blend(rest.Color.G, scrolled.Color.G), Blend(rest.Color.B, scrolled.Color.B)),
-                rest.Opacity + (scrolled.Opacity - rest.Opacity) * fraction);
-        }
+        if (_containerColor is null || _motion is null) return;
+        if (IsTwoRow) _containerColor.Snap(MaterialMotionBrush.Interpolate(Background, ScrolledBackground, ContainerColorEasing.Ease(fraction)));
+        else _containerColor.Set(_contentOffset / Math.Max(1, CollapsedHeight) > .01 ? ScrolledBackground : Background, _motion.DefaultEffects);
+    }
+    private void PaintBackground(IBrush? brush)
+    {
         if (_currentBackground is ISolidColorBrush previous && brush is ISolidColorBrush next && previous.Color == next.Color && previous.Opacity == next.Opacity) return;
         SetAndRaise(CurrentBackgroundProperty, ref _currentBackground, brush);
     }
@@ -199,6 +208,7 @@ public class MaterialTopAppBar : TemplatedControl
     }
     private void ObserveOffset(double offset)
     {
+        _contentOffset = offset;
         var delta = offset - _lastOffset;
         _lastOffset = offset;
         if (ScrollBehavior == MaterialAppBarScrollBehavior.ExitUntilCollapsed)

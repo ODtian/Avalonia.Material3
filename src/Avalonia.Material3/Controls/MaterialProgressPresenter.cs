@@ -185,7 +185,8 @@ internal sealed class MaterialProgressPresenter : Control
     {
         var diameter = Math.Min(Bounds.Width, Bounds.Height);
         var expressive = indicator.IsExpressive;
-        var radius = (diameter - 4) / 2 - (expressive ? 1.6 : 0);
+        var thickness = indicator.CircularStrokeThickness;
+        var radius = (diameter - thickness) / 2 - (expressive ? 1.6 : 0);
         if (radius <= 0) return;
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2);
         var progress = indicator.EffectiveValue;
@@ -201,9 +202,9 @@ internal sealed class MaterialProgressPresenter : Control
         }
         var gap = Math.Min(progress, 8 / (Math.PI * diameter));
         if (!unknown || expressive)
-            Arc(context, _trackArc, Stroke(ref _trackPen, indicator.TrackBrush, 4), center, radius,
+            Arc(context, _trackArc, Stroke(ref _trackPen, indicator.TrackBrush, thickness), center, radius,
                 start + progress + gap, Math.Max(0, 1 - progress - 2 * gap));
-        Arc(context, _activeArc, Stroke(ref _activePen, indicator.Foreground, 4), center, radius, start, progress,
+        Arc(context, _activeArc, Stroke(ref _activePen, indicator.Foreground, thickness), center, radius, start, progress,
             expressive ? indicator.WaveAmplitude * 1.6 : 0, elapsed);
     }
     private static void Arc(DrawingContext context, CachedPath cache, Pen pen, Point center, double radius,

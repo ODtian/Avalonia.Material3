@@ -9,6 +9,7 @@
   <themes:FeedbackContentTemplate x:Key="M3.Feedback.Action" Role="LabelLarge" />
   <themes:FeedbackContentTemplate x:Key="M3.Tooltip.Plain" Role="BodySmall" />
   <ControlTheme x:Key="{x:Type controls:MaterialTooltip}" TargetType="controls:MaterialTooltip">
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Background" Value="{DynamicResource M3.InverseSurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" />
@@ -53,6 +54,7 @@
     <Style Selector="^:caret:caret-right /template/ Path#CaretRight"><Setter Property="IsVisible" Value="True" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:MaterialSnackbar}" TargetType="controls:MaterialSnackbar">
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Background" Value="{DynamicResource M3.InverseSurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" />
@@ -79,6 +81,7 @@
     <Style Selector="^ /template/ controls|MaterialButton#PART_ActionButton:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:MaterialMenu}" TargetType="controls:MaterialMenu">
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="MinWidth" Value="112" />
     <Setter Property="MaxWidth" Value="280" />
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" />

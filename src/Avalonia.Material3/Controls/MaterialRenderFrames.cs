@@ -80,6 +80,7 @@ internal sealed class MaterialFrameLease : IDisposable
     private TimeSpan? _authored;
     private TimeSpan _lastSource, _elapsed, _published;
     private bool _attached, _running, _eligible, _disposed, _publishing;
+    private bool _awaitingFirstFrame;
     internal TimeSpan Elapsed => _elapsed;
     internal bool IsRunning => _running;
 
@@ -105,11 +106,13 @@ internal sealed class MaterialFrameLease : IDisposable
     {
         _elapsed = _published = TimeSpan.Zero;
         _lastSource = SourceNow;
+        _awaitingFirstFrame = !_authored.HasValue;
     }
     internal void SetTime(TimeSpan? time)
     {
         if (_disposed || time == _authored) return;
         var old = _authored;
+        if (time.HasValue) _awaitingFirstFrame = false;
         if (old.HasValue && time.HasValue)
         {
             _authored = time;
@@ -136,7 +139,7 @@ internal sealed class MaterialFrameLease : IDisposable
     private void Accumulate(TimeSpan source, bool rewind)
     {
         if (rewind) _elapsed = _published = TimeSpan.Zero;
-        else if (_eligible && source > _lastSource) _elapsed += source - _lastSource;
+        else if (_eligible && !_awaitingFirstFrame && source > _lastSource) _elapsed += source - _lastSource;
         // A live callback timestamp can precede the immediately preceding property event slightly.
         _lastSource = rewind || _authored.HasValue || source > _lastSource ? source : _lastSource;
     }
@@ -155,12 +158,17 @@ internal sealed class MaterialFrameLease : IDisposable
     internal void Pulse(TimeSpan timestamp)
     {
         if (!_eligible || !_running || _authored.HasValue || _disposed) return;
+        if (_awaitingFirstFrame)
+        {
+            _awaitingFirstFrame = false;
+            _lastSource = timestamp;
+        }
         Accumulate(timestamp, false);
         Publish(false);
     }
     private void Synchronize()
     {
-        var enabled = _ignoreOwnerEnabled ? _owner.GetVisualParent() is not InputElement parent || parent.IsEffectivelyEnabled : _owner.IsEffectivelyEnabled;
+        var enabled = _ignoreOwnerEnabled || _owner.IsEffectivelyEnabled;
         _eligible = _attached && _running && _owner.IsEffectivelyVisible && enabled;
         if (_eligible && !_authored.HasValue) _hub?.Add(this);
         else _hub?.Remove(this);

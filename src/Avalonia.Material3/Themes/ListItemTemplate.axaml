@@ -3,7 +3,9 @@
                     xmlns:conv="using:Avalonia.Data.Converters"
                     xmlns:c="using:Avalonia.Material3.Controls">
   <ControlTemplate x:Key="M3.ListItemTemplate" TargetType="c:MaterialListItem">
-    <Grid Background="{DynamicResource M3.SurfaceBrush}" ClipToBounds="True">
+    <Grid Background="Transparent">
+      <c:MaterialElevationBorder x:Name="ElevationSurface" CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False" />
+      <Grid Background="{DynamicResource M3.SurfaceBrush}" ClipToBounds="True">
       <ContentPresenter x:Name="RevealActions" Content="{TemplateBinding RevealedActions}" ContentTemplate="{TemplateBinding RevealedActionsTemplate}" IsVisible="{TemplateBinding AreRevealActionsVisible}" Width="{TemplateBinding RevealWidth}" HorizontalAlignment="Right" VerticalAlignment="Center">
         <ContentPresenter.Styles>
           <Style Selector="c|MaterialButton"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
@@ -24,8 +26,8 @@
           </StackPanel>
           <ContentPresenter x:Name="Trailing" Grid.Column="3" Content="{TemplateBinding Trailing}" ContentTemplate="{TemplateBinding TrailingTemplate}" TextBlock.Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" VerticalAlignment="Center" Margin="12,0,0,0" IsVisible="{Binding Trailing, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />
           <StackPanel Grid.Column="4" VerticalAlignment="Center">
-          <c:MaterialButton x:Name="PART_ExpandButton" AutomationProperties.Name="Toggle expanded content" IsVisible="{TemplateBinding IsExpandable}" MinWidth="48" Width="48" Padding="0" VerticalAlignment="Center" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Foreground="{DynamicResource M3.OnSurfaceBrush}" />
-          <c:MaterialButton x:Name="PART_RevealButton" Content="⋯" AutomationProperties.Name="Toggle item actions" IsVisible="{TemplateBinding IsRevealEnabled}" MinWidth="48" Width="48" Padding="0" CornerRadius="{DynamicResource M3.Shape.CornerFull}" VerticalAlignment="Center" Background="{DynamicResource M3.SecondaryContainerBrush}" Foreground="{DynamicResource M3.OnSecondaryContainerBrush}" />
+          <c:MaterialIconButton x:Name="PART_ExpandButton" AutomationProperties.Name="Toggle expanded content" IsVisible="{TemplateBinding IsExpandable}" MinWidth="48" Width="48" Padding="0" VerticalAlignment="Center" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}"><c:MaterialSymbol x:Name="DisclosureIcon" Symbol="expand_more" Size="24" /></c:MaterialIconButton>
+          <c:MaterialIconButton x:Name="PART_RevealButton" IconVariant="Tonal" AutomationProperties.Name="Toggle item actions" IsVisible="{TemplateBinding IsRevealEnabled}" MinWidth="48" Width="48" Padding="0" VerticalAlignment="Center"><c:MaterialSymbol Symbol="more_horiz" Size="24" /></c:MaterialIconButton>
           <c:MaterialButton x:Name="PART_ReorderHandle" AutomationProperties.Name="Reorder item" AutomationProperties.HelpText="Drag vertically, or activate for move actions. Alt+Up/Down also moves this item." IsVisible="{TemplateBinding IsReorderEnabled}" MinWidth="48" Width="48" Padding="0" VerticalAlignment="Center" Background="Transparent" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}"><c:MaterialSymbol Symbol="drag_handle" /></c:MaterialButton>
           </StackPanel>
         </Grid>
@@ -35,6 +37,7 @@
           <c:MaterialButton x:Name="PART_MoveDownButton" Content="Move down" AutomationProperties.Name="Move item down" MinWidth="48" />
         </WrapPanel>
       </StackPanel>
+      </Grid>
       </Grid>
       <Border x:Name="FocusRing" IsVisible="False" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="3" CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False" />
     </Grid>

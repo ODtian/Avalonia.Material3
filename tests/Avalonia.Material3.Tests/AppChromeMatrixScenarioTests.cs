@@ -27,10 +27,11 @@ public class AppChromeMatrixScenarioTests
     {
         var bar = new MaterialTopAppBar { Title = "Collection 收藏", Variant = variant };
         using var host = new ChromeHost(bar);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
         Assert.Equal(Color.Parse("#FEF7FF"), ((ISolidColorBrush)bar.Background!).Color);
         host.Theme.Typography = new MaterialTypography { FontFamily = new FontFamily("Arial"), Scale = 2 };
         host.Layout();
-        var title = bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == bar.Title);
+        var title = bar.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == bar.Title && text.IsEffectivelyVisible && text.GetVisualAncestors().All(parent => parent.Opacity > 0));
         Assert.Equal(font * 2, title.FontSize);
         Assert.Equal(lineHeight * 2, title.LineHeight);
         Assert.Equal(tracking * 2, title.LetterSpacing);
@@ -189,6 +190,7 @@ public class AppChromeMatrixScenarioTests
         drawer.Items.Add(item);
         var overlays = new MaterialOverlayHost { Content = new MaterialNavigationDrawerLayout { Drawer = drawer, Content = new Border() }, FlowDirection = rtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight };
         using var host = new ChromeHost(overlays);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
         drawer.IsOpen = true; host.Layout();
         Rect Bounds() => new Rect(item.Bounds.Size).TransformToAABB(item.TransformToVisual(host.Window)!.Value);
         var initial = Bounds().Left;

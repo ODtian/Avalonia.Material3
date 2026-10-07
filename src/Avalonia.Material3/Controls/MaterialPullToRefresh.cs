@@ -25,11 +25,17 @@ public sealed class MaterialPullToRefresh : ContentControl
     private IPointer? _pointer;
     private Point _start;
     private double _distance;
+    private double _presentedDistance;
+    private readonly MaterialMotionValue _distanceMotion;
+    private readonly MaterialMotionSettings _motion;
+    internal double PresentedDistanceFraction => _presentedDistance;
     private bool _armed, _pulling;
     private string _description = "Pull to refresh";
     internal event Action? FeedbackChanged;
     public MaterialPullToRefresh()
     {
+        _distanceMotion = new(this, 0, value => { _presentedDistance = Math.Max(0, value); FeedbackChanged?.Invoke(); });
+        _motion = new(this, () => SetDistance(_distance, !_pulling));
         AddHandler(PointerPressedEvent, Pressed, RoutingStrategies.Tunnel);
         AddHandler(PointerMovedEvent, Moved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, Released, RoutingStrategies.Tunnel);
@@ -55,7 +61,6 @@ public sealed class MaterialPullToRefresh : ContentControl
     public bool RequestRefresh()
     {
         if (!CanRequest) return false;
-        CancelPull();
         SetCurrentValue(StatusProperty, MaterialProgressStatus.Running);
         RefreshRequested?.Invoke(this, EventArgs.Empty);
         RefreshCommand?.Execute(CommandParameter);
@@ -95,23 +100,29 @@ public sealed class MaterialPullToRefresh : ContentControl
         if (e.Pointer != _pointer) return;
         var trigger = _pulling && _armed;
         var consumed = _pulling;
-        CancelPull();
         if (trigger) RequestRefresh();
+        else CancelPull();
         e.Handled = consumed;
     }
-    private void SetDistance(double value)
+    private void SetDistance(double value, bool animate = false)
     {
         SetAndRaise(DistanceFractionProperty, ref _distance, value);
+        if (_distanceMotion is not null && _motion is not null)
+        {
+            // PullToRefreshStateImpl anim.animateTo uses Compose's default1/1500spring.
+            if (animate) _distanceMotion.Spring(value, new Tokens.MaterialSpring(1, 1500) { IsInstant = _motion.FastEffects.IsInstant });
+            else _distanceMotion.Snap(value);
+        }
         FeedbackChanged?.Invoke();
     }
-    private void CancelPull()
+    private void CancelPull(bool animate = true)
     {
         var pointer = _pointer;
         _pointer = null;
         SetAndRaise(IsPullingProperty, ref _pulling, false);
         SetAndRaise(IsArmedProperty, ref _armed, false);
         if (pointer?.Captured == this) pointer.Capture(null);
-        SetDistance(Busy ? 1 : 0);
+        SetDistance(Busy ? 1 : 0, animate);
         Describe();
     }
     private void Describe()
@@ -140,5 +151,6 @@ public sealed class MaterialPullToRefresh : ContentControl
         else if (e.Key == Key.F5 && IsEffectivelyEnabled) { RequestRefresh(); e.Handled = true; }
     }
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e) { if (e.Source == this) CancelPull(); base.OnPointerCaptureLost(e); }
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { CancelPull(); base.OnDetachedFromVisualTree(e); }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) { base.OnAttachedToVisualTree(e); SetDistance(Busy ? 1 : 0); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { CancelPull(false); base.OnDetachedFromVisualTree(e); }
 }
