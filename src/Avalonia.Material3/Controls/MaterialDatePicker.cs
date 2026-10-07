@@ -71,12 +71,13 @@ public class MaterialDatePicker : TemplatedControl
     private readonly MaterialSymbol _inputIcon = new() { Symbol = "edit", Size = 24 };
     private readonly MaterialSymbol _calendarIcon = new() { Symbol = "calendar_month", Size = 24 };
     private readonly Grid _inputs;
-    private readonly StackPanel _calendar = new() { Spacing = 4, Margin = new Thickness(12, 0, 12, 12) };
+    private readonly StackPanel _calendar = new() { Margin = new Thickness(12, 0) };
     private MaterialCalendarMonthView? _days;
     private readonly StackPanel _singleMonth = new();
     private readonly MaterialCalendarWeekRow _week = new();
     private readonly MaterialCalendarRangeView _rangeCalendar;
     private readonly Panel _calendarModes = new();
+    private readonly ScrollViewer _singleCalendarScroll;
     private readonly Border _divider = new() { Height = 1 };
     private readonly UniformGrid _years = new() { Columns = 3 };
     private readonly ScrollViewer _calendarScroll;
@@ -146,14 +147,12 @@ public class MaterialDatePicker : TemplatedControl
         _yearPanel = new(_calendarScroll, yearScroll);
         _calendar.Children.Add(navigation); _calendar.Children.Add(_yearPanel);
         _rangeCalendar = new(this);
-        _calendarModes.Children.Add(_calendar);
+        _singleCalendarScroll = new() { Content = _calendar, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        _calendarModes.Children.Add(_singleCalendarScroll);
         _header = new(_title, _headline, _mode);
         _modePanel = new(this, _calendarModes, _inputs);
         MaterialPickerSupport.Resource(_divider, Border.BackgroundProperty, "OutlineVariantBrush");
-        Surface = new StackPanel { Children =
-        {
-            _header, _divider, _modePanel, _error
-        }};
+        Surface = new MaterialDatePickerPanel(_header, _divider, _modePanel, _error);
         _error.Margin = new Thickness(24, 0, 24, 12);
         AutomationProperties.SetLiveSetting(_error, AutomationLiveSetting.Polite);
         StartInput.TextChanged += (_, _) => ReadInput();
@@ -214,7 +213,7 @@ public class MaterialDatePicker : TemplatedControl
         MaterialPickerSupport.Resource(_headline, TextBlock.LetterSpacingProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "LetterSpacing");
         EndInput.IsVisible = SelectionMode == MaterialDateSelectionMode.Range;
         Grid.SetColumnSpan(StartInput, range ? 1 : 3);
-        var calendar = range ? (Control)_rangeCalendar : _calendar;
+        var calendar = range ? (Control)_rangeCalendar : _singleCalendarScroll;
         if (_calendarModes.Children.Count == 0 || _calendarModes.Children[0] != calendar)
         { _calendarModes.Children.Clear(); _calendarModes.Children.Add(calendar); }
         StartInput.Label = Labels.StartDate; EndInput.Label = Labels.EndDate;
@@ -285,13 +284,6 @@ public class MaterialDatePicker : TemplatedControl
         if (button.IsToday) status += " " + Labels.Today;
         AutomationProperties.SetName(button, date.ToString("D", DateCulture));
         AutomationProperties.SetItemStatus(button, status);
-    }
-    protected override Size MeasureOverride(Size availableSize)
-    {
-        var height = double.IsFinite(availableSize.Height) ? availableSize.Height : TopLevel.GetTopLevel(this)?.ClientSize.Height ?? 640;
-        _header.Measure(new Size(availableSize.Width, double.PositiveInfinity));
-        _rangeCalendar.AvailableHeight = Math.Max(96, height - _header.DesiredSize.Height - 65);
-        return base.MeasureOverride(availableSize);
     }
     private string RangeHeadlineFormat
     {
@@ -375,9 +367,10 @@ public class MaterialDatePicker : TemplatedControl
     public MaterialOverlaySession Show(MaterialOverlayHost host, MaterialOverlayOptions? options = null)
     {
         if (_dialog?.IsOpen == true) throw new InvalidOperationException("Picker is already open.");
-        var dialog = new MaterialDialog { Content = this, Padding = new Thickness(0), MaxWidth = SelectionMode == MaterialDateSelectionMode.Range ? double.PositiveInfinity : 360,
+        var dialog = new MaterialDialog { Content = this, Padding = new Thickness(0), MaxWidth = 360, MaxHeight = 568,
             ConfirmText = Labels.Confirm, CancelText = Labels.Cancel, IsConfirmEnabled = IsValid && IsEffectivelyEnabled };
         _dialog = dialog;
+        dialog.UseDatePickerTemplate();
         AutomationProperties.SetName(dialog, Labels.Title);
         dialog.Confirming += (_, args) =>
         {

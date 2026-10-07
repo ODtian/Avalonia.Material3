@@ -316,6 +316,7 @@ public class GeometryQualityScenarioTests
         // BodyLarge line48 requires a48 circle plus two4 gutters: readable56-square target.
         Assert.Equal(new Size(56, 56), box.Size);
         var weekday=picker.GetVisualDescendants().OfType<TextBlock>().Single(t=>t.Text=="W");
+        Assert.Equal(56,weekday.Bounds.Width);
         Assert.Equal(box.Center.X,GeometryHost.Box(weekday,host.Window).Center.X);
         Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Left + 5, box.Center.Y));
         Assert.Equal(Color.Parse("#E8DEF8"), host.Pixel(box.Left + 50, box.Top + 9));

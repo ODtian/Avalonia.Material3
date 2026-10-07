@@ -14,12 +14,6 @@ internal sealed class MaterialCalendarRangeView : Panel
     private DateOnly? _displayed;
     private bool _positioning;
     private double? _resizedOffset;
-    private double _availableHeight = 500;
-    internal double AvailableHeight
-    {
-        get => _availableHeight;
-        set { if (_availableHeight == value) return; _availableHeight = value; InvalidateMeasure(); }
-    }
     internal MaterialCalendarRangeView(MaterialDatePicker owner)
     {
         _owner = owner;
@@ -30,6 +24,7 @@ internal sealed class MaterialCalendarRangeView : Panel
         _months.ItemHeightChanged += (oldHeight, newHeight) =>
         {
             _resizedOffset = (_resizedOffset ?? _scroll.Offset.Y) / oldHeight * newHeight;
+            InvalidateMeasure();
         };
         _scroll.ScrollChanged += (_, _) =>
         {
@@ -51,7 +46,7 @@ internal sealed class MaterialCalendarRangeView : Panel
             try
             {
                 var offset = _months.IndexOf(month) * _months.ItemHeight;
-                _months.SetViewport(offset, Math.Max(48, AvailableHeight - 48));
+                _months.SetViewport(offset, Math.Max(0, _scroll.Viewport.Height));
                 _scroll.Offset = new Vector(0, offset);
             }
             finally { _positioning = false; }
@@ -60,15 +55,19 @@ internal sealed class MaterialCalendarRangeView : Panel
     }
     protected override Size MeasureOverride(Size availableSize)
     {
+        _months.SetViewport(_resizedOffset ?? _scroll.Offset.Y, double.IsFinite(availableSize.Height) ? availableSize.Height : _months.ItemHeight);
+        _months.Measure(Size.Infinity);
+        _week.MinimumCellSize = _months.CellSize;
         _week.Measure(new Size(availableSize.Width, double.PositiveInfinity));
-        var height = Math.Max(_week.DesiredSize.Height + 48, AvailableHeight);
-        _months.SetViewport(_scroll.Offset.Y, height - _week.DesiredSize.Height);
-        _scroll.Measure(new Size(availableSize.Width, height - _week.DesiredSize.Height));
+        var height = double.IsFinite(availableSize.Height) ? availableSize.Height : _week.DesiredSize.Height + _months.ItemHeight;
+        var viewportHeight = Math.Max(0, height - _week.DesiredSize.Height);
+        _months.SetViewport(_resizedOffset ?? _scroll.Offset.Y, viewportHeight);
+        _scroll.Measure(new Size(availableSize.Width, viewportHeight));
         if (_week.MinimumCellSize != _months.CellSize)
         {
             _week.MinimumCellSize = _months.CellSize;
             _week.Measure(new Size(availableSize.Width, double.PositiveInfinity));
-            _scroll.Measure(new Size(availableSize.Width, height - _week.DesiredSize.Height));
+            _scroll.Measure(new Size(availableSize.Width, Math.Max(0, height - _week.DesiredSize.Height)));
         }
         if (_resizedOffset is { } offset)
         {
@@ -143,7 +142,6 @@ internal sealed class MaterialCalendarMonthsPanel : Panel
             var item = new StackPanel { Children = { title, new MaterialCalendarMonthView(_owner, month) } };
             _realized.Add(index, item); Children.Add(item);
         }
-        CellSize = _realized.Count == 0 ? 48 : _realized.Values.Max(p => ((MaterialCalendarMonthView)p.Children[1]).CellSize);
     }
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -153,6 +151,7 @@ internal sealed class MaterialCalendarMonthsPanel : Panel
             item.Measure(new Size(availableSize.Width, double.PositiveInfinity));
             width = Math.Max(width, item.DesiredSize.Width); height = Math.Max(height, item.DesiredSize.Height);
         }
+        CellSize = _realized.Count == 0 ? 48 : _realized.Values.Max(p => ((MaterialCalendarMonthView)p.Children[1]).CellSize);
         if (height > 0 && height != ItemHeight)
         {
             var oldHeight = ItemHeight; ItemHeight = height;
