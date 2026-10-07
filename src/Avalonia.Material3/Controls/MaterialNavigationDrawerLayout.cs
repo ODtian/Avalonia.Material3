@@ -35,8 +35,9 @@ public class MaterialNavigationDrawerLayout : ContentControl
         var width = Drawer?.Bounds.Width ?? 0;
         _presentation.Snap(width > 0 ? Math.Clamp(1 + offset / width, 0, 1) : 0);
     }
+    private double PixelThreshold => 1 / Math.Max(1, Drawer?.Bounds.Width > 0 ? Drawer.Bounds.Width : Drawer?.DrawerWidth ?? 1);
     internal void RestoreDrawerGesture() => _presentation.Spring(Drawer?.IsOpen == true ? 1 : 0,
-        Drawer?.IsOpen == true ? _motion.DefaultSpatial : _motion.FastEffects);
+        Drawer?.IsOpen == true ? _motion.DefaultSpatial : _motion.FastEffects, PixelThreshold);
     public MaterialNavigationDrawerLayout()
     {
         _presentation = new(this, 0, _ => PresentationChanged());
@@ -84,7 +85,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
                     {
                         _presentationInitialized = true; _presentation.Snap(drawer.IsOpen ? 1 : 0);
                     }
-                    else _presentation.Spring(drawer.IsOpen ? 1 : 0, drawer.IsOpen ? _motion.DefaultSpatial : _motion.FastEffects);
+                    else _presentation.Spring(drawer.IsOpen ? 1 : 0, drawer.IsOpen ? _motion.DefaultSpatial : _motion.FastEffects, PixelThreshold);
                 }
                 var persistent = drawer.Mode == MaterialNavigationDrawerMode.Standard && (drawer.IsOpen || _presentation.IsRunning || PresentationFraction > 0);
                 _drawerPresenter.Content = persistent ? drawer : null;
