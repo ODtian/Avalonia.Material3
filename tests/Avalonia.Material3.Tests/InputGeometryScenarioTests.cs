@@ -1,0 +1,230 @@
+using Avalonia.Controls;
+using Avalonia.Headless;
+using Avalonia.Headless.XUnit;
+using Avalonia.Input;
+using Avalonia.Input.TextInput;
+using Avalonia.Material3.Controls;
+using Avalonia.Material3.Tokens;
+using Xunit;
+
+namespace Avalonia.Material3.Tests;
+
+// Confirmed seam: public host layout/input, native IME text-view/caret and rendered output.
+public class InputGeometryScenarioTests
+{
+    [AvaloniaFact]
+    public void Clear_symbol_paint_is_independent_of_document_font_and_200_percent_CJK_typography()
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Label = "名称 / Name", Text = "中文 Atlas", ShowClearButton = true });
+        byte[] Crop()
+        {
+            host.Capture();
+            var clear = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(host.Field).OfType<Button>()
+                .Single(button => Avalonia.Automation.AutomationProperties.GetName(button) == "Clear text");
+            Assert.Equal(new Size(48, 48), clear.Bounds.Size);
+            var point = clear.TranslatePoint(new Point(12, 12), host.Window)!.Value;
+            using var bitmap = host.Window.CaptureRenderedFrame()!;
+            using var frame = bitmap.Lock();
+            var size = (int)Math.Round(24 * host.Window.RenderScaling);
+            var bytes = new byte[size * size * 4];
+            for (var row = 0; row < size; row++)
+                System.Runtime.InteropServices.Marshal.Copy(frame.Address + (int)(point.Y * host.Window.RenderScaling + row) * frame.RowBytes +
+                    (int)(point.X * host.Window.RenderScaling) * 4, bytes, row * size * 4, size * 4);
+            return bytes;
+        }
+        var before = Crop();
+        var clear = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(host.Field).OfType<Button>()
+            .Single(button => Avalonia.Automation.AutomationProperties.GetName(button) == "Clear text");
+        Assert.Equal(Avalonia.Media.Color.Parse("#49454F"), host.PixelAt(clear.TranslatePoint(new Point(24, 24), host.Window)!.Value));
+        host.Theme.Typography = new MaterialTypography { Scale = 2, FontFamily = new Avalonia.Media.FontFamily("Times New Roman") };
+        Assert.Equal(before, Crop());
+        host.Theme.Typography = new MaterialTypography { Scale = 1, FontFamily = new Avalonia.Media.FontFamily("Courier New") };
+        Assert.Equal(before, Crop());
+    }
+
+    [AvaloniaFact]
+    public async Task Switch_intermediate_thumb_shape_grows_around_the_same_icon_center()
+    {
+        var icon = new Border { Width = 4, Height = 4, Background = Avalonia.Media.Brushes.Red };
+        var toggle = new MaterialSwitch { OnIcon = icon };
+        using var host = new SelectionHost(toggle);
+        host.Theme.Motion = new MaterialMotion { DurationShort4 = TimeSpan.FromMilliseconds(400) };
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        toggle.IsChecked = true;
+        await Task.Delay(80);
+        using var bitmap = host.Window.CaptureRenderedFrame()!;
+        using var frame = bitmap.Lock();
+        var origin = toggle.TranslatePoint(default, host.Window)!.Value;
+        var thumb = new List<int>(); var glyph = new List<int>();
+        for (var x = 10; x <= 55; x++)
+        {
+            var offset = (int)(origin.Y + 24) * frame.RowBytes + (int)(origin.X + x) * 4;
+            var first = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset);
+            var g = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 1);
+            var third = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 2);
+            var red = frame.Format == Avalonia.Platform.PixelFormat.Bgra8888 ? third : first;
+            // Primary track green80, thumb goes116->255. Exact red caller artwork has green0.
+            if (g > 95) thumb.Add(x);
+            if (g == 0 && red == 255) glyph.Add(x);
+        }
+        Assert.NotEmpty(thumb); Assert.NotEmpty(glyph);
+        Assert.InRange(thumb[^1] - thumb[0] + 1, 17, 23); // Not instantaneous16 or24 endpoints.
+        var thumbCentre = (thumb[0] + thumb[^1] + 1) / 2d;
+        var glyphCentre = (glyph[0] + glyph[^1] + 1) / 2d;
+        Assert.InRange(Math.Abs(thumbCentre - glyphCentre), 0, 0.5);
+    }
+
+    [AvaloniaFact]
+    public void Wrapped_filled_label_reserves_its_full_envelope_before_focus_without_overlapping_native_text()
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Label = "A long 中文 label that needs more than one floating line in this narrow editor", ShowClearButton = true });
+        host.Window.Width = 280;
+        host.Capture();
+        var size = host.Field.Bounds.Size;
+        host.Field.Focus();
+        host.Capture();
+        var label = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(host.Field).OfType<TextBlock>()
+            .Single(text => text.Text == host.Field.Label && text.IsEffectivelyVisible);
+        Assert.True(label.Bounds.Height >= 32, $"The filled label lost its documented wrapping: {label.Bounds}.");
+        Assert.Equal(size, host.Field.Bounds.Size);
+        var request = new TextInputMethodClientRequestedEventArgs { RoutedEvent = InputElement.TextInputMethodClientRequestedEvent };
+        host.Field.RaiseEvent(request);
+        Assert.True(label.TranslatePoint(new Point(0, label.Bounds.Height), host.Field)!.Value.Y <=
+            request.Client!.TextViewVisual.TranslatePoint(default, host.Field)!.Value.Y);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(1, false)]
+    [InlineData(2, false)]
+    [InlineData(1, true)]
+    [InlineData(2, true)]
+    public void Outlined_label_removes_the_stroke_without_painting_a_surface_rectangle(double scale, bool dark)
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Variant = MaterialTextFieldVariant.Outlined, Label = "Name" });
+        host.Theme.Typography = new MaterialTypography { Scale = scale };
+        host.Window.Background = Avalonia.Media.Brush.Parse("#27567A");
+        host.Window.RequestedThemeVariant = dark ? Avalonia.Styling.ThemeVariant.Dark : Avalonia.Styling.ThemeVariant.Light;
+        host.Field.Focus();
+        host.Capture();
+        // Independent notch recipe: text x16, four-DIP notch padding, top stroke on y8/16.
+        // x13 is padding with no glyph; it MUST expose the actual blue host, not theme Surface.
+        Assert.Equal(Avalonia.Media.Color.Parse("#27567A"),
+            host.PixelAt(host.Field.TranslatePoint(new Point(13, 8 * scale), host.Window)!.Value));
+        Assert.Equal(dark ? Avalonia.Media.Color.Parse("#D0BCFF") : Avalonia.Media.Color.Parse("#6750A4"),
+            host.PixelAt(host.Field.TranslatePoint(new Point(160, 8 * scale + 1), host.Window)!.Value));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialTextFieldVariant.Filled, 8)]
+    [InlineData(MaterialTextFieldVariant.Outlined, 0)]
+    public async Task Floating_label_has_an_intermediate_visual_but_native_editor_stays_registered(MaterialTextFieldVariant variant, double finalTop)
+    {
+        using var host = new TextFieldHost(new MaterialTextField { Variant = variant, Label = "Name" });
+        host.Theme.Motion = new MaterialMotion { DurationShort4 = TimeSpan.FromMilliseconds(400) };
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        host.Capture();
+        var request = new TextInputMethodClientRequestedEventArgs { RoutedEvent = InputElement.TextInputMethodClientRequestedEvent };
+        host.Field.RaiseEvent(request);
+        var editor = request.Client!.TextViewVisual;
+        var origin = editor.TranslatePoint(default, host.Field);
+        var size = host.Field.Bounds.Size;
+        host.Field.Focus();
+        await Task.Delay(80);
+        host.Capture();
+        var label = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(host.Field).OfType<TextBlock>()
+            .Single(text => text.Text == "Name" && text.IsEffectivelyVisible);
+        var rect = new Rect(label.Bounds.Size).TransformToAABB(label.TransformToVisual(host.Field)!.Value);
+        Assert.True(rect.Top > finalTop + 0.1, $"The label jumped to its endpoint: {rect}.");
+        Assert.True(rect.Top < 24, $"The label did not leave its resting position: {rect}.");
+        Assert.Equal(origin, editor.TranslatePoint(default, host.Field));
+        Assert.Equal(size, host.Field.Bounds.Size);
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true };
+        host.Capture();
+        rect = new Rect(label.Bounds.Size).TransformToAABB(label.TransformToVisual(host.Field)!.Value);
+        Assert.Equal(finalTop, rect.Top);
+    }
+
+    [AvaloniaFact]
+    public async Task Switch_travels_through_an_intermediate_painted_thumb_without_moving_its_envelope()
+    {
+        var toggle = new MaterialSwitch
+        {
+            OnIcon = new Border { Width = 4, Height = 4, Background = Avalonia.Media.Brushes.Red },
+            OffIcon = new Border { Width = 4, Height = 4, Background = Avalonia.Media.Brushes.Red }
+        };
+        using var host = new SelectionHost(toggle);
+        host.Theme.Motion = new MaterialMotion { DurationShort4 = TimeSpan.FromMilliseconds(400) };
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        host.Capture();
+        var bounds = toggle.Bounds;
+        toggle.IsChecked = true;
+        await Task.Delay(80);
+        host.Capture();
+        Assert.Equal(bounds, toggle.Bounds);
+        // Independent track recipe: centres22->42. A caller-owned red4-square icon must move
+        // with the thumb through intermediate pixels, never jump directly to the endpoint.
+        using var bitmap = host.Window.CaptureRenderedFrame()!;
+        using var frame = bitmap.Lock();
+        var origin = toggle.TranslatePoint(default, host.Window)!.Value;
+        var pixels = Enumerable.Range(6, 52).Where(x =>
+        {
+            var offset = (int)((origin.Y + 24) * host.Window.RenderScaling) * frame.RowBytes +
+                (int)((origin.X + x) * host.Window.RenderScaling) * 4;
+            var first = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset);
+            var g = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 1);
+            var third = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 2);
+            return g == 0 && (frame.Format == Avalonia.Platform.PixelFormat.Bgra8888 ? third == 255 && first == 0 : first == 255 && third == 0);
+        }).ToArray();
+        Assert.NotEmpty(pixels);
+        var centre = (pixels[0] + pixels[^1] + 1) / 2d;
+        Assert.InRange(centre, 23, 41);
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true };
+        host.Capture();
+        Assert.Equal(Avalonia.Media.Colors.Red, host.PixelAt(toggle, new Point(42, 24)));
+        toggle.IsChecked = false;
+        host.Capture();
+        Assert.Equal(Avalonia.Media.Colors.Red, host.PixelAt(toggle, new Point(22, 24)));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialTextFieldVariant.Filled, 1)]
+    [InlineData(MaterialTextFieldVariant.Outlined, 1)]
+    [InlineData(MaterialTextFieldVariant.Filled, 2)]
+    [InlineData(MaterialTextFieldVariant.Outlined, 2)]
+    public void Focus_and_error_do_not_reflow_single_line_editor_or_next_control(MaterialTextFieldVariant variant, double scale)
+    {
+        using var host = new TextFieldHost(new MaterialTextField
+        {
+            Variant = variant, Label = "Amount / 金额", PrefixText = "¥", SuffixText = "CNY", ShowClearButton = true
+        });
+        host.Theme.Typography = new MaterialTypography { Scale = scale };
+        host.Window.Width = 320;
+        host.Capture();
+        var size = host.Field.Bounds.Size;
+        var next = host.Next.Bounds;
+        var request = new TextInputMethodClientRequestedEventArgs { RoutedEvent = InputElement.TextInputMethodClientRequestedEvent };
+        host.Field.RaiseEvent(request);
+        var textView = request.Client!.TextViewVisual;
+        Point EditorOrigin() => textView.TranslatePoint(default, host.Field)!.Value;
+        var editor = EditorOrigin();
+        var nativeTransform = textView.TransformToVisual(host.Field);
+        for (var i = 0; i < 50; i++)
+        {
+            host.Field.Focus();
+            host.Field.IsError = true;
+            host.Capture();
+            Assert.Equal(size, host.Field.Bounds.Size);
+            Assert.Equal(next, host.Next.Bounds);
+            Assert.Equal(editor, EditorOrigin());
+            Assert.Equal(nativeTransform, textView.TransformToVisual(host.Field));
+            host.Field.IsError = false;
+            host.Next.Focus();
+            host.Capture();
+            Assert.Equal(size, host.Field.Bounds.Size);
+            Assert.Equal(next, host.Next.Bounds);
+            Assert.Equal(editor, EditorOrigin());
+            Assert.Equal(nativeTransform, textView.TransformToVisual(host.Field));
+        }
+    }
+
+}

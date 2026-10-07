@@ -191,7 +191,7 @@
             <Border x:Name="DisabledTrackOutline" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
                     BorderBrush="{TemplateBinding BorderBrush}" Opacity="{DynamicResource M3.DisabledContainerOpacity}" IsVisible="False" IsHitTestVisible="False" />
             <Canvas x:Name="PART_SwitchKnob" Width="20" Height="48" HorizontalAlignment="Left" Margin="6,0,0,0">
-              <Grid x:Name="PART_MovingKnobs" Width="32" Height="48">
+              <Grid x:Name="PART_MovingKnobs" Width="32" Height="48" UseLayoutRounding="False">
                 <Border x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False">
                   <Border.Transitions>
                     <Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions>

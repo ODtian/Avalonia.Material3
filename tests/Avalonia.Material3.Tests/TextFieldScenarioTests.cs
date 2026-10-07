@@ -248,9 +248,9 @@ public class TextFieldScenarioTests
         Assert.DoesNotContain("Optional reference", host.VisibleText());
         var clear = host.Window.GetVisualDescendants().OfType<Button>()
             .Single(button => AutomationProperties.GetName(button) == "Clear text");
-        var icon = clear.GetVisualDescendants().OfType<PathIcon>().Single();
-        Assert.True(icon.Data!.Bounds.Width > 0 && icon.Data.Bounds.Height > 0);
         var point = clear.TranslatePoint(new Point(24, 24), host.Window)!.Value;
+        // Paint, not geometry metadata: a template-less PathIcon previously passed with zero ink.
+        Assert.Equal(Color.Parse("#49454F"), host.PixelAt(point));
         host.Window.MouseDown(point, MouseButton.Left);
         host.Window.MouseUp(point, MouseButton.Left);
         Assert.Equal(string.Empty, host.Field.Text);
@@ -601,7 +601,7 @@ public class TextFieldScenarioTests
 
 internal sealed class TextFieldHost : IDisposable
 {
-    public MaterialTheme Theme { get; } = new();
+    public MaterialTheme Theme { get; } = new() { Motion = new MaterialMotion { ReduceMotion = true } };
     public MaterialTextField Field { get; }
     public MaterialButton Next { get; } = new() { Content = "Next" };
     public Window Window { get; }
@@ -648,7 +648,8 @@ internal sealed class TextFieldHost : IDisposable
     }
 
     public string[] VisibleText() => Window.GetVisualDescendants().OfType<TextBlock>()
-        .Where(text => text.IsEffectivelyVisible && text.Bounds.Width > 0)
+        .Where(text => text.IsEffectivelyVisible && text.Opacity > 0 && text.Bounds.Width > 0 &&
+            text.GetVisualAncestors().OfType<Control>().All(ancestor => ancestor.Opacity > 0))
         .Select(text => text.Text ?? string.Empty).ToArray();
 
     public void Dispose()

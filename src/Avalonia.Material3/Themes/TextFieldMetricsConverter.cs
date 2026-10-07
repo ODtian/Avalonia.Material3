@@ -14,11 +14,16 @@ internal sealed class TextFieldMetricsConverter : IValueConverter, IMultiValueCo
         return new Thickness(16, size * 0.5, 16, size * 0.5);
     }
 
-    public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture) =>
-        values.Count >= 3 && values[0] is MaterialTextFieldVariant.Outlined && values[1] is double lineHeight &&
-        values[2] is string label && !string.IsNullOrWhiteSpace(label)
-            ? new Thickness(0, lineHeight * 0.5, 0, 0)
-            : default(Thickness);
+    public object Convert(IList<object?> values, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (parameter is "Envelope" && values.Count >= 4 && values[0] is Thickness padding)
+        {
+            var labelledFilled = values[1] is MaterialTextFieldVariant.Filled && values[2] is string label && !string.IsNullOrWhiteSpace(label);
+            var height = values[3] is double lineHeight ? lineHeight : 16;
+            return new Thickness(padding.Left, padding.Top + (labelledFilled ? height : 0), padding.Right, padding.Bottom);
+        }
+        return default(Thickness);
+    }
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) =>
         throw new NotSupportedException();
