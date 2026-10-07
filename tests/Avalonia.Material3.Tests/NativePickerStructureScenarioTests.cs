@@ -111,6 +111,13 @@ public class NativePickerStructureScenarioTests
         Assert.Equal(Color.Parse("#6750A4"),host.Pixel(yearBox.Right-2,yearBox.Center.Y));
         var nextRow=picker.GetVisualDescendants().OfType<MaterialCalendarYear>().Single(y=>y.Year==2027);
         Assert.Equal(64,GeometryHost.Box(nextRow,host.Window).Top-GeometryHost.Box(year,host.Window).Top);
+        host.Window.MouseMove(yearBox.Center);host.Render();
+        var hover=host.Pixel(yearBox.Left+2,yearBox.Center.Y);
+        Assert.NotEqual(Color.Parse("#6750A4"),hover);
+        Assert.NotEqual(Color.Parse("#6750A4"),host.Pixel(yearBox.Right-2,yearBox.Center.Y));
+        host.Window.MouseDown(new Point(yearBox.Left+2,yearBox.Center.Y),MouseButton.Left);host.Render();
+        Assert.NotEqual(hover,host.Pixel(yearBox.Left+2,yearBox.Center.Y));
+        host.Window.MouseUp(new Point(yearBox.Left+2,yearBox.Center.Y),MouseButton.Left);
     }
     [AvaloniaFact]
     public void Range_viewport_consumes_the_finite_body_and_the_date_dialog_owns_its_actions()
