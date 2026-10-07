@@ -127,9 +127,7 @@
       <ControlTemplate>
         <Grid>
           <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" />
-          <Border x:Name="State" Background="{TemplateBinding Foreground}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" IsHitTestVisible="False">
-            <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-          </Border>
+          <controls:MaterialStateLayer x:Name="State" Background="{TemplateBinding Foreground}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" IsHitTestVisible="False" />
           <Border x:Name="Focus" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="2" CornerRadius="{TemplateBinding CornerRadius}" IsVisible="False" IsHitTestVisible="False" />
           <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" Margin="{TemplateBinding Padding}">
             <controls:MaterialSymbol x:Name="Check" Symbol="check" Size="20" Margin="0,0,12,0" VerticalAlignment="Center" IsVisible="False" />
@@ -156,10 +154,10 @@
         </Grid>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:pointerover /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
     <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="IconForeground" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="SecondaryForeground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:segmented"><Setter Property="Padding" Value="16,8" /></Style>

@@ -51,9 +51,7 @@
         <Grid Background="Transparent">
           <Border x:Name="Container" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BoxShadow="{DynamicResource M3.Elevation.Shadow0}" />
           <Border x:Name="Outline" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
-          <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{TemplateBinding CornerRadius}">
-            <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-          </Border>
+          <c:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{TemplateBinding CornerRadius}" />
           <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="{TemplateBinding Padding}">
             <ContentPresenter x:Name="Leading" Content="{TemplateBinding Leading}" ContentTemplate="{TemplateBinding LeadingTemplate}" TextBlock.Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" VerticalAlignment="Center" Margin="0,0,12,0" IsVisible="{Binding Leading, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />
             <ContentPresenter Grid.Column="1" Content="{TemplateBinding Image}" ContentTemplate="{TemplateBinding ImageTemplate}" VerticalAlignment="Center" Margin="0,0,12,0" IsVisible="{Binding Image, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />
@@ -69,15 +67,15 @@
         </Grid>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:interactive:pointerover /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#FocusRing"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:interactive:pointerover /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+
     <Style Selector="^:selected"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
     <Style Selector="^:selected /template/ ContentPresenter#Overline, ^:selected /template/ ContentPresenter#Supporting, ^:selected /template/ ContentPresenter#Leading, ^:selected /template/ ContentPresenter#Trailing"><Setter Property="TextBlock.Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
     <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:disabled /template/ ContentPresenter#Overline, ^:disabled /template/ ContentPresenter#Supporting, ^:disabled /template/ ContentPresenter#Leading, ^:disabled /template/ ContentPresenter#Trailing"><Setter Property="TextBlock.Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:disabled /template/ Border#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialList}" TargetType="c:MaterialList">
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" />
@@ -100,7 +98,7 @@
     <Style Selector="^:expanded /template/ c|MaterialButton#PART_ExpandButton"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Content" Value="⌃" /></Style>
     <Style Selector="^:reordering"><Setter Property="Background" Value="{DynamicResource M3.TertiaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
     <Style Selector="^:reordering /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
-    <Style Selector="^:reordering /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
+    <Style Selector="^:reordering /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
     <Style Selector="^:reordering /template/ ContentPresenter#Overline, ^:reordering /template/ ContentPresenter#Supporting"><Setter Property="TextBlock.Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialCard}" TargetType="c:MaterialCard" BasedOn="{StaticResource M3.ContentItem}">
@@ -116,7 +114,7 @@
     <Style Selector="^:outlined:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:dragged /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
     <Style Selector="^:elevated:dragged /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
-    <Style Selector="^:dragged /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
+    <Style Selector="^:dragged /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
     <Style Selector="^:disabled"><Setter Property="Background" Value="{DynamicResource M3.SurfaceVariantBrush}" /></Style>
     <Style Selector="^:elevated:disabled"><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /></Style>
     <Style Selector="^:disabled /template/ Border#Container"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>

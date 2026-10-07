@@ -86,9 +86,7 @@
     <Setter Property="Template"><ControlTemplate>
       <Grid Background="Transparent">
         <Border Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" />
-        <Border x:Name="State" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{DynamicResource M3.Shape.CornerFull}" IsHitTestVisible="False">
-          <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-        </Border>
+        <controls:MaterialStateLayer x:Name="State" Background="{TemplateBinding Foreground}" Opacity="0" CornerRadius="{DynamicResource M3.Shape.CornerFull}" IsHitTestVisible="False" />
         <Grid ColumnDefinitions="Auto,*,Auto" Margin="16,8,24,8">
           <Viewbox Width="24" Height="24" Margin="0,0,12,0" VerticalAlignment="Center" IsVisible="{TemplateBinding DisplayIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
             <ContentPresenter Content="{TemplateBinding DisplayIcon}" ContentTemplate="{TemplateBinding IconTemplate}" />
@@ -103,12 +101,12 @@
     </ControlTemplate></Setter>
     <Style Selector="^:selected"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
     <Style Selector="^:pointerover:not(:selected), ^:focus-visible:not(:selected), ^:pressed:not(:selected)"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:pointerover /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+
     <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
-    <Style Selector="^:disabled /template/ Border#State"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="0" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:MaterialNavigationDrawer}" TargetType="controls:MaterialNavigationDrawer">
     <Setter Property="ItemContainerTheme" Value="{StaticResource M3.DrawerItem}" />
