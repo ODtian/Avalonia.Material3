@@ -36,13 +36,19 @@
                 BoxShadow="{DynamicResource M3.Elevation.Shadow1}">
           <ScrollViewer x:Name="SheetShell" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
             <Grid x:Name="SheetLayout" RowDefinitions="Auto,Auto,*,Auto">
-              <controls:MaterialSheetDragHandle Sheet="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
+              <controls:MaterialSheetDragHandle x:Name="DragHandle" Sheet="{Binding RelativeSource={RelativeSource TemplatedParent}}" />
               <StackPanel x:Name="SheetHeader" Grid.Row="1" Margin="16,0">
-                <TextBlock Text="{TemplateBinding Title}" TextWrapping="Wrap" Margin="0,0,0,16"
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+                <TextBlock Text="{TemplateBinding Title}" TextWrapping="Wrap" VerticalAlignment="Center"
                            IsVisible="{TemplateBinding Title, Converter={x:Static converters:ObjectConverters.IsNotNull}}"
                            FontFamily="{DynamicResource M3.TitleLargeFontFamily}" FontSize="{DynamicResource M3.TitleLargeFontSize}"
                            FontWeight="{DynamicResource M3.TitleLargeFontWeight}" LineHeight="{DynamicResource M3.TitleLargeLineHeight}"
                            LetterSpacing="{DynamicResource M3.TitleLargeLetterSpacing}" />
+                <controls:MaterialIconButton x:Name="PART_CloseButton" Grid.Column="1" IsVisible="False"
+                    IconVariant="Standard" AutomationProperties.Name="{TemplateBinding DismissText}">
+                  <controls:MaterialSymbol Symbol="close" Size="24" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+                </controls:MaterialIconButton>
+                </Grid>
                 <ContentPresenter Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" />
               </StackPanel>
               <ScrollViewer x:Name="PART_BodyScroll" Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -62,6 +68,9 @@
     <Style Selector="^:empty-extent /template/ Border"><Setter Property="IsVisible" Value="False" /></Style>
     <Style Selector="^:side /template/ Border#SheetSurface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
     <Style Selector="^:side:modal /template/ Border#SheetSurface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:side /template/ controls|MaterialSheetDragHandle#DragHandle"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:side /template/ StackPanel#SheetHeader"><Setter Property="Margin" Value="16,16,16,0" /></Style>
+    <Style Selector="^:side /template/ controls|MaterialIconButton#PART_CloseButton"><Setter Property="IsVisible" Value="True" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:MaterialSheetDragHandle}" TargetType="controls:MaterialSheetDragHandle">
     <Setter Property="Focusable" Value="True" />

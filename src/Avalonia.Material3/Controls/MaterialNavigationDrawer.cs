@@ -5,6 +5,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using System.Diagnostics;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
 
@@ -38,6 +39,8 @@ public class MaterialNavigationDrawer : MaterialNavigation
     private IPointer? _pointer;
     private Point _start;
     private double _distance;
+    private double _gestureBase;
+    private MaterialNavigationDrawerLayout? DrawerLayout => this.GetVisualAncestors().OfType<MaterialNavigationDrawerLayout>().FirstOrDefault();
     private long _startTime;
     private bool _dragging;
     private Window? _window;
@@ -47,6 +50,14 @@ public class MaterialNavigationDrawer : MaterialNavigation
     public MaterialOverlaySession? Session => _session;
     private Button? _closeButton;
     private Border? _surface;
+    private readonly Avalonia.Media.ScaleTransform _bounceSurface = new(1, 1);
+    private readonly Avalonia.Media.ScaleTransform _bounceContent = new(1, 1);
+    private readonly Avalonia.Media.TranslateTransform _dragTransform = new();
+    internal void SetPresentationOffset(double offset)
+    {
+        var factor = Bounds.Width > 0 ? 1 + Math.Max(0, offset) / Bounds.Width : 1;
+        _bounceSurface.ScaleX = factor; _bounceContent.ScaleX = 1 / factor;
+    }
     public MaterialNavigationDrawer()
     {
         UpdateDrawerPresentation();
@@ -68,7 +79,15 @@ public class MaterialNavigationDrawer : MaterialNavigation
         base.OnApplyTemplate(e);
         _closeButton = e.NameScope.Find<Button>("PART_CloseButton");
         _surface = e.NameScope.Find<Border>("PART_Surface");
-        if (_surface is not null) _surface.RenderTransform = new Avalonia.Media.TranslateTransform();
+        if (_surface is not null)
+        {
+            var transforms = new Avalonia.Media.TransformGroup(); transforms.Children.Add(_dragTransform); transforms.Children.Add(_bounceSurface);
+            _surface.RenderTransform = transforms; _surface.RenderTransformOrigin = new RelativePoint(1, .5, RelativeUnit.Relative);
+            if (_surface.Child is Control content)
+            {
+                content.RenderTransform = _bounceContent; content.RenderTransformOrigin = new RelativePoint(1, 0, RelativeUnit.Relative);
+            }
+        }
         if (_closeButton is not null) _closeButton.Click += CloseClicked;
     }
     private void CloseClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs e) => Close();
@@ -79,6 +98,7 @@ public class MaterialNavigationDrawer : MaterialNavigation
         _pointer = e.Pointer;
         _start = e.GetPosition(TopLevel.GetTopLevel(this));
         _distance = 0;
+        _gestureBase = Session?.Layer.Presentation?.DrawerOffset ?? (DrawerLayout is { } layout ? (layout.PresentationFraction - 1) * Bounds.Width : 0);
         _startTime = Stopwatch.GetTimestamp();
     }
     private void DragMoved(object? sender, PointerEventArgs e)
@@ -97,26 +117,35 @@ public class MaterialNavigationDrawer : MaterialNavigation
         SetAndRaise(DragOffsetProperty, ref _dragOffset, FlowDirection == Avalonia.Media.FlowDirection.RightToLeft ? _distance : -_distance);
         // The surface inherits Avalonia's RTL mirror. Translation is logical-start in both modes;
         // DragOffset remains the publicly observed physical signed distance.
-        if (_surface?.RenderTransform is Avalonia.Media.TranslateTransform transform) transform.X = -_distance;
+        if (Session?.Layer.Presentation is { } presentation) presentation.SetDrawerGesture(_gestureBase - _distance);
+        else if (DrawerLayout is { } layout) layout.SetDrawerGesture(_gestureBase - _distance);
+        else _dragTransform.X = -_distance;
         e.Handled = true;
     }
     private void DragReleased(object? sender, PointerReleasedEventArgs e)
     {
         if (_pointer != e.Pointer) return;
-        var commit = _dragging && (_distance >= Bounds.Width * .5 || _distance / Math.Max(.001, Stopwatch.GetElapsedTime(_startTime).TotalSeconds) >= 400);
+        var commit = _dragging && (_distance - _gestureBase >= Bounds.Width * .5 || _distance / Math.Max(.001, Stopwatch.GetElapsedTime(_startTime).TotalSeconds) >= 400);
         var dragged = _dragging;
-        CancelDrag();
-        if (commit) Close();
+        CancelDrag(settle: !commit);
+        if (commit && !Close()) RestoreGesture();
         if (dragged) e.Handled = true;
     }
-    private void CancelDrag()
+    private void RestoreGesture()
     {
+        Session?.Layer.Presentation?.RestoreDrawerGesture();
+        if (Session is null) DrawerLayout?.RestoreDrawerGesture();
+    }
+    private void CancelDrag(bool settle = true)
+    {
+        var wasDragging = _dragging;
         var pointer = _pointer;
         _pointer = null;
         _dragging = false;
         _distance = 0;
         SetAndRaise(DragOffsetProperty, ref _dragOffset, 0);
-        if (_surface?.RenderTransform is Avalonia.Media.TranslateTransform transform) transform.X = 0;
+        _dragTransform.X = 0;
+        if (settle && wasDragging) RestoreGesture();
         if (pointer?.Captured == this) pointer.Capture(null);
     }
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e) { CancelDrag(); base.OnPointerCaptureLost(e); }

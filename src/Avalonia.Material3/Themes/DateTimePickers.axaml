@@ -152,9 +152,10 @@
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialTimePeriodButton}" TargetType="c:MaterialTimePeriodButton">
     <Setter Property="MinWidth" Value="52" /><Setter Property="MinHeight" Value="48" />
-    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowestBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
-    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerSmall}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="FontFamily" Value="{DynamicResource M3.TitleMediumFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.TitleMediumFontSize}" />
     <Setter Property="FontWeight" Value="{DynamicResource M3.TitleMediumFontWeight}" /><Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.TitleMediumLineHeight}" />
@@ -162,18 +163,22 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="8,4">
+        <c:MaterialShapeBorder x:Name="PeriodFace" Background="{TemplateBinding Background}"
+            ShapeCornerRadius="{TemplateBinding CornerRadius}" ShapeSpring="{DynamicResource M3.Motion.FastSpatial}"
+            MinHeight="38" VerticalAlignment="Center">
+          <Grid>
+          <Border x:Name="State" CornerRadius="{Binding CornerRadius, ElementName=PeriodFace}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
           <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                            LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
-        </Border>
-          <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}"
-                  BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
-          <Border x:Name="State" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
+          </Grid>
+        </c:MaterialShapeBorder>
         </Grid>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.TertiaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /></Style>
-    <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
+    <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="CornerRadius" Value="12" /></Style>
+    <Style Selector="^:pressed"><Setter Property="CornerRadius" Value="12" /></Style>
+    <Style Selector="^:focus /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
