@@ -106,6 +106,7 @@ public abstract class MaterialSheet : ContentControl
     private double _gestureExtent, _gestureVelocity;
     private double _sideDuration;
     private bool _sideRecipe;
+    private Size _surfaceSize;
     private readonly MaterialMotionSettings _motionSettings;
     private bool _hasNatural, _detentsPartial, _detentsHidden;
     private double _naturalWidth, _naturalHeight;
@@ -373,15 +374,21 @@ public abstract class MaterialSheet : ContentControl
         var dragging = IsDragging;
         CancelDrag();
         var threshold = IsSide ? _expanded / 2 : DragThreshold;
-        if (dragging && (Math.Abs(movement) >= threshold || Math.Abs(velocity) >= VelocityThreshold))
+        if (dragging)
         {
             _gestureSettlement = true; _gestureExtent = _dragExtent; _gestureVelocity = -velocity;
             try
             {
-            if (Math.Abs(movement) < threshold) movement = velocity;
-            if (movement < 0) Expand();
-            else if (!IsSide && State == MaterialSheetState.Expanded && IsPartialEnabled) Collapse();
-            else Dismiss();
+                if (Math.Abs(movement) >= threshold || Math.Abs(velocity) >= VelocityThreshold)
+                {
+                    if (Math.Abs(movement) < threshold) movement = velocity;
+                    if (movement < 0) Expand();
+                    else if (!IsSide && State == MaterialSheetState.Expanded && IsPartialEnabled) Collapse();
+                    else Dismiss();
+                }
+                // A completed gesture always settles from the released position, including
+                // an unchanged anchor and a host-vetoed state transition.
+                if (!IsSettling && (Session is null || Session.IsOpen)) StartMotion();
             }
             finally { _gestureSettlement = false; }
         }
@@ -524,17 +531,28 @@ public abstract class MaterialSheet : ContentControl
         SetAndRaise(VisibleExtentProperty, ref _visibleExtent, extent);
         SetAndRaise(OffsetProperty, ref _offset, available - extent);
         var result = IsSide ? new Size(extent, availableSize.Height) : new Size(availableSize.Width, extent);
-        base.MeasureOverride(result);
-        var compact = _header is not null && _actions is not null && _header.DesiredSize.Height + _actions.DesiredSize.Height + 96 > result.Height;
+        _surfaceSize = IsSide ? new Size(expanded, availableSize.Height) : new Size(availableSize.Width, expanded);
+        base.MeasureOverride(_surfaceSize);
+        var compact = _header is not null && _actions is not null && _header.DesiredSize.Height + _actions.DesiredSize.Height + 96 > _surfaceSize.Height;
         if (_compact != compact)
         {
             _compact = compact;
             if (_layout is not null) _layout.RowDefinitions = new RowDefinitions(compact ? "Auto,Auto,Auto,Auto" : "Auto,Auto,*,Auto");
             PseudoClasses.Set(":compact-height", compact);
-            base.MeasureOverride(result);
+            base.MeasureOverride(_surfaceSize);
         }
         PseudoClasses.Set(":empty-extent", extent <= 0);
         return result;
+    }
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        base.ArrangeOverride(_surfaceSize);
+        // Anchored sheet motion translates a fully measured surface. Its host viewport
+        // supplies the clipping edge while the sheet retains its native shadow outsets.
+        if (VisualChildren.Count > 0 && VisualChildren[0] is Control surface)
+            surface.Arrange(new Rect(IsSide && IsPhysicalLeft ? finalSize.Width - _surfaceSize.Width : 0,
+                0, _surfaceSize.Width, _surfaceSize.Height));
+        return finalSize;
     }
 }
 

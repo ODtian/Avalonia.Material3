@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Headless;
 using Avalonia.Input;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
@@ -44,5 +45,28 @@ public class ReviewFixTrajectoryScenarioTests
         var completed = host.Pixel(point.X, point.Y);
         Assert.NotEqual(completed, entering);
         Assert.NotEqual(original, middle); Assert.NotEqual(completed, middle);
+    }
+
+    [AvaloniaFact]
+    public async Task Sheet_short_drag_settles_and_keeps_its_full_content_viewport()
+    {
+        var sheet = new MaterialBottomSheet { ExpandedExtent = 300, PeekExtent = 160,
+            VelocityThreshold = 100000, Content = new Border { Height = 600 } };
+        using var host = new GeometryHost(new MaterialSheetHost { Sheet = sheet }, 400, 400);
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, 100) } }; host.Render();
+        var body = sheet.GetVisualDescendants().OfType<ScrollViewer>().Single(c => c.Name == "PART_BodyScroll");
+        var viewport = body.Viewport;
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var start = handle.TranslatePoint(new Point(handle.Bounds.Width / 2, handle.Bounds.Height / 2), host.Window)!.Value;
+        host.Window.MouseDown(start, MouseButton.Left);
+        host.Window.MouseMove(start - new Vector(0, 20), RawInputModifiers.LeftMouseButton); host.Render();
+        Assert.True(sheet.IsDragging, $"Handle {handle.Bounds}; point {start}; extent {sheet.VisibleExtent}; state {sheet.State}");
+        host.Window.MouseUp(start - new Vector(0, 20), MouseButton.Left);
+        Assert.True(sheet.IsSettling);
+        await Task.Delay(60); host.Render();
+        Assert.InRange(sheet.VisibleExtent, 160.01, 299.99);
+        Assert.Equal(viewport, body.Viewport);
+        sheet.Expand(); await Task.Delay(60); host.Render();
+        Assert.Equal(viewport, body.Viewport);
     }
 }
