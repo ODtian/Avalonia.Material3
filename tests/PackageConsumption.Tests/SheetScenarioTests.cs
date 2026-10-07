@@ -15,12 +15,65 @@ namespace Avalonia.Material3.Tests;
 public class SheetScenarioTests
 {
     [AvaloniaFact]
+    public void Stock_side_sheet_drag_starts_on_plain_content_and_keeps_editor_input_native()
+    {
+        using var host = new SheetTestHost();
+        var editor = new MaterialTextField { Text = "Retained text" };
+        var plain = new Border { Height = 80, Background = Avalonia.Media.Brushes.Transparent };
+        var sheet = new MaterialSideSheet { Content = new StackPanel { Children = { editor, plain } } };
+        sheet.Show(host.Overlay); host.Render();
+        var editorPoint = host.Center(editor);
+        host.Window.MouseDown(editorPoint, MouseButton.Left);
+        host.Window.MouseMove(editorPoint + new Vector(40, 0)); host.Render();
+        Assert.False(sheet.IsDragging); Assert.Equal(256, sheet.VisibleExtent);
+        host.Window.MouseUp(editorPoint + new Vector(40, 0), MouseButton.Left);
+        var start = host.Center(plain);
+        host.Window.MouseDown(start, MouseButton.Left);
+        host.Window.MouseMove(start + new Vector(150, 0)); host.Render();
+        Assert.True(sheet.IsDragging); Assert.Equal(106, sheet.VisibleExtent);
+        host.Window.MouseUp(start + new Vector(150, 0), MouseButton.Left); host.Render();
+        Assert.Equal(0, host.Overlay.OpenCount);
+        Assert.Equal("Retained text", editor.Text);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Standard_side_header_matches_the_pinned_close_affordance_and_keeps_native_dismissal(bool rtl)
+    {
+        using var host = new SheetTestHost();
+        var sheet = new MaterialSideSheet { Title = "Information", DismissText = "Close information" };
+        host.Overlay.Content = new MaterialSheetHost { Sheet = sheet,
+            FlowDirection = rtl ? Avalonia.Media.FlowDirection.RightToLeft : Avalonia.Media.FlowDirection.LeftToRight };
+        sheet.Expand(); host.Render();
+        // Pinned MDC SideSheet anatomy/catalog: title and24-DIP closeicon in one header.
+        var visibleHandles = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Where(h => h.IsVisible);
+        Assert.Empty(visibleHandles);
+        var close = sheet.GetVisualDescendants().OfType<MaterialIconButton>().Single();
+        var closePeer = ControlAutomationPeer.CreatePeerForElement(close)!;
+        Assert.Equal("Close information", closePeer.GetName());
+        Assert.Equal("close", Assert.IsType<MaterialSymbol>(close.Content).Symbol);
+        Assert.True(close.Bounds.Width >= 48 && close.Bounds.Height >= 48);
+        var title = sheet.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text == "Information");
+        var titlePoint = title.TransformToVisual(host.Window)!.Value.Transform(new Rect(title.Bounds.Size).Center);
+        Assert.InRange(titlePoint.Y, close.TransformToVisual(host.Window)!.Value.Transform(new Point()).Y,
+            close.TransformToVisual(host.Window)!.Value.Transform(new Point(0, close.Bounds.Height)).Y);
+        close.Focus(NavigationMethod.Tab); host.Key(Key.Enter); host.Render();
+        Assert.Equal(MaterialSheetState.Hidden, sheet.State);
+        sheet.Expand(); host.Render();
+        Assert.True(closePeer.GetProvider<IInvokeProvider>() is not null);
+        closePeer.GetProvider<IInvokeProvider>()!.Invoke(); host.Render();
+        Assert.Equal(MaterialSheetState.Hidden, sheet.State);
+    }
+
+    [AvaloniaFact]
     public void Handle_press_feedback_is_observable_before_drag_and_cancel_clears_it()
     {
         using var host = new SheetTestHost();
         var sheet = new MaterialSideSheet();
+        sheet.Header = new MaterialSheetDragHandle { Sheet = sheet };
         sheet.Show(host.Overlay); host.Render();
-        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(h => h.IsVisible);
         host.Window.MouseDown(host.Center(handle), MouseButton.Left); host.Render();
         Assert.True(handle.IsPressed); Assert.False(sheet.IsDragging);
         sheet.CancelDrag(); host.Render();
@@ -44,9 +97,10 @@ public class SheetScenarioTests
     {
         using var host = new SheetTestHost();
         var sheet = new MaterialSideSheet { AllowDismiss = false };
+        sheet.Header = new MaterialSheetDragHandle { Sheet = sheet };
         host.Overlay.Content = new MaterialSheetHost { Content = new Border(), Sheet = sheet };
         sheet.Expand(); host.Render();
-        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(h => h.IsVisible);
         var start = host.Center(handle);
         host.Window.MouseDown(start, MouseButton.Left); host.Window.MouseMove(start + new Vector(150, 0)); host.Render();
         Assert.Equal(256, sheet.VisibleExtent);
@@ -161,7 +215,7 @@ public class SheetScenarioTests
         var session = sheet.Show(host.Overlay); host.Render();
         editor.Focus(); host.Window.KeyTextInput("host draft");
         Assert.Equal("host draft", editor.Text);
-        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(h => h.IsVisible);
         host.Click(handle); Assert.Equal(MaterialSheetState.Expanded, sheet.State);
         Assert.True(session.Close("Host explicit value"));
         Assert.Equal("Host explicit value", session.Completion.Result.Value);
@@ -237,7 +291,7 @@ public class SheetScenarioTests
         var session = sheet.Show(host.Overlay); host.Render();
         IPointer? pointer = null;
         sheet.AddHandler(InputElement.PointerPressedEvent, (_, e) => pointer = e.Pointer, Avalonia.Interactivity.RoutingStrategies.Bubble, true);
-        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(h => h.IsVisible);
         var start = host.Center(handle);
         host.Window.MouseDown(start, MouseButton.Left); host.Window.MouseMove(start - new Vector(0, 100)); host.Render();
         Assert.True(sheet.IsDragging);
@@ -285,6 +339,7 @@ public class SheetScenarioTests
         using var host = new SheetTestHost();
         host.Overlay.FlowDirection = rtl ? Avalonia.Media.FlowDirection.RightToLeft : Avalonia.Media.FlowDirection.LeftToRight;
         var sheet = new MaterialSideSheet { Title = "Modal side", Content = string.Join("\n", Enumerable.Repeat("Vertical information", 100)) };
+        sheet.Header = new MaterialSheetDragHandle { Sheet = sheet };
         sheet.Show(host.Overlay); host.Render();
         Assert.Equal(256, sheet.VisibleExtent); Assert.Equal(1000, host.Entry.Bounds.Width);
         Assert.Equal(left, new Rect(sheet.Bounds.Size).TransformToAABB(sheet.TransformToVisual(host.Window)!.Value).Left);
@@ -298,7 +353,7 @@ public class SheetScenarioTests
             host.Window.TouchEnd(touch, start - new Vector(0, 160));
         }
         host.Render(); Assert.True(scroll.Offset.Y > 0); Assert.Equal(256, sheet.VisibleExtent);
-        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(h => h.IsVisible);
         start = host.Center(handle);
         var end = start + new Vector(rtl ? -150 : 150, 0);
         host.Window.MouseDown(start, MouseButton.Left); host.Window.MouseMove(end); host.Render();
@@ -334,7 +389,7 @@ public class SheetScenarioTests
         using var host = new SheetTestHost();
         var sheet = new MaterialBottomSheet { ExpandedExtent = 600, Title = "Information panel", IsDraggable = false };
         sheet.Show(host.Overlay); host.Render();
-        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(h => h.IsVisible);
         var peer = ControlAutomationPeer.CreatePeerForElement(handle);
         Assert.Equal("Resize information panel", peer.GetName());
         var provider = Assert.IsAssignableFrom<IExpandCollapseProvider>(peer);
@@ -398,7 +453,7 @@ public class SheetScenarioTests
         using var host = new SheetTestHost();
         var sheet = new MaterialBottomSheet { ExpandedExtent = 600 };
         sheet.Show(host.Overlay); host.Render();
-        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single();
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(h => h.IsVisible);
         var start = host.Center(handle);
         host.Window.MouseDown(start, MouseButton.Left); host.Window.MouseMove(start - new Vector(0, 150)); host.Render();
         Assert.True(sheet.IsDragging); Assert.Equal(550, sheet.VisibleExtent);
