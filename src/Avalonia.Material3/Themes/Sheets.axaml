@@ -25,7 +25,7 @@
     <Setter Property="FontWeight" Value="{DynamicResource M3.BodyLargeFontWeight}" />
     <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyLargeLetterSpacing}" />
     <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
-    <Setter Property="ClipToBounds" Value="True" />
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="MaxWidth" Value="640" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="VerticalContentAlignment" Value="Top" />

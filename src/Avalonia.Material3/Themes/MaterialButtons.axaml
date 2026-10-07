@@ -33,6 +33,8 @@
     </ControlTheme>
     <!-- Component-local recipes; semantic resources are supplied by MaterialTheme. -->
     <ControlTheme x:Key="M3.ButtonBase" TargetType="controls:MaterialButton">
+      <!-- Action envelopes permit elevation overflow; actual content viewports retain their own clips. -->
+      <Setter Property="ClipToBounds" Value="False" />
       <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" />
       <Setter Property="MinHeight" Value="48" />

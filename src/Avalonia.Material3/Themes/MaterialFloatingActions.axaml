@@ -4,9 +4,11 @@
         xmlns:converters="using:Avalonia.Data.Converters">
   <Styles.Resources>
     <ControlTheme x:Key="M3.ActionItems" TargetType="ItemsControl">
+      <Setter Property="ClipToBounds" Value="False" />
       <Setter Property="Template"><ControlTemplate><ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" /></ControlTemplate></Setter>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialFab}" TargetType="c:MaterialFab">
+      <Setter Property="ClipToBounds" Value="False" />
       <!-- Animated roots and their measured template children share fractional layout axes.
            Stroke and glyph rasterization stay in their existing renderers. -->
       <Setter Property="UseLayoutRounding" Value="False" />
@@ -110,6 +112,7 @@
       <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter"><Setter Property="TextWrapping" Value="Wrap" /></Style>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialFabMenu}" TargetType="c:MaterialFabMenu">
+      <Setter Property="ClipToBounds" Value="False" />
       <Setter Property="UseLayoutRounding" Value="False" />
       <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" /><Setter Property="Margin" Value="16" />
       <Setter Property="Template">
@@ -139,6 +142,7 @@
       <Style Selector="^ /template/ Border#Container, ^:pointerover /template/ Border#Container, ^:pressed /template/ Border#Container"><Setter Property="BoxShadow" Value="none" /></Style>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialToolbar}" TargetType="c:MaterialToolbar">
+      <Setter Property="ClipToBounds" Value="False" />
       <Setter Property="UseLayoutRounding" Value="False" />
       <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" />
@@ -146,7 +150,7 @@
       <Setter Property="Template">
         <ControlTemplate>
           <c:MaterialToolbarLayoutPanel Orientation="{TemplateBinding Orientation}" FloatingActionPosition="{TemplateBinding FloatingActionPosition}">
-          <c:MaterialActionReveal IsExpanded="{TemplateBinding SurfaceIsExpanded}" Orientation="{TemplateBinding Orientation}" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
+          <c:MaterialActionReveal x:Name="SurfaceReveal" IsExpanded="{TemplateBinding SurfaceIsExpanded}" Orientation="{TemplateBinding Orientation}" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}" ShadowCornerRadius="{DynamicResource M3.Shape.CornerFull}">
           <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" MinHeight="64" Padding="{TemplateBinding Padding}"
                   BoxShadow="{DynamicResource M3.Elevation.Shadow0}">
             <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
@@ -179,7 +183,7 @@
       <Style Selector="^:top"><Setter Property="VerticalAlignment" Value="Top" /></Style>
       <Style Selector="^:docked"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Margin" Value="0" /><Setter Property="Padding" Value="16,0" /></Style>
       <Style Selector="^:docked /template/ Border#Surface"><Setter Property="CornerRadius" Value="0" /><Setter Property="BoxShadow" Value="none" /></Style>
-      <Style Selector="^:with-fab:not(:docked) /template/ Border#Surface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+      <Style Selector="^:with-fab:not(:docked) /template/ c|MaterialActionReveal#SurfaceReveal"><Setter Property="ElevationShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
       <Style Selector="^:vertical /template/ Border#Surface"><Setter Property="MinHeight" Value="0" /><Setter Property="MinWidth" Value="64" /></Style>
       <Style Selector="^:vertical /template/ ScrollViewer#Scroller"><Setter Property="HorizontalScrollBarVisibility" Value="Disabled" /><Setter Property="VerticalScrollBarVisibility" Value="Auto" /></Style>
       <Style Selector="^:docked:vertical"><Setter Property="HorizontalAlignment" Value="Left" /><Setter Property="VerticalAlignment" Value="Stretch" /><Setter Property="Padding" Value="0,16" /></Style>

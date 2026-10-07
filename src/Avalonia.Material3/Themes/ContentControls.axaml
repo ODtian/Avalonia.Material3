@@ -34,6 +34,7 @@
     <Style Selector="^:empty"><Setter Property="IsVisible" Value="False" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="M3.ContentItem" TargetType="c:MaterialContentItem">
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
     <Setter Property="FontFamily" Value="{DynamicResource M3.BodyLargeFontFamily}" />
     <Setter Property="FontSize" Value="{DynamicResource M3.BodyLargeFontSize}" />

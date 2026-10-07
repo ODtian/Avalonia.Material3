@@ -3,6 +3,7 @@
                     xmlns:c="using:Avalonia.Material3.Controls"
                     xmlns:conv="using:Avalonia.Data.Converters">
   <ControlTheme x:Key="{x:Type c:MaterialChip}" TargetType="c:MaterialChip">
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="MinHeight" Value="48" />
     <Setter Property="MinWidth" Value="48" />
     <Setter Property="Padding" Value="8,5" />
@@ -163,6 +164,7 @@
     <Setter Property="Template"><ControlTemplate><ScrollViewer HorizontalScrollBarVisibility="Disabled"><ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" /></ScrollViewer></ControlTemplate></Setter>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialSearch}" TargetType="c:MaterialSearch">
+    <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
     <Setter Property="Template">
