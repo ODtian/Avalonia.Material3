@@ -64,7 +64,8 @@ internal sealed class MaterialOverlayMotion : IDisposable
             _alpha.Spring(_exiting ? 0 : 1, _settings.FastEffects);
         }
         else if (_recipe == Recipe.Drawer)
-            _offset.Spring(_exiting ? -1 : 0, _exiting ? _settings.FastEffects : _settings.DefaultSpatial);
+            _offset.Spring(_exiting ? -1 : 0, _exiting ? _settings.FastEffects : _settings.DefaultSpatial,
+                1 / Math.Max(1, _layer.Container.Bounds.Width > 0 ? _layer.Container.Bounds.Width : _drawerWidth));
         else if (_recipe == Recipe.Sheet)
         {
             _offset.Spring(_exiting ? 1 : 0, _exiting ? _settings.FastEffects : _settings.DefaultSpatial);
@@ -120,7 +121,8 @@ internal sealed class MaterialOverlayMotion : IDisposable
     }
     internal void RestoreDrawerGesture()
     {
-        if (!_exiting && _recipe == Recipe.Drawer) _offset.Spring(0, _settings.DefaultSpatial);
+        if (!_exiting && _recipe == Recipe.Drawer) _offset.Spring(0, _settings.DefaultSpatial,
+            1 / Math.Max(1, _layer.Container.Bounds.Width > 0 ? _layer.Container.Bounds.Width : _drawerWidth));
     }
     internal bool FreezeExit(Control content, Action release)
     {

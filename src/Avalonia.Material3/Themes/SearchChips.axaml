@@ -26,28 +26,11 @@
                   Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid>
-              <Border x:Name="ChipLayer" Background="{TemplateBinding Foreground}" Opacity="0"
-                      CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False">
-                <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-              </Border>
-              <DockPanel Margin="{TemplateBinding Padding}" HorizontalSpacing="8">
-                <Border DockPanel.Dock="Left" Width="24" Height="24" VerticalAlignment="Center" ClipToBounds="True" CornerRadius="{DynamicResource M3.Shape.CornerFull}"
-                        IsVisible="{TemplateBinding Avatar, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
-                  <ContentPresenter Content="{TemplateBinding Avatar}" ContentTemplate="{TemplateBinding AvatarTemplate}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
-                </Border>
-                <Viewbox DockPanel.Dock="Right" Width="18" Height="18" VerticalAlignment="Center"
-                         IsVisible="{TemplateBinding TrailingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
-                  <ContentPresenter Content="{TemplateBinding TrailingIcon}" ContentTemplate="{TemplateBinding TrailingIconTemplate}" />
-                </Viewbox>
-                <Viewbox x:Name="LeadingIcon" DockPanel.Dock="Left" Width="18" Height="18" VerticalAlignment="Center"
-                         IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
-                  <ContentPresenter x:Name="ChipLeading" Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}"
-                                    Foreground="{DynamicResource M3.PrimaryBrush}" />
-                </Viewbox>
-                <Grid x:Name="FilterIcon" DockPanel.Dock="Left" Width="18" Height="18" IsVisible="False" VerticalAlignment="Center">
-                  <Viewbox><ContentPresenter x:Name="FilterLeading" Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}" Foreground="{DynamicResource M3.PrimaryBrush}" /></Viewbox>
-                  <c:MaterialSymbol x:Name="Check" Symbol="check" Size="18" Opacity="0" />
-                </Grid>
+              <c:MaterialStateLayer x:Name="ChipLayer" Background="{TemplateBinding Foreground}" Opacity="0"
+                      CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False" />
+              <DockPanel Margin="{TemplateBinding Padding}" HorizontalSpacing="0">
+                <c:MaterialChipIconSlot DockPanel.Dock="Left" Leading="True" Owner="{Binding RelativeSource={RelativeSource TemplatedParent}}" VerticalAlignment="Center" />
+                <c:MaterialChipIconSlot DockPanel.Dock="Right" Owner="{Binding RelativeSource={RelativeSource TemplatedParent}}" VerticalAlignment="Center" />
                 <Border x:Name="RemoveSpace" DockPanel.Dock="Right" Width="32" IsVisible="False" />
                 <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                                   TextWrapping="Wrap" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
@@ -70,14 +53,6 @@
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" />
       <Setter Property="BorderThickness" Value="0" />
     </Style>
-    <Style Selector="^:filter:checked /template/ ContentPresenter#ChipLeading"><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
-    <Style Selector="^:input:not(:checked) /template/ ContentPresenter#ChipLeading"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" /></Style>
-    <Style Selector="^:input:pointerover /template/ ContentPresenter#ChipLeading, ^:input:focus-visible /template/ ContentPresenter#ChipLeading"><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
-    <Style Selector="^:input:checked:dragged /template/ ContentPresenter#ChipLeading"><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
-    <Style Selector="^:filter /template/ Grid#FilterIcon"><Setter Property="IsVisible" Value="True" /></Style>
-    <Style Selector="^:filter /template/ Viewbox#LeadingIcon"><Setter Property="IsVisible" Value="False" /></Style>
-    <Style Selector="^:filter:checked /template/ c|MaterialSymbol#Check"><Setter Property="Opacity" Value="1" /></Style>
-    <Style Selector="^:filter:checked /template/ ContentPresenter#FilterLeading"><Setter Property="Opacity" Value="0" /></Style>
     <Style Selector="^:removable /template/ c|MaterialIconButton#PART_RemoveButton"><Setter Property="IsVisible" Value="True" /></Style>
     <Style Selector="^:removable /template/ Border#RemoveSpace"><Setter Property="IsVisible" Value="True" /></Style>
     <Style Selector="^:elevated"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /><Setter Property="BorderThickness" Value="0" /></Style>
@@ -88,20 +63,19 @@
     <Style Selector="^:pressed /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
     <Style Selector="^:elevated:pressed /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
     <Style Selector="^:dragged /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
-    <Style Selector="^:pointerover /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:dragged /template/ Border#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
+    <Style Selector="^:pointerover /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:dragged /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
     <Style Selector="^:focus-visible /template/ Border#ChipFocus"><Setter Property="IsVisible" Value="True" /></Style>
     <Style Selector="^:disabled">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
     </Style>
     <Style Selector="^:disabled /template/ ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
-    <Style Selector="^:disabled /template/ c|MaterialSymbol#Check"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     <Style Selector="^:disabled:checked, ^:disabled:elevated"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /></Style>
     <Style Selector="^:disabled /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
-    <Style Selector="^:disabled /template/ Border#ChipLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="0" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="M3.Search.Editor" TargetType="c:MaterialTextField" BasedOn="{StaticResource {x:Type c:MaterialTextField}}">
     <Setter Property="Background" Value="Transparent" />
@@ -184,10 +158,12 @@
                                      ErrorText="{TemplateBinding EffectiveErrorText}" SupportingText="{TemplateBinding SupportingText}"
                                      Text="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
               </DockPanel>
-              <Border x:Name="CandidatesHost" Grid.Row="1" IsVisible="False" Background="{DynamicResource M3.SurfaceContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerExtraSmall}">
+              <c:MaterialSearchReveal Grid.Row="1" Owner="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+              <Border x:Name="CandidatesHost" Background="{DynamicResource M3.SurfaceContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerExtraSmall}">
                 <ListBox x:Name="PART_Candidates" Theme="{StaticResource M3.Search.Candidates}" MaxHeight="{TemplateBinding CandidateMaxHeight}" ItemsSource="{TemplateBinding Candidates}"
                          SelectedItem="{Binding SelectedCandidate, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}" />
               </Border>
+              </c:MaterialSearchReveal>
             </Grid>
           </Border>
           <Border x:Name="SearchFocus" Height="{Binding Bounds.Height, ElementName=SearchContainer}" VerticalAlignment="Top"
@@ -211,9 +187,8 @@
     <Style Selector="^:disabled /template/ Border#SearchLayer"><Setter Property="Opacity" Value="0" /></Style>
     <Style Selector="^:view"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" /></Style>
     <Style Selector="^:open"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" /></Style>
-    <Style Selector="^:open /template/ Border#CandidatesHost"><Setter Property="IsVisible" Value="True" /></Style>
     <Style Selector="^:bar:open /template/ c|MaterialIconButton#PART_CloseButton, ^:view:open /template/ c|MaterialIconButton#PART_CloseButton"><Setter Property="IsVisible" Value="True" /></Style>
-    <Style Selector="^:bar:open /template/ Border#CandidatesHost, ^:view /template/ Border#CandidatesHost"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="0,1,0,0" /><Setter Property="CornerRadius" Value="0" /></Style>
+    <Style Selector="^:bar /template/ Border#CandidatesHost, ^:view /template/ Border#CandidatesHost"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="0,1,0,0" /><Setter Property="CornerRadius" Value="0" /></Style>
     <Style Selector="^:fullscreen"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerNone}" /></Style>
     <Style Selector="^:fullscreen /template/ Border#SearchContainer"><Setter Property="VerticalAlignment" Value="Stretch" /><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
     <Style Selector="^:outlinedautocomplete /template/ c|MaterialTextField#PART_Editor"><Setter Property="Variant" Value="Outlined" /></Style>

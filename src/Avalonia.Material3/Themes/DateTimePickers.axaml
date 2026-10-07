@@ -21,7 +21,7 @@
                               HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                               Foreground="{TemplateBinding Foreground}" Padding="4,0" />
           </c:MaterialCalendarCircle>
-          <Border x:Name="State" Margin="4" CornerRadius="999" Background="{TemplateBinding Foreground}"
+          <c:MaterialStateLayer x:Name="State" Margin="4" CornerRadius="999" Background="{TemplateBinding Foreground}"
                   Opacity="0" IsHitTestVisible="False" />
           <Border x:Name="Focus" Margin="1" CornerRadius="999" BorderBrush="{DynamicResource M3.SecondaryBrush}"
                   BorderThickness="2" IsVisible="False" IsHitTestVisible="False" />
@@ -31,9 +31,9 @@
     <Style Selector="^:in-range"><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
     <Style Selector="^:today"><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="BorderThickness" Value="1" /></Style>
     <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
-    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#Focus"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialCalendarYear}" TargetType="c:MaterialCalendarYear">
@@ -139,15 +139,15 @@
           <!-- Stroke is an overlay: hover/focus never changes the80-DIP content envelope. -->
           <Border CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
-          <Border x:Name="State" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
+          <c:MaterialStateLayer x:Name="State" CornerRadius="{TemplateBinding CornerRadius}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
         </Grid>
       </ControlTemplate>
     </Setter>
     <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
     <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
     <Style Selector="^:pointerover"><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="1" /></Style>
-    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialTimePeriodButton}" TargetType="c:MaterialTimePeriodButton">
@@ -167,7 +167,7 @@
             ShapeCornerRadius="{TemplateBinding CornerRadius}" ShapeSpring="{DynamicResource M3.Motion.FastSpatial}"
             MinHeight="38" VerticalAlignment="Center">
           <Grid>
-          <Border x:Name="State" CornerRadius="{Binding CornerRadius, ElementName=PeriodFace}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
+          <c:MaterialStateLayer x:Name="State" CornerRadius="{Binding CornerRadius, ElementName=PeriodFace}" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
           <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                             LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
@@ -178,9 +178,9 @@
     </Setter>
     <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /><Setter Property="FontWeight" Value="Bold" /><Setter Property="CornerRadius" Value="12" /></Style>
     <Style Selector="^:pressed"><Setter Property="CornerRadius" Value="12" /></Style>
-    <Style Selector="^:focus /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
     <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialClockNumber}" TargetType="c:MaterialClockNumber">
@@ -199,14 +199,14 @@
                             HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{TemplateBinding Foreground}" />
         </Border>
           <Border CornerRadius="999" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
-          <Border x:Name="State" CornerRadius="999" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
+          <c:MaterialStateLayer x:Name="State" CornerRadius="999" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" />
         </Grid>
       </ControlTemplate>
     </Setter>
     <Style Selector="^:checked"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
     <Style Selector="^:focus-visible"><Setter Property="BorderBrush" Value="{DynamicResource M3.SecondaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
-    <Style Selector="^:pointerover /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+    <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialTimePicker}" TargetType="c:MaterialTimePicker">
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />

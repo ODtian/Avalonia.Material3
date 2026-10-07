@@ -40,9 +40,7 @@
           <Border x:Name="Indicator" Grid.ColumnSpan="2" Background="Transparent" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Width="56" MinHeight="32" HorizontalAlignment="Center">
             <Grid>
               <controls:MaterialNavigationSelectionPresenter IsSelected="{TemplateBinding IsSelected}" Brush="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" />
-              <Border x:Name="StateLayer" Background="{DynamicResource M3.OnSecondaryContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Opacity="0" IsHitTestVisible="False">
-                <Border.Transitions><Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions></Border.Transitions>
-              </Border>
+              <controls:MaterialStateLayer x:Name="StateLayer" Background="{DynamicResource M3.OnSecondaryContainerBrush}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" Opacity="0" IsHitTestVisible="False" />
             </Grid>
           </Border>
           <controls:MaterialNavigationIconPanel x:Name="IconFrame" Grid.ColumnSpan="2" Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -85,8 +83,8 @@
       <Setter Property="Grid.RowSpan" Value="2" /><Setter Property="CornerRadius" Value="0" />
     </Style>
     <Style Selector="^:primary:icon /template/ Border#Indicator"><Setter Property="MinHeight" Value="64" /></Style>
-    <Style Selector="^:tabs /template/ Border#StateLayer"><Setter Property="CornerRadius" Value="0" /><Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:primary:selected /template/ Border#StateLayer"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
+    <Style Selector="^:tabs /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="CornerRadius" Value="0" /><Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:primary:selected /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
     <Style Selector="^:tabs:not(:icon) /template/ Viewbox#Icon"><Setter Property="IsVisible" Value="False" /></Style>
     <Style Selector="^:tabs /template/ controls|MaterialNavigationColorPresenter#PART_ContentPresenter"><Setter Property="HorizontalAlignment" Value="Center" /><Setter Property="Margin" Value="16,4,16,8" /></Style>
     <Style Selector="^:tabs:not(:icon) /template/ controls|MaterialNavigationColorPresenter#PART_ContentPresenter"><Setter Property="Grid.Row" Value="0" /><Setter Property="Grid.Column" Value="0" /><Setter Property="Grid.ColumnSpan" Value="2" /></Style>
@@ -97,13 +95,13 @@
     <Style Selector="^:tabs:pointerover:not(:selected), ^:tabs:focus-visible:not(:selected), ^:tabs:pressed:not(:selected)"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:tabs:pointerover:not(:selected) /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter, ^:tabs:focus-visible:not(:selected) /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter, ^:tabs:pressed:not(:selected) /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
     <Style Selector="^:secondary /template/ controls|MaterialNavigationSelectionPresenter#TabIndicator"><Setter Property="Width" Value="NaN" /><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Height" Value="2" /><Setter Property="CornerRadius" Value="0" /></Style>
-    <Style Selector="^:pointerover /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:pressed /template/ Border#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:focus-visible /template/ Border#FocusRing"><Setter Property="IsVisible" Value="True" /></Style>
+    <Style Selector="^:pointerover /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
+    <Style Selector="^:focus-visible /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
+    <Style Selector="^:pressed /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+
     <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
     <Style Selector="^:disabled /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
-    <Style Selector="^:disabled /template/ Border#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
     <Style Selector="^:disabled /template/ Border#FocusRing"><Setter Property="IsVisible" Value="False" /></Style>
   </ControlTheme>
 </ResourceDictionary>

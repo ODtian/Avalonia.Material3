@@ -12,25 +12,23 @@
       <Setter Property="LineHeight" Value="{DynamicResource M3.BodyLargeLineHeight}" />
       <Setter Property="LetterSpacing" Value="{DynamicResource M3.BodyLargeLetterSpacing}" />
     </Style>
-    <Style Selector="^:pointerover /template/ Border#StateLayer">
+    <Style Selector="^:pointerover /template/ controls|MaterialStateLayer#StateLayer">
       <Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" />
     </Style>
-    <Style Selector="^:focus-visible /template/ Border#FocusRing">
-      <Setter Property="IsVisible" Value="True" />
-    </Style>
-    <Style Selector="^:focus-visible /template/ Border#StateLayer">
+
+    <Style Selector="^:focus-visible /template/ controls|MaterialStateLayer#StateLayer">
       <Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" />
     </Style>
-    <Style Selector="^:pressed /template/ Border#StateLayer">
+    <Style Selector="^:pressed /template/ controls|MaterialStateLayer#StateLayer">
       <Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" />
     </Style>
-    <Style Selector="^:dragging /template/ Border#StateLayer">
+    <Style Selector="^:dragging /template/ controls|MaterialStateLayer#StateLayer">
       <Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" />
     </Style>
     <Style Selector="^:unchecked:pointerover, ^:unchecked:pressed, ^:unchecked:focus-visible">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled /template/ Border#StateLayer">
+    <Style Selector="^:disabled /template/ controls|MaterialStateLayer#StateLayer">
       <Setter Property="Opacity" Value="0" />
     </Style>
     <Style Selector="^:disabled /template/ Border#FocusRing">
@@ -60,11 +58,7 @@
       <ControlTemplate>
         <Grid ColumnDefinitions="48,*" Background="Transparent">
           <Grid Width="48" Height="48" VerticalAlignment="Center">
-            <Border x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False">
-              <Border.Transitions>
-                <Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions>
-              </Border.Transitions>
-            </Border>
+            <controls:MaterialStateLayer x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False" />
             <Border x:Name="FocusRing" Width="42" Height="42" CornerRadius="21" BorderThickness="3"
                     BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
             <Border x:Name="Box" Width="18" Height="18" CornerRadius="2" BorderThickness="2"
@@ -122,15 +116,11 @@
       <ControlTemplate>
         <Grid ColumnDefinitions="48,*" Background="Transparent">
           <Grid Width="48" Height="48" VerticalAlignment="Center">
-            <Border x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False">
-              <Border.Transitions>
-                <Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions>
-              </Border.Transitions>
-            </Border>
+            <controls:MaterialStateLayer x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False" />
             <Border x:Name="FocusRing" Width="42" Height="42" CornerRadius="21" BorderThickness="3"
                     BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
             <Border x:Name="Ring" Width="20" Height="20" CornerRadius="10" BorderThickness="2" BorderBrush="{TemplateBinding BorderBrush}" />
-            <Ellipse x:Name="Dot" Width="10" Height="10" Fill="{TemplateBinding BorderBrush}" IsVisible="False" />
+            <Ellipse x:Name="Dot" Width="0" Height="0" Fill="{TemplateBinding BorderBrush}" IsVisible="False" />
           </Grid>
           <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
             <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
@@ -147,9 +137,6 @@
     </Style>
     <Style Selector="^:error:not(:disabled)">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
-    </Style>
-    <Style Selector="^:checked /template/ Ellipse#Dot">
-      <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="^:disabled">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
@@ -179,11 +166,7 @@
                     BorderBrush="{TemplateBinding BorderBrush}" Opacity="{DynamicResource M3.DisabledContainerOpacity}" IsVisible="False" IsHitTestVisible="False" />
             <Canvas x:Name="PART_SwitchKnob" Width="20" Height="48" HorizontalAlignment="Left" Margin="6,0,0,0">
               <Grid x:Name="PART_MovingKnobs" Width="32" Height="48" UseLayoutRounding="False">
-                <Border x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False">
-                  <Border.Transitions>
-                    <Transitions><DoubleTransition Property="Opacity" Duration="{DynamicResource M3.StateLayerDuration}" /></Transitions>
-                  </Border.Transitions>
-                </Border>
+                <controls:MaterialStateLayer x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False" />
                 <Ellipse x:Name="Thumb" Width="16" Height="16" Fill="{DynamicResource M3.OutlineBrush}" />
                 <ContentPresenter x:Name="OffIcon" Width="16" Height="16" FontSize="16" LineHeight="16" LetterSpacing="0" Content="{TemplateBinding OffIcon}"
                                   Foreground="{DynamicResource M3.SurfaceContainerHighestBrush}" IsHitTestVisible="False"

@@ -22,7 +22,7 @@
       <ControlTemplate>
         <Border x:Name="ActionContainer" Background="{TemplateBinding Background}" CornerRadius="24">
           <Grid>
-            <Border x:Name="ActionStateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
+            <controls:MaterialStateLayer x:Name="ActionStateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
                     CornerRadius="24" IsHitTestVisible="False" />
             <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
                               Padding="{TemplateBinding Padding}" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
@@ -32,17 +32,14 @@
         </Border>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:pointerover /template/ Border#ActionStateLayer">
+    <Style Selector="^:pointerover /template/ controls|MaterialStateLayer#ActionStateLayer">
       <Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" />
     </Style>
-    <Style Selector="^:focus-visible /template/ Border#ActionStateLayer">
+    <Style Selector="^:focus-visible /template/ controls|MaterialStateLayer#ActionStateLayer">
       <Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" />
     </Style>
-    <Style Selector="^:pressed /template/ Border#ActionStateLayer">
+    <Style Selector="^:pressed /template/ controls|MaterialStateLayer#ActionStateLayer">
       <Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" />
-    </Style>
-    <Style Selector="^:focus-visible /template/ Border#ActionFocusRing">
-      <Setter Property="IsVisible" Value="True" />
     </Style>
   </ControlTheme>
   <ControlTheme x:Key="M3.TextField.ScrollViewer" TargetType="ScrollViewer">
@@ -76,6 +73,7 @@
         <Grid RowDefinitions="Auto,Auto" Background="Transparent">
           <controls:MaterialTextFieldDecoration x:Name="Container"
                   Field="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                  LabelBrush="{DynamicResource M3.OnSurfaceVariantBrush}"
                   LabelLineHeight="{DynamicResource M3.BodySmallLineHeight}">
             <controls:MaterialTextFieldPainter IsHitTestVisible="False" AutomationProperties.AccessibilityView="Raw" />
             <Grid x:Name="EditorContent" ColumnDefinitions="Auto,*,Auto,Auto">
@@ -144,10 +142,10 @@
             <TextBlock x:Name="RestingLabel" Text="{TemplateBinding Label}" IsHitTestVisible="False"
                        AutomationProperties.AccessibilityView="Raw" TextTrimming="CharacterEllipsis"
                        LineHeight="{TemplateBinding LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
-                       Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+                       Foreground="{Binding AnimatedLabelBrush, ElementName=Container}" />
             <TextBlock x:Name="FloatingLabel" Text="{TemplateBinding Label}" IsVisible="False" IsHitTestVisible="False"
                        AutomationProperties.AccessibilityView="Raw" TextTrimming="CharacterEllipsis" TextWrapping="Wrap" Theme="{StaticResource M3.TextField.SupportingText}"
-                       Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" />
+                       Foreground="{Binding AnimatedLabelBrush, ElementName=Container}" />
           </controls:MaterialTextFieldDecoration>
           <Grid x:Name="SupportingContent" Grid.Row="1" ColumnDefinitions="*,Auto" Margin="16,4,16,0">
             <TextBlock x:Name="Supporting" Text="{TemplateBinding EffectiveSupportingText}" Theme="{StaticResource M3.TextField.SupportingText}" TextWrapping="Wrap"
@@ -206,8 +204,8 @@
     <Style Selector="^:pointerover">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:outlined:pointerover:not(:focus) /template/ TextBlock#RestingLabel, ^:outlined:pointerover:not(:focus) /template/ TextBlock#FloatingLabel">
-      <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    <Style Selector="^:outlined:pointerover:not(:focus) /template/ controls|MaterialTextFieldDecoration#Container">
+      <Setter Property="LabelBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
     <Style Selector="^:focus">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" />
@@ -216,20 +214,26 @@
     <Style Selector="^:outlined:focus">
       <Setter Property="BorderThickness" Value="2" />
     </Style>
-    <Style Selector="^:focus /template/ TextBlock#FloatingLabel">
-      <Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" />
+    <Style Selector="^:focus /template/ controls|MaterialTextFieldDecoration#Container">
+      <Setter Property="LabelBrush" Value="{DynamicResource M3.PrimaryBrush}" />
     </Style>
     <Style Selector="^:invalid">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
       <Setter Property="CaretBrush" Value="{DynamicResource M3.ErrorBrush}" />
     </Style>
-    <Style Selector="^:invalid /template/ TextBlock#FloatingLabel, ^:invalid /template/ TextBlock#RestingLabel, ^:invalid /template/ TextBlock#Supporting, ^:invalid /template/ TextBlock#Counter, ^:invalid /template/ ContentPresenter#Trailing, ^:invalid /template/ Button#PART_ClearButton">
+    <Style Selector="^:invalid /template/ controls|MaterialTextFieldDecoration#Container">
+      <Setter Property="LabelBrush" Value="{DynamicResource M3.ErrorBrush}" />
+    </Style>
+    <Style Selector="^:invalid /template/ TextBlock#Supporting, ^:invalid /template/ TextBlock#Counter, ^:invalid /template/ ContentPresenter#Trailing, ^:invalid /template/ Button#PART_ClearButton">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource M3.ErrorBrush}" />
     </Style>
     <Style Selector="^:invalid:pointerover:not(:focus)">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnErrorContainerBrush}" />
     </Style>
-    <Style Selector="^:invalid:pointerover:not(:focus) /template/ TextBlock#FloatingLabel, ^:invalid:pointerover:not(:focus) /template/ TextBlock#RestingLabel, ^:invalid:pointerover:not(:focus) /template/ ContentPresenter#Trailing, ^:invalid:pointerover:not(:focus) /template/ Button#PART_ClearButton">
+    <Style Selector="^:invalid:pointerover:not(:focus) /template/ controls|MaterialTextFieldDecoration#Container">
+      <Setter Property="LabelBrush" Value="{DynamicResource M3.OnErrorContainerBrush}" />
+    </Style>
+    <Style Selector="^:invalid:pointerover:not(:focus) /template/ ContentPresenter#Trailing, ^:invalid:pointerover:not(:focus) /template/ Button#PART_ClearButton">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource M3.OnErrorContainerBrush}" />
     </Style>
     <Style Selector="^:disabled">
@@ -246,7 +250,10 @@
     <Style Selector="^:disabled /template/ Grid#EditorContent, ^:disabled /template/ Grid#SupportingContent, ^:disabled /template/ TextBlock#FloatingLabel, ^:disabled /template/ TextBlock#RestingLabel">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
-    <Style Selector="^:disabled /template/ TextBlock">
+    <Style Selector="^:disabled /template/ controls|MaterialTextFieldDecoration#Container">
+      <Setter Property="LabelBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
+    </Style>
+    <Style Selector="^:disabled /template/ TextBlock#Supporting, ^:disabled /template/ TextBlock#Counter, ^:disabled /template/ TextBlock#Prefix, ^:disabled /template/ TextBlock#Suffix">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
   </ControlTheme>

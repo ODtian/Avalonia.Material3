@@ -1,5 +1,3 @@
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.VisualTree;
@@ -27,39 +25,50 @@ internal sealed class MaterialTextFieldDecoration : Panel
         AvaloniaProperty.Register<MaterialTextFieldDecoration, double>(nameof(StrokeWidth), 1);
     public static readonly StyledProperty<IBrush?> StrokeBrushProperty =
         AvaloniaProperty.Register<MaterialTextFieldDecoration, IBrush?>(nameof(StrokeBrush));
+    public static readonly StyledProperty<IBrush?> LabelBrushProperty =
+        AvaloniaProperty.Register<MaterialTextFieldDecoration, IBrush?>(nameof(LabelBrush));
+    public static readonly StyledProperty<IBrush?> AnimatedLabelBrushProperty =
+        AvaloniaProperty.Register<MaterialTextFieldDecoration, IBrush?>(nameof(AnimatedLabelBrush));
+    public IBrush? LabelBrush { get => GetValue(LabelBrushProperty); set => SetValue(LabelBrushProperty, value); }
+    public IBrush? AnimatedLabelBrush => GetValue(AnimatedLabelBrushProperty);
     internal double LabelProgress => GetValue(LabelProgressProperty);
     internal double StrokeWidth => GetValue(StrokeWidthProperty);
     internal IBrush? StrokeBrush => GetValue(StrokeBrushProperty);
     private MaterialTextField? _observed;
-    private IDisposable? _durationSubscription;
-    private IDisposable? _easingSubscription;
-    private TimeSpan _duration;
-    private Easing _easing = new LinearEasing();
+    private readonly MaterialMotionSettings _motion;
+    private readonly MaterialMotionValue _labelMotion;
+    private readonly MaterialMotionValue _strokeMotion;
+    private readonly MaterialMotionValue _placeholderMotion;
+    private readonly MaterialMotionValue _affixMotion;
+    private readonly MaterialMotionBrush _strokeColor;
+    private readonly MaterialMotionBrush _labelColor;
+    private bool _initialized;
+    private int _phase;
     private readonly MatrixTransform _restTransform = new();
     private readonly MatrixTransform _floatTransform = new();
+
+    public MaterialTextFieldDecoration()
+    {
+        _labelMotion = new(this, 0, value => SetValue(LabelProgressProperty, value));
+        _strokeMotion = new(this, 1, value => SetValue(StrokeWidthProperty, value));
+        _placeholderMotion = new(this, 0, value => PaintOpacity("PlaceholderHost", value));
+        _affixMotion = new(this, 0, value => { PaintOpacity("Prefix", value); PaintOpacity("Suffix", value); });
+        _strokeColor = new(this, null, value => SetValue(StrokeBrushProperty, value));
+        _labelColor = new(this, null, value => SetValue(AnimatedLabelBrushProperty, value));
+        _motion = new(this, Retarget);
+    }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         Observe();
         Retarget();
-        _durationSubscription = this.GetResourceObservable("M3.Motion.DurationShort4").Subscribe(new MotionObserver(value =>
-        {
-            _duration = value is TimeSpan duration ? duration : TimeSpan.Zero;
-            UpdateMotion();
-        }));
-        _easingSubscription = this.GetResourceObservable("M3.Motion.EasingStandard").Subscribe(new MotionObserver(value =>
-        {
-            _easing = value is Easing easing ? easing : new LinearEasing();
-            UpdateMotion();
-        }));
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (_observed is not null) _observed.PropertyChanged -= FieldChanged;
         _observed = null;
-        _durationSubscription?.Dispose(); _durationSubscription = null;
-        _easingSubscription?.Dispose(); _easingSubscription = null;
+        _initialized = false;
         Transitions = null;
         base.OnDetachedFromVisualTree(e);
     }
@@ -82,6 +91,7 @@ internal sealed class MaterialTextFieldDecoration : Panel
     {
         base.OnPropertyChanged(change);
         if (change.Property == FieldProperty) Observe();
+        if (change.Property == LabelBrushProperty) Retarget();
         if (change.Property == FieldProperty || change.Property == LabelLineHeightProperty) InvalidateMeasure();
         if (change.Property == LabelProgressProperty) ProjectLabel();
         if (change.Property == LabelProgressProperty || change.Property == StrokeWidthProperty || change.Property == StrokeBrushProperty)
@@ -146,37 +156,46 @@ internal sealed class MaterialTextFieldDecoration : Panel
     }
     private void Retarget()
     {
-        if (Field is not { } field) return;
-        SetValue(LabelProgressProperty, field.IsFocused || !string.IsNullOrEmpty(field.Text) ? 1d : 0d);
+        if (Field is not { } field || _motion is null) return;
+        var phase = field.IsFocused ? 1 : string.IsNullOrEmpty(field.Text) ? 0 : 2;
+        var label = phase == 0 ? 0 : 1;
         var thickness = field.BorderThickness;
-        SetValue(StrokeWidthProperty, Math.Max(Math.Max(thickness.Left, thickness.Right), Math.Max(thickness.Top, thickness.Bottom)));
-        SetValue(StrokeBrushProperty, field.BorderBrush);
+        var stroke = Math.Max(Math.Max(thickness.Left, thickness.Right), Math.Max(thickness.Top, thickness.Bottom));
+        var placeholder = phase == 1 || string.IsNullOrWhiteSpace(field.Label) ? 1 : 0;
+        var affix = phase != 0 || string.IsNullOrWhiteSpace(field.Label) ? 1 : 0;
+        if (!_initialized || !field.IsEffectivelyEnabled)
+        {
+            _labelMotion.Snap(label); _strokeMotion.Snap(stroke); _strokeColor.Snap(field.BorderBrush);
+            _labelColor.Snap(LabelBrush);
+            _placeholderMotion.Snap(placeholder); _affixMotion.Snap(affix);
+            _initialized = true;
+        }
+        else
+        {
+            _labelMotion.Spring(label, _motion.FastSpatial);
+            _strokeMotion.Spring(stroke, _motion.FastSpatial);
+            _strokeColor.Set(field.BorderBrush, _motion.FastEffects);
+            _labelColor.Set(LabelBrush, _motion.FastEffects);
+            var opacitySpec = (_phase == 0 && phase == 1 || _phase == 2 && phase == 0)
+                ? _motion.SlowEffects : _motion.FastEffects;
+            _placeholderMotion.Spring(placeholder, opacitySpec);
+            _affixMotion.Spring(affix, _motion.FastEffects);
+        }
+        _phase = phase;
     }
-    private bool _decorationTransitionsDirty = true;
-    private void UpdateMotion()
+    private void PaintOpacity(string name, double value)
     {
-        _decorationTransitionsDirty = true;
-        ConfigureDecorationTransitions();
-        Transitions = null; // Disposing an active transition reveals its target: live reduced motion snaps.
-        Retarget();
-        if (_duration > TimeSpan.Zero)
-            Transitions = new Transitions
-            {
-                new DoubleTransition { Property = LabelProgressProperty, Duration = _duration, Easing = _easing },
-                new DoubleTransition { Property = StrokeWidthProperty, Duration = _duration, Easing = _easing },
-                new BrushTransition { Property = StrokeBrushProperty, Duration = _duration, Easing = _easing }
-            };
+        if (Children.Count < 2) return;
+        var control = Children[1].GetVisualDescendants().OfType<Control>().FirstOrDefault(child => child.Name == name);
+        if (control is not null) control.Opacity = Math.Clamp(value, 0, 1);
     }
     private void ConfigureDecorationTransitions()
     {
-        if (!_decorationTransitionsDirty || Children.Count < 2) return;
-        _decorationTransitionsDirty = false;
+        if (Children.Count < 2) return;
         foreach (var control in Children[1].GetVisualDescendants().OfType<Control>().Where(control => control.Name is "Prefix" or "Suffix" or "PlaceholderHost"))
-        {
             control.Transitions = null;
-            if (_duration > TimeSpan.Zero)
-                control.Transitions = new Transitions { new DoubleTransition { Property = OpacityProperty, Duration = _duration, Easing = _easing } };
-        }
+        PaintOpacity("PlaceholderHost", _placeholderMotion.Value);
+        PaintOpacity("Prefix", _affixMotion.Value); PaintOpacity("Suffix", _affixMotion.Value);
     }
     private void ProjectLabel(double? arrangedHeight = null)
     {
@@ -200,12 +219,6 @@ internal sealed class MaterialTextFieldDecoration : Panel
         floating.RenderTransform = _floatTransform;
         _restTransform.Matrix = Matrix.CreateScale(size / resting.FontSize, size / resting.FontSize) * Matrix.CreateTranslation(0, y - resting.Bounds.Y);
         _floatTransform.Matrix = Matrix.CreateScale(size / floating.FontSize, size / floating.FontSize) * Matrix.CreateTranslation(0, y - floating.Bounds.Y);
-    }
-    private sealed class MotionObserver(Action<object?> update) : IObserver<object?>
-    {
-        public void OnNext(object? value) => update(value);
-        public void OnCompleted() { }
-        public void OnError(Exception error) { }
     }
 }
 
