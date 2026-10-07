@@ -16,6 +16,47 @@ namespace Avalonia.Material3.Tests;
 public class PatternedRippleScenarioTests
 {
     [AvaloniaTheory]
+    [InlineData(MaterialRippleStyle.Solid,"press")]
+    [InlineData(MaterialRippleStyle.Patterned,"press")]
+    [InlineData(MaterialRippleStyle.Solid,"hover")]
+    [InlineData(MaterialRippleStyle.Patterned,"hover")]
+    [InlineData(MaterialRippleStyle.Solid,"focus")]
+    [InlineData(MaterialRippleStyle.Patterned,"focus")]
+    public async Task Ripple_and_state_layers_replace_the_colour_input_alpha(MaterialRippleStyle style,string interaction)
+    {
+        async Task<Color> Paint(byte inputAlpha)
+        {
+            var button=new MaterialButton {Width=180,Height=48,Content="",Background=Brushes.White,Foreground=new SolidColorBrush(Color.FromArgb(inputAlpha,0,0,0))};
+            using var host=new GeometryHost(button,180,48);host.Theme.Motion=new MaterialMotion();host.Theme.RippleStyle=style;
+            host.Theme.States=new MaterialStates {HoverStateLayerOpacity=interaction=="hover"?.08:0,FocusStateLayerOpacity=interaction=="focus"?.10:0};host.Render();
+            if(interaction=="press") host.Window.MouseDown(new Point(40,24),MouseButton.Left);
+            else if(interaction=="hover") host.Window.MouseMove(new Point(40,24)); else button.Focus(NavigationMethod.Tab);
+            await Task.Delay(interaction=="press"?550:80);host.Render();var color=host.Pixel(90,24);
+            if(interaction=="press") host.Window.MouseUp(new Point(40,24),MouseButton.Left);
+            return color;
+        }
+        Assert.Equal(await Paint(255),await Paint(128));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialRippleStyle.Solid)]
+    [InlineData(MaterialRippleStyle.Patterned)]
+    public async Task Keyboard_focus_transfer_cancels_the_previous_owners_wave(MaterialRippleStyle style)
+    {
+        var first=new MaterialButton {Width=180,Height=48,Content="",Background=Brushes.White,Foreground=Brushes.Black};
+        var second=new MaterialButton {Content="Other"};
+        using var host=new GeometryHost(new StackPanel {Children={first,second}},240,144);
+        host.Theme.Motion=new MaterialMotion();host.Theme.RippleStyle=style;
+        host.Theme.States=new MaterialStates {HoverStateLayerOpacity=0,FocusStateLayerOpacity=0}; host.Render();
+        var center=first.TranslatePoint(new Point(90,24),host.Window)!.Value;
+        var rest=host.Pixel(center.X,center.Y); first.Focus(NavigationMethod.Tab);
+        host.Window.KeyPress(Key.Space,RawInputModifiers.None,PhysicalKey.Space," ");host.Render();
+        Assert.NotEqual(rest,host.Pixel(center.X,center.Y));
+        second.Focus(NavigationMethod.Tab);host.Window.KeyRelease(Key.Space,RawInputModifiers.None,PhysicalKey.Space," ");
+        await Task.Delay(950);host.Render();Assert.Equal(rest,host.Pixel(center.X,center.Y));
+    }
+
+    [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
     public async Task Native_patterned_press_paints_white_sparkles_and_a_soft_radial_wave(bool controlOverride)
@@ -65,9 +106,11 @@ public class PatternedRippleScenarioTests
     [AvaloniaTheory]
     [InlineData(MaterialRippleStyle.Solid)]
     [InlineData(MaterialRippleStyle.Patterned)]
-    public async Task Short_release_finishes_the_selected_recipe_and_preserves_its_shape_clip(MaterialRippleStyle style)
+    [InlineData(MaterialRippleStyle.Patterned, true)]
+    public async Task Short_release_finishes_the_selected_recipe_and_preserves_its_shape_clip(MaterialRippleStyle style, bool gradient = false)
     {
         var button = new MaterialButton { Width=180, Height=48, Content="", Background=Brushes.White, Foreground=Brushes.Black, CornerRadius=new(16) };
+        if(gradient) button.Foreground=new LinearGradientBrush {GradientStops={new GradientStop(Colors.Black,0),new GradientStop(Colors.Black,1)}};
         using var host=new GeometryHost(button,180,48);
         host.Theme.Motion=new MaterialMotion(); host.Theme.RippleStyle=style;
         host.Theme.States=new MaterialStates { HoverStateLayerOpacity=0, FocusStateLayerOpacity=0 };
@@ -84,7 +127,7 @@ public class PatternedRippleScenarioTests
             if(time-started.Value>=TimeSpan.FromMilliseconds(900)) done.TrySetResult(); else host.Window.RequestAnimationFrame(Sample);
         }
         host.Window.RequestAnimationFrame(Sample); host.Render(); await done.Task.WaitAsync(TimeSpan.FromSeconds(10));
-        if(style==MaterialRippleStyle.Patterned) Assert.Contains(samples,s=>s.Time is >=400 and <550 && s.Blue<254);
+        if(style==MaterialRippleStyle.Patterned && !gradient) Assert.Contains(samples,s=>s.Time is >=400 and <550 && s.Blue<254);
         else Assert.All(samples.Where(s=>s.Time>=400),s=>Assert.Equal(255,s.Blue));
         Assert.Equal(255,samples[^1].Blue); Assert.Equal(outside,host.Pixel(5,5));
     }
@@ -132,8 +175,10 @@ public class PatternedRippleScenarioTests
     {
         var button=new MaterialButton {Width=240,Height=48,Content="",Background=new SolidColorBrush(Color.Parse("#202020")),Foreground=Brushes.Red};
         using var host=new GeometryHost(button,240,48); host.Theme.Motion=new MaterialMotion(); host.Theme.RippleStyle=MaterialRippleStyle.Patterned; host.Render();
-        var face=button.GetVisualDescendants().OfType<Border>().Single(b=>b.Name=="Container");
-        var offset=GeometryHost.Box(face,host.Window).Left*2;
+        // Locate the face's physical origin from its painted fill at the horizontal centerline.
+        var rest=host.Offscreen(2); var offset=0;
+        while(offset<480 && rest[offset,48]==rest[0,48]) offset++;
+        Assert.InRange(offset,1,30);
         using var bitmap=new RenderTargetBitmap(new PixelSize(480,96),new Vector(192,192));
         using var pixels=new WriteableBitmap(new PixelSize(480,96),new Vector(192,192),PixelFormat.Bgra8888,AlphaFormat.Premul);
         var bestEdges=0; var bestAligned=0;
