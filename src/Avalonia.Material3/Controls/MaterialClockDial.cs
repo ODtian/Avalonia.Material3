@@ -44,6 +44,9 @@ public class MaterialClockDial : Panel
     private readonly DialPaint _paint;
     private readonly MaterialMotionValue _angle, _faceAlpha;
     private readonly MaterialMotionSettings _motion;
+    private readonly MaterialFrameLease _confirmationFrames;
+    private int? _confirmationValue;
+    private double? _confirmationHold;
     private RenderTargetBitmap? _oldFace;
     private bool _partTransition, _animateSelection, _capturingFace;
     public int Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
@@ -58,6 +61,7 @@ public class MaterialClockDial : Panel
     public MaterialClockDial()
     {
         _paint = new DialPaint(this) { IsHitTestVisible = false };
+        _confirmationFrames = MaterialRenderFrames.Bind(this, ConfirmSelection);
         _angle = new(this, -Math.PI / 2, _ =>
         {
             _paint.InvalidateVisual();
@@ -96,7 +100,7 @@ public class MaterialClockDial : Panel
             var number = ActivePart == MaterialTimePickerPart.Minute ? index * 5 : Is24Hour ? index : index == 0 ? 12 : index;
             var action = new MaterialClockNumber { Value = number, Content = number.ToString(ActivePart == MaterialTimePickerPart.Minute ? "00" : "0", Culture) };
             AutomationProperties.SetName(action, number.ToString(Culture) + " " + ValueLabel);
-            action.Click += (_, _) => { _animateSelection = true; ValueSelected?.Invoke(this, new(ActivePart, number, true)); UpdateAngle(true); _animateSelection = false; };
+            action.Click += (_, _) => CompleteNativeSelection(number);
             Children.Add(action);
         }
         UpdateSelection(); InvalidateMeasure();
@@ -138,10 +142,37 @@ public class MaterialClockDial : Panel
     {
         if (_motion is null || _angle is null) return;
         var target = TargetAngle;
-        while (target - _angle.Value > Math.PI) target -= 2 * Math.PI;
-        while (target - _angle.Value <= -Math.PI) target += 2 * Math.PI;
+        while (_angle.Value - target > Math.PI) target += 2 * Math.PI;
+        while (_angle.Value - target <= -Math.PI) target -= 2 * Math.PI;
         if (animate || _partTransition || _animateSelection) _angle.Spring(target, _motion.DefaultSpatial);
         else _angle.Snap(target);
+    }
+    private void CompleteNativeSelection(int value, bool tap = true)
+    {
+        CancelConfirmation();
+        var part = ActivePart;
+        _animateSelection = true;
+        try { ValueSelected?.Invoke(this, new(part, value, !tap || part != MaterialTimePickerPart.Hour)); UpdateAngle(true); }
+        finally { _animateSelection = false; }
+        if (tap && part == MaterialTimePickerPart.Hour && ActivePart == part)
+        {
+            _confirmationValue = value;
+            _confirmationFrames.Restart(); _confirmationFrames.SetRunning(true);
+        }
+    }
+    private bool ConfirmSelection(MaterialFrame frame)
+    {
+        if (_confirmationValue is not { } value || ActivePart != MaterialTimePickerPart.Hour) return false;
+        if (_angle.IsRunning) return true;
+        _confirmationHold ??= frame.Elapsed.TotalSeconds;
+        if (frame.Elapsed.TotalSeconds - _confirmationHold < .1) return true;
+        _confirmationValue = null; _confirmationHold = null;
+        ValueSelected?.Invoke(this, new(MaterialTimePickerPart.Hour, value, true));
+        return false;
+    }
+    private void CancelConfirmation()
+    {
+        _confirmationValue = null; _confirmationHold = null; _confirmationFrames.SetRunning(false);
     }
     private void CaptureFace()
     {
@@ -156,7 +187,8 @@ public class MaterialClockDial : Panel
     internal void SetSelection(MaterialTimePickerPart part, int value, string label)
     {
         _partTransition = part != ActivePart;
-        try { ActivePart = part; Value = value; ValueLabel = label; UpdateAngle(_partTransition || _animateSelection); }
+        var changed = _partTransition || value != Value;
+        try { ActivePart = part; Value = value; ValueLabel = label; if (changed) UpdateAngle(_partTransition || _animateSelection); }
         finally { _partTransition = false; }
     }
     protected override Size ArrangeOverride(Size finalSize)
@@ -202,6 +234,7 @@ public class MaterialClockDial : Panel
         // Native button mouse taps remain untouched; this is Avalonia's public gesture arbitration seam.
         e.PreventGestureRecognition();
         if (_pointer is not null || !IsEffectivelyEnabled || e.Pointer.Type == PointerType.Mouse && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
+        CancelConfirmation();
         _pointer = e.Pointer; _start = e.GetPosition(this); _beforeValue = Value; _beforePart = ActivePart;
         if (e.Pointer.Type != PointerType.Mouse || e.Source == this)
         {
@@ -235,10 +268,7 @@ public class MaterialClockDial : Panel
         _ending = false;
         if (dragged || isBackground)
         {
-            _animateSelection = true;
-            ValueSelected?.Invoke(this, new(ActivePart, FromPoint(e.GetPosition(this), !dragged), true));
-            UpdateAngle(true);
-            _animateSelection = false;
+            CompleteNativeSelection(FromPoint(e.GetPosition(this), !dragged), tap: !dragged);
             e.Handled = true;
         }
     }
@@ -260,15 +290,15 @@ public class MaterialClockDial : Panel
         ValueSelected?.Invoke(this, new(ActivePart, next, false));
         e.Handled = true;
     }
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { CancelDrag(); _oldFace?.Dispose(); _oldFace = null; base.OnDetachedFromVisualTree(e); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { CancelConfirmation(); CancelDrag(); _oldFace?.Dispose(); _oldFace = null; base.OnDetachedFromVisualTree(e); }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (!_ready) return;
-        if (change.Property == IsEnabledProperty && !IsEnabled) CancelDrag();
-        if (change.Property == ActivePartProperty) { CaptureFace(); CancelDrag(); Rebuild(); _faceAlpha.Snap(0); _faceAlpha.Spring(1, _motion.DefaultEffects); UpdateAngle(true); }
+        if (change.Property == IsEnabledProperty && !IsEnabled) { CancelConfirmation(); CancelDrag(); }
+        if (change.Property == ActivePartProperty) { CancelConfirmation(); CaptureFace(); CancelDrag(); Rebuild(); _faceAlpha.Snap(0); _faceAlpha.Spring(1, _motion.DefaultEffects); UpdateAngle(true); }
         else if (change.Property == Is24HourProperty || change.Property == CultureProperty) { CancelDrag(); Rebuild(); }
-        if (change.Property == ValueProperty) { UpdateSelection(); UpdateAngle(_partTransition || _animateSelection); }
+        if (change.Property == ValueProperty) { if (!_animateSelection) CancelConfirmation(); UpdateSelection(); UpdateAngle(_partTransition || _animateSelection); }
         else if (change.Property == ValueLabelProperty) UpdateSelection();
         if (change.Property == SelectorBrushProperty || change.Property == DialBrushProperty) _paint.InvalidateVisual();
         if (change.Property == TextBlock.FontSizeProperty)
