@@ -128,7 +128,7 @@ public class MaterialClockDial : Panel
         return new Size(256 * Scale, 256 * Scale);
     }
     internal Point SelectorCenter => AnimatedPosition;
-    internal double SelectorRadius => 24 * FontScale;
+    internal double SelectorRadius => 24 * Scale;
     private Point Position(int number)
     {
         var index = ActivePart == MaterialTimePickerPart.Minute ? number / 5d : number % 12;
@@ -217,7 +217,7 @@ public class MaterialClockDial : Panel
             var endpoint = AnimatedPosition;
             context.DrawLine(new Pen(SelectorBrush, 2), center, endpoint);
             context.DrawEllipse(SelectorBrush, null, center, 4 * FontScale, 4 * FontScale);
-            context.DrawEllipse(SelectorBrush, null, endpoint, 24 * FontScale, 24 * FontScale);
+            context.DrawEllipse(SelectorBrush, null, endpoint, 24 * Scale, 24 * Scale);
         }
         if (_oldFace is not null && _faceAlpha.Value < 1)
         {
