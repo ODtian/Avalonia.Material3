@@ -55,7 +55,14 @@ public class MaterialClockDial : Panel
     public CultureInfo Culture { get => GetValue(CultureProperty); set => SetValue(CultureProperty, value); }
     public IBrush? SelectorBrush { get => GetValue(SelectorBrushProperty); set => SetValue(SelectorBrushProperty, value); }
     public IBrush? DialBrush { get => GetValue(DialBrushProperty); set => SetValue(DialBrushProperty, value); }
-    private double Scale => Math.Max(1, GetValue(TextBlock.FontSizeProperty) / 16);
+    private double _diameter=256;
+    private double FontScale => Math.Max(1,GetValue(TextBlock.FontSizeProperty)/16);
+    private double Scale => FontScale*_diameter/256;
+    internal void SetDiameter(double diameter)
+    {
+        if(_diameter==diameter)return;
+        _diameter=diameter;Width=Height=256*Scale;InvalidateMeasure();InvalidateArrange();_paint.InvalidateVisual();
+    }
     public string ValueLabel { get => GetValue(ValueLabelProperty); set => SetValue(ValueLabelProperty, value); }
     public event EventHandler<MaterialClockSelectionEventArgs>? ValueSelected;
     public MaterialClockDial()
@@ -117,11 +124,11 @@ public class MaterialClockDial : Panel
     }
     protected override Size MeasureOverride(Size availableSize)
     {
-        foreach (var number in Children) number.Measure(new Size(48 * Scale, 48 * Scale));
+        foreach (var number in Children) number.Measure(new Size(48 * FontScale, 48 * FontScale));
         return new Size(256 * Scale, 256 * Scale);
     }
     internal Point SelectorCenter => AnimatedPosition;
-    internal double SelectorRadius => 24 * Scale;
+    internal double SelectorRadius => 24 * FontScale;
     private Point Position(int number)
     {
         var index = ActivePart == MaterialTimePickerPart.Minute ? number / 5d : number % 12;
@@ -197,7 +204,7 @@ public class MaterialClockDial : Panel
         foreach (var number in Children.OfType<MaterialClockNumber>())
         {
             var center = Position(number.Value);
-            number.Arrange(new Rect(center.X - 24 * Scale, center.Y - 24 * Scale, 48 * Scale, 48 * Scale));
+            number.Arrange(new Rect(center.X - 24 * FontScale, center.Y - 24 * FontScale, 48 * FontScale, 48 * FontScale));
         }
         return finalSize;
     }
@@ -209,8 +216,8 @@ public class MaterialClockDial : Panel
             context.DrawEllipse(DialBrush, null, center, 128 * Scale, 128 * Scale);
             var endpoint = AnimatedPosition;
             context.DrawLine(new Pen(SelectorBrush, 2), center, endpoint);
-            context.DrawEllipse(SelectorBrush, null, center, 4 * Scale, 4 * Scale);
-            context.DrawEllipse(SelectorBrush, null, endpoint, 24 * Scale, 24 * Scale);
+            context.DrawEllipse(SelectorBrush, null, center, 4 * FontScale, 4 * FontScale);
+            context.DrawEllipse(SelectorBrush, null, endpoint, 24 * FontScale, 24 * FontScale);
         }
         if (_oldFace is not null && _faceAlpha.Value < 1)
         {

@@ -103,11 +103,7 @@
                              HorizontalAlignment="Center" VerticalAlignment="Center" />
             </ScrollViewer>
           </Border>
-          <TextBlock Text="{TemplateBinding Label}" TextWrapping="Wrap" Foreground="{DynamicResource M3.OnSurfaceVariantBrush}"
-                     FontFamily="{DynamicResource M3.BodySmallFontFamily}" FontSize="{DynamicResource M3.BodySmallFontSize}"
-                     FontWeight="{DynamicResource M3.BodySmallFontWeight}" LineHeight="{DynamicResource M3.BodySmallLineHeight}"
-                     LetterSpacing="{DynamicResource M3.BodySmallLetterSpacing}" />
-          <TextBlock Text="{TemplateBinding EffectiveSupportingText}" TextWrapping="Wrap" Foreground="{DynamicResource M3.ErrorBrush}"
+          <c:MaterialTimeSupportingText Owner="{Binding RelativeSource={RelativeSource TemplatedParent}}" TextWrapping="Wrap"
                      FontFamily="{DynamicResource M3.BodySmallFontFamily}" FontSize="{DynamicResource M3.BodySmallFontSize}"
                      FontWeight="{DynamicResource M3.BodySmallFontWeight}" LineHeight="{DynamicResource M3.BodySmallLineHeight}"
                      LetterSpacing="{DynamicResource M3.BodySmallLetterSpacing}" />
