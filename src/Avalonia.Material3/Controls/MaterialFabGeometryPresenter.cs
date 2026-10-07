@@ -1,5 +1,8 @@
 using Avalonia.Controls;
 using Avalonia.Material3.Tokens;
+using Avalonia.Media;
+using Avalonia.Controls.Presenters;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
 
@@ -30,6 +33,9 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     private double _fromIcon;
     private double _extentVelocity, _iconVelocity, _fromExtentVelocity, _fromIconVelocity;
     private bool _attached;
+    private MaterialExpansionButton? _toggle;
+    private MaterialShapeBorder? _container;
+    private ContentPresenter? _icon;
     protected override Type StyleKeyOverride => typeof(Decorator);
     public MaterialFabGeometryPresenter()
     {
@@ -40,13 +46,38 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
     {
         base.OnAttachedToVisualTree(e);
         _attached = true;
+        _toggle = this.GetVisualAncestors().OfType<MaterialExpansionButton>().FirstOrDefault();
+        if (_toggle is not null) _toggle.PropertyChanged += ToggleChanged;
+        _container = this.GetVisualDescendants().OfType<MaterialShapeBorder>().FirstOrDefault(c => c.Name == "Container");
+        _icon = this.GetVisualDescendants().OfType<ContentPresenter>().FirstOrDefault(c => c.Name == "PART_ContentPresenter");
         Snap();
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _attached = false;
+        if (_toggle is not null) _toggle.PropertyChanged -= ToggleChanged;
+        _toggle = null; _container = null; _icon = null;
         Stop();
         base.OnDetachedFromVisualTree(e);
+    }
+    private void ToggleChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
+    {
+        if (change.Property == MaterialFab.BackgroundProperty || change.Property == MaterialFab.ForegroundProperty
+            || change.Property == MaterialExpansionButton.IsExpandedProperty || change.Property == MaterialFab.SizeProperty) PaintToggle();
+    }
+    private void PaintToggle()
+    {
+        if (_toggle is not { Expansion: MaterialFabMenu } toggle || _container is null) return;
+        var closedIcon = toggle.ClosedIconSize;
+        var progress = closedIcon == 20 ? toggle.IsExpanded ? 1 : 0 : (closedIcon - IconExtent) / (closedIcon - 20);
+        IBrush? Role(string name) => this.TryFindResource("M3." + name + "Brush", ActualThemeVariant, out var resource) ? resource as IBrush : null;
+        _container.SetCurrentValue(Border.BackgroundProperty, MaterialMotionBrush.Interpolate(Role("PrimaryContainer"), Role("Primary"), progress));
+        _icon?.SetCurrentValue(ContentPresenter.ForegroundProperty, MaterialMotionBrush.Interpolate(Role("OnPrimaryContainer"), Role("OnPrimary"), progress));
+        // Size/icon/shape and colors share the same normalized FastSpatial response.
+        var closedCorner = toggle.PresentedSize switch { MaterialFabSize.Small => 12d, MaterialFabSize.Medium => 20d,
+            MaterialFabSize.Large => 28d, _ => 16d };
+        _container.ShapeSpring = Spring with { IsInstant = true };
+        _container.ShapeCornerRadius = new CornerRadius(Math.Max(0, closedCorner + (28 - closedCorner) * progress));
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs e)
     {
@@ -77,6 +108,7 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
         _extentVelocity = _iconVelocity = 0;
         SetAndRaise(ExtentProperty, ref _extent, _toExtent);
         SetAndRaise(IconExtentProperty, ref _iconExtent, _toIcon);
+        PaintToggle();
     }
     private void Stop() => _frames?.SetRunning(false);
     private bool Advance(MaterialFrame frame)
@@ -91,6 +123,7 @@ internal sealed class MaterialFabGeometryPresenter : Decorator
         { Complete(); return false; }
         SetAndRaise(ExtentProperty, ref _extent, extent);
         SetAndRaise(IconExtentProperty, ref _iconExtent, icon);
+        PaintToggle();
         return true;
     }
 }
