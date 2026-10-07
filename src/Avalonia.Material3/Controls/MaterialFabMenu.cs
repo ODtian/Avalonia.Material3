@@ -37,7 +37,7 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
     public string ExpandLabel { get => GetValue(ExpandLabelProperty); set => SetValue(ExpandLabelProperty, value); }
     public string CollapseLabel { get => GetValue(CollapseLabelProperty); set => SetValue(CollapseLabelProperty, value); }
     private MaterialExpansionButton? _toggle;
-    private MaterialActionReveal? _reveal;
+    private IMaterialActionDisclosure? _reveal;
     private TopLevel? _topLevel;
     private bool _restoreFocus = true;
     Control IMaterialExpansion.ExpansionControl => this;
@@ -60,7 +60,7 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
         if (_toggle is not null) { _toggle.Click -= ToggleClicked; _toggle.Expansion = null; }
         if (_reveal is not null) _reveal.Settled -= RevealSettled;
         base.OnApplyTemplate(e);
-        _reveal = e.NameScope.Find<MaterialActionReveal>("MenuReveal");
+        _reveal = e.NameScope.Find<Control>("MenuReveal") as IMaterialActionDisclosure;
         if (_reveal is not null) _reveal.Settled += RevealSettled;
         _toggle = e.NameScope.Find<MaterialExpansionButton>("PART_Toggle");
         if (_toggle is not null) { _toggle.Expansion = this; _toggle.Click += ToggleClicked; }

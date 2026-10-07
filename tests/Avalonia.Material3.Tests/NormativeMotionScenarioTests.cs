@@ -15,6 +15,103 @@ namespace Avalonia.Material3.Tests;
 public class NormativeMotionScenarioTests
 {
     [AvaloniaFact]
+    public async Task Side_sheet_open_uses_the_pinned_ViewDragHelper_quintic_settle_recipe()
+    {
+        using var host = new ButtonHost(); host.Window.Width = 400; host.Window.Height = 500;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, 1) } };
+        var overlay = new MaterialOverlayHost { Content = new Border() };
+        host.Window.Content = overlay; host.Capture();
+        var sheet = new MaterialSideSheet { ExpandedExtent = 320, Content = "Details" };
+        sheet.Show(overlay); host.Capture();
+        await Task.Delay(150); host.Capture();
+        Assert.InRange(sheet.TranslatePoint(default, host.Window)!.Value.X, 80, 260);
+    }
+
+    [AvaloniaFact]
+    public void Standard_circular_progress_uses_the_pinned_linear_first_half_and_keeps_its_track_visible()
+    {
+        using var host = new ButtonHost(); host.Theme.Motion = new MaterialMotion();
+        var progress = new MaterialCircularProgressIndicator { IsIndeterminate = true, AnimationTime = TimeSpan.Zero };
+        host.Window.Content = progress; host.Capture();
+        progress.AnimationTime = TimeSpan.FromMilliseconds(1500); host.Capture();
+        var point = progress.TranslatePoint(new Point(7.3, 7.3), host.Window)!.Value;
+        Assert.Equal(((ISolidColorBrush)progress.TrackBrush!).Color, host.PixelAt(point));
+    }
+
+    [AvaloniaFact]
+    public async Task Programmatic_bottom_sheet_collapse_uses_fast_effects_after_a_spatial_expansion()
+    {
+        using var host = new ButtonHost(); host.Window.Height = 500;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, 1), FastEffects = new(1, 3800) { IsInstant = true } } };
+        var sheet = new MaterialBottomSheet { ExpandedExtent = 300 };
+        host.Window.Content = new MaterialSheetHost { Content = new Border(), Sheet = sheet }; host.Capture();
+        sheet.Expand(); host.Capture(); await Task.Delay(150); host.Capture();
+        Assert.InRange(sheet.VisibleExtent, 56.1, 150);
+        sheet.Collapse(); host.Capture();
+        Assert.Equal(56, sheet.VisibleExtent);
+    }
+
+    [AvaloniaFact]
+    public async Task Floating_action_menu_staggers_real_item_paint_and_hits_from_the_trigger_outward()
+    {
+        using var host = new ButtonHost(); host.Window.Width = 500; host.Window.Height = 500;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { SlowEffects = new(1, 50) } };
+        var menu = new MaterialFabMenu();
+        for (var i = 0; i < 4; i++) menu.Items.Add(new MaterialFabMenuItem { Content = "Create document " + i });
+        host.Window.Content = new Grid { Children = { menu } }; host.Capture();
+        menu.IsExpanded = true; host.Capture();
+        await Task.Delay(120); host.Capture();
+        var first = menu.Items[0]; var last = menu.Items[^1];
+        var early = first.TranslatePoint(new Point(first.Bounds.Width / 2, first.Bounds.Height / 2), host.Window)!.Value;
+        var late = last.TranslatePoint(new Point(last.Bounds.Width - 18, last.Bounds.Height / 2), host.Window)!.Value;
+        var earlyHit = host.Window.InputHitTest(early) as Visual;
+        var lateHit = host.Window.InputHitTest(late) as Visual;
+        Assert.False(earlyHit == first || earlyHit is not null && first.IsVisualAncestorOf(earlyHit));
+        Assert.True(lateHit == last || lateHit is not null && last.IsVisualAncestorOf(lateHit));
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true }; host.Capture();
+        early = first.TranslatePoint(new Point(first.Bounds.Width / 2, first.Bounds.Height / 2), host.Window)!.Value;
+        earlyHit = host.Window.InputHitTest(early) as Visual;
+        Assert.True(earlyHit == first || earlyHit is not null && first.IsVisualAncestorOf(earlyHit));
+        menu.IsExpanded = false;
+        Assert.False(first.IsEffectivelyEnabled);
+    }
+
+    [AvaloniaFact]
+    public async Task Whole_toolbar_preserves_the_full_reference_slot_and_FAB_edge_during_dense_reversals()
+    {
+        using var host = new ButtonHost(); host.Window.Width = 600;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { FastSpatial = new(1, 50) } };
+        var fab = new MaterialFab { Content = new MaterialSymbol { Symbol = "add" } };
+        var toolbar = new MaterialToolbar { FloatingAction = fab, CollapseBehavior = MaterialToolbarCollapseBehavior.WholeToolbar };
+        toolbar.Items.Add(new MaterialIconButton { Content = new MaterialSymbol { Symbol = "home" } });
+        host.Window.Content = new Grid { Children = { toolbar } }; host.Capture();
+        var size = toolbar.Bounds.Size;
+        var edge = fab.TranslatePoint(new Point(fab.Bounds.Width, fab.Bounds.Height / 2), host.Window)!.Value;
+        toolbar.IsExpanded = false;
+        for (var frame = 0; frame < 30; frame++)
+        {
+            await Task.Delay(8); host.Capture();
+            Assert.Equal(size, toolbar.Bounds.Size);
+            var next = fab.TranslatePoint(new Point(fab.Bounds.Width, fab.Bounds.Height / 2), host.Window)!.Value;
+            Assert.Equal(edge.X, next.X, 4); Assert.Equal(edge.Y, next.Y, 4);
+            if (frame == 10) toolbar.IsExpanded = true;
+            if (frame == 20) toolbar.IsExpanded = false;
+        }
+    }
+
+    [AvaloniaFact]
+    public void Ordinary_floating_action_size_configuration_uses_the_reference_immediate_geometry()
+    {
+        using var host = new ButtonHost();
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { FastSpatial = new(1, 50) } };
+        var fab = new MaterialFab { Content = new MaterialSymbol { Symbol = "add" } };
+        host.Window.Content = new StackPanel { Children = { fab } }; host.Capture();
+        fab.Size = MaterialFabSize.Medium; host.Capture();
+        Assert.Equal(90, fab.Bounds.Width);
+        Assert.Equal(90, fab.Bounds.Height);
+    }
+
+    [AvaloniaFact]
     public async Task Modal_sheet_slides_on_open_and_preserves_its_painted_pose_when_the_session_closes()
     {
         using var host = new ButtonHost();

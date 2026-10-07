@@ -155,9 +155,9 @@ public class FloatingActionScenarioTests
         menu.IsExpanded = true;
         await Task.Delay(110);
         host.Capture();
-        Assert.InRange(menu.Bounds.Height, 70, 230);
+        Assert.InRange(menu.Bounds.Height, 70, 280); // The pinned column reserves every row once its first item paints.
         var nearest = menu.Items[^1];
-        var center = nearest.TranslatePoint(new Point(nearest.Bounds.Width / 2, nearest.Bounds.Height / 2), host.Window)!.Value;
+        var center = nearest.TranslatePoint(new Point(nearest.Bounds.Width - 18, nearest.Bounds.Height / 2), host.Window)!.Value;
         Assert.True(center.Y >= menu.TranslatePoint(default, host.Window)!.Value.Y);
         Assert.True(center.Y <= host.Window.Height);
         var hit = host.Window.InputHitTest(center) as Visual;

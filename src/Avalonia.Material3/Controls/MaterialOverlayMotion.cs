@@ -68,7 +68,15 @@ internal sealed class MaterialOverlayMotion : IDisposable
                 1 / Math.Max(1, _layer.Container.Bounds.Width > 0 ? _layer.Container.Bounds.Width : _drawerWidth));
         else if (_recipe == Recipe.Sheet)
         {
-            _offset.Spring(_exiting ? 1 : 0, _exiting ? _settings.FastEffects : _settings.DefaultSpatial);
+            if (_sheet?.IsSideSheet == true)
+            {
+                var distance = SideDistance;
+                var duration = _settings.DefaultSpatial.IsInstant ? TimeSpan.Zero
+                    : MaterialSideSheetMotion.Duration(((_exiting ? 1 : 0) - _offset.Value) * distance, distance, _layer.Bounds.Width);
+                _offset.Tween(_exiting ? 1 : 0, duration, MaterialSideSheetMotion.Easing);
+            }
+            else _offset.Spring(_exiting ? 1 : 0, _exiting ? _settings.FastEffects : _settings.DefaultSpatial,
+                1 / Math.Max(1, _layer.Container.Bounds.Height));
             _scrim.Spring(_exiting ? 0 : 1, _settings.DefaultEffects);
         }
         else
@@ -95,7 +103,7 @@ internal sealed class MaterialOverlayMotion : IDisposable
             {
                 var atStart = _layer.Options.Placement == MaterialOverlayPlacement.Start;
                 var sign = atStart != _rtl ? -1 : 1;
-                _translation.X = offset * _layer.Container.Bounds.Width * sign;
+                _translation.X = offset * SideDistance * sign;
             }
             else _translation.Y = offset * _layer.Container.Bounds.Height;
         }
@@ -107,6 +115,8 @@ internal sealed class MaterialOverlayMotion : IDisposable
             _layer.Scrim.Opacity = _layer.Options.ShowScrim ? _layer.Options.ScrimOpacity * Math.Clamp(1 + value, 0, 1) : 0;
         }
     }
+    private double SideDistance => _layer.Options.Placement == MaterialOverlayPlacement.Start != _rtl
+        ? _layer.Container.Bounds.Right : _layer.Bounds.Width - _layer.Container.Bounds.Left;
     internal void UpdateGeometry()
     {
         PaintOffset(_offset.Value);

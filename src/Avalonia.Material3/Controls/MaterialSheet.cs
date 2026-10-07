@@ -8,6 +8,8 @@ using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Templates;
 using Avalonia.Automation.Peers;
 using Avalonia.Material3.Tokens;
+using Avalonia.Diagnostics;
+using Avalonia.Data;
 
 namespace Avalonia.Material3.Controls;
 
@@ -99,6 +101,12 @@ public abstract class MaterialSheet : ContentControl
     private readonly MaterialFrameLease _frames;
     private MaterialSpring _activeSpring = MaterialSpringScheme.Expressive.DefaultSpatial;
     private double _motionFrom, _motionTo, _motionExtent;
+    private double _motionVelocity, _initialMotionVelocity;
+    private bool _gestureSettlement;
+    private double _gestureExtent, _gestureVelocity;
+    private double _sideDuration;
+    private bool _sideRecipe;
+    private readonly MaterialMotionSettings _motionSettings;
     private bool _hasNatural, _detentsPartial, _detentsHidden;
     private double _naturalWidth, _naturalHeight;
     private Window? _window;
@@ -117,6 +125,7 @@ public abstract class MaterialSheet : ContentControl
         AddHandler(PointerMovedEvent, HandlePointerMoved, RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(PointerReleasedEvent, HandlePointerReleased, RoutingStrategies.Tunnel, handledEventsToo: true);
         _frames = MaterialRenderFrames.Bind(this, AdvanceMotion);
+        _motionSettings = new(this, () => { if (IsSettling) StartMotion(); });
     }
     protected virtual bool IsSide => false;
     public MaterialOverlaySession? Session { get; private set; }
@@ -366,10 +375,15 @@ public abstract class MaterialSheet : ContentControl
         var threshold = IsSide ? _expanded / 2 : DragThreshold;
         if (dragging && (Math.Abs(movement) >= threshold || Math.Abs(velocity) >= VelocityThreshold))
         {
+            _gestureSettlement = true; _gestureExtent = _dragExtent; _gestureVelocity = -velocity;
+            try
+            {
             if (Math.Abs(movement) < threshold) movement = velocity;
             if (movement < 0) Expand();
             else if (!IsSide && State == MaterialSheetState.Expanded && IsPartialEnabled) Collapse();
             else Dismiss();
+            }
+            finally { _gestureSettlement = false; }
         }
         else if (!dragging && !bodyGesture && handle is not null && new Rect(handle.Bounds.Size).Contains(e.GetPosition(handle)))
         {
@@ -420,10 +434,18 @@ public abstract class MaterialSheet : ContentControl
         if (wasSettling) _frames.Sample();
         var from = wasSettling ? _motionExtent : VisibleExtent;
         StopMotion();
-        if (SpatialSpring.IsInstant || TopLevel.GetTopLevel(this) is null || _available <= 0 || State == MaterialSheetState.Hidden) return;
+        var supplied = this.GetDiagnostic(SpatialSpringProperty).Priority <= BindingPriority.LocalValue;
+        _activeSpring = !IsSide && !_gestureSettlement && State != MaterialSheetState.Expanded && !supplied
+            ? _motionSettings.FastEffects : SpatialSpring;
+        if (_activeSpring.IsInstant || TopLevel.GetTopLevel(this) is null || _available <= 0)
+        { _motionVelocity = 0; return; }
+        if (_gestureSettlement) from = _gestureExtent;
         _motionFrom = _motionExtent = from;
         _motionTo = StateExtent;
-        _activeSpring = SpatialSpring;
+        _initialMotionVelocity = _gestureSettlement ? _gestureVelocity : wasSettling ? _motionVelocity : 0;
+        _sideRecipe = IsSide && !supplied;
+        _sideDuration = MaterialSideSheetMotion.Duration(_motionTo - _motionFrom, _expanded + (IsDetached ? 16 : 0), _available,
+            _gestureSettlement ? _gestureVelocity : 0).TotalSeconds;
         if (Math.Abs(_motionFrom - _motionTo) < 0.1) return;
         SetAndRaise(IsSettlingProperty, ref _isSettling, true);
         _frames.Restart(); _frames.SetRunning(true);
@@ -437,12 +459,15 @@ public abstract class MaterialSheet : ContentControl
     private bool AdvanceMotion(MaterialFrame frame)
     {
         var seconds = frame.Elapsed.TotalSeconds;
-        var fraction = MaterialSpringResponse.Evaluate(seconds, _activeSpring);
-        var next = Math.Clamp(_motionFrom + (_motionTo - _motionFrom) * fraction, 0, _expanded);
-        var speed = frame.Delta.TotalSeconds > 0 ? Math.Abs(next - _motionExtent) / frame.Delta.TotalSeconds : double.PositiveInfinity;
-        var settled = !double.IsFinite(fraction) || seconds >= 10 || seconds > .1 && Math.Abs(next - _motionTo) < .1 && speed < 1;
+        var sample = _sideRecipe
+            ? (_motionFrom + (_motionTo - _motionFrom) * MaterialSideSheetMotion.Easing.Ease(_sideDuration <= 0 ? 1 : Math.Clamp(seconds / _sideDuration, 0, 1)), 0d)
+            : MaterialSpringResponse.Sample(seconds, _motionFrom, _motionTo, _initialMotionVelocity, _activeSpring);
+        var value = sample.Item1; var velocity = sample.Item2;
+        _motionVelocity = velocity;
+        var next = Math.Clamp(value, 0, _expanded);
+        var settled = !double.IsFinite(next) || seconds >= 10 || (_sideRecipe ? seconds >= _sideDuration : Math.Abs(value - _motionTo) < 1 && Math.Abs(velocity) < 62.5);
         _motionExtent = settled ? _motionTo : next;
-        if (settled) StopMotion();
+        if (settled) { _motionVelocity = 0; StopMotion(); }
         InvalidateMeasure();
         return !settled;
     }
