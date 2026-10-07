@@ -20,6 +20,7 @@
   <themes:ContentRoleTemplate x:Key="M3.Dialog.Body" Role="BodyMedium" />
   <themes:ContentRoleTemplate x:Key="M3.Dialog.FullScreenBody" Role="BodyLarge" />
   <ControlTheme x:Key="{x:Type controls:MaterialDialog}" TargetType="controls:MaterialDialog">
+    <Style Selector="^:time-picker"><Setter Property="Template"><controls:MaterialTimeDialogTemplate /></Setter></Style>
     <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />

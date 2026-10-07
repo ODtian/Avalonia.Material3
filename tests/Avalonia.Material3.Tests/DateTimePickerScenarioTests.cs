@@ -2,6 +2,7 @@ using System.Globalization;
 using Avalonia.Automation.Peers;
 using Avalonia.Automation.Provider;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -17,6 +18,21 @@ namespace Avalonia.Material3.Tests;
 
 public class DateTimePickerScenarioTests
 {
+    [AvaloniaFact]
+    public void Time_dialog_accepts_a_consumer_control_theme_template()
+    {
+        using var host = new DialogHost();
+        var picker = new MaterialTimePicker { SelectedTime = new(7,7) };
+        var session = picker.Show(host.Overlay); host.Render();
+        session.Content.Theme = new ControlTheme(typeof(MaterialDialog))
+        {
+            Setters = { new Setter(TemplatedControl.TemplateProperty,new FuncControlTemplate<MaterialDialog>((owner,_)=>
+                new StackPanel {Children={new TextBlock {Text="Consumer time surface"},new ContentPresenter {Content=owner.Content}}})) }
+        };
+        host.Render();
+        Assert.Single(session.Content.GetVisualDescendants().OfType<TextBlock>(),t=>t.IsEffectivelyVisible&&t.Text=="Consumer time surface");
+        Assert.True(picker.Cancel());
+    }
     [AvaloniaFact]
     public void Time_dialog_default_title_reserves_its_gap_and_tracks_mode_while_custom_title_wins()
     {
