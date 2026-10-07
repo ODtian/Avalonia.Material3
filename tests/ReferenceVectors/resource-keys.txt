@@ -237,6 +237,7 @@ M3.PrimaryFixedColor
 M3.PrimaryFixedDimBrush
 M3.PrimaryFixedDimColor
 M3.ReduceMotion
+M3.RippleStyle
 M3.ScrimBrush
 M3.ScrimColor
 M3.SecondaryBrush

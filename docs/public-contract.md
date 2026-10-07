@@ -22,6 +22,10 @@
 
 preview.3 新增独立于文档字阶的真实 `MaterialSymbol` 图标 Module，捆绑锁定 Google Material Symbols Rounded 的 FILL0/FILL1 资产及 Apache-2.0 许可；[图标消费契约](components/m3-symbols.md)。Gallery 自身另以 OFL 许可捆绑静态 Roboto/Noto Sans SC 演示字体，但不覆盖消费方 Typography、不安装系统字体；字体尺度不冒充物理 DPI。
 
+preview.5 增加两种官方 ripple 配方：`MaterialRippleStyle.Solid` 为 CommonRipple 的75/225/150ms透明纯色圆，`Patterned` 为 Android35 的450ms进入、释放后375ms退出，包含径向软边与白色程序闪点。`MaterialTheme.RippleStyle` 选择主题配方，桌面初值为Solid、Android初值为Patterned。`MaterialRipple.SetStyle(control, style)` 可设置继承至子控件的可空覆盖；传入null恢复主题选择。切换配方清理正在显示的旧波纹；hover/focus/drag保留各自独立state layer。
+
+Patterned通过Avalonia.Skia的typed绘制lease运行完整锁定AOSP shader，按实际像素密度使用2.1物理像素noise grid；其他绘制backend使用同一shader的CPU raster路径。Avalonia.Skia12.1.3进入库的依赖闭包。Shader作为程序集内嵌资产发布，原生AOT使用静态typed SkiaSharp接口。Gallery的“Ripple”按钮切换两种配方。
+
 ## 完整组件契约
 
 组件命名空间 `Avalonia.Material3.Controls`，令牌 `Avalonia.Material3.Tokens`，主题 `Avalonia.Material3.Themes`。公开属性/插槽、状态、输入/自动化语义、模板部件与明确投影详见：
