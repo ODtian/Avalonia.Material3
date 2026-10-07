@@ -13,8 +13,9 @@ public sealed class MaterialCarouselPresenter : Panel
     public static readonly StyledProperty<MaterialCarousel?> CarouselProperty = AvaloniaProperty.Register<MaterialCarouselPresenter, MaterialCarousel?>(nameof(Carousel));
     public MaterialCarousel? Carousel { get => GetValue(CarouselProperty); set => SetValue(CarouselProperty, value); }
     private MaterialCarousel? _listening;
-    private Rect[] _start = [], _next = [], _from = [], _presented = [], _measurePlan = [];
-    private double[] _widths = [];
+    private Rect[] _start = [], _from = [], _presented = [], _measurePlan = [];
+    private MaterialCarouselStrategy? _strategy;
+    private (MaterialCarouselLayout Layout, Size Size, double Preferred, double Gap, int Count) _strategyInputs;
     private Size _planSize;
     private int _planIndex = -1;
     private bool _planDirty = true, _havePresented, _modeSnapshot, _forceArrange = true;
@@ -83,8 +84,8 @@ public sealed class MaterialCarouselPresenter : Panel
     private void Buffers(int count)
     {
         if (_start.Length == count) return;
-        _start = new Rect[count]; _next = new Rect[count]; _from = new Rect[count];
-        _presented = new Rect[count]; _measurePlan = new Rect[count]; _widths = new double[count];
+        _start = new Rect[count]; _from = new Rect[count];
+        _presented = new Rect[count]; _measurePlan = new Rect[count];
         _havePresented = _modeSnapshot = false;
         _planDirty = _forceArrange = true;
     }
@@ -177,8 +178,7 @@ public sealed class MaterialCarouselPresenter : Panel
         if (_planDirty || _planSize != size)
         {
             FillPositions(size, 0, _measurePlan);
-            _contentWidth = 0;
-            for (var i = 0; i < _measurePlan.Length; i++) _contentWidth = Math.Max(_contentWidth, _measurePlan[i].Width);
+            _contentWidth = owner.Layout == MaterialCarouselLayout.FullScreen ? size.Width : _strategy!.ItemWidth;
         }
         var measureWidth = _modeSnapshot ? Math.Max(_fromContentWidth, _contentWidth) : _contentWidth;
         foreach (var child in Children)
@@ -194,20 +194,14 @@ public sealed class MaterialCarouselPresenter : Panel
         if (Carousel is not { } owner || Children.Count == 0) return finalSize;
         if (owner.ItemList.Count == 0) { Children[0].Arrange(new Rect(finalSize)); return finalSize; }
         var position = Math.Clamp(owner.PresentationPosition, 0, Children.Count - 1);
-        var index = (int)Math.Floor(position);
-        if (_planDirty || _planIndex != index || _planSize != finalSize)
-        {
-            FillPositions(finalSize, index, _start);
-            FillPositions(finalSize, Math.Min(index + 1, Children.Count - 1), _next);
-            _planIndex = index; _planSize = finalSize; _planDirty = false;
-        }
-        var fraction = position - index;
+        FillPositions(finalSize, position, _start);
+        _planIndex = (int)Math.Floor(position); _planSize = finalSize; _planDirty = false;
         var mode = _modeSnapshot ? owner.LayoutProgress : 1;
         var contentWidth = _modeSnapshot ? _fromContentWidth + (_contentWidth - _fromContentWidth) * mode : _contentWidth;
         var completing = _modeSnapshot && mode >= 1;
         for (var i = 0; i < Children.Count; i++)
         {
-            var rect = Mix(_start[i], _next[i], fraction);
+            var rect = _start[i];
             if (_modeSnapshot) rect = Mix(_from[i], rect, mode);
             var previous = _presented[i];
             _presented[i] = rect;
@@ -229,58 +223,25 @@ public sealed class MaterialCarouselPresenter : Panel
     private static Rect Mix(Rect from, Rect to, double t) => new(from.X + (to.X - from.X) * t, from.Y + (to.Y - from.Y) * t,
         from.Width + (to.Width - from.Width) * t, from.Height + (to.Height - from.Height) * t);
 
-    private void FillPositions(Size size, int index, Rect[] result)
+    private void FillPositions(Size size, double position, Rect[] result)
     {
         var owner = Carousel!;
         var count = result.Length;
-        var width = size.Width; var height = size.Height; var gap = owner.ItemSpacing;
+        var width = size.Width; var height = size.Height;
         if (owner.Layout == MaterialCarouselLayout.FullScreen)
         {
-            for (var i = 0; i < count; i++) result[i] = new Rect(0, (i - index) * height, width, height);
+            owner.ItemStride = height;
+            for (var i = 0; i < count; i++) result[i] = new Rect(0, (i - position) * height, width, height);
             return;
         }
-        if (owner.Layout == MaterialCarouselLayout.Uncontained)
+        var inputs = (owner.Layout, size, owner.PreferredItemWidth, owner.ItemSpacing, count);
+        if (_strategy is null || inputs != _strategyInputs)
         {
-            var itemWidth = Math.Min(owner.PreferredItemWidth, width);
-            var offset = Math.Min(index * (itemWidth + gap), Math.Max(0, count * (itemWidth + gap) - gap - width));
-            for (var i = 0; i < count; i++) result[i] = new Rect(i * (itemWidth + gap) - offset, 0, itemWidth, height);
-            return;
+            _strategy = MaterialCarouselStrategy.Create(owner.Layout, width, owner.PreferredItemWidth, owner.ItemSpacing, count);
+            _strategyInputs = inputs;
         }
-        int visible;
-        if (width < 128 || count == 1) { visible = 1; _widths[0] = width; }
-        else if (owner.Layout == MaterialCarouselLayout.Hero)
-        {
-            var sides = Math.Min(count - 1, index > 0 && index < count - 1 ? 2 : 1);
-            var large = Math.Max(48, width - sides * (48 + gap));
-            visible = sides + 1;
-            if (sides == 2) { _widths[0] = 48; _widths[1] = large; _widths[2] = 48; }
-            else if (index == count - 1) { _widths[0] = 48; _widths[1] = large; }
-            else { _widths[0] = large; _widths[1] = 48; }
-        }
-        else
-        {
-            var largeCount = Math.Min(count, Math.Max(1, (int)Math.Floor((width - 48 - gap) / (owner.PreferredItemWidth + gap))));
-            var smallCount = Math.Min(2, count - largeCount);
-            var medium = Math.Min(owner.PreferredItemWidth / 2, Math.Max(48, width / 4));
-            var large = (width - (smallCount == 2 ? medium + 48 : smallCount * 48) - (largeCount + smallCount - 1) * gap) / largeCount;
-            if (large < medium && smallCount == 2) { smallCount = 1; large = (width - 48 - largeCount * gap) / largeCount; }
-            var peeks = Math.Clamp(index - (count - largeCount - smallCount) - largeCount + 1, 0, smallCount);
-            visible = largeCount + smallCount;
-            var cursor = 0;
-            if (peeks >= 1) _widths[cursor++] = 48;
-            if (peeks == 2) _widths[cursor++] = medium;
-            for (var i = 0; i < largeCount; i++) _widths[cursor++] = large;
-            if (peeks == 0 && smallCount == 2) { _widths[cursor++] = medium; _widths[cursor] = 48; }
-            else if (peeks == 0 && smallCount == 1) _widths[cursor] = 48;
-            else if (peeks == 1 && smallCount == 2) _widths[cursor] = medium;
-        }
-        var focal = owner.Layout == MaterialCarouselLayout.Hero && index > 0 ? 1 : index == count - 1 ? visible - 1 : 0;
-        var start = Math.Clamp(index - focal, 0, count - visible);
-        var x = 0d;
-        for (var i = start; i < start + visible; i++)
-        { var w = _widths[i - start]; result[i] = new Rect(x, 0, w, height); x += w + gap; }
-        for (var i = start - 1; i >= 0; i--) result[i] = new Rect((i - start) * (48 + gap), 0, 48, height);
-        for (var i = start + visible; i < count; i++) result[i] = new Rect(x + (i - start - visible) * (48 + gap), 0, 48, height);
+        _strategy.Fill(position, size, result);
+        owner.ItemStride = _strategy.ItemWidth + owner.ItemSpacing;
     }
 }
 

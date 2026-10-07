@@ -4,7 +4,6 @@
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
-    <Setter Property="MotionDuration" Value="{DynamicResource M3.Motion.DurationShort4}" />
     <Setter Property="MotionEasing" Value="{DynamicResource M3.Motion.EasingStandard}" />
     <Setter Property="MinHeight" Value="48" />
     <Setter Property="Template">
