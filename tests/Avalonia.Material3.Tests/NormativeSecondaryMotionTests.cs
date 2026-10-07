@@ -45,15 +45,19 @@ public class NormativeSecondaryMotionTests
     {
         using var host = new ButtonHost();
         host.Theme.Motion = SlowSpatial();
-        var radio = new MaterialRadioButton();
+        var radio = new MaterialRadioButton { Width = 48, Height = 48, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left };
         host.Window.Content = new StackPanel { Children = { radio } };
         host.Capture();
         var bounds = radio.Bounds;
+        var center = radio.TranslatePoint(new Point(24, 24), host.Window)!.Value;
+        var edge = radio.TranslatePoint(new Point(27, 24), host.Window)!.Value;
+        var centerRest = host.PixelAt(center);
+        var edgeRest = host.PixelAt(edge);
         radio.IsChecked = true;
         await Task.Delay(120);
         host.Capture();
-        var dot = radio.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Ellipse>().Single(shape => shape.Name == "Dot");
-        Assert.InRange(dot.Bounds.Width, 1, 5);
+        Assert.NotEqual(centerRest, host.PixelAt(center));
+        Assert.Equal(edgeRest, host.PixelAt(edge));
         Assert.Equal(bounds, radio.Bounds);
         Assert.True(radio.IsChecked);
     }
@@ -63,14 +67,16 @@ public class NormativeSecondaryMotionTests
     {
         using var host = new ButtonHost();
         host.Theme.Motion = SlowSpatial();
-        var toggle = new MaterialSwitch();
+        var toggle = new MaterialSwitch { Width = 64, Height = 48, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left };
         host.Window.Content = new StackPanel { Children = { toggle } };
         host.Capture();
         toggle.IsChecked = true;
         await Task.Delay(100);
         host.Capture();
-        var moving = toggle.GetVisualDescendants().OfType<Panel>().Single(panel => panel.Name == "PART_MovingKnobs");
-        Assert.InRange(Canvas.GetLeft(moving), 2, 10);
+        var near = toggle.TranslatePoint(new Point(24, 24), host.Window)!.Value;
+        var far = toggle.TranslatePoint(new Point(44, 24), host.Window)!.Value;
+        Assert.Equal(Avalonia.Media.Colors.White, host.PixelAt(near));
+        Assert.Equal(((Avalonia.Media.ISolidColorBrush)toggle.Background!).Color, host.PixelAt(far));
         Assert.True(toggle.IsChecked);
     }
 
@@ -84,7 +90,7 @@ public class NormativeSecondaryMotionTests
         host.Capture();
         var editor = field.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.TextPresenter>().Single();
         var editorBounds = new Rect(editor.Bounds.Size).TransformToAABB(editor.TransformToVisual(field)!.Value);
-        var resting = field.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Name == "RestingLabel");
+        var resting = field.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == field.Label && text.IsEffectivelyVisible);
         var initialColor = ((Avalonia.Media.ISolidColorBrush)resting.Foreground!).Color;
         field.Focus();
         var focusedColor = ((Avalonia.Media.ISolidColorBrush)field.BorderBrush!).Color;
