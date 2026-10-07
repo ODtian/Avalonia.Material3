@@ -1,8 +1,8 @@
 # Native Material 3 Expressive reference
 
-This Android application calls the published official `androidx.compose.material3:material3:1.5.0-alpha29` components inside `MaterialExpressiveTheme`. The theme supplies the official expressive motion scheme and shapes. Scene content and icon labels belong to the sample application. The carousel landscape vector is sample content; the carousel masks, layout, gestures and motion come from `HorizontalMultiBrowseCarousel`.
+This Android application calls the published official `androidx.compose.material3:material3:1.5.0-beta01` components inside `MaterialExpressiveTheme`. The theme supplies the official expressive motion scheme and shapes. Scene content and icon labels belong to the sample application. The carousel landscape vector is sample content; the carousel masks, layout, gestures and motion come from `HorizontalMultiBrowseCarousel`.
 
-The release is documented in [AndroidX Material 3 release notes](https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-alpha29). Runtime dependencies resolve Compose foundation, UI, animation and runtime to `1.13.0-alpha01`. Icons come from the official Compose Material icon library `1.7.8`. Side sheet uses the official MDC Android `SideSheetDialog` from `com.google.android.material:material:1.14.0`, with application-owned text content.
+The release is documented in [AndroidX Material 3 release notes](https://developer.android.com/jetpack/androidx/releases/compose-material3#1.5.0-beta01). Runtime dependencies resolve Compose foundation, UI, animation and runtime to `1.12.0`. Icons come from the official Compose Material icon library `1.7.8`. Side sheet uses the official MDC Android `SideSheetDialog` from `com.google.android.material:material:1.14.0`, with application-owned text content.
 
 Build with JDK 17, Android SDK platform `37.1`, build tools `37.0.0`, AGP `9.4.0` and the checked-in Gradle `9.6.0` wrapper:
 
@@ -37,10 +37,13 @@ The `scene` string intent extra opens a component directly. `dark` is a boolean;
 
 Semantics enables `testTagsAsResourceId` on the root; stable tags expose triggers and component containers to UIAutomator.
 The root uses the platform `motionEventSpy` observer to record actual DOWN/UP/CANCEL event uptime and coordinates under `M3Reference`, preserving the official components' pointer handling. Captures can correlate frame time with the received input event.
+The time dialog uses the official `TimePickerDialogDefaults.Title` and `DisplayModeToggle` slots, including the title's 20 DIP bottom padding and mode-specific text.
+The ripple and elevated button reference defaults to each complete expressive `shapes` overload: filled/elevated/tonal/outlined/text use `ButtonDefaults.shapes()`, and the icon button uses `IconButtonDefaults.shapes()`. This selects the official press shape morph as well as the official component's own ripple, colors, elevation and motion. The FAB uses its complete regular official overload. Set `--ez expressiveButtons false` to compare the complete stable button overloads; logcat records the branch. Button groups and split buttons retain their own official default expressive recipes.
 
 ```powershell
 adb -s 127.0.0.1:16416 install -r app/build/outputs/apk/debug/app-debug.apk
 adb -s 127.0.0.1:16416 shell am start -S -n org.pixivyou.m3reference/.MainActivity --es scene date-range --ez dark false --es locale en-US
 ```
 
-The published alpha29 defaults `isCheckboxStylingFixEnabled=false` (legacy M2 checkbox branch) and `isUpdatedTimepickerToggleEnabled=true`. Add the explicit `--ez checkboxM3 true` extra to select the official M3 checkbox migration branch; the default launch preserves the release default. Date-range scenes make February 20 unavailable through the official `SelectableDates` API, matching the library gallery scenario. Selected ranges remain inclusive through that disabled day.
+The published beta01 defaults `isCheckboxStylingFixEnabled=false` (legacy M2 checkbox branch) and `isUpdatedTimepickerToggleEnabled=true`. Add the explicit `--ez checkboxM3 true` extra to select the official M3 checkbox migration branch; the default launch preserves the release default. Date-range scenes make February 20 unavailable through the official `SelectableDates` API, matching the library gallery scenario. Selected ranges remain inclusive through that disabled day.
+

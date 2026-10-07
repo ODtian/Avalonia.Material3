@@ -45,6 +45,7 @@ class MainActivity : ComponentActivity() {
         val initialDark = intent.getBooleanExtra("dark", false)
         val palette = intent.getStringExtra("palette") ?: "expressive"
         val localeTag = intent.getStringExtra("locale")
+        val expressiveButtons = intent.getBooleanExtra("expressiveButtons", true)
         // The release defaults are preserved; this explicit flag selects the M3 checkbox
         // migration branch for comparison with a library implementing the new M3 styling.
         ComposeMaterial3Flags.isCheckboxStylingFixEnabled = intent.getBooleanExtra("checkboxM3", false)
@@ -54,9 +55,14 @@ class MainActivity : ComponentActivity() {
             val configuration = remember(baseConfiguration, localeTag) {
                 Configuration(baseConfiguration).apply { if (localeTag != null) setLocales(LocaleList.forLanguageTags(localeTag)) }
             }
-            val localizedContext = remember(baseContext, configuration) { baseContext.createConfigurationContext(configuration) }
+            val localizedContext = remember(baseContext, configuration) {
+                android.view.ContextThemeWrapper(baseContext, R.style.ReferenceTheme).apply {
+                    applyOverrideConfiguration(configuration)
+                }
+            }
             CompositionLocalProvider(LocalContext provides localizedContext, LocalConfiguration provides configuration,
-                LocalResources provides localizedContext.resources, LocalProvidableLocaleList provides androidx.compose.ui.text.intl.LocaleList(configuration.locales.toLanguageTags())) {
+                LocalResources provides localizedContext.resources, LocalProvidableLocaleList provides androidx.compose.ui.text.intl.LocaleList(configuration.locales.toLanguageTags()),
+                LocalNativeExpressiveButtons provides expressiveButtons) {
                 ReferenceApp(initialScene, initialDark, palette)
             }
         }
@@ -64,6 +70,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+internal val LocalNativeExpressiveButtons = staticCompositionLocalOf { true }
 private val scenes = listOf("date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays")
 
 @Composable
@@ -75,8 +82,9 @@ private fun ReferenceApp(initialScene: String, initialDark: Boolean, palette: St
         val density = LocalDensity.current
         val view = LocalView.current
         val locale = LocalLocale.current
+        val expressiveButtons = LocalNativeExpressiveButtons.current
         LaunchedEffect(dark, palette) {
-            Log.i("M3Reference", "material3=1.5.0-alpha29 sdk=${Build.VERSION.SDK_INT} scene=$initialScene dark=$dark palette=$palette locale=${locale.toLanguageTag()} density=${density.density} fontScale=${density.fontScale} checkboxM3=${ComposeMaterial3Flags.isCheckboxStylingFixEnabled} timeToggle=${ComposeMaterial3Flags.isUpdatedTimepickerToggleEnabled} colors=$colors")
+            Log.i("M3Reference", "material3=1.5.0-beta01 sdk=${Build.VERSION.SDK_INT} scene=$initialScene dark=$dark palette=$palette locale=${locale.toLanguageTag()} density=${density.density} fontScale=${density.fontScale} expressiveButtons=$expressiveButtons checkboxM3=${ComposeMaterial3Flags.isCheckboxStylingFixEnabled} timeToggle=${ComposeMaterial3Flags.isUpdatedTimepickerToggleEnabled} colors=$colors")
             view.post { Log.i("M3Reference", "composeRootHardwareAccelerated=${view.isHardwareAccelerated} rootClass=${view.javaClass.name}") }
         }
         Surface(Modifier.fillMaxSize().motionEventSpy { event ->
@@ -94,7 +102,7 @@ private fun ReferenceApp(initialScene: String, initialDark: Boolean, palette: St
                 Column(Modifier.fillMaxSize().padding(padding)) {
                     when (scene) {
                         "home" -> Column(Modifier.verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text("Official Compose Material3 1.5.0-alpha29", style = MaterialTheme.typography.bodySmall)
+                            Text("Official Compose Material3 1.5.0-beta01", style = MaterialTheme.typography.bodySmall)
                             scenes.forEach { id -> FilledTonalButton(onClick = { scene = id }, modifier = Modifier.fillMaxWidth().testTag("scene-$id")) { Text(id) } }
                         }
                         "date-range", "date-range-7-24", "date-range-9-16" -> DateRangeScene(scene)
@@ -151,7 +159,20 @@ private fun TimeScene() {
     Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = androidx.compose.ui.Alignment.TopCenter) {
         if (input) TimeInput(state = state, modifier = Modifier.testTag("time-input")) else TimePicker(state = state, modifier = Modifier.testTag("time-picker"))
     }
-    if (modal) TimePickerDialog(onDismissRequest = { modal = false }, title = { Text("Select time") }, confirmButton = { TextButton(onClick = { modal = false }) { Text("OK") } }, dismissButton = { TextButton(onClick = { modal = false }) { Text("Cancel") } }) { TimePicker(state = state) }
+    if (modal) {
+        val mode = if (input) TimePickerDisplayMode.Input else TimePickerDisplayMode.Picker
+        TimePickerDialog(
+            onDismissRequest = { modal = false },
+            title = { TimePickerDialogDefaults.Title(displayMode = mode) },
+            modeToggleButton = {
+                TimePickerDialogDefaults.DisplayModeToggle(
+                    onDisplayModeChange = { input = !input }, displayMode = mode,
+                    modifier = Modifier.testTag("time-dialog-mode"))
+            },
+            confirmButton = { TextButton(onClick = { modal = false }) { Text("OK") } },
+            dismissButton = { TextButton(onClick = { modal = false }) { Text("Cancel") } },
+        ) { if (input) TimeInput(state = state) else TimePicker(state = state) }
+    }
 }
 
 @Composable
@@ -198,3 +219,4 @@ private fun FieldsScene() = SceneColumn {
 internal fun SceneColumn(content: @Composable ColumnScope.() -> Unit) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp), content = content)
 }
+
