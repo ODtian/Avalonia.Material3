@@ -6,12 +6,42 @@ using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Headless;
 using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Xunit;
 
 namespace Avalonia.Material3.Tests;
 
 public class NativePickerStructureScenarioTests
 {
+    [AvaloniaFact]
+    public async Task Delayed_clipboard_data_from_a_closed_date_presentation_preserves_the_reopened_draft_selection_and_undo()
+    {
+        using var host=new DialogHost();
+        var picker=new MaterialDatePicker {Mode=MaterialDatePickerMode.Input,SelectedDate=new(2024,2,9),Culture=System.Globalization.CultureInfo.GetCultureInfo("en-US")};
+        picker.Show(host.Overlay);host.Render();picker.StartInput.Focus();picker.StartInput.SelectAll();
+        var transfer=new DeferredDateClipboardData();
+        await host.Window.Clipboard!.SetDataAsync(transfer);
+        picker.StartInput.Paste();await transfer.Requested.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        picker.Cancel();host.Render();picker.SelectedDate=new(2030,1,1);picker.Show(host.Overlay);host.Render();
+        picker.StartInput.Focus();picker.StartInput.SelectAll();host.Window.KeyTextInput("01022030");host.Render();
+        picker.StartInput.SelectAll();var text=picker.StartInput.Text;var start=picker.StartInput.SelectionStart;var end=picker.StartInput.SelectionEnd;
+        transfer.Value.TrySetResult("12312024");
+        var presented=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        host.Window.RequestAnimationFrame(_=>presented.TrySetResult());host.Render();await presented.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(text,picker.StartInput.Text);Assert.Equal(start,picker.StartInput.SelectionStart);Assert.Equal(end,picker.StartInput.SelectionEnd);
+        Assert.Equal(new DateOnly(2030,1,2),picker.SelectedDate);
+        picker.StartInput.Undo();host.Render();Assert.Equal(new DateOnly(2030,1,1),picker.SelectedDate);
+        picker.Cancel();await host.Window.Clipboard.ClearAsync();
+    }
+    private sealed class DeferredDateClipboardData : IAsyncDataTransfer,IAsyncDataTransferItem
+    {
+        public TaskCompletionSource Requested {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<object?> Value {get;}=new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public IReadOnlyList<DataFormat> Formats=>[DataFormat.Text];
+        public IReadOnlyList<IAsyncDataTransferItem> Items=>[this];
+        public Task<object?> TryGetRawAsync(DataFormat format){Requested.TrySetResult();return Value.Task;}
+        public void Dispose() { }
+    }
     [AvaloniaFact]
     public void Bare_date_is_rectangular_and_the_show_shell_clips_its_body_to_the_standard_shape()
     {
@@ -42,8 +72,10 @@ public class NativePickerStructureScenarioTests
         host.Window.KeyTextInput("29");host.Window.KeyTextInput("2024");host.Render();
         Assert.Equal("02/29/2024",picker.StartInput.Text);Assert.Equal(new DateOnly(2024,2,29),picker.SelectedDate);
         Assert.Null(picker.StartInput.EffectiveSupportingText);
+        var validHeight=picker.StartInput.DesiredSize.Height;
         picker.StartInput.SelectAll();host.Window.KeyTextInput("02292023");host.Render();
         Assert.True(picker.StartInput.HasError);Assert.Null(picker.SelectedDate);
+        Assert.Equal(validHeight,picker.StartInput.DesiredSize.Height);
         picker.StartInput.Undo();host.Render();Assert.Equal("02/29/2024",picker.StartInput.Text);Assert.Equal(new DateOnly(2024,2,29),picker.SelectedDate);
         picker.StartInput.Label="Custom date";picker.StartInput.PlaceholderText="Custom format";picker.StartInput.SupportingText="Business hint";
         picker.SelectedDate=new(2024,3,1);host.Render();Assert.Equal("Custom date",picker.StartInput.Label);Assert.Equal("Custom format",picker.StartInput.PlaceholderText);Assert.Equal("Business hint",picker.StartInput.EffectiveSupportingText);
@@ -74,6 +106,9 @@ public class NativePickerStructureScenarioTests
         Assert.False(previous.IsEffectivelyVisible);Assert.False(next.IsEffectivelyVisible);
         var year=picker.GetVisualDescendants().OfType<MaterialCalendarYear>().Single(y=>y.Year==2024);
         Assert.True(GeometryHost.Box(year,host.Window).Top>=176&&GeometryHost.Box(year,host.Window).Bottom<512);
+        var yearBox=GeometryHost.Box(year,host.Window);
+        Assert.Equal(Color.Parse("#6750A4"),host.Pixel(yearBox.Left+2,yearBox.Center.Y));
+        Assert.Equal(Color.Parse("#6750A4"),host.Pixel(yearBox.Right-2,yearBox.Center.Y));
         var nextRow=picker.GetVisualDescendants().OfType<MaterialCalendarYear>().Single(y=>y.Year==2027);
         Assert.Equal(64,GeometryHost.Box(nextRow,host.Window).Top-GeometryHost.Box(year,host.Window).Top);
     }
