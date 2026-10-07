@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
 
@@ -156,26 +157,46 @@ internal sealed class MaterialOverlayMotion : IDisposable
     }
     private sealed class Snapshot : Control, IDisposable
     {
-        private const double Gutter = 64;
         private readonly Size _size;
         private readonly RenderTargetBitmap _bitmap;
         protected override bool BypassFlowDirectionPolicies => true;
-        private readonly Rect _source;
+        private readonly Rect _destination;
         internal Snapshot(MaterialOverlayLayer layer, double scale)
         {
             _size = layer.Container.Bounds.Size;
-            _source = layer.Container.Bounds.Inflate(Gutter);
+            var source = PaintBounds(layer);
+            // Pixel-align the crop, keeping fractional layout and all painted shadow tails.
+            source = new Rect(Math.Floor(source.Left * scale) / scale, Math.Floor(source.Top * scale) / scale,
+                Math.Ceiling(source.Right * scale) / scale - Math.Floor(source.Left * scale) / scale,
+                Math.Ceiling(source.Bottom * scale) / scale - Math.Floor(source.Top * scale) / scale);
+            _destination = new Rect(source.Position - layer.Container.Bounds.Position, source.Size);
             IsHitTestVisible = false;
-            _bitmap = new(new PixelSize((int)Math.Ceiling(layer.Bounds.Width * scale),
-                (int)Math.Ceiling(layer.Bounds.Height * scale)), new Vector(96 * scale, 96 * scale));
-            // Capture the attached layer: theme, state, glyphs and surface overflow stay identical.
-            var scrim = (Control)layer.Children[0]; var opacity = scrim.Opacity;
-            try { scrim.Opacity = 0; _bitmap.Render(layer); }
+            _bitmap = new(new PixelSize(Math.Max(1, (int)Math.Round(source.Width * scale)),
+                Math.Max(1, (int)Math.Round(source.Height * scale))), new Vector(96 * scale, 96 * scale));
+            var crop = new Border { Width = source.Width, Height = source.Height,
+                Background = new VisualBrush(layer) { SourceRect = new RelativeRect(source, RelativeUnit.Absolute),
+                    DestinationRect = RelativeRect.Fill, Stretch = Stretch.Fill } };
+            crop.Measure(source.Size); crop.Arrange(new Rect(source.Size));
+            // VisualBrush renders the attached layer through an absolute crop; ownership stays live.
+            var scrim = layer.Scrim; var opacity = scrim.Opacity;
+            try { scrim.Opacity = 0; _bitmap.Render(crop); }
             finally { scrim.Opacity = opacity; }
+        }
+        private static Rect PaintBounds(MaterialOverlayLayer layer)
+        {
+            var result = new Rect(layer.Container.Bounds.Size).TransformToAABB(layer.Container.TransformToVisual(layer)!.Value);
+            foreach (var visual in layer.Container.GetVisualDescendants().Prepend(layer.Container))
+            {
+                if (!visual.IsEffectivelyVisible || visual.Bounds.Width <= 0 || visual.Bounds.Height <= 0) continue;
+                var bounds = new Rect(visual.Bounds.Size);
+                if (visual is Border border) bounds = border.BoxShadow.TransformBounds(bounds);
+                if (visual.TransformToVisual(layer) is { } transform) result = result.Union(bounds.TransformToAABB(transform));
+            }
+            return result.Intersect(new Rect(layer.Bounds.Size));
         }
         protected override Size MeasureOverride(Size availableSize) => _size;
         public override void Render(DrawingContext context) => context.DrawImage(_bitmap,
-            _source, new Rect(-Gutter, -Gutter, _source.Width, _source.Height));
+            new Rect(_bitmap.Size), _destination);
         public void Dispose() => _bitmap.Dispose();
     }
 }

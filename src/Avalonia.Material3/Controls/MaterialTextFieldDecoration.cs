@@ -46,21 +46,26 @@ internal sealed class MaterialTextFieldDecoration : Panel
     private int _phase;
     private readonly MatrixTransform _restTransform = new();
     private readonly MatrixTransform _floatTransform = new();
+    private Control? _decorationRoot, _placeholderTarget, _prefixTarget, _suffixTarget;
+    private bool _decorationTargetsDirty = true;
 
     public MaterialTextFieldDecoration()
     {
         _labelMotion = new(this, 0, value => SetValue(LabelProgressProperty, value));
         _strokeMotion = new(this, 1, value => SetValue(StrokeWidthProperty, value));
-        _placeholderMotion = new(this, 0, value => PaintOpacity("PlaceholderHost", value));
-        _affixMotion = new(this, 0, value => { PaintOpacity("Prefix", value); PaintOpacity("Suffix", value); });
+        _placeholderMotion = new(this, 0, value => { CacheDecorationTargets(); PaintOpacity(_placeholderTarget, value); });
+        _affixMotion = new(this, 0, value => { CacheDecorationTargets(); PaintOpacity(_prefixTarget, value); PaintOpacity(_suffixTarget, value); });
         _strokeColor = new(this, null, value => SetValue(StrokeBrushProperty, value));
         _labelColor = new(this, null, value => SetValue(AnimatedLabelBrushProperty, value));
         _motion = new(this, Retarget);
+        Children.CollectionChanged += (_, _) => _decorationTargetsDirty = true;
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        _decorationTargetsDirty = true;
+        CacheDecorationTargets();
         Observe();
         Retarget();
     }
@@ -69,6 +74,8 @@ internal sealed class MaterialTextFieldDecoration : Panel
         if (_observed is not null) _observed.PropertyChanged -= FieldChanged;
         _observed = null;
         _initialized = false;
+        _decorationRoot = _placeholderTarget = _prefixTarget = _suffixTarget = null;
+        _decorationTargetsDirty = true;
         Transitions = null;
         base.OnDetachedFromVisualTree(e);
     }
@@ -183,19 +190,34 @@ internal sealed class MaterialTextFieldDecoration : Panel
         }
         _phase = phase;
     }
-    private void PaintOpacity(string name, double value)
+    private void CacheDecorationTargets()
     {
-        if (Children.Count < 2) return;
-        var control = Children[1].GetVisualDescendants().OfType<Control>().FirstOrDefault(child => child.Name == name);
-        if (control is not null) control.Opacity = Math.Clamp(value, 0, 1);
+        var root = Children.Count > 1 ? Children[1] : null;
+        if (!_decorationTargetsDirty && ReferenceEquals(_decorationRoot, root)) return;
+        _decorationRoot = root; _decorationTargetsDirty = false;
+        _placeholderTarget = _prefixTarget = _suffixTarget = null;
+        if (root is null) return;
+        foreach (var control in root.GetVisualDescendants().OfType<Control>())
+        {
+            switch (control.Name)
+            {
+                case "PlaceholderHost": _placeholderTarget ??= control; break;
+                case "Prefix": _prefixTarget ??= control; break;
+                case "Suffix": _suffixTarget ??= control; break;
+            }
+            if (_placeholderTarget is not null && _prefixTarget is not null && _suffixTarget is not null) break;
+        }
     }
+    private static void PaintOpacity(Control? control, double value)
+    { if (control is not null) control.Opacity = Math.Clamp(value, 0, 1); }
     private void ConfigureDecorationTransitions()
     {
-        if (Children.Count < 2) return;
-        foreach (var control in Children[1].GetVisualDescendants().OfType<Control>().Where(control => control.Name is "Prefix" or "Suffix" or "PlaceholderHost"))
-            control.Transitions = null;
-        PaintOpacity("PlaceholderHost", _placeholderMotion.Value);
-        PaintOpacity("Prefix", _affixMotion.Value); PaintOpacity("Suffix", _affixMotion.Value);
+        CacheDecorationTargets();
+        if (_placeholderTarget is not null) _placeholderTarget.Transitions = null;
+        if (_prefixTarget is not null) _prefixTarget.Transitions = null;
+        if (_suffixTarget is not null) _suffixTarget.Transitions = null;
+        PaintOpacity(_placeholderTarget, _placeholderMotion.Value);
+        PaintOpacity(_prefixTarget, _affixMotion.Value); PaintOpacity(_suffixTarget, _affixMotion.Value);
     }
     private void ProjectLabel(double? arrangedHeight = null)
     {
