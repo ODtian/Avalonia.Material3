@@ -4,6 +4,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
+using Avalonia.Diagnostics;
 using Avalonia.Layout;
 using Avalonia.Input;
 using Avalonia.VisualTree;
@@ -17,7 +18,9 @@ public readonly record struct MaterialDateRange(DateOnly Start, DateOnly End);
 /// <summary>Localizable application strings. Culture controls Gregorian date names, not these labels.</summary>
 public sealed record MaterialDatePickerLabels
 {
-    public string Title { get; init; } = "Select date";
+    private string _title = "Select date";
+    internal bool HasCustomTitle { get; private init; }
+    public string Title { get => _title; init { _title = value; HasCustomTitle = true; } }
     public string StartDate { get; init; } = "Start date";
     public string EndDate { get; init; } = "End date";
     public string CalendarMode { get; init; } = "Show calendar";
@@ -63,14 +66,18 @@ public class MaterialDatePicker : TemplatedControl
     private readonly TextBlock _title = MaterialPickerSupport.Text("LabelLarge", "OnSurfaceVariant");
     private readonly TextBlock _headline = MaterialPickerSupport.Text("HeadlineLarge", "OnSurfaceVariant");
     private readonly TextBlock _error = MaterialPickerSupport.Text("BodySmall", "Error");
-    private readonly Grid _header;
+    private readonly MaterialDatePickerHeader _header;
     private readonly MaterialIconButton _mode;
-    private readonly MaterialSymbol _keyboardIcon = new() { Symbol = "keyboard", Size = 24 };
+    private readonly MaterialSymbol _inputIcon = new() { Symbol = "edit", Size = 24 };
     private readonly MaterialSymbol _calendarIcon = new() { Symbol = "calendar_month", Size = 24 };
-    private readonly StackPanel _inputs;
+    private readonly Grid _inputs;
     private readonly StackPanel _calendar = new() { Spacing = 4, Margin = new Thickness(12, 0, 12, 12) };
-    private readonly Grid _days = new() { ColumnDefinitions = new ColumnDefinitions("*,*,*,*,*,*,*"), MinWidth = 336 };
-    private readonly Grid _week = new() { ColumnDefinitions = new ColumnDefinitions("*,*,*,*,*,*,*"), MinWidth = 336 };
+    private MaterialCalendarMonthView? _days;
+    private readonly StackPanel _singleMonth = new();
+    private readonly MaterialCalendarWeekRow _week = new();
+    private readonly MaterialCalendarRangeView _rangeCalendar;
+    private readonly Panel _calendarModes = new();
+    private readonly Border _divider = new() { Height = 1 };
     private readonly UniformGrid _years = new() { Columns = 3 };
     private readonly ScrollViewer _calendarScroll;
     private readonly MaterialCalendarYearPanel _yearPanel;
@@ -80,6 +87,8 @@ public class MaterialDatePicker : TemplatedControl
     private bool _choosingYear;
     private DateOnly? _builtMonth;
     private CultureInfo? _builtCulture;
+    private CultureInfo? _rangeCulture;
+    private CultureInfo? _dateCulture;
     private MaterialDialog? _dialog;
     public DateOnly? SelectedDate { get => GetValue(SelectedDateProperty); set => SetValue(SelectedDateProperty, value); }
     public DateOnly? RangeEnd { get => GetValue(RangeEndProperty); set => SetValue(RangeEndProperty, value); }
@@ -104,7 +113,7 @@ public class MaterialDatePicker : TemplatedControl
     public string? ValidationMessage => _validationMessage;
     public MaterialOverlaySession? Session => _dialog?.Session;
     public event EventHandler? DraftChanged;
-    private CultureInfo DateCulture => MaterialPickerSupport.Gregorian(Culture);
+    internal CultureInfo DateCulture => _dateCulture ??= MaterialPickerSupport.Gregorian(Culture);
     private string Pattern => InputFormat ?? DateCulture.DateTimeFormat.ShortDatePattern;
     protected override Type StyleKeyOverride => typeof(MaterialDatePicker);
     protected override AutomationPeer OnCreateAutomationPeer() => new DatePickerPeer(this);
@@ -112,11 +121,12 @@ public class MaterialDatePicker : TemplatedControl
     public MaterialDatePicker()
     {
         _mode = new MaterialIconButton();
-        MaterialPickerSupport.Resource(_keyboardIcon, MaterialSymbol.ForegroundProperty, "OnSurfaceVariantBrush");
+        MaterialPickerSupport.Resource(_inputIcon, MaterialSymbol.ForegroundProperty, "OnSurfaceVariantBrush");
         MaterialPickerSupport.Resource(_calendarIcon, MaterialSymbol.ForegroundProperty, "OnSurfaceVariantBrush");
         _mode.Click += (_, _) => SetCurrentValue(ModeProperty,
             Mode == MaterialDatePickerMode.Calendar ? MaterialDatePickerMode.Input : MaterialDatePickerMode.Calendar);
-        _inputs = new StackPanel { Spacing = 16, Margin = new Thickness(24, 10, 24, 24), Children = { StartInput, EndInput } };
+        _inputs = new Grid { Margin = new Thickness(24, 10, 24, 0), ColumnDefinitions = new ColumnDefinitions("*,8,*"), Children = { StartInput, EndInput } };
+        Grid.SetColumn(EndInput, 2);
         _previous = MaterialPickerSupport.Action(Labels.PreviousMonth, () => NavigateMonth(-1));
         _next = MaterialPickerSupport.Action(Labels.NextMonth, () => NavigateMonth(1));
         _month = MaterialPickerSupport.Action(Labels.ChooseYear, () => { _choosingYear = !_choosingYear; RefreshCalendar(); });
@@ -127,22 +137,22 @@ public class MaterialDatePicker : TemplatedControl
         var navigation = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), MinHeight = 56 };
         Grid.SetColumn(_month, 1); Grid.SetColumn(_next, 2);
         navigation.Children.Add(_previous); navigation.Children.Add(_month); navigation.Children.Add(_next);
-        _monthPanel = new(new StackPanel { Children = { _week, _days } });
+        _singleMonth.Children.Add(_week);
+        _monthPanel = new(_singleMonth);
         _calendarScroll = new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, Content = _monthPanel };
         var yearScroll = new ScrollViewer { Content = _years, MaxHeight = 335 };
         MaterialPickerSupport.Resource(yearScroll, BackgroundProperty, "SurfaceContainerHighBrush");
         _yearPanel = new(_calendarScroll, yearScroll);
         _calendar.Children.Add(navigation); _calendar.Children.Add(_yearPanel);
-        _header = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto"), ColumnDefinitions = new ColumnDefinitions("*,Auto"),
-            Margin = new Thickness(24, 16, 12, 12), MinHeight = 92 };
-        Grid.SetColumnSpan(_title, 2); Grid.SetRow(_headline, 1); Grid.SetRow(_mode, 1); Grid.SetColumn(_mode, 1);
-        _headline.Margin = new Thickness(0, 8, 8, 0);
-        _header.Children.Add(_title); _header.Children.Add(_headline); _header.Children.Add(_mode);
-        _modePanel = new(this, _calendar, _inputs);
-        Surface = new StackPanel { Spacing = 8, Children =
+        _rangeCalendar = new(this);
+        _calendarModes.Children.Add(_calendar);
+        _header = new(_title, _headline, _mode);
+        _modePanel = new(this, _calendarModes, _inputs);
+        MaterialPickerSupport.Resource(_divider, Border.BackgroundProperty, "OutlineVariantBrush");
+        Surface = new StackPanel { Children =
         {
-            _header, _modePanel, _error
+            _header, _divider, _modePanel, _error
         }};
         _error.Margin = new Thickness(24, 0, 24, 12);
         AutomationProperties.SetLiveSetting(_error, AutomationLiveSetting.Polite);
@@ -184,20 +194,32 @@ public class MaterialDatePicker : TemplatedControl
     private void Refresh()
     {
         if (!_ready) return;
-        _title.Text = Labels.Title;
-        _header.MinHeight = SelectionMode == MaterialDateSelectionMode.Range ? 100 : 92;
-        _headline.Text = SelectedDate?.ToString(DisplayFormat, DateCulture) ?? Labels.Title;
-        if (SelectionMode == MaterialDateSelectionMode.Range)
-            _headline.Text += " – " + (RangeEnd?.ToString(DisplayFormat, DateCulture) ?? Labels.EndDate);
+        var range = SelectionMode == MaterialDateSelectionMode.Range;
+        PseudoClasses.Set(":range", range);
+        _title.Text = range && !Labels.HasCustomTitle ?
+            Mode == MaterialDatePickerMode.Calendar ? "Select dates" : "Enter dates" : Labels.Title;
+        _header.Range = range; _header.InvalidateMeasure();
+        var format = range && this.GetDiagnostic(DisplayFormatProperty).Priority > BindingPriority.Style ? RangeHeadlineFormat : DisplayFormat;
+        _headline.Text = SelectedDate?.ToString(format, DateCulture) ?? (range ? Labels.StartDate : Labels.Title);
+        if (range)
+        {
+            var endText = RangeEnd?.ToString(format, DateCulture) ?? Labels.EndDate;
+            _header.SetRangeText(_headline.Text!, endText);
+            _headline.Text += " - " + endText;
+        }
         MaterialPickerSupport.Resource(_headline, TextBlock.FontSizeProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "FontSize");
         MaterialPickerSupport.Resource(_headline, TextBlock.FontFamilyProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "FontFamily");
         MaterialPickerSupport.Resource(_headline, TextBlock.FontWeightProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "FontWeight");
         MaterialPickerSupport.Resource(_headline, TextBlock.LineHeightProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "LineHeight");
         MaterialPickerSupport.Resource(_headline, TextBlock.LetterSpacingProperty, (SelectionMode == MaterialDateSelectionMode.Range ? "TitleLarge" : "HeadlineLarge") + "LetterSpacing");
         EndInput.IsVisible = SelectionMode == MaterialDateSelectionMode.Range;
+        Grid.SetColumnSpan(StartInput, range ? 1 : 3);
+        var calendar = range ? (Control)_rangeCalendar : _calendar;
+        if (_calendarModes.Children.Count == 0 || _calendarModes.Children[0] != calendar)
+        { _calendarModes.Children.Clear(); _calendarModes.Children.Add(calendar); }
         StartInput.Label = Labels.StartDate; EndInput.Label = Labels.EndDate;
         StartInput.SupportingText = EndInput.SupportingText = Pattern;
-        _mode.Content = Mode == MaterialDatePickerMode.Calendar ? _keyboardIcon : _calendarIcon;
+        _mode.Content = Mode == MaterialDatePickerMode.Calendar ? _inputIcon : _calendarIcon;
         AutomationProperties.SetName(_mode, Mode == MaterialDatePickerMode.Calendar ? Labels.InputMode : Labels.CalendarMode);
         var startError = !Parse(StartInput.Text, out _) && !string.IsNullOrEmpty(StartInput.Text) ? Labels.InvalidDate : null;
         var endError = SelectionMode == MaterialDateSelectionMode.Range && !Parse(EndInput.Text, out _) && !string.IsNullOrEmpty(EndInput.Text) ? Labels.InvalidDate : null;
@@ -209,7 +231,7 @@ public class MaterialDatePicker : TemplatedControl
         var message = startError ?? endError ?? (SelectedDate is null || SelectionMode == MaterialDateSelectionMode.Range && RangeEnd is null ? Labels.Incomplete : null);
         SetAndRaise(ValidationMessageProperty, ref _validationMessage, message);
         SetAndRaise(IsValidProperty, ref _isValid, message is null);
-        _error.Text = message; _error.IsVisible = message is not null;
+        _error.Text = message; _error.IsVisible = message is not null && startError is null && endError is null && message != Labels.Incomplete;
         AutomationProperties.SetItemStatus(this, message ?? _headline.Text ?? "");
         if (_dialog is not null)
         {
@@ -250,71 +272,61 @@ public class MaterialDatePicker : TemplatedControl
         if (SelectionMode == MaterialDateSelectionMode.Single && offset != 0) _monthPanel.Scroll();
         return true;
     }
+    internal void RefreshDay(MaterialCalendarDay button)
+    {
+        var date = button.Date;
+        button.IsEnabled = IsDateAvailable(date);
+        button.AnimateContainer = SelectionMode == MaterialDateSelectionMode.Single || date == SelectedDate;
+        button.IsInRange = SelectionMode == MaterialDateSelectionMode.Range && SelectedDate is { } start && RangeEnd is { } end && date >= start && date <= end;
+        button.IsChecked = date == SelectedDate || SelectionMode == MaterialDateSelectionMode.Range && date == RangeEnd;
+        button.IsToday = date == Today;
+        var status = date == SelectedDate ? SelectionMode == MaterialDateSelectionMode.Single ? Labels.Selected : Labels.RangeStart
+            : date == RangeEnd && SelectionMode == MaterialDateSelectionMode.Range ? Labels.RangeEnd : button.IsInRange ? Labels.InRange : "";
+        if (button.IsToday) status += " " + Labels.Today;
+        AutomationProperties.SetName(button, date.ToString("D", DateCulture));
+        AutomationProperties.SetItemStatus(button, status);
+    }
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var height = double.IsFinite(availableSize.Height) ? availableSize.Height : TopLevel.GetTopLevel(this)?.ClientSize.Height ?? 640;
+        _header.Measure(new Size(availableSize.Width, double.PositiveInfinity));
+        _rangeCalendar.AvailableHeight = Math.Max(96, height - _header.DesiredSize.Height - 65);
+        return base.MeasureOverride(availableSize);
+    }
+    private string RangeHeadlineFormat
+    {
+        get
+        {
+            var pattern = DateCulture.DateTimeFormat.ShortDatePattern;
+            if (pattern.IndexOf('y') < pattern.IndexOf('M')) return "yyyy MMM d";
+            return pattern.IndexOf('d') < pattern.IndexOf('M') ? "d MMM yyyy" : "MMM d, yyyy";
+        }
+    }
     private void RefreshCalendar()
     {
-        _yearPanel.Update(_choosingYear);
+        if (SelectionMode == MaterialDateSelectionMode.Single) _yearPanel.Update(_choosingYear);
         _month.Content = DisplayMonth.ToString("MMMM yyyy", DateCulture);
         AutomationProperties.SetName(_month, Labels.ChooseYear + ": " + _month.Content);
         AutomationProperties.SetName(_previous, Labels.PreviousMonth); AutomationProperties.SetName(_next, Labels.NextMonth);
         _previous.IsEnabled = MinimumDate <= MaximumDate && (DisplayMonth.Year > MinimumDate.Year || DisplayMonth.Year == MinimumDate.Year && DisplayMonth.Month > MinimumDate.Month);
         _next.IsEnabled = MinimumDate <= MaximumDate && (DisplayMonth.Year < MaximumDate.Year || DisplayMonth.Year == MaximumDate.Year && DisplayMonth.Month < MaximumDate.Month);
         var month = new DateOnly(DisplayMonth.Year, DisplayMonth.Month, 1);
-        if (_builtMonth != month || !Equals(_builtCulture, Culture))
+        var rebuild = _builtMonth != month || !Equals(_builtCulture, Culture);
+        if (SelectionMode == MaterialDateSelectionMode.Single && rebuild)
         {
             _builtMonth = month; _builtCulture = Culture;
-            _week.Children.Clear(); _days.Children.Clear(); _days.RowDefinitions.Clear();
-            for (var row = 0; row < 6; row++) _days.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-            var firstDay = DateCulture.DateTimeFormat.FirstDayOfWeek;
-            for (var i = 0; i < 7; i++)
-            {
-                var day = (DayOfWeek)(((int)firstDay + i) % 7);
-                var label = MaterialPickerSupport.Text("BodyLarge"); label.MinHeight = 48; label.TextAlignment = Media.TextAlignment.Center;
-                label.Text = DateCulture.DateTimeFormat.GetShortestDayName(day);
-                AutomationProperties.SetName(label, DateCulture.DateTimeFormat.GetDayName(day));
-                Grid.SetColumn(label, i); _week.Children.Add(label);
-            }
-            var offset = ((int)month.DayOfWeek - (int)firstDay + 7) % 7;
-            for (var day = 1; day <= DateTime.DaysInMonth(month.Year, month.Month); day++)
-            {
-                var date = new DateOnly(month.Year, month.Month, day);
-                var button = new MaterialCalendarDay { Date = date, Content = day.ToString(Culture), MinHeight = 48, MinWidth = 48 };
-                button.Click += (_, _) => SelectDate(date);
-                var band = new Border { Height = 40, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
-                Grid.SetColumnSpan(button, 2);
-                var cell = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), Children = { band, button } };
-                Grid.SetRow(cell, (day - 1 + offset) / 7); Grid.SetColumn(cell, (day - 1 + offset) % 7);
-                _days.Children.Add(cell);
-            }
+            _week.Refresh(this);
+            _week.MinimumCellSize = 48;
+            if (_days is not null) _singleMonth.Children.Remove(_days);
+            _days = new(this, month); _days.CellSizeChanged += size => _week.MinimumCellSize = size;
+            _singleMonth.Children.Add(_days);
         }
-        foreach (var cell in _days.Children.OfType<Grid>())
+        _days?.Refresh();
+        if (SelectionMode == MaterialDateSelectionMode.Range)
         {
-            var band = (Border)cell.Children[0];
-            var button = (MaterialCalendarDay)cell.Children[1];
-            var date = button.Date;
-            button.IsEnabled = IsDateAvailable(date);
-            button.AnimateContainer = SelectionMode == MaterialDateSelectionMode.Single || date == SelectedDate;
-            button.IsInRange = SelectionMode == MaterialDateSelectionMode.Range && SelectedDate is { } start && RangeEnd is { } end && date >= start && date <= end;
-            button.IsChecked = date == SelectedDate || SelectionMode == MaterialDateSelectionMode.Range && date == RangeEnd;
-            button.IsToday = date == Today;
-            band.IsVisible = button.IsInRange && SelectedDate != RangeEnd;
-            MaterialPickerSupport.Resource(band, Border.BackgroundProperty, "SecondaryContainerBrush");
-            var isStart = date == SelectedDate;
-            var isEnd = date == RangeEnd;
-            Grid.SetColumn(band, isStart ? 1 : 0);
-            Grid.SetColumnSpan(band, isStart || isEnd ? 1 : 2);
-            // Pinned DateRangePicker.drawRangeBackground is rectangular, beginning/ending at
-            // endpoint centers. The selected circle supplies the outward rounded cap; rounding
-            // a half-cell instead removes the joining corner (and creates a false range notch).
-            band.CornerRadius = default;
-            var status = date == SelectedDate ? SelectionMode == MaterialDateSelectionMode.Single ? Labels.Selected : Labels.RangeStart
-                : date == RangeEnd && SelectionMode == MaterialDateSelectionMode.Range ? Labels.RangeEnd : button.IsInRange ? Labels.InRange : "";
-            if (button.IsToday) status += " " + Labels.Today;
-            AutomationProperties.SetName(button, date.ToString("D", DateCulture));
-            AutomationProperties.SetItemStatus(button, status);
+            _rangeCalendar.Refresh(!Equals(_rangeCulture, Culture));
+            _rangeCulture = Culture;
         }
-        // Range visibility and half-cell spans change the children's arrange geometry
-        // while the month grid retains the same desired size.
-        _days.InvalidateArrange();
         if (_choosingYear && _years.Children.Count == 0)
         {
             for (var year = MinimumDate.Year; year <= MaximumDate.Year; year++)
@@ -354,7 +366,8 @@ public class MaterialDatePicker : TemplatedControl
             if (!IsDateAvailable(target)) return;
             SetCurrentValue(DisplayMonthProperty, new DateOnly(target.Year, target.Month, 1));
         }
-        this.GetVisualDescendants().OfType<MaterialCalendarDay>().FirstOrDefault(d => d.Date == target)?.Focus();
+        if (SelectionMode == MaterialDateSelectionMode.Range) _rangeCalendar.FocusDate(target);
+        else this.GetVisualDescendants().OfType<MaterialCalendarDay>().FirstOrDefault(d => d.Date == target)?.Focus();
         e.Handled = true;
     }
 
@@ -362,7 +375,7 @@ public class MaterialDatePicker : TemplatedControl
     public MaterialOverlaySession Show(MaterialOverlayHost host, MaterialOverlayOptions? options = null)
     {
         if (_dialog?.IsOpen == true) throw new InvalidOperationException("Picker is already open.");
-        var dialog = new MaterialDialog { Content = this, Padding = new Thickness(0), MaxWidth = 360,
+        var dialog = new MaterialDialog { Content = this, Padding = new Thickness(0), MaxWidth = SelectionMode == MaterialDateSelectionMode.Range ? double.PositiveInfinity : 360,
             ConfirmText = Labels.Confirm, CancelText = Labels.Cancel, IsConfirmEnabled = IsValid && IsEffectivelyEnabled };
         _dialog = dialog;
         AutomationProperties.SetName(dialog, Labels.Title);
@@ -373,7 +386,7 @@ public class MaterialDatePicker : TemplatedControl
                 ? new MaterialDateRange(SelectedDate!.Value, RangeEnd!.Value) : SelectedDate;
         };
         MaterialOverlaySession session;
-        try { session = dialog.Show(host, options ?? new MaterialOverlayOptions { InitialFocus = Mode == MaterialDatePickerMode.Input ? StartInput : _month }); }
+        try { session = dialog.Show(host, options ?? new MaterialOverlayOptions { InitialFocus = Mode == MaterialDatePickerMode.Input ? StartInput : SelectionMode == MaterialDateSelectionMode.Range ? _mode : _month }); }
         catch { dialog.Content = null; _dialog = null; throw; }
         session.Closed += (_, _) => { dialog.Content = null; _dialog = null; };
         return session;
@@ -407,6 +420,7 @@ public class MaterialDatePicker : TemplatedControl
         }
         if (change.Property == CultureProperty || change.Property == InputFormatProperty)
         {
+            if (change.Property == CultureProperty) _dateCulture = null;
             if (IsValid) SynchronizeText();
             else { ReadInput(); return; } // Retained native text now belongs to the new grammar.
         }
@@ -415,7 +429,7 @@ public class MaterialDatePicker : TemplatedControl
         if (change.Property == ModeProperty) _modePanel.Prepare();
         Refresh();
         if (change.Property == ModeProperty && TopLevel.GetTopLevel(this) is not null)
-        { if (Mode == MaterialDatePickerMode.Input) StartInput.Focus(); else _month.Focus(); }
+        { if (Mode == MaterialDatePickerMode.Input) StartInput.Focus(); else if (SelectionMode == MaterialDateSelectionMode.Range) _mode.Focus(); else _month.Focus(); }
     }
     private sealed class DatePickerPeer(MaterialDatePicker owner) : ControlAutomationPeer(owner)
     {
