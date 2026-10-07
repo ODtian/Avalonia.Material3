@@ -59,13 +59,14 @@ public class MaterialFab : Button
     public MaterialFab() { DataTemplates.Add(MaterialSymbolTemplate.Instance); UpdateSize(); }
     private void UpdateSize()
     {
+        MaterialFabMotion.SetGeometryAnimated(this, this is MaterialExpansionButton || ToolbarExpansion is not null);
         var old = _lastPresentedSize;
         _lastPresentedSize = PresentedSize;
         RaisePropertyChanged(PresentedSizeProperty, old, PresentedSize);
         RaisePropertyChanged(ContainerSizeProperty, GetContainerSize(old), ContainerSize);
         RaisePropertyChanged(IconSizeProperty, GetIconSize(old), IconSize);
         foreach (var size in Enum.GetValues<MaterialFabSize>())
-            PseudoClasses.Set(":" + size.ToString().ToLowerInvariant(), PresentedSize == size);
+            PseudoClasses.Set(":" + size.ToString().ToLowerInvariant(), Size == size);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {

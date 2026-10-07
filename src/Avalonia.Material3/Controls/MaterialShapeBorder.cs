@@ -22,8 +22,7 @@ internal sealed class MaterialShapeBorder : MaterialElevationBorder
     private CornerRadius _target;
     private MaterialSpring _activeSpring = new(1, 1600);
     private bool _attached;
-    private double _previousProgress;
-    private double _previousTime;
+    private (double TL, double TR, double BR, double BL) _velocity, _fromVelocity;
 
     public MaterialShapeBorder() => _frames = MaterialRenderFrames.Bind(this, Advance);
 
@@ -70,13 +69,14 @@ internal sealed class MaterialShapeBorder : MaterialElevationBorder
         Stop();
         if (!animate || !_attached || ShapeSpring.IsInstant || CornerRadius == target)
         {
+            _velocity = default;
             SetCurrentValue(CornerRadiusProperty, target);
             return;
         }
         _from = CornerRadius;
         _target = target;
         _activeSpring = ShapeSpring;
-        _previousProgress = _previousTime = 0;
+        _fromVelocity = _velocity;
         _frames.Restart();
         _frames.SetRunning(true);
     }
@@ -84,22 +84,22 @@ internal sealed class MaterialShapeBorder : MaterialElevationBorder
     private bool Advance(MaterialFrame frame)
     {
         var time = frame.Elapsed.TotalSeconds;
-        var progress = MaterialSpringResponse.Evaluate(time, _activeSpring);
-        var amplitude = Math.Max(Math.Max(Math.Abs(_from.TopLeft - _target.TopLeft), Math.Abs(_from.TopRight - _target.TopRight)),
-            Math.Max(Math.Abs(_from.BottomRight - _target.BottomRight), Math.Abs(_from.BottomLeft - _target.BottomLeft)));
-        var speed = time > _previousTime ? Math.Abs(progress - _previousProgress) / (time - _previousTime) * amplitude : double.PositiveInfinity;
-        if (!double.IsFinite(progress) || time >= 10 || (Math.Abs(1 - progress) * amplitude <= 0.01 && speed <= 0.1))
+        var tl = MaterialSpringResponse.Sample(time, _from.TopLeft, _target.TopLeft, _fromVelocity.TL, _activeSpring);
+        var tr = MaterialSpringResponse.Sample(time, _from.TopRight, _target.TopRight, _fromVelocity.TR, _activeSpring);
+        var br = MaterialSpringResponse.Sample(time, _from.BottomRight, _target.BottomRight, _fromVelocity.BR, _activeSpring);
+        var bl = MaterialSpringResponse.Sample(time, _from.BottomLeft, _target.BottomLeft, _fromVelocity.BL, _activeSpring);
+        _velocity = (tl.Velocity, tr.Velocity, br.Velocity, bl.Velocity);
+        var distance = Math.Max(Math.Max(Math.Abs(tl.Value - _target.TopLeft), Math.Abs(tr.Value - _target.TopRight)), Math.Max(Math.Abs(br.Value - _target.BottomRight), Math.Abs(bl.Value - _target.BottomLeft)));
+        var speed = Math.Max(Math.Max(Math.Abs(tl.Velocity), Math.Abs(tr.Velocity)), Math.Max(Math.Abs(br.Velocity), Math.Abs(bl.Velocity)));
+        if (!double.IsFinite(distance) || time >= 10 || distance <= .01 && speed <= .625)
         {
+            _velocity = default;
             SetCurrentValue(CornerRadiusProperty, _target);
             Stop();
             return false;
         }
-        static double Mix(double start, double end, double progress) => Math.Max(0, start + (end - start) * progress);
         SetCurrentValue(CornerRadiusProperty, Resolve(new CornerRadius(
-            Mix(_from.TopLeft, _target.TopLeft, progress), Mix(_from.TopRight, _target.TopRight, progress),
-            Mix(_from.BottomRight, _target.BottomRight, progress), Mix(_from.BottomLeft, _target.BottomLeft, progress))));
-        _previousProgress = progress;
-        _previousTime = time;
+            Math.Max(0, tl.Value), Math.Max(0, tr.Value), Math.Max(0, br.Value), Math.Max(0, bl.Value))));
         return true;
     }
 

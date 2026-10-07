@@ -507,7 +507,7 @@ public class CarouselRefreshScenarioTests
             var current = images.Single(image => image.Source == items[index].Image);
             var currentMask = current.GetVisualAncestors().OfType<Border>().First();
             var largestMask = images.Select(image => image.GetVisualAncestors().OfType<Border>().First().Bounds.Width).Max();
-            Assert.Equal(largestMask, currentMask.Bounds.Width);
+            Assert.InRange(Math.Abs(largestMask - currentMask.Bounds.Width), 0, 1); // Pinned snap offsets are integer pixels.
         }
     }
 
@@ -531,7 +531,7 @@ public class CarouselRefreshScenarioTests
         var refresh = new MaterialPullToRefresh { IsExpressive = expressive, Status = MaterialProgressStatus.Running, Height = 48 };
         using var host = new BrowseHost(refresh);
         Control indicator = expressive
-            ? refresh.GetVisualDescendants().OfType<MaterialLoadingIndicator>().Single()
+            ? refresh.GetVisualDescendants().OfType<MaterialLoadingIndicator>().Single(indicator => indicator.IsIndeterminate)
             : refresh.GetVisualDescendants().OfType<Border>().Single(border => border.Bounds.Size == new Size(40, 40));
         Assert.InRange(indicator.Bounds.Top, 0, 48);
         Assert.InRange(indicator.Bounds.Bottom, 0, 48);

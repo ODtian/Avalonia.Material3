@@ -190,6 +190,12 @@ internal sealed class MaterialCarouselStrategy
     }
     private double SnapOffset(int index, int count)
     {
+        // A short collection whose entire scroll range is an end-shift has several focal
+        // items already at the start. Selecting one retains that focal arrangement.
+        var maximum = Math.Max(0, ItemWidth * count + _gap * (count - 1) - _space);
+        var focalCount = LastFocal(_default) - FirstFocal(_default) + 1;
+        if (maximum <= _endDistance + .001 && index < focalCount)
+            return index * (ItemWidth + _gap);
         var offset = _default[FirstFocal(_default)].Unadjusted - ItemWidth / 2;
         if (index < _start.Count)
         {

@@ -196,14 +196,12 @@ internal sealed class MaterialProgressPresenter : Control
         if (unknown)
         {
             var t = elapsed % 6;
-            var half = t < 3 ? t / 3 : (6 - t) / 3;
-            progress = .1 + .77 * indicator.ProgressEasing.Ease(half);
+            progress = t < 3 ? .1 + .77 * (t / 3) : .87 - .77 * indicator.ProgressEasing.Ease((t - 3) / 3);
             start = t / 6 * 3 + (Math.Floor(t / 1.5) + indicator.DecelerateEasing.Ease(Math.Clamp((t % 1.5) / .3, 0, 1))) / 4;
         }
         var gap = Math.Min(progress, 8 / (Math.PI * diameter));
-        if (!unknown || expressive)
-            Arc(context, _trackArc, Stroke(ref _trackPen, indicator.TrackBrush, thickness), center, radius,
-                start + progress + gap, Math.Max(0, 1 - progress - 2 * gap));
+        Arc(context, _trackArc, Stroke(ref _trackPen, indicator.TrackBrush, thickness), center, radius,
+            start + progress + gap, Math.Max(0, 1 - progress - 2 * gap));
         Arc(context, _activeArc, Stroke(ref _activePen, indicator.Foreground, thickness), center, radius, start, progress,
             expressive ? indicator.WaveAmplitude * 1.6 : 0, elapsed);
     }
