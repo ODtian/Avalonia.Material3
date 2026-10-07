@@ -8,6 +8,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Avalonia.Animation.Easings;
+using Avalonia.Material3.Tokens;
 
 namespace Avalonia.Material3.Controls;
 
@@ -33,6 +34,7 @@ public sealed class MaterialCarouselItem : AvaloniaObject
 /// <summary>A host-controlled collection with a binding-preserving current position.</summary>
 public sealed class MaterialCarousel : TemplatedControl
 {
+    private static readonly StyledProperty<MaterialSpring> ReducedMotionSpringProperty = AvaloniaProperty.Register<MaterialCarousel, MaterialSpring>("ReducedMotionSpring", MaterialSpringScheme.Expressive.DefaultSpatial);
     public static readonly StyledProperty<MaterialCarouselLayout> LayoutProperty = AvaloniaProperty.Register<MaterialCarousel, MaterialCarouselLayout>(nameof(Layout), validate: Enum.IsDefined);
     public static readonly StyledProperty<double> PreferredItemWidthProperty = AvaloniaProperty.Register<MaterialCarousel, double>(nameof(PreferredItemWidth), 186, validate: value => double.IsFinite(value) && value >= 48);
     public static readonly StyledProperty<double> ItemSpacingProperty = AvaloniaProperty.Register<MaterialCarousel, double>(nameof(ItemSpacing), 0, validate: value => double.IsFinite(value) && value >= 0);
@@ -59,15 +61,21 @@ public sealed class MaterialCarousel : TemplatedControl
     private Point _start;
     private double _gestureInitialPosition;
     private double _dragFraction;
-    private double _presentationPosition, _settleFrom, _settleTo, _settleStart, _layoutStart, _layoutProgress = 1;
+    private double _presentationPosition, _settleFrom, _settleTo, _settleStart, _settleVelocity, _fromVelocity, _layoutStart, _layoutProgress = 1;
     private bool _animating, _layoutAnimating, _attached;
     private readonly MaterialFrameLease _frames;
-    public MaterialCarousel() => _frames = MaterialRenderFrames.Bind(this, Advance);
+    public MaterialCarousel()
+    {
+        _frames = MaterialRenderFrames.Bind(this, Advance);
+        MaterialPickerSupport.Resource(this, ReducedMotionSpringProperty, "Motion.DefaultSpatial");
+    }
     internal event Action? PresentationChanged;
     internal event Action? ContentChanged;
     internal event Action? LayoutChanged;
     internal double LayoutProgress => _layoutProgress;
     internal IReadOnlyList<MaterialCarouselItem> ItemList => _items;
+    internal double ItemStride { get; set; }
+    private bool HasDurationOverride => IsSet(MotionDurationProperty);
     static MaterialCarousel() => FocusableProperty.OverrideDefaultValue<MaterialCarousel>(true);
     public IEnumerable<MaterialCarouselItem>? ItemsSource { get => GetValue(ItemsSourceProperty); set => SetValue(ItemsSourceProperty, value); }
     public int CurrentIndex { get => GetValue(CurrentIndexProperty); set => SetValue(CurrentIndexProperty, value); }
@@ -113,22 +121,16 @@ public sealed class MaterialCarousel : TemplatedControl
         }
         if (change.Property == CurrentIndexProperty)
         {
-            if (_frames.IsRunning) _frames.Sample();
-            _settleFrom = _presentationPosition;
-            _settleTo = CurrentIndex;
-            _settleStart = _frames.Elapsed.TotalMilliseconds;
-            _animating = true;
-            Advance(new(_frames.Elapsed, TimeSpan.Zero, false));
-            _frames.SetRunning(_animating || _layoutAnimating);
+            AnimatePosition(CurrentIndex);
             UpdatePosition();
         }
         if (change.Property == AnimationTimeProperty) _frames.SetTime(AnimationTime);
-        if (change.Property == MotionDurationProperty || change.Property == MotionEasingProperty) _frames.Sample();
+        if (change.Property == MotionDurationProperty || change.Property == MotionEasingProperty || change.Property == ReducedMotionSpringProperty) _frames.Sample();
         if (change.Property == IsEffectivelyEnabledProperty && !IsEffectivelyEnabled) CancelGesture();
         if (change.Property == LayoutProperty || change.Property == PreferredItemWidthProperty || change.Property == ItemSpacingProperty || change.Property == CornerRadiusProperty || change.Property == FlowDirectionProperty)
         {
             CancelGesture();
-            _layoutAnimating = _attached && IsEffectivelyEnabled && MotionDuration > TimeSpan.Zero
+            _layoutAnimating = HasDurationOverride && _attached && IsEffectivelyEnabled && !GetValue(ReducedMotionSpringProperty).IsInstant && MotionDuration > TimeSpan.Zero
                 && change.Property != FlowDirectionProperty && change.Property != CornerRadiusProperty;
             _layoutStart = _frames.Elapsed.TotalMilliseconds;
             _layoutProgress = _layoutAnimating ? 0 : 1;
@@ -192,7 +194,9 @@ public sealed class MaterialCarousel : TemplatedControl
         base.OnPointerPressed(e);
         if (!IsEffectivelyEnabled || _pointer is not null || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed || MaterialGestureOwnership.IsInteractive(e.Source)) return;
         _start = e.GetPosition(this);
-        _gestureInitialPosition = Layout == MaterialCarouselLayout.Uncontained ? _presentationPosition : CurrentIndex;
+        if (_frames.IsRunning) _frames.Sample();
+        _gestureInitialPosition = _presentationPosition;
+        _animating = false; _settleVelocity = 0;
         _pointer = e.Pointer;
         _dragFraction = 0;
         _pressedItem = (e.Source as Visual)?.GetSelfAndVisualAncestors().OfType<Border>().Select(b => b.Tag).OfType<MaterialCarouselItem>().FirstOrDefault();
@@ -207,9 +211,9 @@ public sealed class MaterialCarousel : TemplatedControl
         var vertical = Layout == MaterialCarouselLayout.FullScreen;
         var primary = vertical ? delta.Y : delta.X;
         var cross = vertical ? delta.X : delta.Y;
-        if (Math.Abs(primary) < 12 || Math.Abs(primary) < Math.Abs(cross) * 1.5) return;
+        if (_dragFraction == 0 && (Math.Abs(primary) < 12 || Math.Abs(primary) < Math.Abs(cross) * 1.5)) return;
         // Owner-local coordinates already cross Avalonia's RTL mirror: logical negative means forward.
-        var movement = -primary / Math.Max(48, vertical ? Bounds.Height : Math.Min(PreferredItemWidth, Bounds.Width));
+        var movement = -primary / Math.Max(.001, vertical ? Bounds.Height : ItemStride > 0 ? ItemStride : Math.Min(PreferredItemWidth, Bounds.Width));
         _dragFraction = Layout == MaterialCarouselLayout.Uncontained ? movement : Math.Clamp(movement, -1, 1);
         if (Layout != MaterialCarouselLayout.Uncontained && (!CanMoveNext && _dragFraction > 0 || !CanMovePrevious && _dragFraction < 0)) _dragFraction = 0;
         _animating = false;
@@ -238,7 +242,7 @@ public sealed class MaterialCarousel : TemplatedControl
         else if (fraction >= .25) MoveNext();
         else if (fraction <= -.25) MovePrevious();
         else if (tap && tappedItem is not null && _items.IndexOf(tappedItem) is var index && index >= 0) { if (!MoveTo(index)) FinishAnimation(); }
-        else FinishAnimation();
+        else AnimatePosition(CurrentIndex);
         e.Handled = Math.Abs(fraction) > 0;
     }
     private void CancelGesture()
@@ -263,13 +267,26 @@ public sealed class MaterialCarousel : TemplatedControl
     private bool Advance(MaterialFrame frame)
     {
         var changed = false;
-        var instant = frame.Rewound || MotionDuration == TimeSpan.Zero || !IsEffectivelyEnabled || !_attached;
+        var instant = frame.Rewound || GetValue(ReducedMotionSpringProperty).IsInstant || HasDurationOverride && MotionDuration == TimeSpan.Zero || !IsEffectivelyEnabled || !_attached;
         var time = frame.Elapsed.TotalMilliseconds;
         if (_animating)
         {
-            var progress = instant ? 1 : Math.Clamp((time - _settleStart) / MotionDuration.TotalMilliseconds, 0, 1);
-            if (progress >= 1) _animating = false;
-            changed |= SetPresentation(_settleFrom + (_settleTo - _settleFrom) * MotionEasing.Ease(progress), false);
+            double value;
+            if (instant) { value = _settleTo; _settleVelocity = 0; _animating = false; }
+            else if (HasDurationOverride)
+            {
+                var progress = Math.Clamp((time - _settleStart) / MotionDuration.TotalMilliseconds, 0, 1);
+                value = _settleFrom + (_settleTo - _settleFrom) * MotionEasing.Ease(progress);
+                if (progress >= 1) { _animating = false; _settleVelocity = 0; }
+            }
+            else
+            {
+                var elapsed = Math.Max(0, (time - _settleStart) / 1000);
+                (value, _settleVelocity) = MaterialSpringResponse.Sample(elapsed, _settleFrom, _settleTo, _fromVelocity, new(1, 200));
+                if (Math.Abs(value - _settleTo) < .001 && Math.Abs(_settleVelocity) < .01 || elapsed >= 10)
+                { value = _settleTo; _settleVelocity = 0; _animating = false; }
+            }
+            changed |= SetPresentation(value, false);
         }
         if (_layoutAnimating)
         {
@@ -284,9 +301,18 @@ public sealed class MaterialCarousel : TemplatedControl
     }
     private void FinishAnimation()
     {
-        _animating = false;
+        _animating = false; _settleVelocity = 0;
         SetPresentation(CurrentIndex);
         _frames?.SetRunning(_layoutAnimating);
+    }
+    private void AnimatePosition(double target)
+    {
+        if (_frames.IsRunning) _frames.Sample();
+        _settleFrom = _presentationPosition; _fromVelocity = _settleVelocity;
+        _settleTo = target; _settleStart = _frames.Elapsed.TotalMilliseconds;
+        _animating = true;
+        Advance(new(_frames.Elapsed, TimeSpan.Zero, false));
+        _frames.SetRunning(_animating || _layoutAnimating);
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {

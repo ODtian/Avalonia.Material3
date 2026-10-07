@@ -2,7 +2,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Material3.Tokens;
 
-/// <summary>Six normative elevation heights. Shadows are an overridable Avalonia projection, not a native renderer claim.</summary>
+/// <summary>Six Material elevation heights with the official Material Web key and ambient shadow recipes.</summary>
 public sealed record MaterialElevation
 {
     public double Level0 { get; init; }
@@ -12,8 +12,8 @@ public sealed record MaterialElevation
     public double Level4 { get; init; } = 8;
     public double Level5 { get; init; } = 12;
     public BoxShadows Shadow0 { get; init; }
-    // Level1 intentionally preserves the initial #2 button projection.
-    public BoxShadows Shadow1 { get; init; } = BoxShadows.Parse("0 1 2 0 #26000000");
+    // material-web703aed25 elevation/internal/_elevation.scss: key30%, ambient15%.
+    public BoxShadows Shadow1 { get; init; } = BoxShadows.Parse("0 1 2 0 #4D000000, 0 1 3 1 #26000000");
     public BoxShadows Shadow2 { get; init; } = BoxShadows.Parse("0 1 2 0 #4D000000, 0 2 6 2 #26000000");
     public BoxShadows Shadow3 { get; init; } = BoxShadows.Parse("0 1 3 0 #4D000000, 0 4 8 3 #26000000");
     public BoxShadows Shadow4 { get; init; } = BoxShadows.Parse("0 2 3 0 #4D000000, 0 6 10 4 #26000000");

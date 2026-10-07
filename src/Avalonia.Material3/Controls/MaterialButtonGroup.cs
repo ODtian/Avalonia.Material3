@@ -40,11 +40,9 @@ public partial class MaterialButtonGroup : Panel
     public static readonly StyledProperty<double> ExpandedRatioProperty =
         AvaloniaProperty.Register<MaterialButtonGroup, double>(nameof(ExpandedRatio), .15, validate: value => double.IsFinite(value) && value >= 0 && value <= 1);
     public double ExpandedRatio { get => GetValue(ExpandedRatioProperty); set => SetValue(ExpandedRatioProperty, value); }
-    private MaterialGroupButton? _expanding;
-    private double _expansion, _from, _target;
+    private readonly Dictionary<MaterialGroupButton, PressExpansion> _expansions = [];
     private MaterialSpring _spring = new(.6, 1500);
     private readonly MaterialFrameLease _frames;
-    private MaterialSpring _activeSpring = new(.6, 1500);
     private double[] _widths = [];
     private IDisposable? _springSubscription;
     public MaterialButtonGroup()
@@ -65,7 +63,8 @@ public partial class MaterialButtonGroup : Panel
             {
                 if (_frames.IsRunning) _frames.Sample();
                 _spring = spring;
-                RetargetExpansion(_target);
+                foreach (var track in _expansions.Values) track.Retarget(track.Target, _frames.Elapsed.TotalSeconds, _spring);
+                if (_spring.IsInstant) InvalidateArrange();
             }
         }));
     }
@@ -75,30 +74,47 @@ public partial class MaterialButtonGroup : Panel
         CloseOverflow(false);
         base.OnDetachedFromVisualTree(e);
     }
-    private void RetargetExpansion(double target)
+    private void RetargetExpansion(MaterialGroupButton button, bool pressed)
     {
         if (_frames.IsRunning) _frames.Sample();
-        _target = target;
-        _frames.SetRunning(false);
-        if (_spring.IsInstant || Math.Abs(_expansion - target) < .0000001) _expansion = target;
-        else
-        {
-            _from = _expansion;
-            _activeSpring = _spring;
-            _frames.Restart();
-            _frames.SetRunning(true);
-        }
+        if (!_expansions.TryGetValue(button, out var track)) _expansions[button] = track = new();
+        track.ReleasePending = !pressed && !_spring.IsInstant && track.Value <= .75;
+        track.Retarget(pressed || track.ReleasePending ? 1 : 0, _frames.Elapsed.TotalSeconds, _spring);
+        _frames.SetRunning(_expansions.Values.Any(item => item.IsMoving || item.ReleasePending));
         InvalidateArrange();
     }
     private bool AdvanceExpansion(MaterialFrame frame)
     {
-        var t = frame.Elapsed.TotalSeconds;
-        var response = MaterialSpringResponse.Evaluate(t, _activeSpring);
-        var next = Math.Clamp(_from + (_target - _from) * response, 0, 1.5);
-        var settled = !double.IsFinite(response) || t >= 10 || (t > .25 && Math.Abs(next - _target) < .0001);
-        _expansion = settled ? _target : next;
+        foreach (var track in _expansions.Values)
+        {
+            track.Sample(frame.Elapsed.TotalSeconds);
+            // The reference lets even a short press visibly reach .75 before releasing.
+            if (track.ReleasePending && track.Value > .75)
+            { track.ReleasePending = false; track.Retarget(0, frame.Elapsed.TotalSeconds, _spring); }
+        }
         InvalidateArrange();
-        return !settled;
+        return _expansions.Values.Any(item => item.IsMoving || item.ReleasePending);
+    }
+    private sealed class PressExpansion
+    {
+        internal double Value, Target, Velocity;
+        private double _from, _fromVelocity, _start;
+        private MaterialSpring _spring = new(.6, 800);
+        internal bool IsMoving, ReleasePending;
+        internal void Retarget(double target, double now, MaterialSpring spring)
+        {
+            if (Target == target && _spring == spring && !spring.IsInstant) return;
+            _from = Value; _fromVelocity = Velocity; _start = now; Target = target; _spring = spring;
+            IsMoving = !spring.IsInstant && (Math.Abs(Value - target) > .0001 || Math.Abs(Velocity) > .01);
+            if (!IsMoving) { Value = target; Velocity = 0; }
+        }
+        internal void Sample(double now)
+        {
+            if (!IsMoving) return;
+            (Value, Velocity) = MaterialSpringResponse.Sample(Math.Max(0, now - _start), _from, Target, _fromVelocity, _spring);
+            if (now - _start >= 10 || (Math.Abs(Value - Target) < .001 && Math.Abs(Velocity) < .01))
+            { Value = Target; Velocity = 0; IsMoving = false; }
+        }
     }
     private sealed class SpringObserver(Action<object?> changed) : IObserver<object?>
     {
@@ -115,6 +131,7 @@ public partial class MaterialButtonGroup : Panel
             removed.Group = null;
             removed.UpdateGroupShape();
             _naturalSizes.Remove(removed);
+            _expansions.Remove(removed);
             _overflowed.Remove(removed);
             _tracked.Remove(removed);
         }
@@ -144,8 +161,7 @@ public partial class MaterialButtonGroup : Panel
             Reconcile();
         if (args.Property == MaterialButton.IsPressedProperty && Variant == MaterialButtonGroupVariant.Unconnected && this is not MaterialSegmentedButtonGroup)
         {
-            if (sender is MaterialGroupButton { IsPressed: true } button) _expanding = button;
-            RetargetExpansion(Buttons.Any(button => button.IsPressed) ? 1 : 0);
+            if (sender is MaterialGroupButton button) RetargetExpansion(button, button.IsPressed);
         }
     }
 
@@ -283,33 +299,31 @@ public partial class MaterialButtonGroup : Panel
         {
             if (_widths.Length < row.Count) _widths = new double[row.Count];
             double height = 0, offset = 5;
-            var active = -1;
             for (var i = 0; i < row.Count; i++)
             {
                 var child = row[i];
                 height = Math.Max(height, child.DesiredSize.Height);
                 _widths[i] = this is MaterialSegmentedButtonGroup && horizontal
                     ? (finalSize.Width - 10 - (row.Count - 1) * spacing) / row.Count : child.DesiredSize.Width;
-                if (child == _expanding) active = i;
             }
-            if (active >= 0 && horizontal && Variant == MaterialButtonGroupVariant.Unconnected && this is not MaterialSegmentedButtonGroup)
+            if (horizontal && Variant == MaterialButtonGroupVariant.Unconnected && this is not MaterialSegmentedButtonGroup)
             {
-                var left = active - 1;
-                var right = active + 1;
-                var leftCap = left >= 0 ? Math.Min(16, Math.Max(0, _widths[left] - 48)) : 0;
-                var rightCap = right < row.Count ? Math.Min(16, Math.Max(0, _widths[right] - 48)) : 0;
-                var count = (left >= 0 ? 1 : 0) + (right < row.Count ? 1 : 0);
-                var delta = Math.Min(_widths[active] * ExpandedRatio * _expansion, leftCap + rightCap);
-                var share = count > 0 ? delta / count : 0;
-                var compressLeft = Math.Min(share, leftCap);
-                var compressRight = Math.Min(share, rightCap);
-                var remaining = delta - compressLeft - compressRight;
-                var extra = Math.Min(remaining, leftCap - compressLeft);
-                compressLeft += extra;
-                compressRight += Math.Min(remaining - extra, rightCap - compressRight);
-                if (left >= 0) _widths[left] -= compressLeft;
-                if (right < row.Count) _widths[right] -= compressRight;
-                _widths[active] += compressLeft + compressRight;
+                for (var active = 0; active < row.Count; active++)
+                {
+                    if (row[active] is not MaterialGroupButton current || !_expansions.TryGetValue(current, out var track) || track.Value <= 0) continue;
+                    double Limit(int i) => i >= 0 && i < row.Count && row[i] is MaterialButton neighbor
+                        ? Math.Min(neighbor.Padding.Left, neighbor.Padding.Right) : 0;
+                    var left = active - 1; var right = active + 1;
+                    var middle = left >= 0 && right < row.Count;
+                    var growth = track.Value * (middle
+                        ? Math.Min(_widths[active] * ExpandedRatio / 2, Math.Min(Limit(left), Limit(right)))
+                        : Math.Min(_widths[active] * ExpandedRatio, Limit(left >= 0 ? left : right)));
+                    var compressLeft = left >= 0 ? Math.Min(growth, _widths[left]) : 0;
+                    var compressRight = right < row.Count ? Math.Min(growth, _widths[right]) : 0;
+                    if (left >= 0) _widths[left] -= compressLeft;
+                    if (right < row.Count) _widths[right] -= compressRight;
+                    _widths[active] += compressLeft + compressRight;
+                }
             }
             for (var i = 0; i < row.Count; i++)
             {
