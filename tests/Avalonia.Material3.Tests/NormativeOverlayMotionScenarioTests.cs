@@ -11,6 +11,21 @@ namespace Avalonia.Material3.Tests;
 public class NormativeOverlayMotionScenarioTests
 {
     [AvaloniaFact]
+    public void Closing_snackbar_keeps_its_captured_location_when_the_host_grows()
+    {
+        using var host = new FeedbackHost();
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true }; host.Render();
+        var snackbar = new MaterialSnackbar { Content = "Saved", Duration = Timeout.InfiniteTimeSpan };
+        snackbar.Show(host.Overlay); host.Render();
+        var point = host.Center(snackbar);
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with {
+            FastSpatial = new(.6, 800) { IsInstant = true }, FastEffects = new(1, 1) } }; host.Render();
+        snackbar.Dismiss(); host.Window.Height = 700; host.Render();
+        // InverseSurface raster stays at the accepted close frame; the larger host exposes extra body.
+        Assert.InRange(host.PixelAt(point).R, (byte)0, (byte)100);
+    }
+
+    [AvaloniaFact]
     public async Task Dismissible_standard_drawer_moves_content_with_its_opening_track_and_reduces_to_the_final_layout()
     {
         using var host = new FeedbackHost();
