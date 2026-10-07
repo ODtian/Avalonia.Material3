@@ -14,6 +14,7 @@ internal sealed class MaterialMotionValue : IDisposable
     private IEasing _easing = new LinearEasing();
     private double _from, _target, _initialVelocity, _velocity;
     private double _duration, _delay;
+    private double _threshold = .01;
     internal double Value { get; private set; }
     internal bool IsRunning => _frames.IsRunning;
 
@@ -31,14 +32,16 @@ internal sealed class MaterialMotionValue : IDisposable
         _velocity = 0;
         _paint(Value);
     }
-    internal void Spring(double target, MaterialSpring spring)
+    internal void Spring(double target, MaterialSpring spring, double visibilityThreshold = .01)
     {
         _frames.Sample();
         if (spring.IsInstant) { Snap(target); return; }
         if (target == _target && _spring == spring) return;
         _from = Value; _target = target; _initialVelocity = _velocity;
         _spring = spring; _delay = 0;
+        _threshold = visibilityThreshold;
         _frames.Restart(); _frames.SetRunning(true);
+        _paint(Value);
     }
     internal void Tween(double target, TimeSpan duration, IEasing? easing = null, TimeSpan delay = default)
     {
@@ -58,7 +61,7 @@ internal sealed class MaterialMotionValue : IDisposable
         if (_spring is { } spring)
         {
             (Value, _velocity) = MaterialSpringResponse.Sample(time, _from, _target, _initialVelocity, spring);
-            running = Math.Abs(Value - _target) > .001 || Math.Abs(_velocity) > .01;
+            running = Math.Abs(Value - _target) > _threshold || Math.Abs(_velocity) > _threshold * 62.5;
         }
         else
         {
