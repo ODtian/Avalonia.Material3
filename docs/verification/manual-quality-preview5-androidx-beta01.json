@@ -1,0 +1,1682 @@
+[
+  {
+    "file": "androidMain/androidx/compose/material3/AndroidAlertDialog.android.kt",
+    "alpha29Sha256": "966B048CCE1FE6C111B863D204BF714E6F6641856B8F922F49233D0A0518C9F0",
+    "beta01Sha256": "966B048CCE1FE6C111B863D204BF714E6F6641856B8F922F49233D0A0518C9F0",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/AndroidMenu.android.kt",
+    "alpha29Sha256": "78E4994E3772D58E594972FD902BA42BDBA7E56BC9FAA64534A4C57FEBE05D9C",
+    "beta01Sha256": "78E4994E3772D58E594972FD902BA42BDBA7E56BC9FAA64534A4C57FEBE05D9C",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/CalendarLocale.android.kt",
+    "alpha29Sha256": "DA991B5CCC9B0CB103814B577BF465DDDCBF62B40B3F8C59C9E96CD4E4BEA565",
+    "beta01Sha256": "DA991B5CCC9B0CB103814B577BF465DDDCBF62B40B3F8C59C9E96CD4E4BEA565",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/ComponentStyles.android.kt",
+    "alpha29Sha256": "3BCC1A018C299286CD387F1AFA7E7156517F0E2A73FA5F0D9D13FFDE2EDA3C09",
+    "beta01Sha256": "3BCC1A018C299286CD387F1AFA7E7156517F0E2A73FA5F0D9D13FFDE2EDA3C09",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/DatePickerDialog.android.kt",
+    "alpha29Sha256": "10408A50BF9F1FA6BBBE3180EC65DBFAEE6E95268E836658081C5BA57B1C408A",
+    "beta01Sha256": "10408A50BF9F1FA6BBBE3180EC65DBFAEE6E95268E836658081C5BA57B1C408A",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/DynamicTonalPalette.android.kt",
+    "alpha29Sha256": "BA5D6D4FA39EA52F022E898DBDA7DDB7309C054B60AF2F3089A74E9A8025A66B",
+    "beta01Sha256": "BA5D6D4FA39EA52F022E898DBDA7DDB7309C054B60AF2F3089A74E9A8025A66B",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/ExposedDropdownMenu.android.kt",
+    "alpha29Sha256": "334A77F2AAB7750067B21F4E49AB79D6270A1592342E5AD5403947F8C3D9A06C",
+    "beta01Sha256": "334A77F2AAB7750067B21F4E49AB79D6270A1592342E5AD5403947F8C3D9A06C",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/AccessibilityServiceStateProvider.android.kt",
+    "alpha29Sha256": "F8347D9DD9A8F22D9D7E1118377B7FE8BCE55F87DFF8CBAB876B4D76103AFF97",
+    "beta01Sha256": "F8347D9DD9A8F22D9D7E1118377B7FE8BCE55F87DFF8CBAB876B4D76103AFF97",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/BackHandler.android.kt",
+    "alpha29Sha256": "CDD2DA41BA1979820FBF61EBDD3D0539C43A63B627C251F740BA69EF7E019F31",
+    "beta01Sha256": "CDD2DA41BA1979820FBF61EBDD3D0539C43A63B627C251F740BA69EF7E019F31",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/BasicEdgeToEdgeDialog.android.kt",
+    "alpha29Sha256": "C74EE1C43ECAC66079A9740ACF78B2E104DCE5CFE45BA259A81F9D9097C792B2",
+    "beta01Sha256": "C74EE1C43ECAC66079A9740ACF78B2E104DCE5CFE45BA259A81F9D9097C792B2",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/BasicTooltip.android.kt",
+    "alpha29Sha256": "37212A13DD78005F80A7258866F75C6BF4653780C8085D10B93283C41B7C2F47",
+    "beta01Sha256": "37212A13DD78005F80A7258866F75C6BF4653780C8085D10B93283C41B7C2F47",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/CalendarModel.android.kt",
+    "alpha29Sha256": "7EA93FA944BFD0B0B82FC4DE901EC0B0192054AF9E9429D45475B1211C3C332B",
+    "beta01Sha256": "7EA93FA944BFD0B0B82FC4DE901EC0B0192054AF9E9429D45475B1211C3C332B",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/CalendarModelImpl.android.kt",
+    "alpha29Sha256": "F8FC68ED88EE7580B1A7F8719A7BD075B5A03F825A60AEEA5C6E2A05E8B24841",
+    "beta01Sha256": "F8FC68ED88EE7580B1A7F8719A7BD075B5A03F825A60AEEA5C6E2A05E8B24841",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/colorUtil/Cam.android.kt",
+    "alpha29Sha256": "FA38EDA3E633773F1A5BA6AF48228ED242787044CA43AA4A70C2B98E053E69AD",
+    "beta01Sha256": "FA38EDA3E633773F1A5BA6AF48228ED242787044CA43AA4A70C2B98E053E69AD",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/colorUtil/CamUtils.android.kt",
+    "alpha29Sha256": "2F8874E1FB93F6F6500C951B777F691575213A39847A6FEB153D3166606F7823",
+    "beta01Sha256": "2F8874E1FB93F6F6500C951B777F691575213A39847A6FEB153D3166606F7823",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/colorUtil/Frame.android.kt",
+    "alpha29Sha256": "37D29C041AD1402C2BE5979801456214D5944DAE445D4F653695A9CDDC775FD1",
+    "beta01Sha256": "37D29C041AD1402C2BE5979801456214D5944DAE445D4F653695A9CDDC775FD1",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/colorUtil/HCTSolver.android.kt",
+    "alpha29Sha256": "806B8D1B961FA2F72BDE43A64FC5E09730A88194825B14B32F6B7864CC589819",
+    "beta01Sha256": "806B8D1B961FA2F72BDE43A64FC5E09730A88194825B14B32F6B7864CC589819",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/DefaultPlatformTextStyle.android.kt",
+    "alpha29Sha256": "BA0EF5981C645B5060C07AE72E9F9E4EE5344ABDD23AADBC3FC36C0FAF41E5CA",
+    "beta01Sha256": "BA0EF5981C645B5060C07AE72E9F9E4EE5344ABDD23AADBC3FC36C0FAF41E5CA",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/Strings.android.kt",
+    "alpha29Sha256": "72DB1D475408E756F4B007F5A055F892EC4B9F2500A21A98B229C19918FEE8C4",
+    "beta01Sha256": "72DB1D475408E756F4B007F5A055F892EC4B9F2500A21A98B229C19918FEE8C4",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/internal/SystemBarsDefaultInsets.android.kt",
+    "alpha29Sha256": "1E2F3DAFF0A8E4EF269D0AEAF1E3065316860A225E8555927B4D29269418BF4C",
+    "beta01Sha256": "1E2F3DAFF0A8E4EF269D0AEAF1E3065316860A225E8555927B4D29269418BF4C",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/ModalBottomSheet.android.kt",
+    "alpha29Sha256": "F4CDA44F0F2182E50A7EFCD3DD9AE2607349624C4D407A05FC59C3DACDE12253",
+    "beta01Sha256": "F4CDA44F0F2182E50A7EFCD3DD9AE2607349624C4D407A05FC59C3DACDE12253",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/PrecisionPointer.android.kt",
+    "alpha29Sha256": "2C30A71837BC8D3F62291CB16101CA633ABE3EE18F386D2D3E5E4D602AD5D380",
+    "beta01Sha256": "2C30A71837BC8D3F62291CB16101CA633ABE3EE18F386D2D3E5E4D602AD5D380",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/SearchBar.android.kt",
+    "alpha29Sha256": "6B34096E00FB85DC5874ACD99C84C735351B752EF1BDD8470EA5E103149D2391",
+    "beta01Sha256": "6B34096E00FB85DC5874ACD99C84C735351B752EF1BDD8470EA5E103149D2391",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/TimeFormat.android.kt",
+    "alpha29Sha256": "EB5C69C707C6274A44174CBD9A4597BE47E2EEB55563F45760A9B62FAA7AC21D",
+    "beta01Sha256": "EB5C69C707C6274A44174CBD9A4597BE47E2EEB55563F45760A9B62FAA7AC21D",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/TimePicker.android.kt",
+    "alpha29Sha256": "4853ACA130E18C67C290DBEFAAB04D6ACE90A5DD562DA77417AD924B063D7D53",
+    "beta01Sha256": "4853ACA130E18C67C290DBEFAAB04D6ACE90A5DD562DA77417AD924B063D7D53",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/Tooltip.android.kt",
+    "alpha29Sha256": "A5683C858676CA82549377822F623A8E17216B066278083D8B07B46101477D70",
+    "beta01Sha256": "A5683C858676CA82549377822F623A8E17216B066278083D8B07B46101477D70",
+    "status": "identical"
+  },
+  {
+    "file": "androidMain/androidx/compose/material3/WideNavigationRail.android.kt",
+    "alpha29Sha256": "EE901B0D0CA1A755E755ACFED17E3BC3E286109CDCEBA7121FF7E27C4CBA07EB",
+    "beta01Sha256": "EE901B0D0CA1A755E755ACFED17E3BC3E286109CDCEBA7121FF7E27C4CBA07EB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/AlertDialog.kt",
+    "alpha29Sha256": "4B5D670BC94AF8F80EA9886D571437D5226FF99661EE251B8135274A6E78FF13",
+    "beta01Sha256": "4B5D670BC94AF8F80EA9886D571437D5226FF99661EE251B8135274A6E78FF13",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/AppBar.kt",
+    "alpha29Sha256": "A64E450F1C5F191CEEA7D425E6F61B0FDE8799B1BCE56DB1BF5FDD7F77DB4E2F",
+    "beta01Sha256": "3261FD559FD0F9ABFF24C75F46DEAE40BBB76DE2CC8899243FE139A18B046270",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/AppBarColumn.kt",
+    "alpha29Sha256": "8B7B70657B672019B82F95E644DC3673AA9EC53EA51AD8548D11795B434A9DF0",
+    "beta01Sha256": "8B7B70657B672019B82F95E644DC3673AA9EC53EA51AD8548D11795B434A9DF0",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/AppBarDsl.kt",
+    "alpha29Sha256": "C74C313F1E76EF49C0BD0D49D7284A7DF14932359D9563075B3A573130DD0BBA",
+    "beta01Sha256": "C74C313F1E76EF49C0BD0D49D7284A7DF14932359D9563075B3A573130DD0BBA",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/AppBarRow.kt",
+    "alpha29Sha256": "A5B0456017BCB571DF95D586F3A54FBC47C947A13EAB85E72A21DAD954DA5380",
+    "beta01Sha256": "A5B0456017BCB571DF95D586F3A54FBC47C947A13EAB85E72A21DAD954DA5380",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Badge.kt",
+    "alpha29Sha256": "F908017C646601B1CF2D967AAB1AFECAE8461BD8DFBC78340C10922ED4B23865",
+    "beta01Sha256": "F908017C646601B1CF2D967AAB1AFECAE8461BD8DFBC78340C10922ED4B23865",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/BottomSheet.kt",
+    "alpha29Sha256": "6377890EFE658F0FBF866799E39F9BC7ACF6C36E9DD2DC1E8FB16163B7E2062D",
+    "beta01Sha256": "6377890EFE658F0FBF866799E39F9BC7ACF6C36E9DD2DC1E8FB16163B7E2062D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/BottomSheetScaffold.kt",
+    "alpha29Sha256": "F59E772BC9CED6FF8E8D882A113B01B41745005FBFF6BB30CB96AD2ED3A26B56",
+    "beta01Sha256": "F59E772BC9CED6FF8E8D882A113B01B41745005FBFF6BB30CB96AD2ED3A26B56",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Button.kt",
+    "alpha29Sha256": "9095AD12E5B26A20BF0CDC53BA01F54B7C8CA41BA4ECE933D578EF28A2D97240",
+    "beta01Sha256": "9095AD12E5B26A20BF0CDC53BA01F54B7C8CA41BA4ECE933D578EF28A2D97240",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ButtonGroup.kt",
+    "alpha29Sha256": "024822D9423C81D7E0238EFC9F3D819FFA1529058EEBF5D59310618287115B22",
+    "beta01Sha256": "024822D9423C81D7E0238EFC9F3D819FFA1529058EEBF5D59310618287115B22",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/CalendarLocale.kt",
+    "alpha29Sha256": "B05C66BD73BEAC77091CCC71754286F25DA478508E1A107480C62F5A10AE11B1",
+    "beta01Sha256": "B05C66BD73BEAC77091CCC71754286F25DA478508E1A107480C62F5A10AE11B1",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Card.kt",
+    "alpha29Sha256": "597F556DC1F74902E3960473F5BA55F4CEEBE9B1D07EF062FB4C74D22E3E248C",
+    "beta01Sha256": "597F556DC1F74902E3960473F5BA55F4CEEBE9B1D07EF062FB4C74D22E3E248C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/Arrangement.kt",
+    "alpha29Sha256": "39FF3FF95A28CD995BFFDB8DA9410313A27B60A6D173FC33A9C0B67CBFCC9010",
+    "beta01Sha256": "39FF3FF95A28CD995BFFDB8DA9410313A27B60A6D173FC33A9C0B67CBFCC9010",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/Carousel.kt",
+    "alpha29Sha256": "49443E33672A2687F7ECE4606D7D4D2D3500E9E8908BF5CD0FD2F86CCAD2F6A4",
+    "beta01Sha256": "D634E48D71794251B63C8EB5A78B413EC6ADB492A8C9C500D63AE50F154CC2C4",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/CarouselItemScope.kt",
+    "alpha29Sha256": "A62A925FB62DD81E45B7710E3EDDA43E1E32B3190105FCE422B19F4FB173AA0D",
+    "beta01Sha256": "A62A925FB62DD81E45B7710E3EDDA43E1E32B3190105FCE422B19F4FB173AA0D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/CarouselParallaxScrollEffect.kt",
+    "alpha29Sha256": "2C32ADCF1CD11D93002B59981C3E20924784C62EC70CF0C44FB8FA9FEA2F9AD4",
+    "beta01Sha256": "2C32ADCF1CD11D93002B59981C3E20924784C62EC70CF0C44FB8FA9FEA2F9AD4",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/CarouselState.kt",
+    "alpha29Sha256": "E2714731A806978B7ACA674AB66C2A5A23DA7AD74750E7EA383936F6A9DAC823",
+    "beta01Sha256": "E2714731A806978B7ACA674AB66C2A5A23DA7AD74750E7EA383936F6A9DAC823",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/KeylineList.kt",
+    "alpha29Sha256": "718BB58B748F898482241D121D1BC681CC4B3E6722E39C16DC19A1753F67ECA7",
+    "beta01Sha256": "718BB58B748F898482241D121D1BC681CC4B3E6722E39C16DC19A1753F67ECA7",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/Keylines.kt",
+    "alpha29Sha256": "8187839878BC6CFD94195AE8E77E950901B837583D53420BABCB7F87D25A527C",
+    "beta01Sha256": "A33ED44D518421F0014FDC489774846A9160FC894026DA9DF3509FEB0C50CE4E",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/KeylineSnapPosition.kt",
+    "alpha29Sha256": "64B1E31A527A555D780F7B06F4F5E717BE656EEA88E98770F0F846E4AF72A419",
+    "beta01Sha256": "23CBCCBFFC81BF8D3B534AEE40D496B6AEB819E4217DA5AF26906E19050F4135",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/carousel/Strategy.kt",
+    "alpha29Sha256": "0A58694F0095071B90196C0EE40F0BD3942FE71AB6271B638C6DE388CC22B3C2",
+    "beta01Sha256": "0A58694F0095071B90196C0EE40F0BD3942FE71AB6271B638C6DE388CC22B3C2",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Checkbox.kt",
+    "alpha29Sha256": "13B16C178C8886411CE53CDC290ABD858FD559610130D401BA48F8E82DB109EE",
+    "beta01Sha256": "13B16C178C8886411CE53CDC290ABD858FD559610130D401BA48F8E82DB109EE",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Chip.kt",
+    "alpha29Sha256": "FB9759BC251383E8FF6D495FE7F171B9EE4987045EB8B3032EDE98A5D11D813A",
+    "beta01Sha256": "D3F1C95D15522E08A2B8222956FF0503C346F97AAB670741AB8B7AEDCFE538D9",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ColorScheme.kt",
+    "alpha29Sha256": "2CAE5584A44F5B6FFD15203F75B67138D386642589359A047BCCDC31B046FD91",
+    "beta01Sha256": "2CAE5584A44F5B6FFD15203F75B67138D386642589359A047BCCDC31B046FD91",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ComponentProperties.kt",
+    "alpha29Sha256": "B61AB18815723F8A7100B1AE4D264540F169E5443428E081F0795A459F712922",
+    "beta01Sha256": "A8DA462FBE8E58BCA45C60A343CFB03DD35AD3CCE6558971AEA6287CC65A17D1",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ComponentStyles.kt",
+    "alpha29Sha256": "4A2D2593C09FEA9880E4BF26594B377162A7DADC284ABD79A83830C70CE5CCE8",
+    "beta01Sha256": "4E2B326CDD57E3074FA4FD6CD91DA92263DE97F6B20B12A2A0397BDA7E479331",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ComposeMaterial3Flags.kt",
+    "alpha29Sha256": "4218CB959D0BFC617DD512BA89A223ED30546B1383011FD4DD0BA6C4ADB12D40",
+    "beta01Sha256": "4218CB959D0BFC617DD512BA89A223ED30546B1383011FD4DD0BA6C4ADB12D40",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ContentColor.kt",
+    "alpha29Sha256": "E7006B4A15BE1A9789DE431FE88F5D1F931E06A485A072F315072FC2F5B702FF",
+    "beta01Sha256": "E7006B4A15BE1A9789DE431FE88F5D1F931E06A485A072F315072FC2F5B702FF",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/DateInput.kt",
+    "alpha29Sha256": "6FF4392EAD0366D8D0CF7502078F21082D7D5FB0263BC77156CD26530F11D095",
+    "beta01Sha256": "6FF4392EAD0366D8D0CF7502078F21082D7D5FB0263BC77156CD26530F11D095",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/DatePicker.kt",
+    "alpha29Sha256": "6D80D7BA27B052BEAAC1628458DC41621E02093D36C5D2691234D0931CA3EA22",
+    "beta01Sha256": "6D80D7BA27B052BEAAC1628458DC41621E02093D36C5D2691234D0931CA3EA22",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/DatePickerDialog.kt",
+    "alpha29Sha256": "9CBC512AFD40D0529278F6DAC91793A44B40AF4069A72FDD4A6C53B22D1FA8DD",
+    "beta01Sha256": "9CBC512AFD40D0529278F6DAC91793A44B40AF4069A72FDD4A6C53B22D1FA8DD",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/DateRangeInput.kt",
+    "alpha29Sha256": "C1D5E1ABCC5CB9ACC923F0924EA88F04AA4B29958010E0EB01D9E23D23263392",
+    "beta01Sha256": "C1D5E1ABCC5CB9ACC923F0924EA88F04AA4B29958010E0EB01D9E23D23263392",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/DateRangePicker.kt",
+    "alpha29Sha256": "938FCAA98BB503EFAD2CFC34975630B96B2B619D8934FF6753231AD0557F3967",
+    "beta01Sha256": "938FCAA98BB503EFAD2CFC34975630B96B2B619D8934FF6753231AD0557F3967",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Divider.kt",
+    "alpha29Sha256": "36444F0F0F9447F39D0BBF665D36788BBFB69A9C954F6E4040FA63A11723EBBC",
+    "beta01Sha256": "36444F0F0F9447F39D0BBF665D36788BBFB69A9C954F6E4040FA63A11723EBBC",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/DragHandle.kt",
+    "alpha29Sha256": "B8379BABEF1EFAB3DEBD55D4C50D2215BC79240B6F89CAE2BAC5985B6499E96F",
+    "beta01Sha256": "B8379BABEF1EFAB3DEBD55D4C50D2215BC79240B6F89CAE2BAC5985B6499E96F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ExperimentalMaterial3Api.kt",
+    "alpha29Sha256": "E106CD713742EA0157412B2E3B47E464DE680F52636EE63B0F4446B8CFB6857C",
+    "beta01Sha256": "E106CD713742EA0157412B2E3B47E464DE680F52636EE63B0F4446B8CFB6857C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ExperimentalMaterial3ExpressiveApi.kt",
+    "alpha29Sha256": "5259CB96283E0F601EA6109C7BAA2E00E80C90C6F30496FD30B71935F8463627",
+    "beta01Sha256": "5259CB96283E0F601EA6109C7BAA2E00E80C90C6F30496FD30B71935F8463627",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ExposedDropdownMenu.kt",
+    "alpha29Sha256": "A4E8D897E848757DF5241875D6AEFD86C2F718FCAEF12258DAA4FB732D0EBCD0",
+    "beta01Sha256": "A4E8D897E848757DF5241875D6AEFD86C2F718FCAEF12258DAA4FB732D0EBCD0",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/FloatingActionButton.kt",
+    "alpha29Sha256": "7109F6110295415DEE85D85401BE42E6CBFC8D22F35E69CBBAA0341744E99BE1",
+    "beta01Sha256": "59D5708D5DD390DD25734C6EF2C2EBDCB1A149D82E9FE9038A75E670C1F7C9BD",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/FloatingActionButtonMenu.kt",
+    "alpha29Sha256": "1B926CA7EA1520BE44AA4F22C910DCB24FDAA82DAB8A73A8E1960E3D2685BB2C",
+    "beta01Sha256": "526E4A6FCC7C2CDBFEF60999737720B05350D7C1D59EBB3CCAB4EBE42C3A040B",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/FloatingToolbar.kt",
+    "alpha29Sha256": "D73F30EED80C1360F98CCB87D2B7D89ED447388F85892DAD92D578088D0FDA74",
+    "beta01Sha256": "7C014D29BAEF68F505A624B26E4C264BCE2E7F72726D29DFCC09869C81142598",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/HorizontalCenterOptically.kt",
+    "alpha29Sha256": "F6162F9E5C9FDE27E5AE1254A0E33B79A3F67CA7AD272E42CE49D8DF56748228",
+    "beta01Sha256": "F6162F9E5C9FDE27E5AE1254A0E33B79A3F67CA7AD272E42CE49D8DF56748228",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Icon.kt",
+    "alpha29Sha256": "6CD5F934957681E845282976B07FC418453ED20E50EE09DD7E0B19B7D09D40FB",
+    "beta01Sha256": "6CD5F934957681E845282976B07FC418453ED20E50EE09DD7E0B19B7D09D40FB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/IconButton.kt",
+    "alpha29Sha256": "CA715F69486DE8EBCE063F07368F849D1AD8BF03E3AA07D201750F32EF7D26BC",
+    "beta01Sha256": "173BCB2F6097767B641B9DBCC447406C38F144D0EA649372AD395CA690F1292A",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/IconButtonDefaults.kt",
+    "alpha29Sha256": "20C97C9A25DDB071D30E5D1D877C4B14C3896FCC9C7E56D7A48B22A668BABC30",
+    "beta01Sha256": "20C97C9A25DDB071D30E5D1D877C4B14C3896FCC9C7E56D7A48B22A668BABC30",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/InteractiveComponentSize.kt",
+    "alpha29Sha256": "FB19262A174F765F71AC43A7A44C3398D40B8B550043C034BCD0700B5799245A",
+    "beta01Sha256": "FB19262A174F765F71AC43A7A44C3398D40B8B550043C034BCD0700B5799245A",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/AccessibilityServiceStateProvider.kt",
+    "alpha29Sha256": "A9B4BEF79651B3798C13152B5D100554F2400CC1937DDE7A63344472EC253D0C",
+    "beta01Sha256": "A9B4BEF79651B3798C13152B5D100554F2400CC1937DDE7A63344472EC253D0C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/AccessibilityUtil.kt",
+    "alpha29Sha256": "3CCCE58A8FD413956E586146B734B0D1C539B9FFAABD4D3CD3A3A9DEC49B437B",
+    "beta01Sha256": "3CCCE58A8FD413956E586146B734B0D1C539B9FFAABD4D3CD3A3A9DEC49B437B",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/AnimatedShape.kt",
+    "alpha29Sha256": "246F81812DFAE94E6532848370B38B9B118BA07B38D95B0EBC5DF24CEEE5EBE1",
+    "beta01Sha256": "246F81812DFAE94E6532848370B38B9B118BA07B38D95B0EBC5DF24CEEE5EBE1",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/BackHandler.kt",
+    "alpha29Sha256": "256846585BD0E508A4FB7555647CC39DE08A260CE7B5A0CEF2214D6254DCDB59",
+    "beta01Sha256": "256846585BD0E508A4FB7555647CC39DE08A260CE7B5A0CEF2214D6254DCDB59",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/BasicEdgeToEdgeDialog.kt",
+    "alpha29Sha256": "896B3CF3140DF665D2FC928C0292800C420658554F6F0818DD6F63340BA1EAD3",
+    "beta01Sha256": "896B3CF3140DF665D2FC928C0292800C420658554F6F0818DD6F63340BA1EAD3",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/BasicTooltip.kt",
+    "alpha29Sha256": "898DAD495ED119453D974C320ABD939F350CB996F3EFCBE0201135F38BC296CF",
+    "beta01Sha256": "898DAD495ED119453D974C320ABD939F350CB996F3EFCBE0201135F38BC296CF",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/CalendarModel.kt",
+    "alpha29Sha256": "13EDBE4A7B231DB139940C0B6D2E1460EDE7EDB196C40BD62BAFF287950B5B76",
+    "beta01Sha256": "13EDBE4A7B231DB139940C0B6D2E1460EDE7EDB196C40BD62BAFF287950B5B76",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/ChildParentSemantics.kt",
+    "alpha29Sha256": "99F84C1B22262408D2F20386D4182BF0127ED1DB98E9EC254CF1263540B33898",
+    "beta01Sha256": "99F84C1B22262408D2F20386D4182BF0127ED1DB98E9EC254CF1263540B33898",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/CircularWavyProgressModifiers.kt",
+    "alpha29Sha256": "2C92C9765D35B2B8F0498DA7EC51A8E9C7CC15DA479D9C0AD2AF1A691A2DA88E",
+    "beta01Sha256": "2C92C9765D35B2B8F0498DA7EC51A8E9C7CC15DA479D9C0AD2AF1A691A2DA88E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/DefaultPlatformTextStyle.kt",
+    "alpha29Sha256": "B2BBAE37DF9AB3DD6E1200196CED6AD45FFE1DFAEF79778B436819C1659C7891",
+    "beta01Sha256": "B2BBAE37DF9AB3DD6E1200196CED6AD45FFE1DFAEF79778B436819C1659C7891",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/DraggableAnchors.kt",
+    "alpha29Sha256": "4FFA1622A102F3FB5AF98FC2A9C524DE3377BC25F5770246B5954CE56D37FC2B",
+    "beta01Sha256": "4FFA1622A102F3FB5AF98FC2A9C524DE3377BC25F5770246B5954CE56D37FC2B",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/DragGestureDetectorCopy.kt",
+    "alpha29Sha256": "20DA6DBD96711C890CD24205D6A27B09DC24FBAC1610EB47D2D113748BBC16B1",
+    "beta01Sha256": "20DA6DBD96711C890CD24205D6A27B09DC24FBAC1610EB47D2D113748BBC16B1",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/Elevation.kt",
+    "alpha29Sha256": "304E9D0D7749BF1A7A2646ACD7F05A7D6F5C52FE0118FD8BBFD37FBD03D08F2F",
+    "beta01Sha256": "304E9D0D7749BF1A7A2646ACD7F05A7D6F5C52FE0118FD8BBFD37FBD03D08F2F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/FloatProducer.kt",
+    "alpha29Sha256": "8076C968291F3BD4161F637B5EDA945782FCC47A8DB28A2BF0285485D60456F8",
+    "beta01Sha256": "8076C968291F3BD4161F637B5EDA945782FCC47A8DB28A2BF0285485D60456F8",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/Icons.kt",
+    "alpha29Sha256": "005FE56967BC7DC722CD824A5FD3C3092AE2D72BC06A1B3FDE52C371F55B5AAF",
+    "beta01Sha256": "005FE56967BC7DC722CD824A5FD3C3092AE2D72BC06A1B3FDE52C371F55B5AAF",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/InternalMutatorMutex.kt",
+    "alpha29Sha256": "155F594B0E69D059A5D6FE7FCCCFFF47DD25EFE793A13A1077824AF84B9466BD",
+    "beta01Sha256": "155F594B0E69D059A5D6FE7FCCCFFF47DD25EFE793A13A1077824AF84B9466BD",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/KeyboardUtil.kt",
+    "alpha29Sha256": "5D1FCCFFB812A155851A0285EF1A2C1B53F4B687823FD0E6F576C3E9357A5EB8",
+    "beta01Sha256": "5D1FCCFFB812A155851A0285EF1A2C1B53F4B687823FD0E6F576C3E9357A5EB8",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/LayoutUtil.kt",
+    "alpha29Sha256": "50C5F0C0AA836DE01A7F01E0339595E153B7BEC8C3CDDB9FDFBF7BC7530E10AD",
+    "beta01Sha256": "50C5F0C0AA836DE01A7F01E0339595E153B7BEC8C3CDDB9FDFBF7BC7530E10AD",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/LinearWavyProgressModifiers.kt",
+    "alpha29Sha256": "219D396A3E923AB305CF99D61CF7C6D4870244BC0E10139224088DBC079E8121",
+    "beta01Sha256": "219D396A3E923AB305CF99D61CF7C6D4870244BC0E10139224088DBC079E8121",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/MappedInteractionSource.kt",
+    "alpha29Sha256": "69B02AE801D44C0965311C6E5A8B5BBD9952584750008C8D4AB5C4E6FDBDE77E",
+    "beta01Sha256": "69B02AE801D44C0965311C6E5A8B5BBD9952584750008C8D4AB5C4E6FDBDE77E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/MenuPosition.kt",
+    "alpha29Sha256": "C2F77F3D5DA46FD9C82C7FA06A1A52C87AE12BCFDDD0A462CD4E66211516A33F",
+    "beta01Sha256": "C2F77F3D5DA46FD9C82C7FA06A1A52C87AE12BCFDDD0A462CD4E66211516A33F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/MutableWindowInsets.kt",
+    "alpha29Sha256": "0DF722CAA3146D19043F7078BE618CAA3626D8EA80C7FA1EB3527BBD5EF03044",
+    "beta01Sha256": "0DF722CAA3146D19043F7078BE618CAA3626D8EA80C7FA1EB3527BBD5EF03044",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/PlatformOptimizedCancellationException.kt",
+    "alpha29Sha256": "1A7D13395B43A38356116F49B30CA4606E5F85EBA47B1E211E3BEA50B676F1DF",
+    "beta01Sha256": "1A7D13395B43A38356116F49B30CA4606E5F85EBA47B1E211E3BEA50B676F1DF",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/ProvideContentColorTextStyle.kt",
+    "alpha29Sha256": "91A4FF3DB287CB6ABA4B8479B177C2CF2E9EE62A33A1AED346E49D030D45D00B",
+    "beta01Sha256": "91A4FF3DB287CB6ABA4B8479B177C2CF2E9EE62A33A1AED346E49D030D45D00B",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/ShapeUtil.kt",
+    "alpha29Sha256": "894F8CC0121EB13B92E7F28AAA06C04A06B89BFBB7D423F09C8787D68B02C0D5",
+    "beta01Sha256": "894F8CC0121EB13B92E7F28AAA06C04A06B89BFBB7D423F09C8787D68B02C0D5",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/Strings.kt",
+    "alpha29Sha256": "3C3DD51AF9514EB430206B2DD77E8F98BECB9232C30769C618B99FBA59DC32C1",
+    "beta01Sha256": "3C3DD51AF9514EB430206B2DD77E8F98BECB9232C30769C618B99FBA59DC32C1",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/System.kt",
+    "alpha29Sha256": "EB7D75EB7BB2CEBE477D92B9138BD09FB7C7CA29947BE4FCFD37AE935CD3AA32",
+    "beta01Sha256": "EB7D75EB7BB2CEBE477D92B9138BD09FB7C7CA29947BE4FCFD37AE935CD3AA32",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/SystemBarsDefaultInsets.kt",
+    "alpha29Sha256": "A5D980BED2386F4036F17EA83C204377700976EA68CD84F2C86BD375880A0FB5",
+    "beta01Sha256": "A5D980BED2386F4036F17EA83C204377700976EA68CD84F2C86BD375880A0FB5",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/internal/TextFieldImpl.kt",
+    "alpha29Sha256": "6490160723B2E07790CBCAE86DB014B494AA45B4F5F13402EBFC5597D94B2253",
+    "beta01Sha256": "6490160723B2E07790CBCAE86DB014B494AA45B4F5F13402EBFC5597D94B2253",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Label.kt",
+    "alpha29Sha256": "BCFEF4B58A5936A0847100A8FA6EBADFD46A99E9A93E96FCF0964AB53AB25AE5",
+    "beta01Sha256": "BCFEF4B58A5936A0847100A8FA6EBADFD46A99E9A93E96FCF0964AB53AB25AE5",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ListItem.kt",
+    "alpha29Sha256": "CDE0288CC1AE406A7F0CAF2C55865100EF66CEE616CAC83CC0B10EB9BABA362C",
+    "beta01Sha256": "A3EFD1F692BA8DD96ACF1F4B749B273414079A8AE1B3CB09B99B5C09F6C68F99",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ListItemDefaults.kt",
+    "alpha29Sha256": "7148DA3F6D803A9B59A7706970205705C333877A624B6E15948786A5B1E32EDB",
+    "beta01Sha256": "7148DA3F6D803A9B59A7706970205705C333877A624B6E15948786A5B1E32EDB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/LoadingIndicator.kt",
+    "alpha29Sha256": "938CD5AEF1035B31DA50295DE0E8FB95F61E7B4CEE9AF7917F751E6450E6DB97",
+    "beta01Sha256": "5B369A09CF80401620E49387116DAD4D49DD785EB086BD917A1D1F52142CE8B9",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/MaterialShapes.kt",
+    "alpha29Sha256": "08C29828003344914EE0D6783F213B37CAAE650175CD004BA321EAF3A7D6E434",
+    "beta01Sha256": "08C29828003344914EE0D6783F213B37CAAE650175CD004BA321EAF3A7D6E434",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/MaterialTheme.kt",
+    "alpha29Sha256": "BB4178EDF4AA64ADEACFBD7C2D672265F53517D2AEBE9B726AEB2B5877C627D7",
+    "beta01Sha256": "9DCF759D23217000822595F76021235C236A08CE4C8A71C3BE38B69E3DB628BB",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Menu.kt",
+    "alpha29Sha256": "F6FE29552C15E79A2A102D65FC450BB60C34816CBDA0580E98C8539588CE2938",
+    "beta01Sha256": "F6FE29552C15E79A2A102D65FC450BB60C34816CBDA0580E98C8539588CE2938",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/MenuDefaults.kt",
+    "alpha29Sha256": "DFC6C3C97CA24D7427ACB9FE922F2AA0D4529F95A5F4007FC19BBD071F127852",
+    "beta01Sha256": "DFC6C3C97CA24D7427ACB9FE922F2AA0D4529F95A5F4007FC19BBD071F127852",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ModalBottomSheet.kt",
+    "alpha29Sha256": "6B5F472E9CEF3109F488562F396C8D6351406AD36424D03F877D5BC01B44741F",
+    "beta01Sha256": "6B5F472E9CEF3109F488562F396C8D6351406AD36424D03F877D5BC01B44741F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/MotionScheme.kt",
+    "alpha29Sha256": "95FCF8D94C5885A16D82EAB986CE4C1B02A8F09F59784D03A9FAB168529FF270",
+    "beta01Sha256": "95FCF8D94C5885A16D82EAB986CE4C1B02A8F09F59784D03A9FAB168529FF270",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/NavigationBar.kt",
+    "alpha29Sha256": "25504D905F94172C3C3E553AA20B285B5166145C49FF448BADA1D929962814D4",
+    "beta01Sha256": "25504D905F94172C3C3E553AA20B285B5166145C49FF448BADA1D929962814D4",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/NavigationDrawer.kt",
+    "alpha29Sha256": "F5A53108F27288B678810D9DA9F64DCF176FA7E6E2BD896CC1E6A96966F45650",
+    "beta01Sha256": "F5A53108F27288B678810D9DA9F64DCF176FA7E6E2BD896CC1E6A96966F45650",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/NavigationItem.kt",
+    "alpha29Sha256": "F4A7A0F475FF1B58E70B2AEC1DF7765EBEA28F24988CC08DC7A3F26F1E3D0C75",
+    "beta01Sha256": "EC8A954C65C3658310D7CBD776B66704988362D7A99E28EA341EF983A4B41FC7",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/NavigationRail.kt",
+    "alpha29Sha256": "A9964532F667CAA1DCFDD7BDC960411C4987BA3225A03B4D2909EF333FF77D1D",
+    "beta01Sha256": "A9964532F667CAA1DCFDD7BDC960411C4987BA3225A03B4D2909EF333FF77D1D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/OutlinedTextField.kt",
+    "alpha29Sha256": "41426CC018AE1EC5D4CF590D550E3E9D1E072BB69C8096935F07556A5965C86D",
+    "beta01Sha256": "41426CC018AE1EC5D4CF590D550E3E9D1E072BB69C8096935F07556A5965C86D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/PrecisionPointer.kt",
+    "alpha29Sha256": "9C6D2E2327996C9E4B6BEE1333A593923D2BC5856FFC48836A81AD2CA792FA19",
+    "beta01Sha256": "9C6D2E2327996C9E4B6BEE1333A593923D2BC5856FFC48836A81AD2CA792FA19",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ProgressIndicator.kt",
+    "alpha29Sha256": "D8FC0FB57F963F651809736201002D322CF7C49C3FD4B401613A76513696263F",
+    "beta01Sha256": "D8FC0FB57F963F651809736201002D322CF7C49C3FD4B401613A76513696263F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/pulltorefresh/PullToRefresh.kt",
+    "alpha29Sha256": "02D9C31924037D14FEA1982AA76E4AD70545B60FB101C4FA315E3024ACF3C1BA",
+    "beta01Sha256": "02D9C31924037D14FEA1982AA76E4AD70545B60FB101C4FA315E3024ACF3C1BA",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/RadioButton.kt",
+    "alpha29Sha256": "6A1EB283C6A56BCB2CD479207B1713292283A372D87F99F1E4F1AF8B4BFEEA9E",
+    "beta01Sha256": "6A1EB283C6A56BCB2CD479207B1713292283A372D87F99F1E4F1AF8B4BFEEA9E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Ripple.kt",
+    "alpha29Sha256": "4B53B7FFB01FF48014CDC2F6AF216C97F6463D5E25343D9DB699EA4ABB90BC00",
+    "beta01Sha256": "4B53B7FFB01FF48014CDC2F6AF216C97F6463D5E25343D9DB699EA4ABB90BC00",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Scaffold.kt",
+    "alpha29Sha256": "051005662A2DCE50B9EB67A55397DE39D75F371F42BA484224F2193F64735BD7",
+    "beta01Sha256": "051005662A2DCE50B9EB67A55397DE39D75F371F42BA484224F2193F64735BD7",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Scrim.kt",
+    "alpha29Sha256": "4F870E1B0188B6923286DC1FAFEC2E875CD0FBBEC784652FB6504DEE46FC4432",
+    "beta01Sha256": "4F870E1B0188B6923286DC1FAFEC2E875CD0FBBEC784652FB6504DEE46FC4432",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Scrollbar.kt",
+    "alpha29Sha256": "E86B1A9C5B1CE0F1FF3B8337B3780BCBE08BF33AA1470199D481FB53328F4651",
+    "beta01Sha256": "E86B1A9C5B1CE0F1FF3B8337B3780BCBE08BF33AA1470199D481FB53328F4651",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ScrollField.kt",
+    "alpha29Sha256": "C064CED95C59EBF1D829132137A4DE1343E5BA56138010E359D877F673C51D24",
+    "beta01Sha256": "C064CED95C59EBF1D829132137A4DE1343E5BA56138010E359D877F673C51D24",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/SearchBar.kt",
+    "alpha29Sha256": "B93907B2DA60BBADFCE27955FD0E158334D6C811D4E8D3C44FB927FD8D60D012",
+    "beta01Sha256": "421E325E5B94C59F1A90284EBA912128F6E43DC1D211938B89BB37580DA527F7",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/SecureTextField.kt",
+    "alpha29Sha256": "B477C9C68F285112A583387C43DACA6E4A607A45BBC28CDF012BAD610A4959CE",
+    "beta01Sha256": "B477C9C68F285112A583387C43DACA6E4A607A45BBC28CDF012BAD610A4959CE",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/SegmentedButton.kt",
+    "alpha29Sha256": "583D4885FF0B474DC7A306FADE295FCD1001FF2F4EF948780B9C607406B23002",
+    "beta01Sha256": "583D4885FF0B474DC7A306FADE295FCD1001FF2F4EF948780B9C607406B23002",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Shapes.kt",
+    "alpha29Sha256": "A2E3730B1B09FFC682BE9016F1770C414B517E9E0997359CC5098CAEDFD88753",
+    "beta01Sha256": "A2E3730B1B09FFC682BE9016F1770C414B517E9E0997359CC5098CAEDFD88753",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/SheetDefaults.kt",
+    "alpha29Sha256": "4D9A9D651DC2683F6AD7304A30D4B81339019A02FC462FAE41CCBF74C3161E21",
+    "beta01Sha256": "4D9A9D651DC2683F6AD7304A30D4B81339019A02FC462FAE41CCBF74C3161E21",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ShortNavigationBar.kt",
+    "alpha29Sha256": "EDB4EAB44AA04108C047DD786F1AD40035E8B3CB60CC3DB26AB1E9466C3D0F81",
+    "beta01Sha256": "986015CD8014DBC642203D23A78B243C4F4A47C286F4BFA8CF513E24B932F75A",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Slider.kt",
+    "alpha29Sha256": "7CFFF537810D8E0B7DFE9EAF84CC8D5CB99E6B7BAEA7FC86B68B641CCA92D4EC",
+    "beta01Sha256": "B26B472F358D33F852044FBF36F7CC851960A02DF8475CC012BD0D6556B3FE01",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Snackbar.kt",
+    "alpha29Sha256": "8215A0E95333E392EDC17D082FF6BE259470DD4B5D9B36EAE4056DD2D5EC0947",
+    "beta01Sha256": "8215A0E95333E392EDC17D082FF6BE259470DD4B5D9B36EAE4056DD2D5EC0947",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/SnackbarHost.kt",
+    "alpha29Sha256": "AAD16708D07386301856F633E8296092027C79AB59F350CB35680DE869D8178F",
+    "beta01Sha256": "AAD16708D07386301856F633E8296092027C79AB59F350CB35680DE869D8178F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/SplitButton.kt",
+    "alpha29Sha256": "30DF4269CD5DBFF9490DD44257648EA7B56447C28FDF71F8A66D463EA96990CA",
+    "beta01Sha256": "30DF4269CD5DBFF9490DD44257648EA7B56447C28FDF71F8A66D463EA96990CA",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Surface.kt",
+    "alpha29Sha256": "B82221978167354D62462943BADE5838BEB4724A71155209D75DEBC6003BD9E2",
+    "beta01Sha256": "B82221978167354D62462943BADE5838BEB4724A71155209D75DEBC6003BD9E2",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/SwipeToDismissBox.kt",
+    "alpha29Sha256": "5DB7C3299F13533FF69AD4D67AF23275064960BBB7A4BEAE78553469DFCDB1AB",
+    "beta01Sha256": "5DB7C3299F13533FF69AD4D67AF23275064960BBB7A4BEAE78553469DFCDB1AB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Switch.kt",
+    "alpha29Sha256": "FE82A452EF737ED9FBCFA1F56E5F636CB562AAA077994D3248974FBA65796AB8",
+    "beta01Sha256": "FE82A452EF737ED9FBCFA1F56E5F636CB562AAA077994D3248974FBA65796AB8",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Tab.kt",
+    "alpha29Sha256": "29D1A0799BD5B87E19DC684C9CCD07F0BE42339A55FB460F7D0847339DB9974C",
+    "beta01Sha256": "29D1A0799BD5B87E19DC684C9CCD07F0BE42339A55FB460F7D0847339DB9974C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/TabRow.kt",
+    "alpha29Sha256": "B58CFF3A2F57F0BFF6A59BAC33722B4DD1DAB5ECE0B2C27CB0A2442877C379E3",
+    "beta01Sha256": "B58CFF3A2F57F0BFF6A59BAC33722B4DD1DAB5ECE0B2C27CB0A2442877C379E3",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Text.kt",
+    "alpha29Sha256": "3E2C3AE356A09CC3C2B90FAC415866BEF1BE5BE45EDEBB997DAD192996F77BD5",
+    "beta01Sha256": "3E2C3AE356A09CC3C2B90FAC415866BEF1BE5BE45EDEBB997DAD192996F77BD5",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/TextField.kt",
+    "alpha29Sha256": "00ED832C27F1DD8F2F6A57B9F8ECAF13BE43E08CF96C79CA5B989A5FE5855CEB",
+    "beta01Sha256": "00ED832C27F1DD8F2F6A57B9F8ECAF13BE43E08CF96C79CA5B989A5FE5855CEB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/TextFieldDefaults.kt",
+    "alpha29Sha256": "862B2E5705F879402C62C6DC30844FF2E40B0DCBCF56B868C0F84BFFE3D32A41",
+    "beta01Sha256": "862B2E5705F879402C62C6DC30844FF2E40B0DCBCF56B868C0F84BFFE3D32A41",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/TimeFormat.kt",
+    "alpha29Sha256": "E7BCBE1FE210266F8E1489758AC6208D715723301ABAD30391F9E132AC717F54",
+    "beta01Sha256": "E7BCBE1FE210266F8E1489758AC6208D715723301ABAD30391F9E132AC717F54",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/TimePicker.kt",
+    "alpha29Sha256": "787E55E79A94B58775567110B2B27C74834529B643960CB0FF86589930E3F221",
+    "beta01Sha256": "787E55E79A94B58775567110B2B27C74834529B643960CB0FF86589930E3F221",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/TimePickerDialog.kt",
+    "alpha29Sha256": "2574C42E5666327E64F1014117063AE1F8B35D0F63AFFACC38F03169848D3E5D",
+    "beta01Sha256": "2574C42E5666327E64F1014117063AE1F8B35D0F63AFFACC38F03169848D3E5D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/ToggleButton.kt",
+    "alpha29Sha256": "176A1ADF0656D8C9FB51D0B34207B2775EE1E31C20A5D68915A9FC6EE318EBBE",
+    "beta01Sha256": "176A1ADF0656D8C9FB51D0B34207B2775EE1E31C20A5D68915A9FC6EE318EBBE",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/AppBarLargeFlexibleTokens.kt",
+    "alpha29Sha256": "CD6781646BC6C04E3641CB1974556FA7576996E756711479C8B01640C39E49FC",
+    "beta01Sha256": "CD6781646BC6C04E3641CB1974556FA7576996E756711479C8B01640C39E49FC",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/AppBarLargeTokens.kt",
+    "alpha29Sha256": "31A2E150D3D53250B757811DF133CFCAF15D20FC3BB820CC4746871C405FC783",
+    "beta01Sha256": "31A2E150D3D53250B757811DF133CFCAF15D20FC3BB820CC4746871C405FC783",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/AppBarMediumFlexibleTokens.kt",
+    "alpha29Sha256": "9219F27235D7F49C5CD777ACFF0D7C8EE51AE1A70445B5873D0848C1C9BB8FC9",
+    "beta01Sha256": "9219F27235D7F49C5CD777ACFF0D7C8EE51AE1A70445B5873D0848C1C9BB8FC9",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/AppBarMediumTokens.kt",
+    "alpha29Sha256": "A502DC5C7F392B40527017A0D9EC7E14B92971EE840EC239CA3888539625F745",
+    "beta01Sha256": "A502DC5C7F392B40527017A0D9EC7E14B92971EE840EC239CA3888539625F745",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/AppBarSmallTokens.kt",
+    "alpha29Sha256": "C27B71C51B688338BD800C10A49EE08BF5942A23FD9DBF04827FF6C6D51846A7",
+    "beta01Sha256": "C27B71C51B688338BD800C10A49EE08BF5942A23FD9DBF04827FF6C6D51846A7",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/AppBarTokens.kt",
+    "alpha29Sha256": "B184F78AF0F4DD250B0AE2B12039971ECD16A9F25A36CDDD9BB68B12099439CB",
+    "beta01Sha256": "B184F78AF0F4DD250B0AE2B12039971ECD16A9F25A36CDDD9BB68B12099439CB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/AssistChipTokens.kt",
+    "alpha29Sha256": "8EA69B2B3996905EB6B447347746D143877CA588887077AF80D84C2C77381FA5",
+    "beta01Sha256": "8EA69B2B3996905EB6B447347746D143877CA588887077AF80D84C2C77381FA5",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/BadgeTokens.kt",
+    "alpha29Sha256": "B52B9F293C49B587C940AE2C618409B70D0886EE3760707A9E714CD633AFB410",
+    "beta01Sha256": "B52B9F293C49B587C940AE2C618409B70D0886EE3760707A9E714CD633AFB410",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/BaselineButtonTokens.kt",
+    "alpha29Sha256": "D05D10A4CCDE921FBEC2F151C5E333D1CEB947A626DC3021AC1C302873FB447F",
+    "beta01Sha256": "D05D10A4CCDE921FBEC2F151C5E333D1CEB947A626DC3021AC1C302873FB447F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/BottomAppBarTokens.kt",
+    "alpha29Sha256": "B95023384CBDA19D40A6FDE99EEEB279DB240876E2CFDD8D0A200F0A4FF68125",
+    "beta01Sha256": "B95023384CBDA19D40A6FDE99EEEB279DB240876E2CFDD8D0A200F0A4FF68125",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ButtonGroupSmallTokens.kt",
+    "alpha29Sha256": "4B05B7AD848F0013B6D1610BB88F9AB2B64320AE548F53BBFD22D5F64A63690E",
+    "beta01Sha256": "4B05B7AD848F0013B6D1610BB88F9AB2B64320AE548F53BBFD22D5F64A63690E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ButtonLargeTokens.kt",
+    "alpha29Sha256": "2F7A093A4D05C0156F85319EA3CB1D3937B467FAD2F542C9F03819BBDD9A7226",
+    "beta01Sha256": "2F7A093A4D05C0156F85319EA3CB1D3937B467FAD2F542C9F03819BBDD9A7226",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ButtonMediumTokens.kt",
+    "alpha29Sha256": "1D16FEACB9799C8ABA53D58A8F4F6F2F5559223AC019AEB0C321DFCD62150F5D",
+    "beta01Sha256": "1D16FEACB9799C8ABA53D58A8F4F6F2F5559223AC019AEB0C321DFCD62150F5D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ButtonSmallTokens.kt",
+    "alpha29Sha256": "B69BAC18F0D6CB6682E8B84F551105CD0D2D485170FF7B47334C78440977976A",
+    "beta01Sha256": "B69BAC18F0D6CB6682E8B84F551105CD0D2D485170FF7B47334C78440977976A",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ButtonXLargeTokens.kt",
+    "alpha29Sha256": "2CFBB3EC68847070815BC7614C3D6E6D9BCCF38805625718DA9A1C50A22090A9",
+    "beta01Sha256": "2CFBB3EC68847070815BC7614C3D6E6D9BCCF38805625718DA9A1C50A22090A9",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ButtonXSmallTokens.kt",
+    "alpha29Sha256": "52FAA424719F9A840A250FF3DA189AAF5C1B8F3907F3BCF068752246E1BD685C",
+    "beta01Sha256": "52FAA424719F9A840A250FF3DA189AAF5C1B8F3907F3BCF068752246E1BD685C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/CheckboxTokens.kt",
+    "alpha29Sha256": "0EF211982F2719E7EFA43F2C859141C6EB55261B82F142CD2FD740B60209DC50",
+    "beta01Sha256": "0EF211982F2719E7EFA43F2C859141C6EB55261B82F142CD2FD740B60209DC50",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ChipsTokens.kt",
+    "alpha29Sha256": "2B2A4DEDEC98B42017AC89CEA5A1E6A505FDC9CE27560ABF83CA6219BBDD9DEC",
+    "beta01Sha256": "2B2A4DEDEC98B42017AC89CEA5A1E6A505FDC9CE27560ABF83CA6219BBDD9DEC",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/CircularProgressIndicatorTokens.kt",
+    "alpha29Sha256": "19FA92975B296B5BC0A3F22AB533619C67E9747CD665E239EB4F88FCB98C013C",
+    "beta01Sha256": "19FA92975B296B5BC0A3F22AB533619C67E9747CD665E239EB4F88FCB98C013C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ColorDarkTokens.kt",
+    "alpha29Sha256": "2DA1CA902E19448F2C6A9807B859984BD70C5ED563E4F4CCAF3606CE0C6E1668",
+    "beta01Sha256": "2DA1CA902E19448F2C6A9807B859984BD70C5ED563E4F4CCAF3606CE0C6E1668",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ColorLightTokens.kt",
+    "alpha29Sha256": "28903596B271FA6822FFC6D14EDD24554BEFD7CD1227261E72D0643FAD808007",
+    "beta01Sha256": "28903596B271FA6822FFC6D14EDD24554BEFD7CD1227261E72D0643FAD808007",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ColorSchemeKeyTokens.kt",
+    "alpha29Sha256": "3B28B50DF102EBD8382C7E6B55E43AC5EE2AB29B3958FC7E73561763A7FD71F4",
+    "beta01Sha256": "3B28B50DF102EBD8382C7E6B55E43AC5EE2AB29B3958FC7E73561763A7FD71F4",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ConnectedButtonGroupSmallTokens.kt",
+    "alpha29Sha256": "F3D275B1D47624356F8794A6CB3FBB1DC8574E5237D5295F3403475F88281281",
+    "beta01Sha256": "F3D275B1D47624356F8794A6CB3FBB1DC8574E5237D5295F3403475F88281281",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/DateInputModalTokens.kt",
+    "alpha29Sha256": "16D0F84E0622CB2AC7F2B2CECF3A947B1E5A89C088DD3C4FB779940797FB8600",
+    "beta01Sha256": "16D0F84E0622CB2AC7F2B2CECF3A947B1E5A89C088DD3C4FB779940797FB8600",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/DatePickerModalTokens.kt",
+    "alpha29Sha256": "F3F7D43CAFD3769803283FCF77F01DA2106B25ACFBC0A9DEBFE46AD2DCFB14D5",
+    "beta01Sha256": "F3F7D43CAFD3769803283FCF77F01DA2106B25ACFBC0A9DEBFE46AD2DCFB14D5",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/DialogTokens.kt",
+    "alpha29Sha256": "40A1599A7D774D801C8E244EB665382F43E3204FC07A4DC3FAF4E2C6044EE30B",
+    "beta01Sha256": "40A1599A7D774D801C8E244EB665382F43E3204FC07A4DC3FAF4E2C6044EE30B",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/DividerTokens.kt",
+    "alpha29Sha256": "3E4729399CFDC37D2F44EA9FFC2336AC7C80E8479ED012F5F9E52D1F9C7F7826",
+    "beta01Sha256": "3E4729399CFDC37D2F44EA9FFC2336AC7C80E8479ED012F5F9E52D1F9C7F7826",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/DockedToolbarTokens.kt",
+    "alpha29Sha256": "BF7437F75DF1D62BF1DA8910EB55E66A94290CC86BEBCA7EEF5EEA150CB98444",
+    "beta01Sha256": "BF7437F75DF1D62BF1DA8910EB55E66A94290CC86BEBCA7EEF5EEA150CB98444",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/DragHandleTokens.kt",
+    "alpha29Sha256": "DB2E9FE7D860CE7650978A2D5A95B628BC877045DEDD2D457F9F19542744FB6A",
+    "beta01Sha256": "DB2E9FE7D860CE7650978A2D5A95B628BC877045DEDD2D457F9F19542744FB6A",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ElevatedButtonTokens.kt",
+    "alpha29Sha256": "4CFF9FCA4F66E2627D8845873B74B2BCF14EADC50D50FAE918869CDBB7DB6545",
+    "beta01Sha256": "4CFF9FCA4F66E2627D8845873B74B2BCF14EADC50D50FAE918869CDBB7DB6545",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ElevatedCardTokens.kt",
+    "alpha29Sha256": "D5640DE0FC99B0C9BD883C3282C30A15CAC66AF5B6D3877EF7EE2DC3A8289E3D",
+    "beta01Sha256": "D5640DE0FC99B0C9BD883C3282C30A15CAC66AF5B6D3877EF7EE2DC3A8289E3D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ElevationTokens.kt",
+    "alpha29Sha256": "B0613CC2C1E30FB62DA126F82F5870F7231E3CF4117F36132E466E1827DE0A3C",
+    "beta01Sha256": "B0613CC2C1E30FB62DA126F82F5870F7231E3CF4117F36132E466E1827DE0A3C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ExpandedListTokens.kt",
+    "alpha29Sha256": "AF92CEB8DB96CAD935D62A00369C1AC0B67A418BD60D6D942750561EA1455DAB",
+    "beta01Sha256": "AF92CEB8DB96CAD935D62A00369C1AC0B67A418BD60D6D942750561EA1455DAB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ExpressiveMotionTokens.kt",
+    "alpha29Sha256": "DEEFCEFC93405C69445071B40E4D9894458BB20CFF18B805192C90AEA5BA6C73",
+    "beta01Sha256": "DEEFCEFC93405C69445071B40E4D9894458BB20CFF18B805192C90AEA5BA6C73",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ExtendedFabLargeTokens.kt",
+    "alpha29Sha256": "B8C61D7BBE0E63DD72EA0C9AD327D57D2AC6F125CABFD612BE2CC6726AC1E013",
+    "beta01Sha256": "B8C61D7BBE0E63DD72EA0C9AD327D57D2AC6F125CABFD612BE2CC6726AC1E013",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ExtendedFabMediumTokens.kt",
+    "alpha29Sha256": "828E00F3899A21855B4963647E85A497237BDC7BA75394561EB94566F778C1ED",
+    "beta01Sha256": "828E00F3899A21855B4963647E85A497237BDC7BA75394561EB94566F778C1ED",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ExtendedFabPrimaryTokens.kt",
+    "alpha29Sha256": "2D6890EE1AC67B2B661E463F80435C65B50588A1F6A14CAC12FAE3339714FC14",
+    "beta01Sha256": "2D6890EE1AC67B2B661E463F80435C65B50588A1F6A14CAC12FAE3339714FC14",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ExtendedFabSmallTokens.kt",
+    "alpha29Sha256": "6CC5069D5496922AFBB6A8108069D7C95C0D41885A07A221FBFB630F3FAF4F3F",
+    "beta01Sha256": "6CC5069D5496922AFBB6A8108069D7C95C0D41885A07A221FBFB630F3FAF4F3F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FabBaselineTokens.kt",
+    "alpha29Sha256": "481552F1E35F77B27CB81BFD78FA8C6552A9EFB29D4FA603F75D67132E0A2414",
+    "beta01Sha256": "481552F1E35F77B27CB81BFD78FA8C6552A9EFB29D4FA603F75D67132E0A2414",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FabLargeTokens.kt",
+    "alpha29Sha256": "B00772754ECD8D9A91EAFE3E3BD86F574B725984BECED2D91BFB32DA1B753C63",
+    "beta01Sha256": "B00772754ECD8D9A91EAFE3E3BD86F574B725984BECED2D91BFB32DA1B753C63",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FabMediumTokens.kt",
+    "alpha29Sha256": "49888769965E3FE97D91D445EE8C66AD7B50F163FDD3DD91F0AA79FC76E8604B",
+    "beta01Sha256": "49888769965E3FE97D91D445EE8C66AD7B50F163FDD3DD91F0AA79FC76E8604B",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FabMenuBaselineTokens.kt",
+    "alpha29Sha256": "25FF6DD124479CF08895B033AD4FEBA7B88D5F1BD67D669CB542BA6F1BF676AB",
+    "beta01Sha256": "25FF6DD124479CF08895B033AD4FEBA7B88D5F1BD67D669CB542BA6F1BF676AB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FabPrimaryContainerTokens.kt",
+    "alpha29Sha256": "B54AF888659E9F397B5A42332AC1D15D271B2CCE6452A71F58D39728F05AA2D1",
+    "beta01Sha256": "B54AF888659E9F397B5A42332AC1D15D271B2CCE6452A71F58D39728F05AA2D1",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FabSecondaryContainerTokens.kt",
+    "alpha29Sha256": "3B805C60F71691812674A01DAB227259315BD0E7D7996DC830DF3DA0DD292242",
+    "beta01Sha256": "3B805C60F71691812674A01DAB227259315BD0E7D7996DC830DF3DA0DD292242",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FabSmallTokens.kt",
+    "alpha29Sha256": "6DFF0AD15397F9F91EDE2F664232D2837DA39B919B13926C5E13A486A496A060",
+    "beta01Sha256": "6DFF0AD15397F9F91EDE2F664232D2837DA39B919B13926C5E13A486A496A060",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FilledAutocompleteTokens.kt",
+    "alpha29Sha256": "E3C23E79AA9F2A4698B5324A1D19FD9F2DBB8338AC4A835E2259E7C43798C12B",
+    "beta01Sha256": "E3C23E79AA9F2A4698B5324A1D19FD9F2DBB8338AC4A835E2259E7C43798C12B",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FilledButtonTokens.kt",
+    "alpha29Sha256": "7612E40587F9FA987A817DDD9A89C424DA4E5B91EDBE850BD3812156C6EE9E33",
+    "beta01Sha256": "7612E40587F9FA987A817DDD9A89C424DA4E5B91EDBE850BD3812156C6EE9E33",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FilledCardTokens.kt",
+    "alpha29Sha256": "554B4A7BD95DCB7636B1795A403099725D89847215EF8363920F9EC08D8B0C39",
+    "beta01Sha256": "554B4A7BD95DCB7636B1795A403099725D89847215EF8363920F9EC08D8B0C39",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FilledIconButtonTokens.kt",
+    "alpha29Sha256": "1CCEE7F721E8414F5035EA023D563A21A730F339355B92F6E38BFF6CB25A264B",
+    "beta01Sha256": "1CCEE7F721E8414F5035EA023D563A21A730F339355B92F6E38BFF6CB25A264B",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FilledTextFieldTokens.kt",
+    "alpha29Sha256": "3CCEAA2D42662FBD200B1ED543DE1ABFD5E727BAADE052AB446E35669350CC11",
+    "beta01Sha256": "3CCEAA2D42662FBD200B1ED543DE1ABFD5E727BAADE052AB446E35669350CC11",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FilledTonalButtonTokens.kt",
+    "alpha29Sha256": "9887AA0FA5EE457E33C1BB428A5EF27FD7E0AB6319186F42F2C103D15E36E2A7",
+    "beta01Sha256": "9887AA0FA5EE457E33C1BB428A5EF27FD7E0AB6319186F42F2C103D15E36E2A7",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FilledTonalIconButtonTokens.kt",
+    "alpha29Sha256": "ECCED6E7CB57F0A47726585902DB0768D7A927A78E51527EA0E97B237F854B94",
+    "beta01Sha256": "ECCED6E7CB57F0A47726585902DB0768D7A927A78E51527EA0E97B237F854B94",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FilterChipTokens.kt",
+    "alpha29Sha256": "6A718CAA30F5CE889889BB20EAE01F9FA9BF2400C36C1C8D8856B1DEDC95A61A",
+    "beta01Sha256": "6A718CAA30F5CE889889BB20EAE01F9FA9BF2400C36C1C8D8856B1DEDC95A61A",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/FloatingToolbarTokens.kt",
+    "alpha29Sha256": "1C1485693112CDF4012FA78F4D44F48D3C1C0FD72AA9E3F727F54160B4C3271F",
+    "beta01Sha256": "1C1485693112CDF4012FA78F4D44F48D3C1C0FD72AA9E3F727F54160B4C3271F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/IconButtonTokens.kt",
+    "alpha29Sha256": "DD95472FFBBD321E72C6417AC31E6AFA27EC1391EFB79AACD96DAEB137C7D05E",
+    "beta01Sha256": "DD95472FFBBD321E72C6417AC31E6AFA27EC1391EFB79AACD96DAEB137C7D05E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/InputChipTokens.kt",
+    "alpha29Sha256": "5592A6E747C423B9E8C82A4AB3EEB07383FB925288519687BAD2C0D13C999B15",
+    "beta01Sha256": "5592A6E747C423B9E8C82A4AB3EEB07383FB925288519687BAD2C0D13C999B15",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/LargeIconButtonTokens.kt",
+    "alpha29Sha256": "587F924A12C4A348C71C9AB2B1F94D39E5FA9BA03C8969362C46C50B997510E5",
+    "beta01Sha256": "587F924A12C4A348C71C9AB2B1F94D39E5FA9BA03C8969362C46C50B997510E5",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/LinearProgressIndicatorTokens.kt",
+    "alpha29Sha256": "43C6931EB19698CE8BC1B520882BAE4D08E1BB1F7228A054664FAC4090858F71",
+    "beta01Sha256": "43C6931EB19698CE8BC1B520882BAE4D08E1BB1F7228A054664FAC4090858F71",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ListTokens.kt",
+    "alpha29Sha256": "BC69140567EAA2780A9D945EF7B7E299E92214B9434A9B566708AC46E31BC463",
+    "beta01Sha256": "BC69140567EAA2780A9D945EF7B7E299E92214B9434A9B566708AC46E31BC463",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/LoadingIndicatorTokens.kt",
+    "alpha29Sha256": "58624ED41AF880124A8C27055A56CC0C3694594BF1B12EA8C2FB1234DB24B0CF",
+    "beta01Sha256": "58624ED41AF880124A8C27055A56CC0C3694594BF1B12EA8C2FB1234DB24B0CF",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/MediumIconButtonTokens.kt",
+    "alpha29Sha256": "28F86FFC80ED10C93924AB7B62F7120269625FD48FFA168910310FA66E16F2BA",
+    "beta01Sha256": "28F86FFC80ED10C93924AB7B62F7120269625FD48FFA168910310FA66E16F2BA",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/MenuTokens.kt",
+    "alpha29Sha256": "3ACCB63FEF4E6D12477BDD5B2F77C776740EC79E0A8C765A3547305E6BCD846C",
+    "beta01Sha256": "3ACCB63FEF4E6D12477BDD5B2F77C776740EC79E0A8C765A3547305E6BCD846C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/MotionSchemeKeyTokens.kt",
+    "alpha29Sha256": "66A63F46BDE19C92E671D2EDC107E74ABC7268ABFFC6037D4F51F03A4FE1EE9E",
+    "beta01Sha256": "66A63F46BDE19C92E671D2EDC107E74ABC7268ABFFC6037D4F51F03A4FE1EE9E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/MotionTokens.kt",
+    "alpha29Sha256": "58BF152E5F81D8BCB80F1475A2E3C54535873245F41D005AB5C797CDD5DC6EBC",
+    "beta01Sha256": "58BF152E5F81D8BCB80F1475A2E3C54535873245F41D005AB5C797CDD5DC6EBC",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationBarHorizontalItemTokens.kt",
+    "alpha29Sha256": "909F9FA73A0D4DF5B81607C3740AE60855F96C791C94ED9198EF942BEFD3C0C7",
+    "beta01Sha256": "909F9FA73A0D4DF5B81607C3740AE60855F96C791C94ED9198EF942BEFD3C0C7",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationBarTokens.kt",
+    "alpha29Sha256": "9122765B9AFE35E9DC8177416C789146ACE27FC0C1D54CDED31531BAE7BA09B0",
+    "beta01Sha256": "9122765B9AFE35E9DC8177416C789146ACE27FC0C1D54CDED31531BAE7BA09B0",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationBarVerticalItemTokens.kt",
+    "alpha29Sha256": "6ED401CA1CFB22E9C42FF2721B358477952051A70E414163C57FDEA350B822A3",
+    "beta01Sha256": "6ED401CA1CFB22E9C42FF2721B358477952051A70E414163C57FDEA350B822A3",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationDrawerTokens.kt",
+    "alpha29Sha256": "0019BFC1EF12B72EC077A1DDC0C56ED99A52D0B8C3AEAADB9CF73AC9106AD9F6",
+    "beta01Sha256": "0019BFC1EF12B72EC077A1DDC0C56ED99A52D0B8C3AEAADB9CF73AC9106AD9F6",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationRailBaselineItemTokens.kt",
+    "alpha29Sha256": "D42B05316D9F3DD91D6CD7408F94D833F41E1B4B890E07D5E042D84D00D115A2",
+    "beta01Sha256": "D42B05316D9F3DD91D6CD7408F94D833F41E1B4B890E07D5E042D84D00D115A2",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationRailCollapsedTokens.kt",
+    "alpha29Sha256": "544CA112073D1A07C36700BDABB33170E2973D544090CE1D69EA60A1494AB532",
+    "beta01Sha256": "544CA112073D1A07C36700BDABB33170E2973D544090CE1D69EA60A1494AB532",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationRailColorTokens.kt",
+    "alpha29Sha256": "1E75BBBDFD5E349DA0D69B56D135568203B6C771C9C5D8052AFEFDE5938877EE",
+    "beta01Sha256": "1E75BBBDFD5E349DA0D69B56D135568203B6C771C9C5D8052AFEFDE5938877EE",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationRailExpandedTokens.kt",
+    "alpha29Sha256": "D090F4E5E99E2B404E6A1A2724D8BC43DAC3DB972728860D0FE77A337DDA3F28",
+    "beta01Sha256": "D090F4E5E99E2B404E6A1A2724D8BC43DAC3DB972728860D0FE77A337DDA3F28",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationRailHorizontalItemTokens.kt",
+    "alpha29Sha256": "D45C4CF6D9D9D7E643FE7EF1FE5F333CCB72152FD845D4F79808DDE08917427A",
+    "beta01Sha256": "D45C4CF6D9D9D7E643FE7EF1FE5F333CCB72152FD845D4F79808DDE08917427A",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/NavigationRailVerticalItemTokens.kt",
+    "alpha29Sha256": "B9E13BCDF3B1614079CFB08265A36BBD4628C3D30B0DB29CF29D270C6D5F532E",
+    "beta01Sha256": "B9E13BCDF3B1614079CFB08265A36BBD4628C3D30B0DB29CF29D270C6D5F532E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/OutlinedAutocompleteTokens.kt",
+    "alpha29Sha256": "00C534962F3E9C7DB17AB2C328217C6DF65A8A70319A5F89834408E524598EDB",
+    "beta01Sha256": "00C534962F3E9C7DB17AB2C328217C6DF65A8A70319A5F89834408E524598EDB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/OutlinedButtonTokens.kt",
+    "alpha29Sha256": "CECB8A34196396158D4E62F394FC1F1F95852F4CFE8E5B29D902B1C179D74401",
+    "beta01Sha256": "CECB8A34196396158D4E62F394FC1F1F95852F4CFE8E5B29D902B1C179D74401",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/OutlinedCardTokens.kt",
+    "alpha29Sha256": "C2855B47D4CB38648542400F2D13D77C8E6DDD45FF2FDB7A2B1E1ED319840FEE",
+    "beta01Sha256": "C2855B47D4CB38648542400F2D13D77C8E6DDD45FF2FDB7A2B1E1ED319840FEE",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/OutlinedIconButtonTokens.kt",
+    "alpha29Sha256": "E30561F8543138086542BDEC6B80C079F5451C5DDC3135CB6F78A66C573F0953",
+    "beta01Sha256": "E30561F8543138086542BDEC6B80C079F5451C5DDC3135CB6F78A66C573F0953",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/OutlinedSegmentedButtonTokens.kt",
+    "alpha29Sha256": "0004AB2F8287206FE107704A6966CD4F123901D36184E24B67673E998CCDF4C3",
+    "beta01Sha256": "0004AB2F8287206FE107704A6966CD4F123901D36184E24B67673E998CCDF4C3",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/OutlinedTextFieldTokens.kt",
+    "alpha29Sha256": "04FFA7424F96B8AD0E82DFCF2BFBEB122A509C5B26478633CE56077018863FA6",
+    "beta01Sha256": "04FFA7424F96B8AD0E82DFCF2BFBEB122A509C5B26478633CE56077018863FA6",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/PaletteTokens.kt",
+    "alpha29Sha256": "E0DDFF484F0FD99E7D522AFCFC7CD0EB0B38E35AFAC49711BDA5F66AE1EF8BC2",
+    "beta01Sha256": "E0DDFF484F0FD99E7D522AFCFC7CD0EB0B38E35AFAC49711BDA5F66AE1EF8BC2",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/PlainTooltipTokens.kt",
+    "alpha29Sha256": "E8BD62F82C4BE1A560AA6508877B66B74629B0D1AB57A6EB6BBD82FD16600754",
+    "beta01Sha256": "E8BD62F82C4BE1A560AA6508877B66B74629B0D1AB57A6EB6BBD82FD16600754",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/PrimaryNavigationTabTokens.kt",
+    "alpha29Sha256": "4AAA987E35E573287909FFDA53C13CCEB5F43E1FC95FC1E3056B295D897CE957",
+    "beta01Sha256": "4AAA987E35E573287909FFDA53C13CCEB5F43E1FC95FC1E3056B295D897CE957",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ProgressIndicatorTokens.kt",
+    "alpha29Sha256": "6E576F0947414AEE1BCF35BD291C52FACC5DBCEDF8AB80947AEA14DD05AB2BDC",
+    "beta01Sha256": "6E576F0947414AEE1BCF35BD291C52FACC5DBCEDF8AB80947AEA14DD05AB2BDC",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/RadioButtonTokens.kt",
+    "alpha29Sha256": "6B29406301B2F20D5FD83FB740850E77A048422992577763D8D40DEEBD6031BE",
+    "beta01Sha256": "6B29406301B2F20D5FD83FB740850E77A048422992577763D8D40DEEBD6031BE",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ReorderListTokens.kt",
+    "alpha29Sha256": "561C1B8E69013A79A6C7A5E38ED82FD4004818B86DA4197090E0233AE9BDF188",
+    "beta01Sha256": "561C1B8E69013A79A6C7A5E38ED82FD4004818B86DA4197090E0233AE9BDF188",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/RevealListTokens.kt",
+    "alpha29Sha256": "0F5D624D15D68375122CBBCF19C5CDBD9F814CCDDCB5DEA91D70CED5E6A4FF2C",
+    "beta01Sha256": "0F5D624D15D68375122CBBCF19C5CDBD9F814CCDDCB5DEA91D70CED5E6A4FF2C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/RichTooltipTokens.kt",
+    "alpha29Sha256": "1684BC6056F48CA294DDE6234AE4B9D4DBBF83CEF3D2D0208E71FC48B3052DFE",
+    "beta01Sha256": "1684BC6056F48CA294DDE6234AE4B9D4DBBF83CEF3D2D0208E71FC48B3052DFE",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ScrimTokens.kt",
+    "alpha29Sha256": "820FDE7F74BEF2738B89E152C7A695D2946CCFF084BB7C12B1E4DCE8CC5E6F3C",
+    "beta01Sha256": "820FDE7F74BEF2738B89E152C7A695D2946CCFF084BB7C12B1E4DCE8CC5E6F3C",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SearchBarTokens.kt",
+    "alpha29Sha256": "FAA48C158A10BA59CAA9BCDB44AA1849A75D34780666F5B92B525E83BDDB8870",
+    "beta01Sha256": "FAA48C158A10BA59CAA9BCDB44AA1849A75D34780666F5B92B525E83BDDB8870",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SearchViewTokens.kt",
+    "alpha29Sha256": "94E34B9966FEEA11CEE453BC1B569162376837DE6B9D6B4DBF9F0EAF5E2CD3CE",
+    "beta01Sha256": "94E34B9966FEEA11CEE453BC1B569162376837DE6B9D6B4DBF9F0EAF5E2CD3CE",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SecondaryNavigationTabTokens.kt",
+    "alpha29Sha256": "0C34A26BF5EFF2CC6318A532A211E9C25E88C02FC05C0FD1B4BBB3C7057E5F74",
+    "beta01Sha256": "0C34A26BF5EFF2CC6318A532A211E9C25E88C02FC05C0FD1B4BBB3C7057E5F74",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SegmentedMenuTokens.kt",
+    "alpha29Sha256": "847777C2729E0B753E1BE3DD2C4B2B085B25DF6C9062CCC858902F768860CDBB",
+    "beta01Sha256": "847777C2729E0B753E1BE3DD2C4B2B085B25DF6C9062CCC858902F768860CDBB",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ShapeKeyTokens.kt",
+    "alpha29Sha256": "161FCD13E9CA20DC802CE492FF4A3373FB9C69EF61B09E1A45A41732510E4B28",
+    "beta01Sha256": "161FCD13E9CA20DC802CE492FF4A3373FB9C69EF61B09E1A45A41732510E4B28",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/ShapeTokens.kt",
+    "alpha29Sha256": "02178111F81C7F03135CC7157040FA903180E212FD52B8F686B4304080EFB5A3",
+    "beta01Sha256": "02178111F81C7F03135CC7157040FA903180E212FD52B8F686B4304080EFB5A3",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SheetBottomTokens.kt",
+    "alpha29Sha256": "A495F9B0C219E4D5C99A61C84783E83164D8C4164350D0A7F45B3DF15149D9ED",
+    "beta01Sha256": "A495F9B0C219E4D5C99A61C84783E83164D8C4164350D0A7F45B3DF15149D9ED",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SliderTokens.kt",
+    "alpha29Sha256": "40089CEEF55302211CC6E1812B69560EA1E362D85A742C9C79ABB1F4076E26FF",
+    "beta01Sha256": "40089CEEF55302211CC6E1812B69560EA1E362D85A742C9C79ABB1F4076E26FF",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SmallIconButtonTokens.kt",
+    "alpha29Sha256": "C0F800D2D2C4BFEDBE24131E225448556DBEE80C52C3BFEA52E30BF33DF5A1A0",
+    "beta01Sha256": "C0F800D2D2C4BFEDBE24131E225448556DBEE80C52C3BFEA52E30BF33DF5A1A0",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SnackbarTokens.kt",
+    "alpha29Sha256": "B2DB9C11B3F3EC0069CFBAE6A62AFD7A949FCC8B90185C2A821FC0E023735A29",
+    "beta01Sha256": "B2DB9C11B3F3EC0069CFBAE6A62AFD7A949FCC8B90185C2A821FC0E023735A29",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SplitButtonLargeTokens.kt",
+    "alpha29Sha256": "AFB0E4313B9CE7479C7648FE37E96F60374738958ABB39920247923ED4E3362D",
+    "beta01Sha256": "AFB0E4313B9CE7479C7648FE37E96F60374738958ABB39920247923ED4E3362D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SplitButtonMediumTokens.kt",
+    "alpha29Sha256": "9B532414C7F0B40D830BDEB2B778A079AEC1F3C12F59E3F7A986D75E1A8D4478",
+    "beta01Sha256": "9B532414C7F0B40D830BDEB2B778A079AEC1F3C12F59E3F7A986D75E1A8D4478",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SplitButtonSmallTokens.kt",
+    "alpha29Sha256": "F7E378DD30C7BC0E2A15939F48805EE372544FCA4FA01F0BAA7636456E1F0A7A",
+    "beta01Sha256": "F7E378DD30C7BC0E2A15939F48805EE372544FCA4FA01F0BAA7636456E1F0A7A",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SplitButtonXLargeTokens.kt",
+    "alpha29Sha256": "C3825C41EAD0189951A2A973C2398E993B37DAA4736A584DBE747A8265ED2AEA",
+    "beta01Sha256": "C3825C41EAD0189951A2A973C2398E993B37DAA4736A584DBE747A8265ED2AEA",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SplitButtonXSmallTokens.kt",
+    "alpha29Sha256": "4B3108FA867223EC5846F71C55002F01026F2D891F972834CC9241885461F4B0",
+    "beta01Sha256": "4B3108FA867223EC5846F71C55002F01026F2D891F972834CC9241885461F4B0",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/StandardMenuTokens.kt",
+    "alpha29Sha256": "2842B052921BA2A4BFAE374F9650D4B47B9B71A76BE9F7CA79CAD6C140FD514E",
+    "beta01Sha256": "2842B052921BA2A4BFAE374F9650D4B47B9B71A76BE9F7CA79CAD6C140FD514E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/StandardMotionTokens.kt",
+    "alpha29Sha256": "4B36C30679DCC0B1EC6010E4E40C070901151B59252D9A21D0E4348511370592",
+    "beta01Sha256": "4B36C30679DCC0B1EC6010E4E40C070901151B59252D9A21D0E4348511370592",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/StateTokens.kt",
+    "alpha29Sha256": "F9BDDB282A3CA50E0C05BDA6B5AA713441F885E3FE16866BFB44CEE42059552F",
+    "beta01Sha256": "F9BDDB282A3CA50E0C05BDA6B5AA713441F885E3FE16866BFB44CEE42059552F",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SuggestionChipTokens.kt",
+    "alpha29Sha256": "69BB0710C284ABF90B044C738D0B94B07E3D5989C9AC88C5836AFD7124F630D8",
+    "beta01Sha256": "69BB0710C284ABF90B044C738D0B94B07E3D5989C9AC88C5836AFD7124F630D8",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/SwitchTokens.kt",
+    "alpha29Sha256": "02E6A40AC3B295782066F7D6DE65BADAB2070240F56F7EB03D482CC0B6F32C85",
+    "beta01Sha256": "02E6A40AC3B295782066F7D6DE65BADAB2070240F56F7EB03D482CC0B6F32C85",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/TextButtonTokens.kt",
+    "alpha29Sha256": "19A99527114C7844BACAB8FBA885738F1A662274565DC043D3DE2841C4B393B8",
+    "beta01Sha256": "19A99527114C7844BACAB8FBA885738F1A662274565DC043D3DE2841C4B393B8",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/TimeInputTokens.kt",
+    "alpha29Sha256": "BD6E73DB781FAA7D684BDEF699D7BDE2BA6212730C08EB11A46132F7DBCFE269",
+    "beta01Sha256": "BD6E73DB781FAA7D684BDEF699D7BDE2BA6212730C08EB11A46132F7DBCFE269",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/TimePickerTokens.kt",
+    "alpha29Sha256": "C5FC3F727D18098C95BE81D09863B8274A36554E49EB26A14AC3FC7D8DD9884E",
+    "beta01Sha256": "C5FC3F727D18098C95BE81D09863B8274A36554E49EB26A14AC3FC7D8DD9884E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/TonalButtonTokens.kt",
+    "alpha29Sha256": "D508DDA0D548423D2B5A7D186510855F97FEFDB5D56497898E08ED06BC52CE03",
+    "beta01Sha256": "D508DDA0D548423D2B5A7D186510855F97FEFDB5D56497898E08ED06BC52CE03",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/TypefaceTokens.kt",
+    "alpha29Sha256": "A1411A760A5D2A1F47C6B698F7E051779566C83B723C13ED698DFAE06EF7D36E",
+    "beta01Sha256": "A1411A760A5D2A1F47C6B698F7E051779566C83B723C13ED698DFAE06EF7D36E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/TypeScaleTokens.kt",
+    "alpha29Sha256": "7CA6378374D78DA8A1091D2EE4A4C228F70D0DAEF65DFD51C18B58F7D9679BA4",
+    "beta01Sha256": "7CA6378374D78DA8A1091D2EE4A4C228F70D0DAEF65DFD51C18B58F7D9679BA4",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/TypographyKeyTokens.kt",
+    "alpha29Sha256": "4E8AB038FBEE1EA2F8227F319FDB5165B727BE55BB86E81B780C55ECEB7BAF10",
+    "beta01Sha256": "4E8AB038FBEE1EA2F8227F319FDB5165B727BE55BB86E81B780C55ECEB7BAF10",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/TypographyTokens.kt",
+    "alpha29Sha256": "B536F8F056CC768ECBFF9BF44B0223CACDB2BE209E774E0B0819526CF311EF48",
+    "beta01Sha256": "B536F8F056CC768ECBFF9BF44B0223CACDB2BE209E774E0B0819526CF311EF48",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/VibrantMenuTokens.kt",
+    "alpha29Sha256": "AEAC45794CFC759148405370522E125C544E99329C2BF0C7825C2C5D60EAAAB5",
+    "beta01Sha256": "AEAC45794CFC759148405370522E125C544E99329C2BF0C7825C2C5D60EAAAB5",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/XLargeIconButtonTokens.kt",
+    "alpha29Sha256": "DF1976EE94530B6D8D976EB76076B7A38C47AD8F7ADB18F104B7C689A5C8CED8",
+    "beta01Sha256": "DF1976EE94530B6D8D976EB76076B7A38C47AD8F7ADB18F104B7C689A5C8CED8",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/tokens/XSmallIconButtonTokens.kt",
+    "alpha29Sha256": "DE7F1104278675CA249682A1DA5AD6D14196C68882482408043D757CCE7390E2",
+    "beta01Sha256": "DE7F1104278675CA249682A1DA5AD6D14196C68882482408043D757CCE7390E2",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/TonalPalette.kt",
+    "alpha29Sha256": "7FC9E2774F9C3953540E9CBFF1195DCE76F4651295D197D7288D614A204FBB0E",
+    "beta01Sha256": "7FC9E2774F9C3953540E9CBFF1195DCE76F4651295D197D7288D614A204FBB0E",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Tooltip.kt",
+    "alpha29Sha256": "B1047314137DA575357CC56742F6DC4B264BD50D0838B09655CB897FE635AD86",
+    "beta01Sha256": "B1047314137DA575357CC56742F6DC4B264BD50D0838B09655CB897FE635AD86",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/Typography.kt",
+    "alpha29Sha256": "E175D32BBE0F8FDF3534CEF2CB703531E11EB8D105D167E2A248D3E34CB6A55D",
+    "beta01Sha256": "E175D32BBE0F8FDF3534CEF2CB703531E11EB8D105D167E2A248D3E34CB6A55D",
+    "status": "identical"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/WavyProgressIndicator.kt",
+    "alpha29Sha256": "6D11BAB37BAB880F5B34ABC519D06325D41C587D5B126FF25EB05BC7142B02DC",
+    "beta01Sha256": "D968B8E289C5D1346FA3D2DC92892C9BB3C90ABAA4F5A8224925ABD00AD0F5D0",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/WideNavigationRail.kt",
+    "alpha29Sha256": "8ED44A582EB8BFEF61D0BA29DF63DC0B6D82CD43FC6701E7AFBF9984836DB258",
+    "beta01Sha256": "D29CABE67BCDDA8FB746C21FBBA28D860D430C9632184F89FD8FC5251B04A6B9",
+    "status": "changed"
+  },
+  {
+    "file": "commonMain/androidx/compose/material3/WideNavigationRailState.kt",
+    "alpha29Sha256": "BD2C1FECCFFBB1849E629A250671C27047C39D9408C12CEA3B8234D6BC052333",
+    "beta01Sha256": "BD2C1FECCFFBB1849E629A250671C27047C39D9408C12CEA3B8234D6BC052333",
+    "status": "identical"
+  },
+  {
+    "file": "jvmAndAndroidMain/androidx/compose/material3/CalendarLocale.jvmAndAndroid.kt",
+    "alpha29Sha256": "BC47A051AFFA29F20EA823D1BD8629414ED8215AF97D76D40E72740AF398069D",
+    "beta01Sha256": "BC47A051AFFA29F20EA823D1BD8629414ED8215AF97D76D40E72740AF398069D",
+    "status": "identical"
+  },
+  {
+    "file": "jvmAndAndroidMain/androidx/compose/material3/DatePicker.jvmAndAndroid.kt",
+    "alpha29Sha256": "C9E967FA93C5EA19F9A487850329E0CFA4119B8A17EB4F891E5D44CBB548B7F0",
+    "beta01Sha256": "C9E967FA93C5EA19F9A487850329E0CFA4119B8A17EB4F891E5D44CBB548B7F0",
+    "status": "identical"
+  },
+  {
+    "file": "jvmAndAndroidMain/androidx/compose/material3/internal/InternalMutatorMutex.jvmAndAndroid.kt",
+    "alpha29Sha256": "57CE68B091F3C0438CBC2A7C1CD4D1437DB9FBE2B5F918C1896F9D1694D8C07D",
+    "beta01Sha256": "57CE68B091F3C0438CBC2A7C1CD4D1437DB9FBE2B5F918C1896F9D1694D8C07D",
+    "status": "identical"
+  },
+  {
+    "file": "jvmAndAndroidMain/androidx/compose/material3/internal/LegacyCalendarModelImpl.jvmAndAndroid.kt",
+    "alpha29Sha256": "D19C66D24E6C3283C58B62FB418D74345867674958403108E5645F24C5545473",
+    "beta01Sha256": "D19C66D24E6C3283C58B62FB418D74345867674958403108E5645F24C5545473",
+    "status": "identical"
+  },
+  {
+    "file": "jvmAndAndroidMain/androidx/compose/material3/internal/PlatformOptimizedCancellationException.jvmAndAndroid.kt",
+    "alpha29Sha256": "C93FD9084F4D5EEAA692CC712C55771CD3A8281DFD42B42B0828E501054077EF",
+    "beta01Sha256": "C93FD9084F4D5EEAA692CC712C55771CD3A8281DFD42B42B0828E501054077EF",
+    "status": "identical"
+  },
+  {
+    "file": "jvmAndAndroidMain/androidx/compose/material3/internal/System.jvmAndAndroid.kt",
+    "alpha29Sha256": "9503BA01088DA742ED479106C75306F7443C44B28F93F2031AB19DACFB82129E",
+    "beta01Sha256": "9503BA01088DA742ED479106C75306F7443C44B28F93F2031AB19DACFB82129E",
+    "status": "identical"
+  }
+]
