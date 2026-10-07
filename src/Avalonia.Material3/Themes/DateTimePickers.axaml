@@ -61,7 +61,7 @@
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialDatePicker}" TargetType="c:MaterialDatePicker">
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />
-    <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" />
+    <Setter Property="CornerRadius" Value="0" />
     <Setter Property="MaxWidth" Value="360" />
     <Style Selector="^:range"><Setter Property="MaxWidth" Value="Infinity" /></Style>
     <Setter Property="Template">

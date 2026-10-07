@@ -73,7 +73,7 @@ public class DateTimePickerScenarioTests
     }
 
     [AvaloniaFact]
-    public void Calendar_mode_action_is_a_visible_touch_target_and_switches_to_native_editor_focus()
+    public async Task Calendar_mode_action_is_a_visible_touch_target_and_switches_to_native_editor_focus()
     {
         using var host = new DialogHost();
         var picker = new MaterialDatePicker { SelectedDate = new(2024, 2, 29), DisplayMonth = new(2024, 2, 1) };
@@ -112,6 +112,12 @@ public class DateTimePickerScenarioTests
         var point = host.Center(action);
         using var touch = host.Window.TouchBegin(point); host.Render(); host.Window.TouchEnd(touch, point); host.Render();
         Assert.Equal(MaterialDatePickerMode.Input, picker.Mode);
+        var focused=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void Observe(TimeSpan frame)
+        {
+            if(picker.StartInput.IsFocused)focused.TrySetResult();else host.Window.RequestAnimationFrame(Observe);
+        }
+        host.Window.RequestAnimationFrame(Observe);host.Render();await focused.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.True(picker.StartInput.IsFocused);
         Assert.Equal(new DateOnly(2024, 2, 29), picker.SelectedDate);
         Assert.True(session.IsOpen);
@@ -125,7 +131,7 @@ public class DateTimePickerScenarioTests
         picker.Template = new FuncControlTemplate<MaterialDatePicker>((owner, _) => new ContentPresenter { Content = owner.Surface });
         picker.Show(host.Overlay); host.Render();
         Assert.Equal(AutomationControlType.Calendar, ControlAutomationPeer.CreatePeerForElement(picker).GetAutomationControlType());
-        picker.StartInput.SelectAll(); host.Window.KeyTextInput("2024-02-28"); host.Render();
+        picker.StartInput.Focus();picker.StartInput.SelectAll(); host.Window.KeyTextInput("2024-02-28"); host.Render();
         Assert.Equal(new DateOnly(2024, 2, 28), picker.SelectedDate);
         Assert.True(picker.Cancel());
         var time = new MaterialTimePicker { SelectedTime = new(14, 7), Is24Hour = true };
@@ -329,7 +335,7 @@ public class DateTimePickerScenarioTests
     }
 
     [AvaloniaFact]
-    public void Analog_clock_has_two_hour_rings_and_native_keyboard_reaches_every_minute()
+    public async Task Analog_clock_has_two_hour_rings_and_native_keyboard_reaches_every_minute()
     {
         using var host = new DialogHost();
         var picker = new MaterialTimePicker { Is24Hour = true, SelectedTime = new TimeOnly(0, 0) };
@@ -337,6 +343,14 @@ public class DateTimePickerScenarioTests
         var hour = picker.GetVisualDescendants().OfType<MaterialClockNumber>().Single(n => n.Value == 23);
         host.Click(hour); host.Render();
         Assert.Equal(new TimeOnly(23, 0), picker.SelectedTime);
+        var advanced=new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        void Observe(TimeSpan frame)
+        {
+            if(picker.ActivePart==MaterialTimePickerPart.Minute)advanced.TrySetResult();
+            else host.Window.RequestAnimationFrame(Observe);
+        }
+        host.Window.RequestAnimationFrame(Observe);host.Render();
+        await advanced.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(MaterialTimePickerPart.Minute, picker.ActivePart);
         var minute = picker.GetVisualDescendants().OfType<MaterialClockNumber>().Single(n => n.Value == 55);
         minute.Focus();

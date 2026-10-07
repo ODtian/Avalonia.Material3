@@ -13,6 +13,71 @@ namespace Avalonia.Material3.Tests;
 public class NativePickerStructureScenarioTests
 {
     [AvaloniaFact]
+    public void Bare_date_is_rectangular_and_the_show_shell_clips_its_body_to_the_standard_shape()
+    {
+        using(var bare=new GeometryHost(new MaterialDatePicker {DisplayMonth=new(2024,2,1)},360,600))
+            Assert.Equal(Color.Parse("#ECE6F0"),bare.Pixel(1,1));
+        var overlay=new MaterialOverlayHost {Content=new Border()};
+        using var host=new GeometryHost(overlay,800,800);
+        var picker=new MaterialDatePicker {SelectionMode=MaterialDateSelectionMode.Range,DisplayMonth=new(2024,2,1)};
+        var session=picker.Show(overlay);host.Render();
+        var box=GeometryHost.Box(session.Content,host.Window);
+        Assert.NotEqual(Color.Parse("#ECE6F0"),host.Pixel(box.Left+1,box.Top+1));
+        Assert.Equal(Color.Parse("#ECE6F0"),host.Pixel(box.Left+28,box.Top+1));
+        session.Content.Theme=new Avalonia.Styling.ControlTheme(typeof(MaterialDialog)) {Setters={
+            new Avalonia.Styling.Setter(Avalonia.Controls.Primitives.TemplatedControl.TemplateProperty,
+                new Avalonia.Controls.Templates.FuncControlTemplate<MaterialDialog>((_,_)=>new TextBlock {Text="Consumer date shell"}))}};
+        host.Render();Assert.Single(session.Content.GetVisualDescendants().OfType<TextBlock>(),t=>t.IsEffectivelyVisible&&t.Text=="Consumer date shell");
+        picker.Cancel();
+    }
+    [AvaloniaFact]
+    public void Stock_date_input_uses_numeric_delimiters_partial_validation_and_native_undo()
+    {
+        var picker=new MaterialDatePicker {Mode=MaterialDatePickerMode.Input,Culture=System.Globalization.CultureInfo.GetCultureInfo("en-US")};
+        using var host=new GeometryHost(picker,360,500);
+        Assert.Equal("Date",picker.StartInput.Label);Assert.Equal("MM/DD/YYYY",picker.StartInput.PlaceholderText);
+        Assert.Null(picker.StartInput.EffectiveSupportingText);
+        picker.StartInput.Focus();host.Window.KeyTextInput("02");host.Render();
+        Assert.Equal("02/",picker.StartInput.Text);Assert.False(picker.StartInput.HasError);Assert.Null(picker.SelectedDate);
+        host.Window.KeyTextInput("29");host.Window.KeyTextInput("2024");host.Render();
+        Assert.Equal("02/29/2024",picker.StartInput.Text);Assert.Equal(new DateOnly(2024,2,29),picker.SelectedDate);
+        Assert.Null(picker.StartInput.EffectiveSupportingText);
+        picker.StartInput.SelectAll();host.Window.KeyTextInput("02292023");host.Render();
+        Assert.True(picker.StartInput.HasError);Assert.Null(picker.SelectedDate);
+        picker.StartInput.Undo();host.Render();Assert.Equal("02/29/2024",picker.StartInput.Text);Assert.Equal(new DateOnly(2024,2,29),picker.SelectedDate);
+        picker.StartInput.Label="Custom date";picker.StartInput.PlaceholderText="Custom format";picker.StartInput.SupportingText="Business hint";
+        picker.SelectedDate=new(2024,3,1);host.Render();Assert.Equal("Custom date",picker.StartInput.Label);Assert.Equal("Custom format",picker.StartInput.PlaceholderText);Assert.Equal("Business hint",picker.StartInput.EffectiveSupportingText);
+    }
+    [AvaloniaFact]
+    public void Single_default_headline_includes_the_year_and_equal_explicit_format_refreshes_immediately()
+    {
+        var picker=new MaterialDatePicker {DisplayMonth=new(2024,2,1),SelectedDate=new(2024,2,9),Culture=System.Globalization.CultureInfo.GetCultureInfo("en-US")};
+        using var host=new GeometryHost(picker,360,600);
+        Assert.Contains(picker.GetVisualDescendants().OfType<TextBlock>(),t=>t.IsEffectivelyVisible&&t.Text=="Feb 9, 2024");
+        picker.DisplayFormat="ddd, MMM d";host.Render();
+        Assert.Contains(picker.GetVisualDescendants().OfType<TextBlock>(),t=>t.IsEffectivelyVisible&&t.Text=="Fri, Feb 9");
+    }
+    [AvaloniaFact]
+    public void Single_month_navigation_keeps_weekdays_fixed_and_opens_near_the_displayed_year()
+    {
+        var picker=new MaterialDatePicker {DisplayMonth=new(2024,2,1),SelectedDate=new(2024,2,9),Culture=System.Globalization.CultureInfo.GetCultureInfo("en-US")};
+        using var host=new GeometryHost(picker,360,600);
+        var buttons=picker.GetVisualDescendants().OfType<MaterialButton>().ToArray();
+        var menu=buttons.Single(b=>(AutomationProperties.GetName(b)??"").StartsWith(picker.Labels.ChooseYear));
+        var previous=buttons.Single(b=>AutomationProperties.GetName(b)==picker.Labels.PreviousMonth);
+        var next=buttons.Single(b=>AutomationProperties.GetName(b)==picker.Labels.NextMonth);
+        Assert.True(GeometryHost.Box(menu,host.Window).Left<GeometryHost.Box(previous,host.Window).Left);
+        Assert.Equal(GeometryHost.Box(previous,host.Window).Right,GeometryHost.Box(next,host.Window).Left);
+        var week=picker.GetVisualDescendants().OfType<TextBlock>().Single(t=>t.Text=="W");var weekBox=GeometryHost.Box(week,host.Window);
+        picker.NavigateMonth(1);host.Render();Assert.Equal(weekBox,GeometryHost.Box(week,host.Window));
+        var point=GeometryHost.Box(menu,host.Window).Center;host.Window.MouseDown(point,MouseButton.Left);host.Window.MouseUp(point,MouseButton.Left);host.Render();
+        Assert.False(previous.IsEffectivelyVisible);Assert.False(next.IsEffectivelyVisible);
+        var year=picker.GetVisualDescendants().OfType<MaterialCalendarYear>().Single(y=>y.Year==2024);
+        Assert.True(GeometryHost.Box(year,host.Window).Top>=176&&GeometryHost.Box(year,host.Window).Bottom<512);
+        var nextRow=picker.GetVisualDescendants().OfType<MaterialCalendarYear>().Single(y=>y.Year==2027);
+        Assert.Equal(64,GeometryHost.Box(nextRow,host.Window).Top-GeometryHost.Box(year,host.Window).Top);
+    }
+    [AvaloniaFact]
     public void Range_viewport_consumes_the_finite_body_and_the_date_dialog_owns_its_actions()
     {
         var picker=new MaterialDatePicker {SelectionMode=MaterialDateSelectionMode.Range,DisplayMonth=new(2024,2,1)};
