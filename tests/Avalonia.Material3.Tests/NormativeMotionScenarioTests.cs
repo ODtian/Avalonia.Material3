@@ -7,12 +7,106 @@ using Avalonia.Material3.Tokens;
 using Avalonia.Media;
 using Xunit;
 using System.Text.Json;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Tests;
 
 // Agreed public host/input/caller text and painted-frame seams (docs/testing.md).
 public class NormativeMotionScenarioTests
 {
+    [AvaloniaFact]
+    public async Task Modal_sheet_slides_on_open_and_preserves_its_painted_pose_when_the_session_closes()
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 400; host.Window.Height = 500;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, 50), FastEffects = new(1, 50) } };
+        var overlay = new MaterialOverlayHost { Content = new Border { Background = Brushes.Red } };
+        host.Window.Content = overlay; host.Capture();
+        var sheet = new MaterialBottomSheet { ExpandedExtent = 300, IsPartialEnabled = false, Content = new Border { Background = Brushes.Blue } };
+        var session = sheet.Show(overlay); host.Capture();
+        Assert.Equal(1, overlay.OpenCount);
+        Assert.True(sheet.TranslatePoint(default, host.Window)!.Value.Y > 400);
+        await Task.Delay(100); host.Capture();
+        Assert.True(sheet.TranslatePoint(default, host.Window)!.Value.Y > 300);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true }; host.Capture();
+        Assert.Equal(200, sheet.TranslatePoint(default, host.Window)!.Value.Y, 4);
+        var point = sheet.TranslatePoint(new Point(100, 200), host.Window)!.Value;
+        var paint = host.PixelAt(point);
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { FastEffects = new(1, 50) } }; host.Capture();
+        Assert.True(session.Dismiss()); host.Capture();
+        Assert.Equal(0, overlay.OpenCount);
+        Assert.Null(sheet.Parent);
+        Assert.Equal(paint, host.PixelAt(point));
+    }
+
+    [AvaloniaFact]
+    public async Task Wide_rail_expansion_and_reversal_present_the_default_spatial_width_without_a_minimum_width_jump()
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 480;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, 50) } };
+        var item = new MaterialNavigationItem { Content = "Library" };
+        var rail = new MaterialNavigationRail { Items = { item } };
+        host.Window.Content = rail; host.Capture();
+        Assert.Equal(96, rail.HeaderWidth);
+        rail.IsExpanded = true;
+        await Task.Delay(80); host.Capture();
+        Assert.InRange(rail.HeaderWidth, 98, 170);
+        Assert.InRange(Math.Abs(item.Bounds.Width - rail.HeaderWidth), 0, .001);
+        var intermediate = rail.HeaderWidth;
+        rail.IsExpanded = false; host.Capture();
+        Assert.InRange(rail.HeaderWidth, 96.01, Math.Min(190, intermediate + 30));
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true }; host.Capture();
+        Assert.Equal(96, rail.HeaderWidth);
+        Assert.Equal(96, item.Bounds.Width);
+    }
+
+    [AvaloniaFact]
+    public async Task Navigation_icon_color_follows_the_pinned_effects_spring_before_reaching_its_selected_role()
+    {
+        using var host = new ButtonHost();
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultEffects = new(1, 50) } };
+        var icon = new MaterialSymbol { Symbol = "home", Filled = true };
+        var navigation = new MaterialNavigationBar
+        {
+            Items = { new MaterialNavigationItem { Content = "First" }, new MaterialNavigationItem { Content = "Second", Icon = icon } },
+            SelectedIndex = 0
+        };
+        host.Window.Content = navigation; host.Capture();
+        var size = icon.Bounds;
+        Assert.True(host.Theme.Resources.TryGetResource("M3.OnSecondaryContainerBrush", Avalonia.Styling.ThemeVariant.Light, out var role));
+        var selectedColor = ((ISolidColorBrush)role!).Color;
+        navigation.SelectedIndex = 1;
+        await Task.Delay(80); host.Capture();
+        Assert.NotEqual(selectedColor, ((ISolidColorBrush)icon.Foreground!).Color);
+        Assert.Equal(size, icon.Bounds);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true }; host.Capture();
+        Assert.Equal(selectedColor, ((ISolidColorBrush)icon.Foreground!).Color);
+    }
+
+    [AvaloniaFact]
+    public async Task Secondary_tab_underline_moves_as_one_opaque_indicator_through_the_space_between_destinations()
+    {
+        using var host = new ButtonHost();
+        host.Window.Width = 480;
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, 50) } };
+        var first = new MaterialNavigationItem { Content = "First tab" };
+        var second = new MaterialNavigationItem { Content = "Second tab" };
+        var tabs = new MaterialTabs { Variant = MaterialTabVariant.Secondary, Items = { first, second }, SelectedIndex = 0 };
+        host.Window.Content = tabs; host.Capture();
+        var a = first.TranslatePoint(new Point(first.Bounds.Width / 2, first.Bounds.Height - 1), host.Window)!.Value;
+        var b = second.TranslatePoint(new Point(second.Bounds.Width / 2, second.Bounds.Height - 1), host.Window)!.Value;
+        var ink = host.PixelAt(a); var surface = host.PixelAt(b);
+        Assert.NotEqual(ink, surface);
+        tabs.SelectedIndex = 1;
+        await Task.Delay(80); host.Capture();
+        Assert.Equal(ink, host.PixelAt(a));
+        Assert.Equal(surface, host.PixelAt(b));
+        await Task.Delay(700); host.Capture();
+        Assert.Equal(surface, host.PixelAt(a));
+        Assert.Equal(ink, host.PixelAt(b));
+    }
+
     [AvaloniaFact]
     public async Task Navigation_indicator_uses_independent_spatial_and_effects_springs_and_reduced_motion()
     {

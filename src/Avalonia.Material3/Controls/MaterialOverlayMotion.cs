@@ -10,14 +10,15 @@ internal sealed class MaterialOverlayMotion : IDisposable
 {
     private readonly MaterialOverlayLayer _layer;
     private readonly MaterialMotionSettings _settings;
-    private readonly MaterialMotionValue _scale, _alpha, _offset;
+    private readonly MaterialMotionValue _scale, _alpha, _offset, _scrim;
     private readonly ScaleTransform _transform = new(1, 1);
     private readonly TranslateTransform _translation = new();
-    private enum Recipe { Feedback, Dialog, Drawer }
+    private enum Recipe { Feedback, Dialog, Drawer, Sheet }
     private readonly Recipe _recipe;
     private readonly bool _rtl;
     private readonly double _drawerWidth;
     private readonly MaterialNavigationDrawer? _drawer;
+    private readonly MaterialSheet? _sheet;
     private double _capturedScale = 1, _capturedAlpha = 1, _capturedOffset;
     private readonly MaterialFrameLease _retirement;
     private bool _exiting;
@@ -28,22 +29,28 @@ internal sealed class MaterialOverlayMotion : IDisposable
     internal MaterialOverlayMotion(MaterialOverlayLayer layer)
     {
         _layer = layer;
-        _recipe = layer.Container.Child is MaterialDialog ? Recipe.Dialog : layer.Container.Child is MaterialNavigationDrawer ? Recipe.Drawer : Recipe.Feedback;
+        _recipe = layer.Container.Child is MaterialDialog ? Recipe.Dialog : layer.Container.Child is MaterialNavigationDrawer ? Recipe.Drawer : layer.Container.Child is MaterialSheet ? Recipe.Sheet : Recipe.Feedback;
         _rtl = layer.Container.FlowDirection == FlowDirection.RightToLeft;
         _drawerWidth = (layer.Container.Child as MaterialNavigationDrawer)?.DrawerWidth ?? 0;
         _drawer = layer.Container.Child as MaterialNavigationDrawer;
+        _sheet = layer.Container.Child as MaterialSheet;
         var transforms = new TransformGroup(); transforms.Children.Add(_transform); transforms.Children.Add(_translation);
         layer.Container.RenderTransform = transforms;
         layer.Container.RenderTransformOrigin = RelativePoint.Center;
         var initialScale = _recipe == Recipe.Feedback ? .8 : 1;
         _transform.ScaleX = _transform.ScaleY = initialScale;
         _scale = new(layer, initialScale, PaintScale);
-        _alpha = new(layer, _recipe == Recipe.Drawer ? 1 : 0, PaintAlpha);
-        _offset = new(layer, _recipe == Recipe.Dialog ? 20 : _recipe == Recipe.Drawer ? -1 : 0, PaintOffset);
+        _alpha = new(layer, _recipe is Recipe.Drawer or Recipe.Sheet ? 1 : 0, PaintAlpha);
+        _offset = new(layer, _recipe == Recipe.Dialog ? 20 : _recipe == Recipe.Drawer ? -1 : _recipe == Recipe.Sheet ? 1 : 0, PaintOffset);
+        _scrim = new(layer, 0, value =>
+        {
+            if (_recipe == Recipe.Sheet) _layer.Scrim.Opacity = _layer.Options.ShowScrim ? _layer.Options.ScrimOpacity * Math.Clamp(value, 0, 1) : 0;
+        });
+        _scrim.Snap(0);
         _alpha.Snap(_alpha.Value); _offset.Snap(_offset.Value);
         _retirement = MaterialRenderFrames.Bind(layer, _ =>
         {
-            if (_scale.IsRunning || _alpha.IsRunning || _offset.IsRunning) return true;
+            if (_scale.IsRunning || _alpha.IsRunning || _offset.IsRunning || _scrim.IsRunning) return true;
             _release?.Invoke(); return false;
         }, ignoreOwnerEnabled: true);
         _settings = new(layer, Refresh);
@@ -58,6 +65,11 @@ internal sealed class MaterialOverlayMotion : IDisposable
         }
         else if (_recipe == Recipe.Drawer)
             _offset.Spring(_exiting ? -1 : 0, _exiting ? _settings.FastEffects : _settings.DefaultSpatial);
+        else if (_recipe == Recipe.Sheet)
+        {
+            _offset.Spring(_exiting ? 1 : 0, _exiting ? _settings.FastEffects : _settings.DefaultSpatial);
+            _scrim.Spring(_exiting ? 0 : 1, _settings.DefaultEffects);
+        }
         else
         {
             var duration = _settings.FastEffects.IsInstant ? TimeSpan.Zero : TimeSpan.FromMilliseconds(_exiting ? 150 : 220);
@@ -76,6 +88,16 @@ internal sealed class MaterialOverlayMotion : IDisposable
     {
         var offset = _exiting ? value - _capturedOffset : value;
         if (_recipe == Recipe.Dialog) _translation.Y = offset;
+        if (_recipe == Recipe.Sheet && _sheet is { } sheet)
+        {
+            if (sheet.IsSideSheet)
+            {
+                var atStart = _layer.Options.Placement == MaterialOverlayPlacement.Start;
+                var sign = atStart != _rtl ? -1 : 1;
+                _translation.X = offset * _layer.Container.Bounds.Width * sign;
+            }
+            else _translation.Y = offset * _layer.Container.Bounds.Height;
+        }
         if (_recipe == Recipe.Drawer)
         {
             var width = _layer.Container.Bounds.Width > 0 ? _layer.Container.Bounds.Width : _drawerWidth;
@@ -118,7 +140,7 @@ internal sealed class MaterialOverlayMotion : IDisposable
     }
     public void Dispose()
     {
-        _scale.Dispose(); _alpha.Dispose(); _offset.Dispose(); _retirement.Dispose(); _snapshot?.Dispose();
+        _scale.Dispose(); _alpha.Dispose(); _offset.Dispose(); _scrim.Dispose(); _retirement.Dispose(); _snapshot?.Dispose();
     }
     private sealed class Snapshot : Control, IDisposable
     {

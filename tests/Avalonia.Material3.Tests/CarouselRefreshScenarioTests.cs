@@ -68,11 +68,14 @@ public class CarouselRefreshScenarioTests
         using var host = new BrowseHost(carousel);
         var images = carousel.GetVisualDescendants().OfType<Image>().ToList();
         var masks = images.Select(i => i.GetVisualAncestors().OfType<Border>().First()).ToList();
-        Assert.Equal(firstWidth, masks[0].Bounds.Width);
-        Assert.Equal(secondWidth, masks[1].Bounds.Width);
+        // Keep the historical scenario identity; expectations now come from executed pinned Kotlin.
+        var expected = layout == MaterialCarouselLayout.FullScreen ? null : NormativeMotionScenarioTests.ReadCarouselVectors()
+            .Single(vector => vector.Layout == layout.ToString() && vector.Space == 400 && vector.Count == 6 && vector.Position == 0);
+        Assert.Equal(expected?.Masks[0][1] ?? firstWidth, masks[0].Bounds.Width, 3);
+        Assert.Equal(expected?.Masks[1][1] ?? secondWidth, masks[1].Bounds.Width, 3);
         if (layout == MaterialCarouselLayout.FullScreen)
             Assert.Equal(200, masks[1].Bounds.Y);
-        else Assert.Equal(firstWidth + 8, masks[1].Bounds.X);
+        else Assert.Equal(expected!.Masks[1][0], masks[1].Bounds.X, 3);
         carousel.CurrentIndex = 3;
         var current = carousel.CurrentItem;
         host.Window.Width = 280;
@@ -277,13 +280,13 @@ public class CarouselRefreshScenarioTests
         var carousel = new MaterialCarousel { ItemsSource = Enumerable.Range(0, 5).Select(i => new MaterialCarouselItem { Title = $"Photo {i}", Image = Picture(Brushes.Green) }), ItemSpacing = 8, Height = 200 };
         using var host = new BrowseHost(carousel);
         var images = carousel.GetVisualDescendants().OfType<Image>().ToList();
-        Assert.Equal(243, images[1].Bounds.Width);
+        Assert.Equal(187.2, images[1].Bounds.Width, 4);
         var start = host.At(carousel, new Point(220, 100));
         using var touch = host.Window.TouchBegin(start);
         host.Window.TouchMove(touch, start - new Vector(90, 0));
         host.Render();
-        Assert.Equal(243, images[1].Bounds.Width);
-        Assert.InRange(images[1].GetVisualAncestors().OfType<Border>().First().Bounds.Width, 94, 242);
+        Assert.Equal(187.2, images[1].Bounds.Width, 4);
+        Assert.InRange(images[1].GetVisualAncestors().OfType<Border>().First().Bounds.Width, 140.8, 187.2);
         host.Window.TouchEnd(touch, start - new Vector(90, 0));
     }
 

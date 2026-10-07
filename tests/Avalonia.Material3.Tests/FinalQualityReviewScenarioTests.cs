@@ -105,7 +105,7 @@ public class FinalQualityReviewScenarioTests
         var content = new List<MeasuredContent>();
         var carousel = new MaterialCarousel
         {
-            Height = 200, ItemSpacing = 8, AnimationTime = TimeSpan.Zero,
+            Height = 200, ItemSpacing = 8, AnimationTime = TimeSpan.Zero, MotionDuration = TimeSpan.FromMilliseconds(200),
             ItemsSource = Enumerable.Range(0, 6).Select(i => new MaterialCarouselItem { Title = "Item " + i }).ToArray(),
             ItemTemplate = new FuncDataTemplate<MaterialCarouselItem>((_, _) =>
             {
@@ -114,11 +114,11 @@ public class FinalQualityReviewScenarioTests
         };
         host.Window.Content = carousel;
         host.Capture();
-        Assert.Equal(new Size(243, 200), content[0].LastMeasured);
+        AssertCarouselSize(content[0].LastMeasured, 187.2);
         var narrowTextHeight = content[0].WrappedText.DesiredSize.Height;
         carousel.Layout = MaterialCarouselLayout.Hero;
         host.Capture();
-        Assert.Equal(new Size(344, 200), content[0].LastMeasured);
+        AssertCarouselSize(content[0].LastMeasured, 352);
         Assert.True(content[0].WrappedText.DesiredSize.Height < narrowTextHeight, "The wider recipe must reflow caller-owned text into fewer lines.");
         var enlargedMeasures = content[0].Measures;
         for (var frame = 1; frame <= 12; frame++)
@@ -127,8 +127,8 @@ public class FinalQualityReviewScenarioTests
             host.Capture();
             Assert.Equal(enlargedMeasures, content[0].Measures);
         }
-        Assert.Equal(new Size(344, 200), content[0].Bounds.Size);
-        Assert.All(content, control => Assert.Equal(new Size(344, 200), control.Bounds.Size));
+        AssertCarouselSize(content[0].Bounds.Size, 352);
+        Assert.All(content, control => AssertCarouselSize(control.Bounds.Size, 352));
         carousel.Layout = MaterialCarouselLayout.MultiBrowse;
         host.Capture();
         for (var frame = 1; frame < 12; frame++)
@@ -139,14 +139,16 @@ public class FinalQualityReviewScenarioTests
         }
         carousel.AnimationTime = TimeSpan.FromMilliseconds(400);
         host.Capture();
-        Assert.Equal(new Size(243, 200), content[0].LastMeasured);
-        Assert.Equal(new Size(243, 200), content[0].DesiredSize);
+        AssertCarouselSize(content[0].LastMeasured, 187.2);
+        AssertCarouselSize(content[0].DesiredSize, 187.2);
         Assert.Equal(narrowTextHeight, content[0].WrappedText.DesiredSize.Height);
-        Assert.Equal(new Size(243, 200), content[0].Bounds.Size);
-        Assert.All(content, control => Assert.Equal(new Size(243, 200), control.Bounds.Size));
+        AssertCarouselSize(content[0].Bounds.Size, 187.2);
+        Assert.All(content, control => AssertCarouselSize(control.Bounds.Size, 187.2));
         Assert.Equal(enlargedMeasures + 1, content[0].Measures);
         Assert.Equal(6, content.Count);
     }
+    private static void AssertCarouselSize(Size size, double width)
+    { Assert.Equal(width, size.Width, 4); Assert.Equal(200, size.Height); }
 
     private sealed class MeasuredContent : Panel
     {

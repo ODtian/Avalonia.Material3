@@ -40,6 +40,8 @@ public abstract class MaterialNavigation : ItemsControl
     private IDataTemplate? _selectedContentTemplate;
     private bool _synchronizing;
     private ScrollViewer? _headerScrollViewer;
+    private readonly MaterialMotionValue _railWidthMotion;
+    private readonly MaterialMotionSettings _motion;
     public int SelectedIndex { get => GetValue(SelectedIndexProperty); set => SetValue(SelectedIndexProperty, value); }
     public MaterialNavigationItem? SelectedItem => _selectedItem;
     public object? SelectedContent => _selectedContent;
@@ -48,12 +50,14 @@ public abstract class MaterialNavigation : ItemsControl
 
     protected MaterialNavigation()
     {
+        _railWidthMotion = new(this, 96, width => SetAndRaise(HeaderWidthProperty, ref _headerWidth, width));
+        _motion = new(this, UpdateHeaderWidth);
         ItemsView.CollectionChanged += ItemsChanged;
         RefreshPresentation();
     }
     protected void RefreshPresentation()
     {
-        SetAndRaise(HeaderWidthProperty, ref _headerWidth, this is MaterialNavigationRail rail ? (rail.IsExpanded ? rail.ExpandedWidth : rail.UseNarrowWidth ? 80 : 96) : double.NaN);
+        UpdateHeaderWidth();
         PseudoClasses.Set(":bar", this is MaterialNavigationBar);
         PseudoClasses.Set(":rail", this is MaterialNavigationRail);
         PseudoClasses.Set(":horizontal", ItemLayout == MaterialNavigationItemLayout.Horizontal);
@@ -66,6 +70,13 @@ public abstract class MaterialNavigation : ItemsControl
         ItemsPanelRoot?.InvalidateMeasure();
         InvalidateMeasure();
         RevealSelection();
+    }
+    private void UpdateHeaderWidth()
+    {
+        if (this is not MaterialNavigationRail rail) { SetAndRaise(HeaderWidthProperty, ref _headerWidth, double.NaN); return; }
+        var target = rail.IsExpanded ? rail.ExpandedWidth : rail.UseNarrowWidth ? 80 : 96;
+        if (_motion.IsAttached) _railWidthMotion.Spring(target, _motion.DefaultSpatial);
+        else _railWidthMotion.Snap(target);
     }
     protected override Type StyleKeyOverride => typeof(MaterialNavigation);
     protected override Avalonia.Automation.Peers.AutomationPeer OnCreateAutomationPeer() => new MaterialNavigationAutomationPeer(this);
