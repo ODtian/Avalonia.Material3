@@ -6,6 +6,9 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.Diagnostics;
+using Avalonia.Styling;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Avalonia.Material3.Controls;
 
@@ -54,23 +57,25 @@ public class MaterialTimePicker : TemplatedControl
     private bool _valid, _ready, _updating, _pm;
     private TimeOnly _lastTime;
     private string? _message;
-    private readonly TextBlock _title = MaterialPickerSupport.Text("LabelMedium", "OnSurfaceVariant");
     private readonly TextBlock _error = MaterialPickerSupport.Text("BodySmall", "Error");
     private readonly TextBlock _display = MaterialPickerSupport.Text("BodyLarge", "OnSurfaceVariant");
-    private readonly MaterialButton _mode;
+    private readonly MaterialIconButton _mode;
     private readonly MaterialTimePeriodButton _am, _pmButton;
     private readonly MaterialTimeSelector _hourSelector = new(), _minuteSelector = new();
     private readonly MaterialClockDial _dial = new();
     private readonly Grid _clock = new() { RowDefinitions = new RowDefinitions("Auto,Auto,Auto"), ColumnDefinitions = new ColumnDefinitions("Auto,Auto") };
     private readonly Grid _clockSelectors;
-    private readonly WrapPanel _adjust;
     private readonly Grid _fields;
     private readonly MaterialTimePeriodPanel _period;
     private MaterialDialog? _dialog;
+    private TopLevel? _layoutRoot;
+    private bool _horizontal;
+    private MaterialButton? _confirmAction,_cancelAction;
+    private DockPanel? _footer;
     public TimeOnly? SelectedTime { get => GetValue(SelectedTimeProperty); set => SetValue(SelectedTimeProperty, value); }
     public MaterialTimePickerMode Mode { get => GetValue(ModeProperty); set => SetValue(ModeProperty, value); }
     public MaterialTimePickerPart ActivePart { get => GetValue(ActivePartProperty); set => SetValue(ActivePartProperty, value); }
-    public MaterialTimePickerLayout Layout { get => GetValue(LayoutProperty); set => SetValue(LayoutProperty, value); }
+    public MaterialTimePickerLayout Layout { get => GetValue(LayoutProperty); set { SetValue(LayoutProperty, value); if(_ready)UpdateWindowLayout(); } }
     public bool Is24Hour { get => GetValue(Is24HourProperty); set => SetValue(Is24HourProperty, value); }
     public CultureInfo Culture { get => GetValue(CultureProperty); set => SetValue(CultureProperty, value); }
     public string? DisplayFormat { get => GetValue(DisplayFormatProperty); set => SetValue(DisplayFormatProperty, value); }
@@ -89,7 +94,8 @@ public class MaterialTimePicker : TemplatedControl
 
     public MaterialTimePicker()
     {
-        _mode = MaterialPickerSupport.Action(Labels.InputMode, () => SetCurrentValue(ModeProperty, Mode == MaterialTimePickerMode.Clock ? MaterialTimePickerMode.Input : MaterialTimePickerMode.Clock));
+        _mode=new MaterialIconButton();
+        _mode.Click+=(_,_)=>SetCurrentValue(ModeProperty,Mode==MaterialTimePickerMode.Clock?MaterialTimePickerMode.Input:MaterialTimePickerMode.Clock);
         _am = new MaterialTimePeriodButton { Content = "AM" }; _am.Click += (_, _) => SetPeriod(false);
         _pmButton = new MaterialTimePeriodButton { Content = "PM" }; _pmButton.Click += (_, _) => SetPeriod(true);
         _period = new MaterialTimePeriodPanel(_am, _pmButton) { MinWidth = 52, HorizontalAlignment = HorizontalAlignment.Center };
@@ -115,10 +121,6 @@ public class MaterialTimePicker : TemplatedControl
         Grid.SetColumn(clockSeparator, 1); Grid.SetColumn(_minuteSelector, 2);
         _dial.HorizontalAlignment = HorizontalAlignment.Center;
         _clock.Children.Add(_clockSelectors); _clock.Children.Add(_dial);
-        _adjust = new WrapPanel { Children = {
-            MaterialPickerSupport.Action("−", () => Adjust(-1)), MaterialPickerSupport.Action("+", () => Adjust(1)) } };
-        AutomationProperties.SetName(_adjust.Children[0], "Decrease time"); AutomationProperties.SetName(_adjust.Children[1], "Increase time");
-        _clock.Children.Add(_adjust);
         _dial.ValueSelected += (_, args) =>
         {
             if (args.Part == MaterialTimePickerPart.Hour) SelectHour(Is24Hour ? args.Value : args.Value % 12 + (_pm ? 12 : 0), args.Complete);
@@ -129,8 +131,8 @@ public class MaterialTimePicker : TemplatedControl
         Grid.SetColumn(separator, 1); Grid.SetColumn(MinuteInput, 2);
         Grid.SetColumn(_period, 3);
         var inputs = new StackPanel { Spacing = 8, Children = { _fields, _clock } };
-        Surface = new StackPanel { Margin = new Thickness(24), Spacing = 12,
-            Children = { _title, inputs, _display, _mode, _error } };
+        Surface = new StackPanel { Margin = new Thickness(24,0,24,0),VerticalAlignment=VerticalAlignment.Top,
+            Children = { inputs, _display, _error } };
         AutomationProperties.SetLiveSetting(_error, AutomationLiveSetting.Polite);
         HourInput.TextChanged += (_, _) => ReadInput(); MinuteInput.TextChanged += (_, _) => ReadInput();
         HourInput.GotFocus += (_, _) => SetCurrentValue(ActivePartProperty, MaterialTimePickerPart.Hour);
@@ -198,24 +200,18 @@ public class MaterialTimePicker : TemplatedControl
         if (!IsEffectivelyEnabled || minute is < 0 or > 59) return false;
         SetCurrentValue(SelectedTimeProperty, new TimeOnly(_lastTime.Hour, minute)); return true;
     }
-    private void Adjust(int step)
-    {
-        if (ActivePart == MaterialTimePickerPart.Hour) SelectHour((_lastTime.Hour + step + 24) % 24, false);
-        else SelectMinute((_lastTime.Minute + step + 60) % 60);
-    }
     private void Refresh()
     {
         if (!_ready) return;
-        _title.Text = Labels.Title;
         HourInput.Label = Labels.Hour; MinuteInput.Label = Labels.Minute;
         _fields.IsVisible = Mode == MaterialTimePickerMode.Input;
         _clock.IsVisible = Mode == MaterialTimePickerMode.Clock;
-        AutomationProperties.SetName(_adjust.Children[0], Labels.DecreaseTime); AutomationProperties.SetName(_adjust.Children[1], Labels.IncreaseTime);
-        var horizontal = Layout == MaterialTimePickerLayout.Horizontal;
+        var horizontal = _horizontal;
         _clock.RowDefinitions[2].Height = horizontal ? new GridLength(1, GridUnitType.Star) : GridLength.Auto;
         Grid.SetRow(_dial, horizontal ? 0 : 1); Grid.SetColumn(_dial, horizontal ? 1 : 0); Grid.SetRowSpan(_dial, horizontal ? 3 : 1);
-        Grid.SetRow(_adjust, 2);
         _dial.Margin = horizontal ? new Thickness(36, 0, 0, 0) : new Thickness(0, 36, 0, 24);
+        var availableHeight=_layoutRoot?.ClientSize.Height??double.PositiveInfinity;
+        _dial.SetDiameter(horizontal?availableHeight>=384?256:availableHeight>=330?238:200:256);
         var horizontalPeriod = Mode == MaterialTimePickerMode.Clock && horizontal;
         var periodParent = Mode == MaterialTimePickerMode.Input ? _fields : horizontal ? _clock : _clockSelectors;
         if (_period.Parent != periodParent)
@@ -234,7 +230,7 @@ public class MaterialTimePicker : TemplatedControl
         AutomationProperties.SetName(_minuteSelector, Labels.Minute + ": " + _minuteSelector.Content);
         _hourSelector.IsChecked = ActivePart == MaterialTimePickerPart.Hour;
         _minuteSelector.IsChecked = ActivePart == MaterialTimePickerPart.Minute;
-        _hourSelector.MinWidth = Is24Hour ? 114 : 96;
+        _hourSelector.MinWidth = _minuteSelector.MinWidth = 96;
         _dial.Is24Hour = Is24Hour; _dial.Culture = Culture;
         _dial.SetSelection(ActivePart, ActivePart == MaterialTimePickerPart.Hour ? _lastTime.Hour : _lastTime.Minute,
             ActivePart == MaterialTimePickerPart.Hour ? Labels.Hour : Labels.Minute);
@@ -251,14 +247,18 @@ public class MaterialTimePicker : TemplatedControl
         SetAndRaise(IsValidProperty, ref _valid, error is null);
         _error.Text = error; _error.IsVisible = error is not null;
         _display.Text = SelectedTime?.ToString(DisplayFormat ?? (Is24Hour ? "HH:mm" : "hh:mm tt"), Culture) ?? "";
+        _display.IsVisible=this.GetDiagnostic(DisplayFormatProperty).Priority<=BindingPriority.Style && DisplayFormat is not null;
         AutomationProperties.SetItemStatus(this, error ?? _display.Text ?? "");
-        _mode.Content = Mode == MaterialTimePickerMode.Clock ? Labels.InputMode : Labels.ClockMode;
-        AutomationProperties.SetName(_mode, (string)_mode.Content);
+        _mode.Content =new MaterialSymbol {Symbol=Mode==MaterialTimePickerMode.Clock?"keyboard":"schedule"};
+        AutomationProperties.SetName(_mode,Mode==MaterialTimePickerMode.Clock?Labels.InputMode:Labels.ClockMode);
         if (_dialog is not null)
         {
             _dialog.IsConfirmEnabled = IsValid && IsEffectivelyEnabled;
             _dialog.ConfirmText = Labels.Confirm; _dialog.CancelText = Labels.Cancel;
-            _dialog.MaxWidth = Layout == MaterialTimePickerLayout.Horizontal ? 584 : 400;
+            _dialog.MaxWidth = horizontal ? 584 : 400;
+            if(_confirmAction is { } confirm){confirm.IsEnabled=IsValid;confirm.Content=Labels.Confirm;AutomationProperties.SetName(confirm,Labels.Confirm);}
+            if(_cancelAction is { } cancel){cancel.Content=Labels.Cancel;AutomationProperties.SetName(cancel,Labels.Cancel);}
+            if(_footer is { } footer)footer.MinWidth=Mode==MaterialTimePickerMode.Input?Is24Hour?216:272:horizontal?216+36+(availableHeight>=384?256:availableHeight>=330?238:200):Is24Hour?256:272;
             AutomationProperties.SetName(_dialog, Labels.Title);
         }
         DraftChanged?.Invoke(this, EventArgs.Empty);
@@ -266,20 +266,54 @@ public class MaterialTimePicker : TemplatedControl
     public MaterialOverlaySession Show(MaterialOverlayHost host, MaterialOverlayOptions? options = null)
     {
         if (_dialog?.IsOpen == true) throw new InvalidOperationException("Picker is already open.");
-        var dialog = new MaterialDialog { Content = this, Padding = new Thickness(0), MaxWidth = Layout == MaterialTimePickerLayout.Horizontal ? 584 : 400,
+        var dialog = new MaterialDialog { Content = this, Title=Labels.Title, Padding = new Thickness(0), MaxWidth = _horizontal ? 584 : 400,
             ConfirmText = Labels.Confirm, CancelText = Labels.Cancel, IsConfirmEnabled = IsValid && IsEffectivelyEnabled };
         _dialog = dialog;
+        _cancelAction=MaterialPickerSupport.Action(Labels.Cancel,()=>dialog.Cancel());
+        _confirmAction=MaterialPickerSupport.Action(Labels.Confirm,()=>dialog.Confirm());
+        var footer=new DockPanel {Margin=new Thickness(24,0,24,24),HorizontalSpacing=8,MinWidth=Mode==MaterialTimePickerMode.Clock&&!Is24Hour?272:256};
+        _footer=footer;
+        DockPanel.SetDock(_mode,Dock.Left);DockPanel.SetDock(_confirmAction,Dock.Right);DockPanel.SetDock(_cancelAction,Dock.Right);
+        footer.Children.Add(_mode);footer.Children.Add(_confirmAction);footer.Children.Add(_cancelAction);footer.Children.Add(new Border());
+        dialog.Actions=footer;
+        dialog.Styles.Add(new Style(s=>s.OfType<MaterialDialog>().Template().OfType<ScrollViewer>().Name("BodyScroll")) {Setters={new Setter(MarginProperty,default(Thickness))}});
+        dialog.Styles.Add(new Style(s=>s.OfType<MaterialDialog>().Template().OfType<TextBlock>().Name("Headline"))
+        {Setters={new Setter(MarginProperty,new Thickness(24,24,24,0)),
+            new Setter(TextBlock.FontFamilyProperty,new DynamicResourceExtension("M3.LabelMediumFontFamily")),
+            new Setter(TextBlock.FontSizeProperty,new DynamicResourceExtension("M3.LabelMediumFontSize")),
+            new Setter(TextBlock.LineHeightProperty,new DynamicResourceExtension("M3.LabelMediumLineHeight")),
+            new Setter(TextBlock.FontWeightProperty,new DynamicResourceExtension("M3.LabelMediumFontWeight")),
+            new Setter(TextBlock.ForegroundProperty,new DynamicResourceExtension("M3.OnSurfaceVariantBrush"))}});
         AutomationProperties.SetName(dialog, Labels.Title);
         dialog.Confirming += (_, args) => { args.Cancel = !IsValid || !IsEffectivelyEnabled; if (!args.Cancel) args.Value = SelectedTime; };
         MaterialOverlaySession session;
         try { session = dialog.Show(host, options ?? new MaterialOverlayOptions { InitialFocus = Mode == MaterialTimePickerMode.Input ? HourInput : _hourSelector }); }
-        catch { dialog.Content = null; _dialog = null; throw; }
-        session.Closed += (_, _) => { dialog.Content = null; _dialog = null; };
+        catch { dialog.Content = null;footer.Children.Remove(_mode);_footer=null;_confirmAction=_cancelAction=null; _dialog = null; throw; }
+        session.Closed += (_, _) => { dialog.Content = null;footer.Children.Remove(_mode);_confirmAction=_cancelAction=null;_footer=null; _dialog = null; };
         return session;
     }
     public Task<MaterialOverlayResult> ShowAsync(MaterialOverlayHost host, MaterialOverlayOptions? options = null) => Show(host, options).Completion;
     public bool Confirm() => IsEffectivelyEnabled && (_dialog?.Confirm() ?? false);
     public bool Cancel() => _dialog?.Cancel() ?? false;
+    private void UpdateWindowLayout()
+    {
+        _horizontal=this.GetDiagnostic(LayoutProperty).Priority<=BindingPriority.Style
+            ?Layout==MaterialTimePickerLayout.Horizontal:_layoutRoot is {ClientSize:var size}&&size.Width>size.Height;
+        Refresh();
+    }
+    private void RootChanged(object? sender,AvaloniaPropertyChangedEventArgs change)
+    {if(change.Property==TopLevel.ClientSizeProperty)UpdateWindowLayout();}
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);_layoutRoot=TopLevel.GetTopLevel(this);
+        if(_layoutRoot is not null)_layoutRoot.PropertyChanged+=RootChanged;
+        UpdateWindowLayout();
+    }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        if(_layoutRoot is not null)_layoutRoot.PropertyChanged-=RootChanged;
+        _layoutRoot=null;base.OnDetachedFromVisualTree(e);
+    }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -288,7 +322,12 @@ public class MaterialTimePicker : TemplatedControl
             change.Property != Is24HourProperty && change.Property != LayoutProperty && change.Property != CultureProperty && change.Property != DisplayFormatProperty &&
             change.Property != MinimumTimeProperty && change.Property != MaximumTimeProperty && change.Property != LabelsProperty && change.Property != IsEnabledProperty) return;
         if (change.Property == SelectedTimeProperty || (change.Property == Is24HourProperty || change.Property == CultureProperty) && IsValid) SynchronizeText();
-        Refresh();
+        if(change.Property==LayoutProperty)UpdateWindowLayout();else Refresh();
+        if(change.Property==ModeProperty && _layoutRoot is not null)
+        {
+            if(Mode==MaterialTimePickerMode.Input)(ActivePart==MaterialTimePickerPart.Hour?HourInput:MinuteInput).Focus();
+            else (ActivePart==MaterialTimePickerPart.Hour?_hourSelector:_minuteSelector).Focus();
+        }
     }
     private sealed class TimePickerPeer(MaterialTimePicker owner) : ControlAutomationPeer(owner)
     {

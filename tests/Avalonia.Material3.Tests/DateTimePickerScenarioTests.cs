@@ -25,7 +25,7 @@ public class DateTimePickerScenarioTests
         picker.Show(host.Overlay); host.Render();
         var hour = picker.GetVisualDescendants().OfType<MaterialTimeSelector>()
             .Single(b => ControlAutomationPeer.CreatePeerForElement(b).GetName()!.StartsWith("Hour:"));
-        Assert.Equal(114, hour.Bounds.Width);
+        Assert.Equal(96, hour.Bounds.Width);
         Assert.Equal(80, hour.Bounds.Height);
     }
 
