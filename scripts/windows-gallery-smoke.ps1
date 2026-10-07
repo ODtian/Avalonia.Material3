@@ -10,6 +10,7 @@ public static class GalleryNativeWindow {
  [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extra);
  [DllImport("user32.dll")] public static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int width, int height, uint flags);
  [DllImport("dwmapi.dll")] public static extern int DwmFlush();
+ [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr h,uint msg,IntPtr w,IntPtr l);
 }
 '@
 New-Item -ItemType Directory -Force $Evidence | Out-Null
@@ -48,8 +49,23 @@ function ByPrefix($prefix) {
             Where-Object { $_.Current.Name -like ($prefix + '*') -and $_.Current.IsEnabled } | Select-Object -First 1
     } $prefix
 }
+function ShowCaption {
+    $caption = Find $id 'GalleryPage'
+    if (!$caption -or !$caption.Current.IsEnabled) { return }
+    $ancestor=$caption
+    for($depth=0;$ancestor -and $depth -lt 30;$depth++) {
+        $scroll=$null
+        if($ancestor.TryGetCurrentPattern([System.Windows.Automation.ScrollPattern]::Pattern,[ref]$scroll) -and $ancestor.Current.IsEnabled -and $scroll.Current.VerticallyScrollable) {
+            $scroll.SetScrollPercent([System.Windows.Automation.ScrollPattern]::NoScroll,0)
+            return
+        }
+        $ancestor=[System.Windows.Automation.TreeWalker]::RawViewWalker.GetParent($ancestor)
+    }
+}
 function CaptionPaint {
     $caption = Find $id 'GalleryPage'
+    if ($caption) { $script:captionElement = $caption }
+    elseif ($script:captionElement) { $caption = $script:captionElement }
     if (!$caption) { return $null }
     $r=$window.Current.BoundingRectangle; $c=$caption.Current.BoundingRectangle
     if ($c.Height -le 0 -or $r.Width -le 0) { return $null }
@@ -66,7 +82,7 @@ function CaptionPaint {
 function SettleCaptionPaint($file) {
     $timer=[Diagnostics.Stopwatch]::StartNew(); $previous=$null; $stable=0
     while ($timer.Elapsed.TotalSeconds -lt 5) {
-        if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) { throw "Owned window lost foreground while settling $file" }
+        if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) { ShowCaption; Start-Sleep -Milliseconds 80; Foreground; $previous=$null; $stable=0 }
         $probe=CaptionPaint
         if ($probe -and $previous -and $probe.name -eq $previous.name -and $probe.signature -eq $previous.signature) { $stable++ } else { $stable=0 }
         $changedPagePaint=$probe -and (!$script:lastCaptureCaption -or $probe.name -eq $script:lastCaptureCaption.name -or $probe.signature -ne $script:lastCaptureCaption.signature)
@@ -77,8 +93,9 @@ function SettleCaptionPaint($file) {
     throw "Native page caption paint did not settle for $file"
 }
 function Capture($file, [bool]$Settle=$true) {
+    if($Settle){ShowCaption; Start-Sleep -Milliseconds 80; Foreground}
     if ([GalleryNativeWindow]::GetForegroundWindow() -ne $handle) { Write-Host "Skipped non-owned foreground capture: $file"; return }
-    $caption=if ($Settle) { SettleCaptionPaint $file } else { $null }
+    if ($Settle) { ShowCaption }; $caption=if ($Settle) { SettleCaptionPaint $file } else { $null }
     [GalleryNativeWindow]::DwmFlush() | Out-Null
     $r=$window.Current.BoundingRectangle; $b=New-Object Drawing.Bitmap([int]$r.Width,[int]$r.Height); $g=[Drawing.Graphics]::FromImage($b)
     try {
@@ -97,13 +114,14 @@ for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
     try {
         $handle=Wait { $process.Refresh(); if ($process.HasExited) { throw 'Published host exited before readiness' }; if ($process.MainWindowHandle -ne 0) { $process.MainWindowHandle } } 'window'
         $window=[System.Windows.Automation.AutomationElement]::FromHandle($handle)
-        $script:lastCaptureCaption=$null
+        $script:lastCaptureCaption=$null; $script:captionElement=$null
         $action=ById 'ActionButton'; if (!$action.Current.IsEnabled) { throw 'Initial action is not enabled' }
         $timer.Stop(); $timings += $timer.Elapsed.TotalMilliseconds
         Foreground
         Invoke $action; ByName 'Action completed (1)' | Out-Null
         if ($iteration -gt 0) { continue }
-        $theme=ById 'ThemeButton'; $action.SetFocus(); [Windows.Forms.SendKeys]::SendWait('{TAB}')
+        $theme=ById 'ThemeButton'; Foreground; $action.SetFocus(); Wait { $action.Current.HasKeyboardFocus } 'initial action focus' | Out-Null; [GalleryNativeWindow]::SendMessage($handle,0x100,[IntPtr]9,[IntPtr]0x000F0001) | Out-Null
+        [GalleryNativeWindow]::SendMessage($handle,0x101,[IntPtr]9,[IntPtr](-1072758783)) | Out-Null
         Wait { $theme.Current.HasKeyboardFocus } 'actual Tab focus' | Out-Null
         [Windows.Forms.SendKeys]::SendWait(' '); Wait { $theme.Current.Name -eq 'Use light theme' } 'Space theme action' | Out-Null
         Capture 'initial-dark.png'
@@ -196,7 +214,8 @@ for ($iteration=0; $iteration -lt $ColdStarts; $iteration++) {
                     if ($dialog.Current.ControlType -ne [System.Windows.Automation.ControlType]::Window -or $dialog.Current.ItemStatus -ne 'Modal dialog open') { throw 'Published dialog lost native role/state' }
                     Capture 'dialog-root-modal.png'
                     for ($tab=0; $tab -lt 7; $tab++) {
-                        [Windows.Forms.SendKeys]::SendWait('{TAB}'); Start-Sleep -Milliseconds 100
+                        [GalleryNativeWindow]::SendMessage($handle,0x100,[IntPtr]9,[IntPtr]0x000F0001) | Out-Null
+        [GalleryNativeWindow]::SendMessage($handle,0x101,[IntPtr]9,[IntPtr](-1072758783)) | Out-Null; Start-Sleep -Milliseconds 100
                         $focused=[System.Windows.Automation.AutomationElement]::FocusedElement
                         $inside=$false
                         for ($parent=0; $focused -and $parent -lt 80; $parent++) {
