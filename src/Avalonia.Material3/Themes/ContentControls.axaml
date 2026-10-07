@@ -109,7 +109,7 @@
     <Style Selector="^:elevated"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /></Style>
     <Style Selector="^:elevated /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
     <Style Selector="^:outlined"><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineVariantBrush}" /><Setter Property="BorderThickness" Value="1" /></Style>
-    <Style Selector="^:interactive:pointerover /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:interactive:pointerover:not(:outlined) /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
     <Style Selector="^:interactive:elevated:pointerover /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
     <Style Selector="^:selected"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /></Style>
     <Style Selector="^:pressed /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>

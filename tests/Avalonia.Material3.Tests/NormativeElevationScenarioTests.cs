@@ -72,4 +72,23 @@ public class NormativeElevationScenarioTests
             Assert.Equal(before, surface.Bounds);
         }
     }
+
+    [AvaloniaFact]
+    public void Source_zero_shadow_surfaces_retain_tonal_roles_without_casting_a_default_shadow()
+    {
+        var top = new MaterialTopAppBar { Title = "Title" };
+        Control[] surfaces = [top, new MaterialBottomAppBar(), new MaterialSearch { Label = "Search" },
+            new MaterialNavigationBar(), new MaterialCard { Variant = MaterialCardVariant.Outlined, IsInteractive = true }];
+        foreach (var surface in surfaces)
+        {
+            surface.Width = 240; surface.Height = 96; surface.Margin = new Thickness(32);
+            surface.HorizontalAlignment = HorizontalAlignment.Left; surface.VerticalAlignment = VerticalAlignment.Top;
+            using var host = new GeometryHost(new Grid { Children = { surface } }, 320, 180);
+            if (surface == top) top.ApplyScrollDelta(20, 20);
+            host.Window.MouseMove(new Point(152, 80)); host.Render();
+            // Actual defaults: AppBar Surface tonal only, SearchDefaults shadow0,
+            // NavigationBarDefaults elevation0, CardDefaults outlined hover0.
+            Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(31, 80));
+        }
+    }
 }

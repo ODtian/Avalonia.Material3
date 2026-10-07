@@ -62,14 +62,13 @@
       <Setter Property="FontFamily" Value="{DynamicResource M3.LabelMediumFontFamily}" /><Setter Property="FontSize" Value="{DynamicResource M3.LabelMediumFontSize}" />
       <Setter Property="FontWeight" Value="{DynamicResource M3.LabelMediumFontWeight}" /><Setter Property="LineHeight" Value="{DynamicResource M3.LabelMediumLineHeight}" /><Setter Property="LetterSpacing" Value="{DynamicResource M3.LabelMediumLetterSpacing}" />
     </Style>
-    <Style Selector="^:scrolled /template/ Border#Surface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:MaterialBottomAppBar}" TargetType="controls:MaterialBottomAppBar">
     <Setter Property="ClipToBounds" Value="False" />
     <Setter Property="VerticalAlignment" Value="Bottom" /><Setter Property="MinHeight" Value="80" />
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
     <Setter Property="Template"><ControlTemplate>
-      <Border Background="{TemplateBinding Background}" BoxShadow="{DynamicResource M3.Elevation.Shadow2}" MinHeight="80" Padding="4,4,11,4">
+      <Border Background="{TemplateBinding Background}" MinHeight="80" Padding="4,4,11,4">
         <Grid ColumnDefinitions="*,Auto">
           <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center">
             <ContentPresenter Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}" HorizontalContentAlignment="Left" />

@@ -14,7 +14,6 @@
       </DockPanel>
     </ControlTemplate></Setter>
     <Style Selector="^:bar"><Setter Property="ClipToBounds" Value="False" /></Style>
-    <Style Selector="^:bar /template/ Border#Header"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
     <Style Selector="^:bar:horizontal /template/ Border#Header"><Setter Property="MinHeight" Value="64" /></Style>
     <Style Selector="^:rail /template/ Border#Header">
       <Setter Property="DockPanel.Dock" Value="Left" /><Setter Property="MinHeight" Value="0" />
