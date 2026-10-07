@@ -117,10 +117,18 @@ public class MaterialSearch : TemplatedControl
     private bool _accepting;
     private INotifyCollectionChanged? _observedTokens;
     private bool _attached;
+    private readonly MaterialMotionValue _expansion;
+    private readonly MaterialMotionSettings _motion;
+    internal double ExpansionProgress => _expansion.Value;
+    internal bool IsFullscreenPresentation => Mode is MaterialSearchMode.Bar or MaterialSearchMode.View
+        && ViewPresentation == MaterialSearchViewPresentation.FullScreen;
+    internal event Action? ExpansionChanged;
 
     public MaterialSearch()
     {
         Tokens = new AvaloniaList<MaterialSearchToken>();
+        _expansion = new(this, IsOpen ? 1 : 0, PaintExpansion);
+        _motion = new(this, () => UpdateExpansion(true));
         UpdateStates();
         AddHandler(KeyDownEvent, SearchKeyDown, RoutingStrategies.Tunnel);
     }
@@ -133,7 +141,23 @@ public class MaterialSearch : TemplatedControl
         PseudoClasses.Set(":open", IsOpen);
         var fullScreen = IsOpen && (Mode is MaterialSearchMode.Bar or MaterialSearchMode.View) && ViewPresentation == MaterialSearchViewPresentation.FullScreen;
         PseudoClasses.Set(":fullscreen", fullScreen);
-        SetAndRaise(HeaderHeightProperty, ref _headerHeight, fullScreen ? 72 : 56);
+        UpdateExpansion(_attached);
+    }
+    private void PaintExpansion(double progress)
+    {
+        SetAndRaise(HeaderHeightProperty, ref _headerHeight, IsFullscreenPresentation ? 56 + 16 * Math.Clamp(progress, 0, 1) : 56);
+        ExpansionChanged?.Invoke();
+    }
+    private void UpdateExpansion(bool animate)
+    {
+        if (_expansion is null || _motion is null) return;
+        var target = IsOpen ? 1 : 0;
+        if (!animate || !_attached || _motion.FastEffects.IsInstant || Mode is not (MaterialSearchMode.Bar or MaterialSearchMode.View))
+        { _expansion.Snap(target); return; }
+        var interrupted = _expansion.IsRunning && _expansion.Value is > 0 and < 1;
+        _expansion.Tween(target, TimeSpan.FromMilliseconds(interrupted || !IsOpen ? 350 : 600),
+            interrupted || !IsOpen ? new Avalonia.Animation.Easings.SplineEasing(0, 1, 0, 1) : new Avalonia.Animation.Easings.SplineEasing(.05, .7, .1, 1),
+            interrupted ? TimeSpan.Zero : TimeSpan.FromMilliseconds(100));
     }
     private void SearchKeyDown(object? sender, KeyEventArgs e)
     {
@@ -266,6 +290,7 @@ public class MaterialSearch : TemplatedControl
     {
         base.OnAttachedToVisualTree(e);
         _attached = true;
+        UpdateExpansion(false);
         if (_observedTokens is not null) _observedTokens.CollectionChanged += TokensChanged;
         NormalizeSelectedToken();
         RefreshTokens();

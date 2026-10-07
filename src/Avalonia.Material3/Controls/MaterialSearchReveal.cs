@@ -1,4 +1,3 @@
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 
 namespace Avalonia.Material3.Controls;
@@ -8,58 +7,44 @@ internal sealed class MaterialSearchReveal : Decorator
 {
     public static readonly StyledProperty<MaterialSearch?> OwnerProperty = AvaloniaProperty.Register<MaterialSearchReveal, MaterialSearch?>(nameof(Owner));
     public MaterialSearch? Owner { get => GetValue(OwnerProperty); set => SetValue(OwnerProperty, value); }
-    private readonly MaterialMotionValue _extent, _alpha;
-    private readonly MaterialMotionSettings _motion;
-    private bool _attached;
     private Size _natural;
     public MaterialSearchReveal()
     {
         ClipToBounds = true; UseLayoutRounding = false;
-        _extent = new(this, 0, value => { InvalidateMeasure(); IsVisible = Owner?.IsOpen == true || value > 0; });
-        _alpha = new(this, 0, value => Opacity = Math.Clamp(value, 0, 1));
-        _motion = new(this, () => Update(true));
     }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        base.OnAttachedToVisualTree(e); _attached = true; Update(false);
+        base.OnAttachedToVisualTree(e);
+        if (Owner is { } owner) { owner.PropertyChanged += OwnerChanged; owner.ExpansionChanged += Update; }
+        Update();
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
-        _attached = false; base.OnDetachedFromVisualTree(e);
+        if (Owner is { } owner) { owner.PropertyChanged -= OwnerChanged; owner.ExpansionChanged -= Update; }
+        base.OnDetachedFromVisualTree(e);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property != OwnerProperty) return;
-        if (change.OldValue is MaterialSearch old) old.PropertyChanged -= OwnerChanged;
-        if (Owner is { } owner) owner.PropertyChanged += OwnerChanged;
-        Update(false);
+        if (change.OldValue is MaterialSearch old) { old.PropertyChanged -= OwnerChanged; old.ExpansionChanged -= Update; }
+        if (VisualRoot is not null && Owner is { } owner) { owner.PropertyChanged += OwnerChanged; owner.ExpansionChanged += Update; }
+        Update();
     }
     private void OwnerChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
-        if (change.Property == MaterialSearch.IsOpenProperty) Update(true);
-        if (change.Property == MaterialSearch.ModeProperty || change.Property == MaterialSearch.ViewPresentationProperty) Update(false);
+        if (change.Property == MaterialSearch.IsOpenProperty || change.Property == MaterialSearch.ModeProperty || change.Property == MaterialSearch.ViewPresentationProperty) Update();
     }
-    private void Update(bool animate)
+    private void Update()
     {
-        if (_extent is null || _motion is null) return;
-        var open = Owner?.IsOpen == true; var target = open ? 1 : 0;
+        var open = Owner?.IsOpen == true; var progress = Owner?.ExpansionProgress ?? 0;
         IsEnabled = IsHitTestVisible = open;
-        if (!animate || !_attached || _motion.FastEffects.IsInstant || Owner?.Mode is not (MaterialSearchMode.Bar or MaterialSearchMode.View))
-        { _extent.Snap(target); _alpha.Snap(target); IsVisible = open; return; }
-        IsVisible = true;
-        // An interrupted expansion uses the source's predictive-back exit spec without delay.
-        var interrupted = _extent.IsRunning && _extent.Value is > 0 and < 1;
-        var duration = TimeSpan.FromMilliseconds(interrupted || !open ? 350 : 600);
-        var delay = interrupted ? TimeSpan.Zero : TimeSpan.FromMilliseconds(100);
-        var easing = interrupted || !open ? new SplineEasing(0, 1, 0, 1) : new SplineEasing(.05, .7, .1, 1);
-        _extent.Tween(target, duration, easing, delay);
-        _alpha.Tween(target, duration, easing, delay);
+        IsVisible = open || progress > 0; Opacity = Math.Clamp(progress, 0, 1); InvalidateMeasure();
     }
     protected override Size MeasureOverride(Size availableSize)
     {
         Child?.Measure(availableSize); _natural = Child?.DesiredSize ?? default;
-        return new(_natural.Width, _natural.Height * Math.Clamp(_extent.Value, 0, 1));
+        return new(_natural.Width, _natural.Height * (Owner?.IsFullscreenPresentation == true ? 1 : Math.Clamp(Owner?.ExpansionProgress ?? 0, 0, 1)));
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
