@@ -85,4 +85,62 @@ public class ReviewFixTrajectoryScenarioTests
         await Task.Delay(80); host.Render();
         Assert.True(carousel.PresentationPosition > released + .01);
     }
+
+    [AvaloniaFact]
+    public async Task Native_hour_tap_finishes_the_hour_hand_before_advancing_the_face()
+    {
+        var picker = new MaterialTimePicker { SelectedTime = new TimeOnly(3, 0) };
+        using var host = new GeometryHost(picker, 400, 640);
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, 100) } }; host.Render();
+        var dial = picker.GetVisualDescendants().OfType<MaterialClockDial>().Single();
+        var six = dial.GetVisualDescendants().OfType<MaterialClockNumber>().Single(c => c.Value == 6);
+        var point = GeometryHost.Box(six, host.Window).Center;
+        host.Window.MouseDown(point, MouseButton.Left); host.Window.MouseUp(point, MouseButton.Left);
+        Assert.Equal(6, picker.SelectedTime?.Hour);
+        Assert.Equal(MaterialTimePickerPart.Hour, picker.ActivePart);
+        await Task.Delay(90); host.Render();
+        Assert.Equal(MaterialTimePickerPart.Hour, picker.ActivePart);
+        for (var i = 0; i < 50 && picker.ActivePart == MaterialTimePickerPart.Hour; i++)
+        { await Task.Delay(20); host.Render(); }
+        Assert.Equal(MaterialTimePickerPart.Minute, picker.ActivePart);
+        picker.SelectHour(9);
+        Assert.Equal(MaterialTimePickerPart.Minute, picker.ActivePart);
+    }
+
+    [AvaloniaFact]
+    public async Task Fullscreen_search_surface_interpolates_dimensions_corner_and_header_together()
+    {
+        var search = new MaterialSearch { Mode = MaterialSearchMode.Bar, ViewPresentation = MaterialSearchViewPresentation.FullScreen };
+        using var host = new GeometryHost(search, 800, 500);
+        host.Theme.Motion = new MaterialMotion(); host.Render();
+        var surface = search.GetVisualDescendants().OfType<Border>().Single(c => c.Name == "SearchContainer");
+        var closed = surface.Bounds.Size;
+        search.Open(); await Task.Delay(200); host.Render();
+        Assert.InRange(surface.Bounds.Height, closed.Height + 1, 499);
+        Assert.InRange(surface.Bounds.Width, closed.Width + 1, 799);
+        Assert.InRange(surface.CornerRadius.TopLeft, .01, 27.99);
+        Assert.InRange(search.HeaderHeight, 56.01, 71.99);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true }; host.Render();
+        Assert.Equal(new Size(800, 500), surface.Bounds.Size);
+        Assert.Equal(72, search.HeaderHeight);
+    }
+
+    [AvaloniaFact]
+    public async Task App_bar_settles_an_intermediate_collapse_after_native_scroll_release()
+    {
+        var scroll = new ScrollViewer { Content = new Border { Height = 1500 } };
+        var bar = new MaterialTopAppBar { Variant = MaterialTopAppBarVariant.Large, Title = "Page",
+            ScrollBehavior = MaterialAppBarScrollBehavior.EnterAlways, ScrollSource = scroll };
+        var layout = new DockPanel { Children = { bar, scroll } }; DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top);
+        using var host = new GeometryHost(layout, 400, 400);
+        host.Theme.Motion = new MaterialMotion(); host.Render();
+        var point = new Point(200, 250);
+        host.Window.MouseDown(point, MouseButton.Left);
+        scroll.Offset = new Vector(0, 30); host.Render();
+        Assert.InRange(bar.CollapsedFraction, .1, .49);
+        host.Window.MouseUp(point, MouseButton.Left);
+        for (var i = 0; i < 40 && bar.CollapsedFraction is > .01 and < .99; i++)
+        { await Task.Delay(20); host.Render(); }
+        Assert.True(bar.CollapsedFraction < .01 || bar.CollapsedFraction > .99);
+    }
 }
