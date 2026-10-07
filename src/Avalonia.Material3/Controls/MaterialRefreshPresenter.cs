@@ -52,7 +52,7 @@ public sealed class MaterialRefreshPresenter : Panel
         if (Refresh is not { } owner) return;
         if (_standard is null)
         {
-            _spinner = new MaterialCircularProgressIndicator { IsIndeterminate = true };
+            _spinner = new MaterialCircularProgressIndicator { IsIndeterminate = true, CircularStrokeThickness = 6.25 };
             _spinner.Bind(MaterialCircularProgressIndicator.ForegroundProperty, new DynamicResourceExtension("M3.OnSurfaceVariantBrush"));
             _spinner.TrackBrush = Brushes.Transparent;
             _arrow = new RefreshArrow();
