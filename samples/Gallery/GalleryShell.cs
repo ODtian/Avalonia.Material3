@@ -82,6 +82,14 @@ public sealed class GalleryShell : UserControl
             theme.Shapes = theme.Shapes with { ButtonCornerRadius = theme.Shapes.ButtonCornerRadius == 20 ? 4 : 20 }));
         settings.Children.Add(Button("Reduce motion", "GalleryMotion", () =>
             theme.Motion = theme.Motion with { ReduceMotion = !theme.Motion.ReduceMotion }));
+        var rippleButton = new MaterialButton { Content = "Ripple: " + theme.RippleStyle };
+        AutomationProperties.SetAutomationId(rippleButton, "GalleryRippleStyle");
+        rippleButton.Click += (_, _) =>
+        {
+            theme.RippleStyle = theme.RippleStyle == MaterialRippleStyle.Solid ? MaterialRippleStyle.Patterned : MaterialRippleStyle.Solid;
+            rippleButton.Content = "Ripple: " + theme.RippleStyle;
+        };
+        settings.Children.Add(rippleButton);
         settings.Children.Add(Button("Window narrow / wide", "GalleryWindow", () =>
         { if (TopLevel.GetTopLevel(this) is Window window) { window.Width = window.Width > 400 ? 320 : 1000; window.Height = window.Width < 400 ? 500 : 800; } }));
         var header = new StackPanel { Margin = new Thickness(8), Spacing = 4, Children =

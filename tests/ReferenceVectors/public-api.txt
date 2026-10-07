@@ -1539,6 +1539,14 @@ TYPE Avalonia.Material3.Controls.MaterialRefreshPresenter : Avalonia.Controls.Pa
   Method Avalonia.Material3.Controls.MaterialPullToRefresh get_Refresh()
   Method Void set_Refresh(Avalonia.Material3.Controls.MaterialPullToRefresh)
   Property Avalonia.Material3.Controls.MaterialPullToRefresh Refresh
+TYPE Avalonia.Material3.Controls.MaterialRipple : Avalonia.AvaloniaObject
+  Field Avalonia.AttachedProperty`1[System.Nullable`1[Avalonia.Material3.Controls.MaterialRippleStyle]] StyleProperty
+  Method System.Nullable`1[Avalonia.Material3.Controls.MaterialRippleStyle] GetStyle(Avalonia.Controls.Control)
+  Method Void SetStyle(Avalonia.Controls.Control, System.Nullable`1[Avalonia.Material3.Controls.MaterialRippleStyle])
+TYPE Avalonia.Material3.Controls.MaterialRippleStyle : System.Enum
+  Field Avalonia.Material3.Controls.MaterialRippleStyle Patterned
+  Field Avalonia.Material3.Controls.MaterialRippleStyle Solid
+  Field Int32 value__
 TYPE Avalonia.Material3.Controls.MaterialSearch : Avalonia.Controls.Primitives.TemplatedControl
   Constructor Void .ctor()
   Event System.EventHandler`1[Avalonia.Material3.Controls.MaterialQuerySubmittedEventArgs] QuerySubmitted
@@ -2542,6 +2550,7 @@ TYPE Avalonia.Material3.Controls.SliderValueLabelVisibility : System.Enum
   Field Int32 value__
 TYPE Avalonia.Material3.Themes.MaterialTheme : Avalonia.Styling.Styles
   Constructor Void .ctor()
+  Field Avalonia.StyledProperty`1[Avalonia.Material3.Controls.MaterialRippleStyle] RippleStyleProperty
   Field Avalonia.StyledProperty`1[Avalonia.Material3.Tokens.MaterialColorScheme] DarkColorSchemeProperty
   Field Avalonia.StyledProperty`1[Avalonia.Material3.Tokens.MaterialColorScheme] LightColorSchemeProperty
   Field Avalonia.StyledProperty`1[Avalonia.Material3.Tokens.MaterialDynamicColors] DynamicColorsProperty
@@ -2551,6 +2560,7 @@ TYPE Avalonia.Material3.Themes.MaterialTheme : Avalonia.Styling.Styles
   Field Avalonia.StyledProperty`1[Avalonia.Material3.Tokens.MaterialStates] StatesProperty
   Field Avalonia.StyledProperty`1[Avalonia.Material3.Tokens.MaterialTypography] TypographyProperty
   Field Avalonia.StyledProperty`1[System.Nullable`1[Avalonia.Media.Color]] SeedColorProperty
+  Method Avalonia.Material3.Controls.MaterialRippleStyle get_RippleStyle()
   Method Avalonia.Material3.Tokens.MaterialColorScheme get_DarkColorScheme()
   Method Avalonia.Material3.Tokens.MaterialColorScheme get_LightColorScheme()
   Method Avalonia.Material3.Tokens.MaterialDynamicColors get_DynamicColors()
@@ -2565,10 +2575,12 @@ TYPE Avalonia.Material3.Themes.MaterialTheme : Avalonia.Styling.Styles
   Method Void set_Elevation(Avalonia.Material3.Tokens.MaterialElevation)
   Method Void set_LightColorScheme(Avalonia.Material3.Tokens.MaterialColorScheme)
   Method Void set_Motion(Avalonia.Material3.Tokens.MaterialMotion)
+  Method Void set_RippleStyle(Avalonia.Material3.Controls.MaterialRippleStyle)
   Method Void set_SeedColor(System.Nullable`1[Avalonia.Media.Color])
   Method Void set_Shapes(Avalonia.Material3.Tokens.MaterialShapes)
   Method Void set_States(Avalonia.Material3.Tokens.MaterialStates)
   Method Void set_Typography(Avalonia.Material3.Tokens.MaterialTypography)
+  Property Avalonia.Material3.Controls.MaterialRippleStyle RippleStyle
   Property Avalonia.Material3.Tokens.MaterialColorScheme DarkColorScheme
   Property Avalonia.Material3.Tokens.MaterialColorScheme LightColorScheme
   Property Avalonia.Material3.Tokens.MaterialDynamicColors DynamicColors

@@ -13,6 +13,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="MaterialColorUtilities" Version="0.3.0" ExcludeAssets="analyzers" />
     <None Include="../../README.md" Pack="true" PackagePath="/" />
     <None Include="../../CHANGELOG.md" Pack="true" PackagePath="/" />
@@ -20,6 +21,7 @@
     <AvaloniaResource Include="Assets/Icons/*.ttf" />
     <AvaloniaResource Include="Assets/Icons/*.codepoints" />
     <AvaloniaResource Include="Assets/Icons/manifest.json" />
+    <EmbeddedResource Include="Assets/Ripple/ripple.sksl" LogicalName="M3.PatternedRipple.sksl" />
     <None Update="Assets/Icons/LICENSE.txt;Assets/Icons/manifest.json;Assets/Icons/*.codepoints" Pack="true" PackagePath="licenses/MaterialSymbols/" />
   </ItemGroup>
 </Project>

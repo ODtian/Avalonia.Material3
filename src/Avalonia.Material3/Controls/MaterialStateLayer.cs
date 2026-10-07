@@ -7,18 +7,21 @@ using System.Collections.Specialized;
 
 namespace Avalonia.Material3.Controls;
 
-// Pinned RippleAnimation/StateLayer:75/225/150ms press and15/45/150ms state fades.
+// Common and Android patterned press recipes share the independent state-layer lifecycle.
 internal sealed class MaterialStateLayer : Control
 {
     public static readonly StyledProperty<IBrush?> BackgroundProperty = Border.BackgroundProperty.AddOwner<MaterialStateLayer>();
     public static readonly StyledProperty<CornerRadius> CornerRadiusProperty = Border.CornerRadiusProperty.AddOwner<MaterialStateLayer>();
     public IBrush? Background { get => GetValue(BackgroundProperty); set => SetValue(BackgroundProperty, value); }
     public CornerRadius CornerRadius { get => GetValue(CornerRadiusProperty); set => SetValue(CornerRadiusProperty, value); }
-    private sealed class Ripple(Point origin, double start, double startRadius, double endRadius)
+    private sealed class Ripple(Point origin, double start, double startRadius, double endRadius, double noiseStart, IPointer? pointer, Key? key)
     {
         internal Point Origin = origin;
         internal double Start = start, StartRadius = startRadius, EndRadius = endRadius;
         internal double? Released;
+        internal readonly double NoiseStart = noiseStart;
+        internal readonly IPointer? Pointer = pointer;
+        internal readonly Key? Key = key;
     }
     private readonly MaterialFrameLease _frames;
     private readonly List<Ripple> _ripples = [];
@@ -27,6 +30,8 @@ internal sealed class MaterialStateLayer : Control
     private double _hover = .08, _focus = .10, _press = .10, _drag = .16;
     private bool _reduced;
     private bool _wasDragging;
+    private MaterialRippleStyle _themeStyle, _style;
+    private bool _initializing;
     private readonly List<IDisposable> _resources = [];
     private static readonly Avalonia.Animation.Easings.SplineEasing RadiusEasing = new(.4, 0, .2, 1);
     static MaterialStateLayer() => AffectsRender<MaterialStateLayer>(BackgroundProperty, CornerRadiusProperty);
@@ -50,12 +55,17 @@ internal sealed class MaterialStateLayer : Control
         _owner.AddHandler(PointerCaptureLostEvent, CaptureLost, RoutingStrategies.Tunnel, true);
         _owner.AddHandler(KeyDownEvent, KeyPressed, RoutingStrategies.Tunnel, true);
         _owner.AddHandler(KeyUpEvent, KeyReleased, RoutingStrategies.Tunnel, true);
+        _initializing = true;
+        _alpha = _fromAlpha = _toAlpha = _stateDuration = 0;
         Observe("HoverStateLayerOpacity", value => _hover = value is double alpha ? alpha : .08);
         Observe("FocusStateLayerOpacity", value => _focus = value is double alpha ? alpha : .10);
         Observe("PressedStateLayerOpacity", value => _press = value is double alpha ? alpha : .10);
         Observe("DraggedStateLayerOpacity", value => _drag = value is double alpha ? alpha : .16);
         Observe("ReduceMotion", value => { _reduced = value is true; UpdateState(); });
+        Observe("RippleStyle", value => { _themeStyle = value is MaterialRippleStyle style ? style : MaterialRippleStyle.Solid; UpdateStyle(); });
+        _initializing = false;
         UpdateState();
+        InvalidateVisual();
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -70,19 +80,29 @@ internal sealed class MaterialStateLayer : Control
         _owner = null;
         foreach (var subscription in _resources) subscription.Dispose();
         _resources.Clear(); _ripples.Clear(); _frames.SetRunning(false);
+        InvalidateVisual();
         base.OnDetachedFromVisualTree(e);
     }
     private void Observe(string key, Action<object?> change) => _resources.Add(
         this.GetResourceObservable("M3." + key).Subscribe(new Observer(value => { change(value); UpdateState(); })));
     private void OwnerChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
+        if (change.Property == MaterialRipple.StyleProperty) UpdateStyle();
         if (change.Property == IsPointerOverProperty || change.Property == IsKeyboardFocusWithinProperty ||
-            change.Property == IsEffectivelyEnabledProperty || change.Property.Name is "IsPressed" or "IsInteractive") UpdateState();
+            change.Property == IsEffectivelyEnabledProperty || change.Property == Button.IsPressedProperty
+            || change.Property == MaterialContentItem.IsInteractiveProperty) UpdateState();
+    }
+    private void UpdateStyle()
+    {
+        var style = _owner?.GetValue(MaterialRipple.StyleProperty) ?? _themeStyle;
+        if (_style == style) return;
+        if (style == MaterialRippleStyle.Patterned) MaterialPatternedRippleDraw.Prepare();
+        _style = style; _ripples.Clear(); UpdateState(); InvalidateVisual();
     }
     private void ClassesChanged(object? sender, NotifyCollectionChangedEventArgs e) => UpdateState();
     private void UpdateState()
     {
-        if (_owner is null) return;
+        if (_owner is null || _initializing) return;
         var enabled = _owner.IsEffectivelyEnabled && (_owner is not MaterialContentItem item || item.IsInteractive);
         var dragging = _owner.Classes.Contains(":dragging") || _owner.Classes.Contains(":dragged") || _owner.Classes.Contains(":reordering");
         var focused = _owner.Classes.Contains(":focus-visible");
@@ -98,10 +118,10 @@ internal sealed class MaterialStateLayer : Control
     private void Pressed(object? sender, PointerPressedEventArgs e)
     {
         if (!OwnsInput(e.Source) || _owner?.IsEffectivelyEnabled != true || _owner is MaterialContentItem { IsInteractive: false } || !e.GetCurrentPoint(_owner).Properties.IsLeftButtonPressed) return;
-        AddRipple(e.GetPosition(this));
+        AddRipple(e.GetPosition(this), e.Pointer);
     }
-    private void Released(object? sender, PointerReleasedEventArgs e) => FinishRipples();
-    private void CaptureLost(object? sender, PointerCaptureLostEventArgs e) => FinishRipples();
+    private void Released(object? sender, PointerReleasedEventArgs e) => FinishRipples(e.Pointer);
+    private void CaptureLost(object? sender, PointerCaptureLostEventArgs e) => FinishRipples(e.Pointer);
     private bool OwnsInput(object? source)
     {
         var input = (source as Visual)?.GetSelfAndVisualAncestors().OfType<Control>()
@@ -111,26 +131,28 @@ internal sealed class MaterialStateLayer : Control
     private void KeyPressed(object? sender, KeyEventArgs e)
     {
         if (e.Key is Key.Space or Key.Enter && OwnsInput(e.Source) && _owner?.IsEffectivelyEnabled == true &&
-            _owner is not MaterialContentItem { IsInteractive: false } && _ripples.All(ripple => ripple.Released.HasValue))
-            AddRipple(new Point(Bounds.Width / 2, Bounds.Height / 2));
+            _owner is not MaterialContentItem { IsInteractive: false } && !_ripples.Any(ripple => ripple.Key == e.Key && !ripple.Released.HasValue))
+            AddRipple(new Point(Bounds.Width / 2, Bounds.Height / 2), key: e.Key);
     }
-    private void KeyReleased(object? sender, KeyEventArgs e) { if (e.Key is Key.Space or Key.Enter) FinishRipples(); }
-    private void AddRipple(Point origin)
+    private void KeyReleased(object? sender, KeyEventArgs e) { if (e.Key is Key.Space or Key.Enter) FinishRipples(key: e.Key); }
+    private void AddRipple(Point origin, IPointer? pointer = null, Key? key = null)
     {
         _frames.Sample();
         var time = _frames.Elapsed.TotalSeconds;
-        foreach (var ripple in _ripples) ripple.Released ??= time;
+        foreach (var ripple in _ripples.Where(ripple => ripple.Pointer == pointer && ripple.Key == key)) ripple.Released ??= time;
         var size = Bounds.Size;
         var unbounded = _owner is MaterialCheckBox or MaterialRadioButton or MaterialSwitch;
         var end = unbounded ? 20 : Math.Sqrt(size.Width * size.Width + size.Height * size.Height) / 2 + 10;
         if (unbounded) origin = new Point(size.Width / 2, size.Height / 2);
-        _ripples.Add(new(origin, time, unbounded ? 7.2 : Math.Max(size.Width, size.Height) * .3, end));
+        if (_ripples.Count >= 11) _ripples.RemoveAt(0);
+        _ripples.Add(new(origin, time, unbounded ? 7.2 : Math.Max(size.Width, size.Height) * .3, end,
+            Environment.TickCount64, pointer, key));
         _frames.SetRunning(true); InvalidateVisual();
     }
-    private void FinishRipples()
+    private void FinishRipples(IPointer? pointer = null, Key? key = null)
     {
         _frames.Sample();
-        foreach (var ripple in _ripples) ripple.Released ??= _frames.Elapsed.TotalSeconds;
+        foreach (var ripple in _ripples.Where(ripple => ripple.Pointer == pointer && ripple.Key == key)) ripple.Released ??= _frames.Elapsed.TotalSeconds;
         _frames.SetRunning(true); InvalidateVisual();
     }
     private bool Advance(MaterialFrame frame)
@@ -138,9 +160,11 @@ internal sealed class MaterialStateLayer : Control
         var time = frame.Elapsed.TotalSeconds;
         var stateFraction = _stateDuration == 0 ? 1 : Math.Clamp((time - _stateStart) / _stateDuration, 0, 1);
         _alpha = _fromAlpha + (_toAlpha - _fromAlpha) * stateFraction;
-        _ripples.RemoveAll(ripple => ripple.Released is { } released && (_reduced || time >= Math.Max(released, ripple.Start + .225) + .15));
+        var enter = _style == MaterialRippleStyle.Patterned ? .450 : .225;
+        var exit = _style == MaterialRippleStyle.Patterned ? .375 : .150;
+        _ripples.RemoveAll(ripple => ripple.Released is { } released && (_reduced || time >= Math.Max(released, ripple.Start + enter) + exit));
         InvalidateVisual();
-        return stateFraction < 1 || _ripples.Any(ripple => ripple.Released.HasValue || !_reduced && time < ripple.Start + .225);
+        return stateFraction < 1 || _ripples.Any(ripple => ripple.Released.HasValue || !_reduced && time < ripple.Start + (_style == MaterialRippleStyle.Patterned ? 7 : .225));
     }
     public override void Render(DrawingContext context)
     {
@@ -152,6 +176,19 @@ internal sealed class MaterialStateLayer : Control
         foreach (var ripple in _ripples)
         {
             var age = Math.Max(0, time - ripple.Start);
+            if (_style == MaterialRippleStyle.Patterned && Background is ISolidColorBrush color)
+            {
+                var progress = _reduced ? ripple.Released.HasValue ? 1 : .5 : ripple.Released is { } patternedReleased && time >= Math.Max(patternedReleased, ripple.Start + .450)
+                    ? .5 + .5 * Math.Clamp((time - Math.Max(patternedReleased, ripple.Start + .450)) / .375, 0, 1)
+                    : .5 * RadiusEasing.Ease(Math.Clamp(age / .450, 0, 1));
+                var alphaByte = (byte)Math.Clamp(Math.Round(color.Color.A * color.Opacity * _press, MidpointRounding.AwayFromZero), 0, 255);
+                var noiseFrom = (float)ripple.NoiseStart; var noiseTo = (float)(ripple.NoiseStart + 32);
+                var noise = noiseFrom + (noiseTo - noiseFrom) * (float)Math.Clamp(age / 7, 0, 1);
+                context.Custom(new MaterialPatternedRippleDraw(rect, ripple.Origin, ripple.EndRadius, progress,
+                    noise, Color.FromArgb(alphaByte, color.Color.R, color.Color.G, color.Color.B),
+                    TopLevel.GetTopLevel(this)?.RenderScaling ?? 1));
+                continue;
+            }
             var radiusFraction = _reduced ? 1 : Math.Clamp(age / .225, 0, 1);
             var alpha = _reduced ? 1 : Math.Clamp(age / .075, 0, 1);
             if (ripple.Released is { } released)

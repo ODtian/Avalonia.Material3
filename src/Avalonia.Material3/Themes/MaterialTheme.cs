@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Material3.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Material3.Tokens;
 using Avalonia.Media;
@@ -29,6 +30,11 @@ public class MaterialTheme : Styles
     public static readonly StyledProperty<MaterialMotion> MotionProperty =
         AvaloniaProperty.Register<MaterialTheme, MaterialMotion>(nameof(Motion), new(),
             validate: value => value is { IsValid: true });
+
+    public static readonly StyledProperty<MaterialRippleStyle> RippleStyleProperty =
+        AvaloniaProperty.Register<MaterialTheme, MaterialRippleStyle>(nameof(RippleStyle),
+            OperatingSystem.IsAndroid() ? MaterialRippleStyle.Patterned : MaterialRippleStyle.Solid, validate: Enum.IsDefined);
+    public MaterialRippleStyle RippleStyle { get => GetValue(RippleStyleProperty); set => SetValue(RippleStyleProperty, value); }
 
     public static readonly StyledProperty<MaterialElevation> ElevationProperty =
         AvaloniaProperty.Register<MaterialTheme, MaterialElevation>(nameof(Elevation), new(), validate: value => value is { IsValid: true });
@@ -89,11 +95,13 @@ public class MaterialTheme : Styles
         UpdateElevation();
         UpdateStates();
         UpdateMotion();
+        Resources["M3.RippleStyle"] = RippleStyle;
     }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == RippleStyleProperty) Resources["M3.RippleStyle"] = RippleStyle;
         if (change.Property == LightColorSchemeProperty || change.Property == DarkColorSchemeProperty
             || change.Property == SeedColorProperty || change.Property == DynamicColorsProperty)
             UpdateColorInputs();
