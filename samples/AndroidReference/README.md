@@ -37,6 +37,7 @@ The `scene` string intent extra opens a component directly. `dark` is a boolean;
 
 Semantics enables `testTagsAsResourceId` on the root; stable tags expose triggers and component containers to UIAutomator.
 The root uses the platform `motionEventSpy` observer to record actual DOWN/UP/CANCEL event uptime and coordinates under `M3Reference`, preserving the official components' pointer handling. Captures can correlate frame time with the received input event.
+The time dialog uses the official `TimePickerDialogDefaults.Title` and `DisplayModeToggle` slots, including the title's 20 DIP bottom padding and mode-specific text.
 
 ```powershell
 adb -s 127.0.0.1:16416 install -r app/build/outputs/apk/debug/app-debug.apk

@@ -151,7 +151,20 @@ private fun TimeScene() {
     Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = androidx.compose.ui.Alignment.TopCenter) {
         if (input) TimeInput(state = state, modifier = Modifier.testTag("time-input")) else TimePicker(state = state, modifier = Modifier.testTag("time-picker"))
     }
-    if (modal) TimePickerDialog(onDismissRequest = { modal = false }, title = { Text("Select time") }, confirmButton = { TextButton(onClick = { modal = false }) { Text("OK") } }, dismissButton = { TextButton(onClick = { modal = false }) { Text("Cancel") } }) { TimePicker(state = state) }
+    if (modal) {
+        val mode = if (input) TimePickerDisplayMode.Input else TimePickerDisplayMode.Picker
+        TimePickerDialog(
+            onDismissRequest = { modal = false },
+            title = { TimePickerDialogDefaults.Title(displayMode = mode) },
+            modeToggleButton = {
+                TimePickerDialogDefaults.DisplayModeToggle(
+                    onDisplayModeChange = { input = !input }, displayMode = mode,
+                    modifier = Modifier.testTag("time-dialog-mode"))
+            },
+            confirmButton = { TextButton(onClick = { modal = false }) { Text("OK") } },
+            dismissButton = { TextButton(onClick = { modal = false }) { Text("Cancel") } },
+        ) { if (input) TimeInput(state = state) else TimePicker(state = state) }
+    }
 }
 
 @Composable
