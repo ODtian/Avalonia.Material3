@@ -12,6 +12,24 @@ namespace Avalonia.Material3.Tests;
 public class NormativeSecondaryMotionTests
 {
     [AvaloniaFact]
+    public async Task Disabled_checkbox_programmatic_selection_finishes_painting_its_mark()
+    {
+        using var host = new ButtonHost();
+        host.Theme.Motion = new MaterialMotion();
+        var checkbox = new MaterialCheckBox { IsEnabled = false, IsThreeState = true, Width = 48, Height = 48,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left };
+        host.Window.Content = new StackPanel { Children = { checkbox } };
+        host.Capture();
+        checkbox.IsChecked = null;
+        await Task.Delay(450);
+        host.Capture();
+        var mark = checkbox.TranslatePoint(new Point(24, 24), host.Window)!.Value;
+        var box = checkbox.TranslatePoint(new Point(24, 21), host.Window)!.Value;
+        Assert.NotEqual(host.PixelAt(box), host.PixelAt(mark));
+        Assert.Null(checkbox.IsChecked);
+    }
+
+    [AvaloniaFact]
     public async Task Pointer_press_expands_from_its_origin_before_reaching_the_far_edge()
     {
         using var host = new ButtonHost();
@@ -40,12 +58,14 @@ public class NormativeSecondaryMotionTests
         Springs = MaterialSpringScheme.Expressive with { FastSpatial = new(1, 100), DefaultSpatial = new(1, 100), FastEffects = new(1, 100) }
     };
 
-    [AvaloniaFact]
-    public async Task Radio_selection_paints_a_growing_dot_using_the_spatial_spring()
+    [AvaloniaTheory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Radio_selection_paints_a_growing_dot_using_the_spatial_spring(bool enabled)
     {
         using var host = new ButtonHost();
         host.Theme.Motion = SlowSpatial();
-        var radio = new MaterialRadioButton { Width = 48, Height = 48, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left };
+        var radio = new MaterialRadioButton { Width = 48, Height = 48, IsEnabled = enabled, HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left };
         host.Window.Content = new StackPanel { Children = { radio } };
         host.Capture();
         var bounds = radio.Bounds;
