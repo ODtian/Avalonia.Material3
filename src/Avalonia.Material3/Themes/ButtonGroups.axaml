@@ -14,6 +14,7 @@
               <Grid>
                 <c:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
                         CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False" />
+                <c:MaterialGroupContentPresenter>
                 <DockPanel x:Name="GroupContent" HorizontalAlignment="Center" Margin="{TemplateBinding Padding}" HorizontalSpacing="{TemplateBinding IconSpacing}">
                   <Viewbox x:Name="SelectionIcon" DockPanel.Dock="Left" Width="18" Height="18" IsVisible="False" VerticalAlignment="Center">
                     <Grid>
@@ -33,6 +34,7 @@
                           TextWrapping="Wrap" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="Center" RecognizesAccessKey="True" />
                 </DockPanel>
+                </c:MaterialGroupContentPresenter>
               </Grid>
               </c:MaterialInsetBorder>
             </c:MaterialShapeBorder>

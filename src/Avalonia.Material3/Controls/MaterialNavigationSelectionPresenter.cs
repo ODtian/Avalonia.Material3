@@ -1,6 +1,6 @@
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Media;
+using Avalonia.Material3.Tokens;
 
 namespace Avalonia.Material3.Controls;
 
@@ -10,11 +10,12 @@ internal sealed class MaterialNavigationSelectionPresenter : Control
     public static readonly StyledProperty<bool> IsSelectedProperty = AvaloniaProperty.Register<MaterialNavigationSelectionPresenter, bool>(nameof(IsSelected));
     public static readonly StyledProperty<IBrush?> BrushProperty = AvaloniaProperty.Register<MaterialNavigationSelectionPresenter, IBrush?>(nameof(Brush));
     public static readonly StyledProperty<CornerRadius> CornerRadiusProperty = Border.CornerRadiusProperty.AddOwner<MaterialNavigationSelectionPresenter>();
-    private static readonly StyledProperty<TimeSpan> DurationProperty = AvaloniaProperty.Register<MaterialNavigationSelectionPresenter, TimeSpan>("Duration");
-    private static readonly StyledProperty<IEasing> EasingProperty = AvaloniaProperty.Register<MaterialNavigationSelectionPresenter, IEasing>("Easing", new SplineEasing(.2, 0, 0, 1));
+    private static readonly StyledProperty<MaterialSpring> SpatialSpringProperty = AvaloniaProperty.Register<MaterialNavigationSelectionPresenter, MaterialSpring>("SpatialSpring", MaterialSpringScheme.Expressive.FastSpatial);
+    private static readonly StyledProperty<MaterialSpring> EffectsSpringProperty = AvaloniaProperty.Register<MaterialNavigationSelectionPresenter, MaterialSpring>("EffectsSpring", MaterialSpringScheme.Expressive.DefaultEffects);
     private readonly MaterialFrameLease _frames;
     private IBrush? _paintBrush;
-    private double _value, _from, _target;
+    private double _size, _alpha, _fromSize, _fromAlpha, _target, _sizeVelocity, _alphaVelocity, _fromSizeVelocity, _fromAlphaVelocity;
+    private MaterialSpring _spatial = MaterialSpringScheme.Expressive.FastSpatial, _effects = MaterialSpringScheme.Expressive.DefaultEffects;
     private bool _attached;
     public bool IsSelected { get => GetValue(IsSelectedProperty); set => SetValue(IsSelectedProperty, value); }
     public IBrush? Brush { get => GetValue(BrushProperty); set => SetValue(BrushProperty, value); }
@@ -24,8 +25,8 @@ internal sealed class MaterialNavigationSelectionPresenter : Control
     {
         IsHitTestVisible = false; UseLayoutRounding = false;
         _frames = MaterialRenderFrames.Bind(this, Advance);
-        MaterialPickerSupport.Resource(this, DurationProperty, "StateLayerDuration");
-        MaterialPickerSupport.Resource(this, EasingProperty, "Motion.EasingStandard");
+        MaterialPickerSupport.Resource(this, SpatialSpringProperty, "Motion.FastSpatial");
+        MaterialPickerSupport.Resource(this, EffectsSpringProperty, "Motion.DefaultEffects");
     }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -42,37 +43,45 @@ internal sealed class MaterialNavigationSelectionPresenter : Control
         if (change.Property == BrushProperty)
         {
             // Deselect styles immediately become Transparent, but exiting ink keeps its last role.
-            if (IsSelected || _value == 0 || Brush is not null and not ISolidColorBrush || Brush is ISolidColorBrush { Color.A: > 0 }) _paintBrush = Brush;
+            if (IsSelected || _alpha == 0 || Brush is not null and not ISolidColorBrush || Brush is ISolidColorBrush { Color.A: > 0 }) _paintBrush = Brush;
             InvalidateVisual();
         }
         else if (change.Property == IsSelectedProperty) Retarget();
-        else if (change.Property == DurationProperty && GetValue(DurationProperty) <= TimeSpan.Zero) Snap();
-        else if (change.Property == CornerRadiusProperty || change.Property == EasingProperty) InvalidateVisual();
+        else if (change.Property == SpatialSpringProperty || change.Property == EffectsSpringProperty) Retarget();
+        else if (change.Property == CornerRadiusProperty) InvalidateVisual();
     }
     private void Snap()
     {
-        _target = _value = IsSelected ? 1 : 0;
+        _target = _size = _alpha = IsSelected ? 1 : 0;
+        _sizeVelocity = _alphaVelocity = 0;
         _frames?.SetRunning(false); InvalidateVisual();
     }
     private void Retarget()
     {
-        if (!_attached || GetValue(DurationProperty) <= TimeSpan.Zero) { Snap(); return; }
-        _frames.Sample(); _from = _value; _target = IsSelected ? 1 : 0;
-        if (_from == _target) return;
+        if (_frames is null) return;
+        if (!_attached || GetValue(SpatialSpringProperty).IsInstant && GetValue(EffectsSpringProperty).IsInstant) { Snap(); return; }
+        if (_frames.IsRunning) _frames.Sample();
+        _fromSize = _size; _fromAlpha = _alpha; _fromSizeVelocity = _sizeVelocity; _fromAlphaVelocity = _alphaVelocity;
+        _spatial = GetValue(SpatialSpringProperty); _effects = GetValue(EffectsSpringProperty);
+        _target = IsSelected ? 1 : 0;
+        if (_fromSize == _target && _fromAlpha == _target && _sizeVelocity == 0 && _alphaVelocity == 0) return;
         _frames.Restart(); _frames.SetRunning(true); InvalidateVisual();
     }
     private bool Advance(MaterialFrame frame)
     {
-        var duration = GetValue(DurationProperty).TotalSeconds;
-        var fraction = duration <= 0 ? 1 : Math.Clamp(frame.Elapsed.TotalSeconds / duration, 0, 1);
-        _value = fraction == 1 ? _target : _from + (_target - _from) * GetValue(EasingProperty).Ease(fraction);
-        InvalidateVisual(); return fraction < 1;
+        var time = frame.Elapsed.TotalSeconds;
+        (_size, _sizeVelocity) = MaterialSpringResponse.Sample(time, _fromSize, _target, _fromSizeVelocity, _spatial);
+        (_alpha, _alphaVelocity) = MaterialSpringResponse.Sample(time, _fromAlpha, _target, _fromAlphaVelocity, _effects);
+        var settled = time >= 10 || Math.Abs(_size - _target) < .001 && Math.Abs(_alpha - _target) < .001
+            && Math.Abs(_sizeVelocity) < .01 && Math.Abs(_alphaVelocity) < .01;
+        if (settled) Snap();
+        InvalidateVisual(); return !settled;
     }
     public override void Render(DrawingContext context)
     {
-        if (_value <= 0 || _paintBrush is null) return;
-        var width = Bounds.Width * (.6 + .4 * _value);
+        if (_alpha <= 0 || _size <= 0 || _paintBrush is null) return;
+        var width = Bounds.Width * _size;
         var rect = new Rect((Bounds.Width - width) / 2, 0, width, Bounds.Height);
-        using (context.PushOpacity(_value)) context.DrawRectangle(_paintBrush, null, new RoundedRect(rect, CornerRadius));
+        using (context.PushOpacity(Math.Clamp(_alpha, 0, 1))) context.DrawRectangle(_paintBrush, null, new RoundedRect(rect, CornerRadius));
     }
 }
