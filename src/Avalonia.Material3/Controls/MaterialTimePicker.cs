@@ -236,9 +236,8 @@ public class MaterialTimePicker : TemplatedControl
         _minuteSelector.IsChecked = ActivePart == MaterialTimePickerPart.Minute;
         _hourSelector.MinWidth = Is24Hour ? 114 : 96;
         _dial.Is24Hour = Is24Hour; _dial.Culture = Culture;
-        _dial.ActivePart = ActivePart;
-        _dial.Value = ActivePart == MaterialTimePickerPart.Hour ? _lastTime.Hour : _lastTime.Minute;
-        _dial.ValueLabel = ActivePart == MaterialTimePickerPart.Hour ? Labels.Hour : Labels.Minute;
+        _dial.SetSelection(ActivePart, ActivePart == MaterialTimePickerPart.Hour ? _lastTime.Hour : _lastTime.Minute,
+            ActivePart == MaterialTimePickerPart.Hour ? Labels.Hour : Labels.Minute);
         _period.IsVisible = !Is24Hour;
         _am.Content = string.IsNullOrEmpty(Culture.DateTimeFormat.AMDesignator) ? "AM" : Culture.DateTimeFormat.AMDesignator;
         _pmButton.Content = string.IsNullOrEmpty(Culture.DateTimeFormat.PMDesignator) ? "PM" : Culture.DateTimeFormat.PMDesignator;

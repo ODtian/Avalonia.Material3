@@ -10,6 +10,33 @@ namespace Avalonia.Material3.Tests;
 
 public class NormativePickerMotionTests
 {
+    [AvaloniaFact]
+    public async Task Clock_part_switch_crossfades_its_face_and_moves_the_hand_through_the_short_arc()
+    {
+        var picker = new MaterialTimePicker { SelectedTime = new(3, 0) };
+        using var host = new GeometryHost(picker, 400, 700);
+        var dial = picker.GetVisualDescendants().OfType<MaterialClockDial>().Single();
+        var box = GeometryHost.Box(dial, host.Window);
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with {
+            DefaultSpatial = new(.8, 100), DefaultEffects = new(1, 100) } }; host.Render();
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Left + 229, box.Top + 145));
+        picker.ActivePart = MaterialTimePickerPart.Minute;
+        Assert.Equal(new TimeOnly(3, 0), picker.SelectedTime);
+        var numbers = dial.GetVisualDescendants().OfType<MaterialClockNumber>().ToArray();
+        Assert.All(numbers, number => Assert.Equal(0, number.Opacity));
+        var crossed = false;
+        var faded = false;
+        for (var frame = 0; frame < 25; frame++)
+        {
+            await Task.Delay(12); host.Render();
+            if (host.Pixel(box.Left + 199, box.Top + 57) == Color.Parse("#6750A4")) crossed = true;
+            if (numbers[0].Opacity is > 0 and < 1) faded = true;
+        }
+        Assert.True(crossed, "Hand must paint the short upper-right arc."); Assert.True(faded, "Minute face must paint intermediate opacity.");
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true }; host.Render();
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Left + 146, box.Top + 27));
+    }
+
     [AvaloniaTheory]
     [InlineData(MaterialDateSelectionMode.Single)]
     [InlineData(MaterialDateSelectionMode.Range)]

@@ -5,6 +5,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
@@ -41,6 +42,10 @@ public class MaterialClockDial : Panel
     private int _beforeValue;
     private MaterialTimePickerPart _beforePart;
     private readonly DialPaint _paint;
+    private readonly MaterialMotionValue _angle, _faceAlpha;
+    private readonly MaterialMotionSettings _motion;
+    private RenderTargetBitmap? _oldFace;
+    private bool _partTransition, _animateSelection, _capturingFace;
     public int Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
     public MaterialTimePickerPart ActivePart { get => GetValue(ActivePartProperty); set => SetValue(ActivePartProperty, value); }
     public bool Is24Hour { get => GetValue(Is24HourProperty); set => SetValue(Is24HourProperty, value); }
@@ -53,6 +58,22 @@ public class MaterialClockDial : Panel
     public MaterialClockDial()
     {
         _paint = new DialPaint(this) { IsHitTestVisible = false };
+        _angle = new(this, -Math.PI / 2, _ =>
+        {
+            _paint.InvalidateVisual();
+            foreach (var label in this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>()) label.InvalidateVisual();
+        });
+        _faceAlpha = new(this, 1, value =>
+        {
+            foreach (var number in Children.OfType<MaterialClockNumber>()) number.Opacity = Math.Clamp(value, 0, 1);
+            if (value >= 1) { _oldFace?.Dispose(); _oldFace = null; }
+            _paint.InvalidateVisual();
+        });
+        _motion = new(this, () =>
+        {
+            UpdateAngle(_angle.IsRunning);
+            if (_faceAlpha.IsRunning) _faceAlpha.Spring(1, _motion!.DefaultEffects);
+        });
         Width = Height = 256;
         Background = Brushes.Transparent;
         MaterialPickerSupport.Resource(this, DialBrushProperty, "SurfaceContainerHighestBrush");
@@ -75,7 +96,7 @@ public class MaterialClockDial : Panel
             var number = ActivePart == MaterialTimePickerPart.Minute ? index * 5 : Is24Hour ? index : index == 0 ? 12 : index;
             var action = new MaterialClockNumber { Value = number, Content = number.ToString(ActivePart == MaterialTimePickerPart.Minute ? "00" : "0", Culture) };
             AutomationProperties.SetName(action, number.ToString(Culture) + " " + ValueLabel);
-            action.Click += (_, _) => ValueSelected?.Invoke(this, new(ActivePart, number, true));
+            action.Click += (_, _) => { _animateSelection = true; ValueSelected?.Invoke(this, new(ActivePart, number, true)); UpdateAngle(true); _animateSelection = false; };
             Children.Add(action);
         }
         UpdateSelection(); InvalidateMeasure();
@@ -95,7 +116,7 @@ public class MaterialClockDial : Panel
         foreach (var number in Children) number.Measure(new Size(48 * Scale, 48 * Scale));
         return new Size(256 * Scale, 256 * Scale);
     }
-    internal Point SelectorCenter => Position(Value);
+    internal Point SelectorCenter => AnimatedPosition;
     internal double SelectorRadius => 24 * Scale;
     private Point Position(int number)
     {
@@ -103,6 +124,40 @@ public class MaterialClockDial : Panel
         var radius = ActivePart == MaterialTimePickerPart.Hour && Is24Hour && number >= 12 ? 69 : 101;
         var angle = index * Math.PI / 6 - Math.PI / 2;
         return new Point((128 + radius * Math.Cos(angle)) * Scale, (128 + radius * Math.Sin(angle)) * Scale);
+    }
+    private double TargetAngle => (ActivePart == MaterialTimePickerPart.Minute ? Value / 60d : Value % 12 / 12d) * 2 * Math.PI - Math.PI / 2;
+    private Point AnimatedPosition
+    {
+        get
+        {
+            var radius = ActivePart == MaterialTimePickerPart.Hour && Is24Hour && Value >= 12 ? 69 : 101;
+            return new((128 + radius * Math.Cos(_angle.Value)) * Scale, (128 + radius * Math.Sin(_angle.Value)) * Scale);
+        }
+    }
+    private void UpdateAngle(bool animate)
+    {
+        if (_motion is null || _angle is null) return;
+        var target = TargetAngle;
+        while (target - _angle.Value > Math.PI) target -= 2 * Math.PI;
+        while (target - _angle.Value <= -Math.PI) target += 2 * Math.PI;
+        if (animate || _partTransition || _animateSelection) _angle.Spring(target, _motion.DefaultSpatial);
+        else _angle.Snap(target);
+    }
+    private void CaptureFace()
+    {
+        if (Bounds.Width <= 0 || _motion.DefaultEffects.IsInstant) return;
+        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        var face = new RenderTargetBitmap(new PixelSize((int)Math.Ceiling(Bounds.Width * density), (int)Math.Ceiling(Bounds.Height * density)), new Vector(96 * density, 96 * density));
+        _capturingFace = true;
+        _paint.InvalidateVisual();
+        try { face.Render(this); } finally { _capturingFace = false; _paint.InvalidateVisual(); }
+        _oldFace?.Dispose(); _oldFace = face;
+    }
+    internal void SetSelection(MaterialTimePickerPart part, int value, string label)
+    {
+        _partTransition = part != ActivePart;
+        try { ActivePart = part; Value = value; ValueLabel = label; UpdateAngle(_partTransition || _animateSelection); }
+        finally { _partTransition = false; }
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
@@ -116,12 +171,20 @@ public class MaterialClockDial : Panel
     }
     private void Draw(DrawingContext context)
     {
-        var center = new Point(128 * Scale, 128 * Scale);
-        context.DrawEllipse(DialBrush, null, center, 128 * Scale, 128 * Scale);
-        var endpoint = Position(Value);
-        context.DrawLine(new Pen(SelectorBrush, 2), center, endpoint);
-        context.DrawEllipse(SelectorBrush, null, center, 4 * Scale, 4 * Scale);
-        context.DrawEllipse(SelectorBrush, null, endpoint, 24 * Scale, 24 * Scale);
+        if (!_capturingFace)
+        {
+            var center = new Point(128 * Scale, 128 * Scale);
+            context.DrawEllipse(DialBrush, null, center, 128 * Scale, 128 * Scale);
+            var endpoint = AnimatedPosition;
+            context.DrawLine(new Pen(SelectorBrush, 2), center, endpoint);
+            context.DrawEllipse(SelectorBrush, null, center, 4 * Scale, 4 * Scale);
+            context.DrawEllipse(SelectorBrush, null, endpoint, 24 * Scale, 24 * Scale);
+        }
+        if (_oldFace is not null && _faceAlpha.Value < 1)
+        {
+            using var opacity = context.PushOpacity(1 - Math.Clamp(_faceAlpha.Value, 0, 1));
+            context.DrawImage(_oldFace, new Rect(_oldFace.Size), new Rect(0, 0, 256 * Scale, 256 * Scale));
+        }
     }
     private int FromPoint(Point point, bool tap)
     {
@@ -153,6 +216,11 @@ public class MaterialClockDial : Panel
         if (!_dragging && new Vector(position.X - _start.X, position.Y - _start.Y).Length < 4) return;
         _dragging = true; e.Pointer.Capture(this);
         ValueSelected?.Invoke(this, new(ActivePart, FromPoint(e.GetPosition(this), false), false));
+        var point = e.GetPosition(this);
+        var angle = Math.Atan2(point.Y - 128 * Scale, point.X - 128 * Scale);
+        while (angle - _angle.Value > Math.PI) angle -= 2 * Math.PI;
+        while (angle - _angle.Value <= -Math.PI) angle += 2 * Math.PI;
+        _angle.Snap(angle);
         e.Handled = true;
     }
     private void Released(object? sender, PointerReleasedEventArgs e)
@@ -167,7 +235,10 @@ public class MaterialClockDial : Panel
         _ending = false;
         if (dragged || isBackground)
         {
+            _animateSelection = true;
             ValueSelected?.Invoke(this, new(ActivePart, FromPoint(e.GetPosition(this), !dragged), true));
+            UpdateAngle(true);
+            _animateSelection = false;
             e.Handled = true;
         }
     }
@@ -189,14 +260,16 @@ public class MaterialClockDial : Panel
         ValueSelected?.Invoke(this, new(ActivePart, next, false));
         e.Handled = true;
     }
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { CancelDrag(); base.OnDetachedFromVisualTree(e); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { CancelDrag(); _oldFace?.Dispose(); _oldFace = null; base.OnDetachedFromVisualTree(e); }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (!_ready) return;
         if (change.Property == IsEnabledProperty && !IsEnabled) CancelDrag();
-        if (change.Property == ActivePartProperty || change.Property == Is24HourProperty || change.Property == CultureProperty) { CancelDrag(); Rebuild(); }
-        if (change.Property == ValueProperty || change.Property == ValueLabelProperty) UpdateSelection();
+        if (change.Property == ActivePartProperty) { CaptureFace(); CancelDrag(); Rebuild(); _faceAlpha.Snap(0); _faceAlpha.Spring(1, _motion.DefaultEffects); UpdateAngle(true); }
+        else if (change.Property == Is24HourProperty || change.Property == CultureProperty) { CancelDrag(); Rebuild(); }
+        if (change.Property == ValueProperty) { UpdateSelection(); UpdateAngle(_partTransition || _animateSelection); }
+        else if (change.Property == ValueLabelProperty) UpdateSelection();
         if (change.Property == SelectorBrushProperty || change.Property == DialBrushProperty) _paint.InvalidateVisual();
         if (change.Property == TextBlock.FontSizeProperty)
         { CancelDrag(); Width = Height = 256 * Scale; InvalidateMeasure(); _paint.InvalidateVisual(); }
