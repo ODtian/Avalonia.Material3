@@ -147,6 +147,7 @@ public class SecondaryFeedbackScenarioTests
     public void Tooltip_flips_below_the_top_edge_without_losing_the_four_DIP_anchor_gap()
     {
         using var host = new FeedbackHost(320, 480);
+        host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
         var tip = new MaterialTooltip { Content = "Description" };
         tip.Show(host.Overlay, host.Entry); host.Render();
         var anchorBottom = host.Entry.TranslatePoint(new Point(0, host.Entry.Bounds.Height), host.Window)!.Value.Y;
