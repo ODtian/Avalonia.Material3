@@ -14,7 +14,7 @@ $env:ANDROID_HOME = 'C:/Users/boqi/Android/Sdk'
 
 APK: `app/build/outputs/apk/debug/app-debug.apk`. Application: `org.pixivyou.m3reference/.MainActivity`.
 
-The `scene` string intent extra opens a component directly. `dark` is a boolean; the toolbar also toggles the theme. `palette=expressive` is the theme default. `palette=classic` chooses the official default `lightColorScheme()` purple palette while retaining the expressive shapes and motion. Device density and font scale flow through normal Android configuration. `M3Reference` logcat records the exact runtime palette, density and flags.
+The `scene` string intent extra opens a component directly. `dark` is a boolean; the toolbar also toggles the theme. `palette=expressive` is the theme default. `palette=classic` chooses the official default `lightColorScheme()` purple palette while retaining the expressive shapes and motion. The optional `locale=en-US` extra supplies a localized Android configuration context and Compose locale/resources for this app. Device density and font scale flow through normal Android configuration. `M3Reference` logcat records the exact runtime palette, locale, density, flags and attached hardware acceleration for the activity decor and Compose root.
 
 | Scene | Official components and initial state |
 | --- | --- |
@@ -28,6 +28,7 @@ The `scene` string intent extra opens a component directly. `dark` is a boolean;
 | `slider` | Stateful Slider at 27%, discrete Slider at 70%, RangeSlider at 8–20 |
 | `fields` | OutlinedTextField and TextField with labels, icons and affixes |
 | `buttons` | ButtonGroup, connected ToggleButton shapes, five official elevated split sizes, filled split, ElevatedButton and ElevatedCard |
+| `ripple` | Default filled/elevated/tonal/outlined/text/icon buttons and FAB for sustained press and release capture |
 | `fab` | Small/regular/large/extended FAB, ToggleFloatingActionButton menu and HorizontalFloatingToolbar |
 | `progress` | Linear/circular progress, wavy progress, LoadingIndicator and ContainedLoadingIndicator |
 | `carousel` | HorizontalMultiBrowseCarousel with six items and 260 DIP / available width toggle |
@@ -35,10 +36,11 @@ The `scene` string intent extra opens a component directly. `dark` is a boolean;
 | `overlays` | DropdownMenu, AlertDialog, ModalBottomSheet, tooltip, MDC Android SideSheetDialog |
 
 Semantics enables `testTagsAsResourceId` on the root; stable tags expose triggers and component containers to UIAutomator.
+The root uses the platform `motionEventSpy` observer to record actual DOWN/UP/CANCEL event uptime and coordinates under `M3Reference`, preserving the official components' pointer handling. Captures can correlate frame time with the received input event.
 
 ```powershell
 adb -s 127.0.0.1:16416 install -r app/build/outputs/apk/debug/app-debug.apk
-adb -s 127.0.0.1:16416 shell am start -S -n org.pixivyou.m3reference/.MainActivity --es scene date-range --ez dark false
+adb -s 127.0.0.1:16416 shell am start -S -n org.pixivyou.m3reference/.MainActivity --es scene date-range --ez dark false --es locale en-US
 ```
 
 The published alpha29 defaults `isCheckboxStylingFixEnabled=false` (legacy M2 checkbox branch) and `isUpdatedTimepickerToggleEnabled=true`. Add the explicit `--ez checkboxM3 true` extra to select the official M3 checkbox migration branch; the default launch preserves the release default. Date-range scenes make February 20 unavailable through the official `SelectableDates` API, matching the library gallery scenario. Selected ranges remain inclusive through that disabled day.
