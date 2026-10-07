@@ -50,7 +50,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Background="Transparent">
-          <Border x:Name="Container" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BoxShadow="{DynamicResource M3.Elevation.Shadow0}" />
+          <c:MaterialElevationBorder x:Name="Container" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BoxShadow="{DynamicResource M3.Elevation.Shadow0}" />
           <Border x:Name="Outline" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
           <c:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{TemplateBinding CornerRadius}" />
           <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="{TemplateBinding Padding}">
@@ -95,10 +95,9 @@
     <Style Selector="^:expressive:disabled"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" /></Style>
     <Style Selector="^:selected:disabled"><Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
     <Style Selector="^:selected:disabled /template/ Border#Container"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
-    <Style Selector="^ /template/ c|MaterialButton#PART_ExpandButton"><Setter Property="Content" Value="⌄" /><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /></Style>
-    <Style Selector="^:expanded /template/ c|MaterialButton#PART_ExpandButton"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Content" Value="⌃" /></Style>
+    <Style Selector="^:expanded /template/ c|MaterialSymbol#DisclosureIcon"><Setter Property="Symbol" Value="expand_less" /></Style>
     <Style Selector="^:reordering"><Setter Property="Background" Value="{DynamicResource M3.TertiaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
-    <Style Selector="^:reordering /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
+    <Style Selector="^:reordering /template/ Border#ElevationSurface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
     <Style Selector="^:reordering /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
     <Style Selector="^:reordering /template/ ContentPresenter#Overline, ^:reordering /template/ ContentPresenter#Supporting"><Setter Property="TextBlock.Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /></Style>
   </ControlTheme>

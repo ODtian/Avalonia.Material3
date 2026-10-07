@@ -4,6 +4,9 @@ using Avalonia.Headless;
 using Avalonia.Layout;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
+using Avalonia.Material3.Tokens;
+using Avalonia.Automation;
+using Avalonia.Input;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -90,5 +93,52 @@ public class NormativeElevationScenarioTests
             // NavigationBarDefaults elevation0, CardDefaults outlined hover0.
             Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(31, 80));
         }
+    }
+
+    [AvaloniaFact]
+    public async Task Hover_elevation_paints_intermediate_depth_then_returns_with_the_pinned_outgoing_curve()
+    {
+        var card = new MaterialCard { Variant = MaterialCardVariant.Elevated, IsInteractive = true,
+            Focusable = false, Width = 160, Height = 96, Margin = new Thickness(32), HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Top };
+        using var host = new GeometryHost(new Grid { Children = { card } }, 240, 180);
+        host.Theme.Motion = new MaterialMotion(); host.Render();
+        var bounds = card.Bounds;
+        var idle = host.Pixel(112, 132);
+        host.Window.MouseMove(new Point(112, 80)); host.Render();
+        var entered = host.Pixel(112, 132);
+        await Task.Delay(40); host.Render();
+        var intermediate = host.Pixel(112, 132);
+        await Task.Delay(180); host.Render();
+        var hovered = host.Pixel(112, 132);
+        Assert.Contains(new[] { entered, intermediate }, color => color.R < idle.R && color.R > hovered.R);
+        Assert.Equal(bounds, card.Bounds);
+        host.Window.MouseMove(new Point(220, 160)); host.Render();
+        var exited = host.Pixel(112, 132);
+        await Task.Delay(40); host.Render();
+        var leaving = host.Pixel(112, 132);
+        Assert.Contains(new[] { exited, leaving }, color => color.R > hovered.R && color.R < idle.R);
+        await Task.Delay(180); host.Render();
+        Assert.Equal(idle, host.Pixel(112, 132));
+        Assert.Equal(bounds, card.Bounds);
+    }
+
+    [AvaloniaFact]
+    public void Reordering_row_casts_its_shadow_outside_its_reveal_viewport_inside_the_list_scene()
+    {
+        var row = new MaterialListItem { Width = 200, Height = 96, Title = "Drag entry", IsReorderEnabled = true,
+            HorizontalAlignment = HorizontalAlignment.Center };
+        var list = new MaterialList { Width = 240, Height = 180, Margin = new Thickness(32), Children = { row } };
+        using var host = new GeometryHost(new Grid { Children = { list } }, 320, 260);
+        var box = GeometryHost.Box(row, host.Window);
+        var before = host.Pixel(box.Left - 1, box.Center.Y);
+        var handle = row.GetVisualDescendants().OfType<MaterialButton>().Single(b => AutomationProperties.GetName(b) == "Reorder item");
+        var point = GeometryHost.Box(handle, host.Window).Center;
+        host.Window.MouseDown(point, MouseButton.Left); host.Render();
+        Assert.True(row.IsReordering);
+        Assert.True(host.Pixel(box.Left - 1, box.Center.Y).R < before.R);
+        host.Window.MouseUp(point, MouseButton.Left); host.Render();
+        Assert.Equal(before, host.Pixel(box.Left - 1, box.Center.Y));
+        Assert.Equal(box, GeometryHost.Box(row, host.Window));
     }
 }

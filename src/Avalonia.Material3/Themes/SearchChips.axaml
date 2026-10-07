@@ -83,7 +83,7 @@
     <Style Selector="^:elevated:checked"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /></Style>
     <Style Selector="^:elevated /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
     <Style Selector="^:elevated:pointerover /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
-    <Style Selector="^:filter:checked:pointerover /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:filter:checked:pointerover:not(:elevated) /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
     <Style Selector="^:pressed /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
     <Style Selector="^:elevated:pressed /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
     <Style Selector="^:dragged /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>

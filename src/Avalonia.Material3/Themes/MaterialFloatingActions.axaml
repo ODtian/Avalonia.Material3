@@ -151,7 +151,7 @@
                   BoxShadow="{DynamicResource M3.Elevation.Shadow0}">
             <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
               <c:MaterialToolbarItemsPanel StretchChildIndex="2" Orientation="{TemplateBinding Orientation}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="4">
-                <c:MaterialExpansionButton x:Name="PART_Toggle" Theme="{StaticResource M3.ToolbarToggle}" IsExpanded="{TemplateBinding IsExpanded}" Content="⋯" />
+                <c:MaterialExpansionButton x:Name="PART_Toggle" Theme="{StaticResource M3.ToolbarToggle}" IsExpanded="{TemplateBinding IsExpanded}"><c:MaterialSymbol Symbol="more_horiz" /></c:MaterialExpansionButton>
                 <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" Orientation="{TemplateBinding Orientation}" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
                   <ItemsControl Theme="{StaticResource M3.ActionItems}" ItemsSource="{TemplateBinding LeadingItems}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:MaterialToolbarItemsPanel Spacing="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
