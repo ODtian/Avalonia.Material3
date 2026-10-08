@@ -9,7 +9,7 @@
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <Authors>ODtian</Authors>
     <PackageProjectUrl>https://github.com/ODtian/Avalonia.Material3</PackageProjectUrl>
-    <PackageReleaseNotes>preview.5: live calendar range layout and selectable official solid or patterned sparkle ripple. See CHANGELOG.md.</PackageReleaseNotes>
+    <PackageReleaseNotes>preview.6: centered radio motion, stable date width, search layout, native slider labels and tooltip placement, scaled overlay exit, bounded sheets, coherent theme updates, and desktop carousel wheel input. See CHANGELOG.md.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
