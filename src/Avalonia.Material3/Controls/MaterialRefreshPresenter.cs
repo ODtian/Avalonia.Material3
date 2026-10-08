@@ -10,7 +10,7 @@ public sealed class MaterialRefreshPresenter : Panel
 {
     public static readonly StyledProperty<MaterialPullToRefresh?> RefreshProperty = AvaloniaProperty.Register<MaterialRefreshPresenter, MaterialPullToRefresh?>(nameof(Refresh));
     public MaterialPullToRefresh? Refresh { get => GetValue(RefreshProperty); set => SetValue(RefreshProperty, value); }
-    private Border? _standard;
+    private MaterialElevationBorder? _standard;
     private MaterialLoadingIndicator? _loading;
     private MaterialLoadingIndicator? _loadingBusy;
     private Border? _loadingContainer;
@@ -59,7 +59,7 @@ public sealed class MaterialRefreshPresenter : Panel
             var content = new Grid();
             content.Children.Add(new LayoutTransformControl { Child = _spinner, LayoutTransform = new ScaleTransform(.4, .4), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
             content.Children.Add(_arrow);
-            _standard = new Border { Width = 40, Height = 40, CornerRadius = new CornerRadius(9999), Child = content };
+            _standard = new MaterialElevationBorder { Width = 40, Height = 40, CornerRadius = new CornerRadius(20), Child = content };
             _standard.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
             _standard.Bind(Border.BoxShadowProperty, new DynamicResourceExtension("M3.Elevation.Shadow2"));
             _loading = new MaterialLoadingIndicator { IsContained = true, IsIndeterminate = false, Width = 48, Height = 48,

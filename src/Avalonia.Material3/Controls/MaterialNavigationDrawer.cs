@@ -49,7 +49,7 @@ public class MaterialNavigationDrawer : MaterialNavigation
     private bool _updatingOpen, _changingPresentation;
     public MaterialOverlaySession? Session => _session;
     private Button? _closeButton;
-    private Border? _surface;
+    private Control? _surface;
     private readonly Avalonia.Media.ScaleTransform _bounceSurface = new(1, 1);
     private readonly Avalonia.Media.ScaleTransform _bounceContent = new(1, 1);
     private readonly Avalonia.Media.TranslateTransform _dragTransform = new();
@@ -78,12 +78,13 @@ public class MaterialNavigationDrawer : MaterialNavigation
         if (_closeButton is not null) _closeButton.Click -= CloseClicked;
         base.OnApplyTemplate(e);
         _closeButton = e.NameScope.Find<Button>("PART_CloseButton");
-        _surface = e.NameScope.Find<Border>("PART_Surface");
+        _surface = e.NameScope.Find<Control>("PART_Surface");
         if (_surface is not null)
         {
             var transforms = new Avalonia.Media.TransformGroup(); transforms.Children.Add(_dragTransform); transforms.Children.Add(_bounceSurface);
             _surface.RenderTransform = transforms; _surface.RenderTransformOrigin = new RelativePoint(1, .5, RelativeUnit.Relative);
-            if (_surface.Child is Control content)
+            var surfaceContent = _surface switch { Border border => border.Child, Decorator decoration => decoration.Child, _ => null };
+            if (surfaceContent is Control content)
             {
                 content.RenderTransform = _bounceContent; content.RenderTransformOrigin = new RelativePoint(1, 0, RelativeUnit.Relative);
             }

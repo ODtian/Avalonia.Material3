@@ -23,6 +23,7 @@
     <AvaloniaResource Include="Assets/Icons/manifest.json" />
     <EmbeddedResource Include="Assets/Ripple/ripple.sksl" LogicalName="M3.PatternedRipple.sksl" />
     <None Update="Assets/Icons/LICENSE.txt;Assets/Icons/manifest.json;Assets/Icons/*.codepoints" Pack="true" PackagePath="licenses/MaterialSymbols/" />
+    <None Update="Assets/Shadow/LICENSE.txt" Pack="true" PackagePath="licenses/SkiaShadow/" />
   </ItemGroup>
 </Project>
 

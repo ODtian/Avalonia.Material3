@@ -71,7 +71,7 @@
     <Setter Property="ItemsPanel"><ItemsPanelTemplate><StackPanel /></ItemsPanelTemplate></Setter>
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" />
     <Setter Property="Template"><ControlTemplate>
-      <Border x:Name="PART_Surface" Background="{TemplateBinding Background}" BoxShadow="{TemplateBinding BoxShadow}">
+      <controls:MaterialElevationBorder x:Name="PART_Surface" Background="{TemplateBinding Background}" BoxShadow="{TemplateBinding BoxShadow}">
         <ScrollViewer x:Name="PART_HeaderScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
           <StackPanel Spacing="4">
             <Grid ColumnDefinitions="*,Auto" Margin="28,12,12,12">
@@ -84,7 +84,7 @@
             <ContentPresenter Content="{TemplateBinding Footer}" Margin="28,12" />
           </StackPanel>
         </ScrollViewer>
-      </Border>
+      </controls:MaterialElevationBorder>
     </ControlTemplate></Setter>
     <Style Selector="^:modal"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /></Style>
     <Style Selector="^:modal /template/ Border#PART_Surface"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLargeEnd}" /></Style>

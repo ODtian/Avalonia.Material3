@@ -33,7 +33,7 @@ internal sealed class MaterialDateDialogTemplate : FuncControlTemplate<MaterialD
         var footer = new Panel { Children = { actions, custom } };
         var bodyClip = new Border { ClipToBounds=true, Child = new MaterialDateDialogPanel(body, footer) };
         bodyClip.Bind(Border.CornerRadiusProperty,new TemplateBinding(TemplatedControl.CornerRadiusProperty));
-        var surface = new Border { Child = bodyClip };
+        var surface = new MaterialElevationBorder { Child = bodyClip };
         surface.Bind(Border.BackgroundProperty, new TemplateBinding(TemplatedControl.BackgroundProperty));
         surface.Bind(Border.CornerRadiusProperty, new TemplateBinding(TemplatedControl.CornerRadiusProperty));
         surface.Bind(Border.BorderBrushProperty, new TemplateBinding(TemplatedControl.BorderBrushProperty));

@@ -10,68 +10,83 @@ using System.Collections.Specialized;
 
 namespace Avalonia.Material3.Controls;
 
-// The surface's authored BoxShadow remains its target; the renderer paints the source-prescribed
-// Dp elevation trajectory without changing layout, brushes, or caller shadow overrides.
-internal class MaterialElevationBorder : Border
+// Owns decoration order; the private Border retains Avalonia's arbitrary brush,
+// nonuniform stroke and inset-shadow renderer. Child layout uses authored reserves.
+internal class MaterialElevationBorder : Decorator, IMaterialPaintOverflow
 {
+    public static readonly StyledProperty<IBrush?> BackgroundProperty = Border.BackgroundProperty.AddOwner<MaterialElevationBorder>();
+    public static readonly StyledProperty<IBrush?> BorderBrushProperty = Border.BorderBrushProperty.AddOwner<MaterialElevationBorder>();
+    public static readonly StyledProperty<Thickness> BorderThicknessProperty = Border.BorderThicknessProperty.AddOwner<MaterialElevationBorder>();
+    public static readonly StyledProperty<CornerRadius> CornerRadiusProperty = Border.CornerRadiusProperty.AddOwner<MaterialElevationBorder>();
+    public static readonly StyledProperty<BoxShadows> BoxShadowProperty = Border.BoxShadowProperty.AddOwner<MaterialElevationBorder>();
+    public IBrush? Background { get => GetValue(BackgroundProperty); set => SetValue(BackgroundProperty, value); }
+    public IBrush? BorderBrush { get => GetValue(BorderBrushProperty); set => SetValue(BorderBrushProperty, value); }
+    public Thickness BorderThickness { get => GetValue(BorderThicknessProperty); set => SetValue(BorderThicknessProperty, value); }
+    public CornerRadius CornerRadius { get => GetValue(CornerRadiusProperty); set => SetValue(CornerRadiusProperty, value); }
+    public BoxShadows BoxShadow { get => GetValue(BoxShadowProperty); set => SetValue(BoxShadowProperty, value); }
+    private readonly Border _paint = new() { IsHitTestVisible = false, UseLayoutRounding = false };
     private readonly MaterialElevationTrack _elevation;
-    private readonly ShadowValues _paint = new();
     protected override Type StyleKeyOverride => typeof(Border);
-    private readonly StrokeValues _stroke = new();
+    static MaterialElevationBorder()
+    {
+        AffectsRender<MaterialElevationBorder>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty, BoxShadowProperty);
+        AffectsMeasure<MaterialElevationBorder>(BorderThicknessProperty);
+    }
     public MaterialElevationBorder()
     {
-        _elevation = new(this, () => GetBaseValue(BoxShadowProperty).GetValueOrDefault(), Paint);
-        Bind(BoxShadowProperty, _paint, BindingPriority.Animation);
-        Bind(BorderThicknessProperty, _stroke, BindingPriority.Animation);
+        VisualChildren.Add(_paint);
+        _elevation = new(this, () => BoxShadow, Paint);
+        _ = new MaterialShadowSpace(this, InvalidateVisual);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == BoxShadowProperty && change.Priority != BindingPriority.Animation) _elevation?.Retarget();
-        if (change.Property == BorderThicknessProperty && change.Priority != BindingPriority.Animation) UpdateStroke();
+        if (change.Property == BoxShadowProperty) _elevation?.Retarget();
+        if (change.Property == BackgroundProperty || change.Property == BorderBrushProperty || change.Property == BorderThicknessProperty || change.Property == CornerRadiusProperty) Paint();
     }
-    // Physical stroke quantization is paint-only; retain the authored layout reserve.
     protected override Size MeasureOverride(Size availableSize)
-    { UpdateStroke(); return LayoutHelper.MeasureChild(Child, availableSize, Padding, GetBaseValue(BorderThicknessProperty).GetValueOrDefault()); }
+    { UpdateStroke(); return LayoutHelper.MeasureChild(Child, availableSize, Padding, BorderThickness); }
     protected override Size ArrangeOverride(Size finalSize)
-    { UpdateStroke(finalSize); return LayoutHelper.ArrangeChild(Child, finalSize, Padding, GetBaseValue(BorderThicknessProperty).GetValueOrDefault()); }
+    {
+        UpdateStroke(finalSize);
+        _paint.Measure(finalSize); _paint.Arrange(new Rect(finalSize));
+        return LayoutHelper.ArrangeChild(Child, finalSize, Padding, BorderThickness);
+    }
     protected void UpdateStroke(Size? size = null)
     {
-        if (_stroke is null) return;
-        var authored = GetBaseValue(BorderThicknessProperty).GetValueOrDefault();
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         var extent = size ?? new Size(double.PositiveInfinity, double.PositiveInfinity);
-        var next = authored.IsUniform ? new Thickness(MaterialStroke.Foundation(authored.Left, density, extent)) : authored;
-        _stroke.Publish(next);
+        _paint.BorderThickness = BorderThickness.IsUniform ? new Thickness(MaterialStroke.Foundation(BorderThickness.Left, density, extent)) : BorderThickness;
+        if (size is { } finalSize) { _paint.Measure(finalSize); _paint.Arrange(new Rect(finalSize)); }
     }
     private void Paint()
     {
-        _paint.Publish(_elevation.Shadows);
+        if (_paint is null || _elevation is null) return;
+        _paint.Background = Background; _paint.BorderBrush = BorderBrush; _paint.CornerRadius = CornerRadius;
+        _paint.BoxShadow = _elevation.NativeHeight is null ? _elevation.Shadows : default;
         InvalidateVisual();
     }
-    // Animation priority preserves authored style/local targets and the native Border renderer.
-    private sealed class ShadowValues : IObservable<BoxShadows>
+    public override void Render(DrawingContext context)
     {
-        private readonly List<IObserver<BoxShadows>> _observers = [];
-        public IDisposable Subscribe(IObserver<BoxShadows> observer)
-        { _observers.Add(observer); return new Subscription(() => _observers.Remove(observer)); }
-        internal void Publish(BoxShadows value)
-        { foreach (var observer in _observers) observer.OnNext(value); }
-        private sealed class Subscription(Action dispose) : IDisposable
-        { public void Dispose() => dispose(); }
+        if (_elevation.NativeHeight is { } height) MaterialNativeShadow.Draw(context, this, new RoundedRect(new Rect(Bounds.Size), CornerRadius), height);
     }
-    private sealed class StrokeValues : IObservable<Thickness>
-    {
-        private IObserver<Thickness>? _observer;
-        private Thickness? _value;
-        public IDisposable Subscribe(IObserver<Thickness> observer) { _observer = observer; return new Subscription(() => _observer = null); }
-        internal void Publish(Thickness value) { if (_value == value) return; _value = value; _observer?.OnNext(value); }
-        private sealed class Subscription(Action dispose) : IDisposable { public void Dispose() => dispose(); }
-    }
+    Rect IMaterialPaintOverflow.GetPaintBounds(Rect bounds) => _elevation.NativeHeight is { } height
+        ? MaterialNativeShadow.Bounds(this, bounds, height) : _elevation.Shadows.TransformBounds(bounds);
 }
-
 internal sealed class MaterialElevationTrack
 {
+    private static readonly Avalonia.Material3.Tokens.MaterialElevation DefaultRecipes = new();
+    internal double? NativeHeight
+    {
+        get
+        {
+            if (!_recognized || !_initialized) return null;
+            var target = _target();
+            for (var i = 0; i < 6; i++)
+                if (_recipes[i] == target && _recipes[i] == DefaultRecipes.GetShadow(i)) return _height.Value;
+            return null;
+        }
+    }
     private readonly Control _surface;
     private readonly Func<BoxShadows> _target;
     private readonly Action _invalidate;

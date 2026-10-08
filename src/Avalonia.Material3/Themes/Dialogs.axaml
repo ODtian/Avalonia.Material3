@@ -38,7 +38,7 @@
     <Setter Property="TextBlock.LineHeight" Value="{DynamicResource M3.BodyMediumLineHeight}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
+        <controls:MaterialElevationBorder x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
                 BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                 BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
           <ScrollViewer x:Name="ShellScroll" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
@@ -84,7 +84,7 @@
                               HorizontalContentAlignment="Right" IsVisible="{TemplateBinding Actions, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
           </Grid>
           </ScrollViewer>
-        </Border>
+        </controls:MaterialElevationBorder>
       </ControlTemplate>
     </Setter>
     <!-- When fixed header/actions exceed a short viewport, make the entire shell reachable,
