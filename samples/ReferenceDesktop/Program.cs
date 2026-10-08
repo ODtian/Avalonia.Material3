@@ -10,6 +10,6 @@ internal static class Program
     {
         ReferenceApp.Configuration = ReferenceConfiguration.FromArguments(args);
         ReferenceApp.Configuration.Validate();
-        AppBuilder.Configure<ReferenceApp>().UsePlatformDetect().LogToTrace().StartWithClassicDesktopLifetime(args);
+        AppBuilder.Configure<ReferenceApp>().UsePlatformDetect().With(new SkiaOptions { UseStencilBuffers = true }).LogToTrace().StartWithClassicDesktopLifetime(args);
     }
 }
