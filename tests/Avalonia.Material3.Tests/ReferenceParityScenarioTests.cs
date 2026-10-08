@@ -72,6 +72,28 @@ public class ReferenceParityScenarioTests
     }
 
     [AvaloniaFact]
+    public void Composite_action_glyphs_keep_the_framework_paragraph_path()
+    {
+        using var host = new ReferenceHost("fab");
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        {
+            FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto")
+        };
+        host.Window.SetRenderScaling(3.5);
+        var fab = host.Shell.GetVisualDescendants().OfType<MaterialExtendedFab>().Single();
+        fab.Content = "Create:;"; host.Render();
+        using var original = host.Window.CaptureRenderedFrame()!;
+        fab.ContentTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<string>((text, _) => new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap }); host.Render();
+        using var expected = host.Window.CaptureRenderedFrame()!;
+        using var first = original.Lock(); using var second = expected.Lock();
+        var different = 0;
+        for (var y = 0; y < original.PixelSize.Height; y++)
+        for (var x = 0; x < original.PixelSize.Width * 4; x++)
+            if (Marshal.ReadByte(first.Address, y * first.RowBytes + x) != Marshal.ReadByte(second.Address, y * second.RowBytes + x)) different++;
+        Assert.Equal(0, different);
+    }
+
+    [AvaloniaFact]
     public void Reference_ripple_buttons_use_native_touch_padding_and_the_51_pixel_surface_at_125_percent()
     {
         using var host = new ReferenceHost("ripple"); host.Window.SetRenderScaling(1.25); host.Render();
