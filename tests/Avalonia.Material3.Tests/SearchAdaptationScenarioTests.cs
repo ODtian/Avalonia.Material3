@@ -19,6 +19,65 @@ namespace Avalonia.Material3.Tests;
 
 public class SearchAdaptationScenarioTests
 {
+    [AvaloniaFact]
+    public void Fullscreen_search_scrolls_all_candidates_above_helper_and_token_actions_at_200_percent()
+    {
+        const string helper = "Host owns all candidate results and validation. Choose a complete label before submitting the query.";
+        var candidates = Enumerable.Range(0, 30).Select(index => new MaterialSearchToken(index.ToString(), $"Document {index} / 完整候选标签")).ToArray();
+        var search = new MaterialSearch { Mode = MaterialSearchMode.View, ViewPresentation = MaterialSearchViewPresentation.FullScreen,
+            Height = 500, CandidateMaxHeight = 600, SupportingText = helper, Candidates = candidates };
+        search.Tokens.Add(new MaterialSearchToken("scope", "Saved scope / 已存范围"));
+        using var host = new SearchScenarioHost(search, 400, 900);
+        host.Theme.Typography = new MaterialTypography { Scale = 2 }; host.Capture();
+        var results = search.GetVisualDescendants().OfType<ListBox>().Single();
+        var supporting = search.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == helper && text.IsEffectivelyVisible);
+        var resultsBox = new Rect(results.TranslatePoint(default, search)!.Value, results.Bounds.Size);
+        Assert.True(resultsBox.Bottom <= supporting.TranslatePoint(default, search)!.Value.Y);
+        search.Editor!.Focus();
+        for (var index = 0; index < 30; index++) { host.Press(PhysicalKey.ArrowDown); host.Capture(); }
+        Assert.Equal(candidates[^1], search.SelectedCandidate);
+        var finalRow = results.GetVisualDescendants().OfType<ListBoxItem>().Single(row => Equals(row.Content, candidates[^1]));
+        var finalBox = new Rect(finalRow.TranslatePoint(default, search)!.Value, finalRow.Bounds.Size);
+        Assert.True(finalBox.Top >= resultsBox.Top && finalBox.Bottom <= resultsBox.Bottom);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialSearchMode.Bar, 1)]
+    [InlineData(MaterialSearchMode.Bar, 2)]
+    [InlineData(MaterialSearchMode.View, 1)]
+    [InlineData(MaterialSearchMode.View, 2)]
+    public void Search_header_results_helper_tokens_and_add_action_keep_separate_rows_at_both_font_scales(MaterialSearchMode mode, double scale)
+    {
+        const string helper = "Down chooses a candidate; Enter accepts it. Search explicitly submits all tokens and remaining text.";
+        var token = new MaterialSearchToken("saved", "Saved scope / 已存词条");
+        var candidate = new MaterialSearchToken("next", "Next candidate / 下一候选");
+        var search = new MaterialSearch { Mode = mode, SupportingText = helper, Candidates = new[] { candidate } };
+        search.Tokens.Add(token);
+        using var host = new SearchScenarioHost(search, 400, 1200);
+        host.Theme.Typography = new MaterialTypography { Scale = scale };
+        search.Close(); host.Capture();
+        AssertRows();
+        search.Open(); host.Capture();
+        AssertRows();
+        var candidateText = search.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == candidate.Label);
+        var supporting = search.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == helper && text.IsEffectivelyVisible);
+        Assert.True(VisibleRect(candidateText).Bottom <= VisibleRect(supporting).Top);
+        search.Close(); host.Capture();
+        AssertRows();
+
+        Rect VisibleRect(Control control) => new(control.TranslatePoint(default, search)!.Value, control.Bounds.Size);
+        void AssertRows()
+        {
+            var supporting = search.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == helper && text.IsEffectivelyVisible);
+            var chip = search.GetVisualDescendants().OfType<MaterialChip>().Single();
+            var add = search.GetVisualDescendants().OfType<Button>().Single(button => AutomationProperties.GetName(button) == search.AddButtonLabel);
+            Assert.True(VisibleRect(supporting).Top >= VisibleRect(search.Editor!).Bottom);
+            Assert.True(VisibleRect(chip).Top >= VisibleRect(supporting).Bottom);
+            Assert.True(VisibleRect(add).Top >= VisibleRect(chip).Bottom);
+            Assert.True(VisibleRect(add).Bottom <= search.Bounds.Height);
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(MaterialChipVariant.Assist)]
     [InlineData(MaterialChipVariant.Filter)]
