@@ -15,6 +15,7 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
     private static readonly ConditionalWeakTable<Control, MaterialModalPaintScope> Active = new();
     private const string PaintClass = ":modal-paint-enabled";
     private readonly Control _root;
+    private readonly bool _rootEnabled, _rootCoreEnabled;
     private readonly Dictionary<Control, Watch> _controls = [];
     private readonly Dictionary<Control, Watch> _ancestors = [];
     private bool _refreshing, _disposed;
@@ -23,7 +24,8 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
 
     internal MaterialModalPaintScope(Control root)
     {
-        _root = root; Active.Add(root, this);
+        _root = root; _rootEnabled = root.IsEnabled; _rootCoreEnabled = AuthoredEnabledCore(root);
+        Active.Add(root, this);
         root.LayoutUpdated += LayoutUpdated;
         Refresh(); // Set paint eligibility before the real gate changes.
         root.IsEnabled = false;
@@ -57,9 +59,9 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
         for (Visual? visual = control; visual is not null; visual = visual.GetVisualParent())
         {
             if (visual is not Control ancestor) continue;
-            var gated = Active.TryGetValue(ancestor, out _);
+            var gated = Active.TryGetValue(ancestor, out var scope);
             covered |= gated;
-            if (!gated && !ancestor.IsEnabled || ancestor is Button { Command: { } command } button && !command.CanExecute(button.CommandParameter))
+            if (gated ? !scope!._rootCoreEnabled : !AuthoredEnabledCore(ancestor))
                 authoredEnabled = false;
         }
         var enabled = covered && authoredEnabled;
@@ -77,12 +79,16 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
     {
         if (_disposed) return;
         _disposed = true; _root.LayoutUpdated -= LayoutUpdated;
-        Active.Remove(_root); _root.IsEnabled = true;
+        Active.Remove(_root); _root.IsEnabled = _rootEnabled;
         foreach (var pair in _controls) { pair.Value.Dispose(); Apply(pair.Key); }
         _controls.Clear();
         foreach (var watch in _ancestors.Values) watch.Dispose();
         _ancestors.Clear();
     }
+    // Avalonia's documented protected virtual enabled contract includes caller subclasses.
+    // Runtime-generated callvirt preserves that dispatch and is supported by NativeAOT.
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_IsEnabledCore")]
+    private static extern bool AuthoredEnabledCore(InputElement control);
     private sealed class Watch : IDisposable
     {
         private readonly MaterialModalPaintScope _scope;

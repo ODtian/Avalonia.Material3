@@ -14,6 +14,21 @@ namespace Avalonia.Material3.Tests;
 public class ModalPaintScenarioTests
 {
     [AvaloniaFact]
+    public void Authored_IsEnabledCore_override_keeps_disabled_paint_and_cached_actions_behind_the_modal_gate()
+    {
+        var button = new CoreDisabledButton { Width = 120, Content = "" };
+        var overlay = new MaterialOverlayHost { Content = new StackPanel { Children = { button } } };
+        using var host = new GeometryHost(overlay, 600, 500);
+        Assert.True(button.IsEnabled); Assert.False(button.IsEffectivelyEnabled);
+        var point = button.TranslatePoint(new Point(24, 24), host.Window)!.Value;
+        var before = host.Pixel(point.X, point.Y);
+        var cached = ControlAutomationPeer.CreatePeerForElement(button)!.GetProvider<IInvokeProvider>()!;
+        new MaterialDialog { Width = 220, Height = 160 }.Show(overlay); host.Render();
+        AssertScrim(before, host.Pixel(point.X, point.Y));
+        Assert.False(button.IsEffectivelyEnabled); Assert.ThrowsAny<Exception>(() => cached.Invoke());
+    }
+
+    [AvaloniaFact]
     public void String_body_content_keeps_its_authored_paint_under_a_nested_modal_gate()
     {
         using var host = new DialogHost(600, 500);
@@ -163,4 +178,5 @@ public class ModalPaintScenarioTests
         public void Execute(object? parameter) { }
         public event EventHandler? CanExecuteChanged;
     }
+    private sealed class CoreDisabledButton : MaterialButton { protected override bool IsEnabledCore => false; }
 }

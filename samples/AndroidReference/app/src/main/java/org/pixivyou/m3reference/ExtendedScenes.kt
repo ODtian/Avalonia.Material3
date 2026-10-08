@@ -221,7 +221,7 @@ private fun NavigationScene() = SceneColumn {
         }
     }
     PrimaryTabRow(selectedTabIndex = selected.coerceAtMost(2), modifier = Modifier.testTag("tabs")) {
-        listOf("Home", "Library", "Activity").forEachIndexed { index, label -> Tab(selected = selected == index, onClick = { selected = index }, text = { Text(label) }) }
+        listOf("Home", "Library", "Activity").forEachIndexed { index, label -> Tab(selected = selected.coerceAtMost(2) == index, onClick = { selected = index }, text = { Text(label) }) }
     }
 }
 

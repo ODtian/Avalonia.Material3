@@ -69,7 +69,7 @@ public sealed class MainActivity : AvaloniaMainActivity
             Log.Info("M3AvaloniaReference", $"ready scene={shell.Scene} dark={shell.Dark} uptime={SystemClock.UptimeMillis()} rootScaling={root.RenderScaling} safeArea={root.InsetsManager?.SafeAreaPadding} client={root.ClientSize} hardwareAccelerated={Window?.DecorView.IsHardwareAccelerated}");
             foreach (var weight in new[] { FontWeight.Normal, FontWeight.Medium, FontWeight.Bold })
                 if (FontManager.Current.TryGetGlyphTypeface(new Typeface(shell.MaterialTheme.Typography.FontFamily, FontStyle.Normal, weight), out var face))
-                    Log.Info("M3AvaloniaReference", $"font requestedWeight={(int)weight} actualWeight={(int)face.Weight} family={face.FamilyName}");
+                    Log.Info("M3AvaloniaReference", $"font requestedWeight={(int)weight} actualWeight={(int)face.Weight} family={face.FamilyName} simulations={face.FontSimulations}");
             foreach (var control in shell.GetVisualDescendants().OfType<Control>())
             {
                 var id = AutomationProperties.GetAutomationId(control);

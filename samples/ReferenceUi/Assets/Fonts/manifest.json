@@ -7,5 +7,39 @@
     "family": "Roboto",
     "format": "Variable TrueType",
     "licenseMetadata": "OpenType name IDs 13 and 14 explicitly identify Apache License 2.0"
+  },
+  "Roboto-Medium.ttf": {
+    "source": "Static instance of the locked Android emulator Roboto-Regular.ttf",
+    "sourceSha256": "9CA9DEBB09459BF4E3E7F826F5CD0F35F253902B85684921FCE2BA3F28DD0F50",
+    "sha256": "185159164472F2F4AFD33BEAFB4CC3841C8329BEFA96642C7443E5BD9E5F8AB8",
+    "family": "Roboto",
+    "subfamily": "Medium",
+    "weight": 500,
+    "axes": {
+      "wght": 500,
+      "wdth": 100,
+      "ital": 0
+    },
+    "format": "Static TrueType",
+    "generator": "fontTools 4.53.0 instantiateVariableFont",
+    "license": "Apache-2.0",
+    "licenseMetadata": "Original OpenType name IDs 13 and 14 preserved"
+  },
+  "Roboto-Bold.ttf": {
+    "source": "Static instance of the locked Android emulator Roboto-Regular.ttf",
+    "sourceSha256": "9CA9DEBB09459BF4E3E7F826F5CD0F35F253902B85684921FCE2BA3F28DD0F50",
+    "sha256": "25AB9A60D02A7A49FE614C2F788EA314AED5EA89F953594B06172A4379BD5E1B",
+    "family": "Roboto",
+    "subfamily": "Bold",
+    "weight": 700,
+    "axes": {
+      "wght": 700,
+      "wdth": 100,
+      "ital": 0
+    },
+    "format": "Static TrueType",
+    "generator": "fontTools 4.53.0 instantiateVariableFont",
+    "license": "Apache-2.0",
+    "licenseMetadata": "Original OpenType name IDs 13 and 14 preserved"
   }
 }
