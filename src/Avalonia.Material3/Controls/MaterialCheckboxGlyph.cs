@@ -95,6 +95,7 @@ internal sealed class MaterialCheckboxGlyph : Control
             if (distance > first) path.LineTo(cross + secondVector * Math.Min(1, (distance - first) / second));
         }
         using (context.PushOpacity(Math.Clamp(_markAlpha.Value, 0, 1)))
-            context.DrawGeometry(null, new Pen(_markColor.Value, MaterialCheckboxCanvas.Stroke(2, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1), lineCap: PenLineCap.Square), geometry);
+            context.DrawGeometry(null, new Pen(_markColor.Value, MaterialCheckboxCanvas.Stroke(2, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1),
+                lineCap: PenLineCap.Square, lineJoin: PenLineJoin.Miter, miterLimit: 4), geometry);
     }
 }

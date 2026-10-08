@@ -11,6 +11,67 @@ namespace Avalonia.Material3.Tests;
 public class PixelStrokeScenarioTests
 {
     [AvaloniaTheory]
+    [InlineData(1.25)]
+    [InlineData(3.5)]
+    public void Disabled_checkbox_uses_the_native_quantized_color_alpha(double density)
+    {
+        var checkbox = new MaterialCheckBox { IsChecked = true, IsEnabled = false, Margin = new Thickness(16),
+            HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+        using var host = new GeometryHost(checkbox, 100, 100);
+        host.Window.SetRenderScaling(density); host.Render();
+        var actual = host.Pixel(35, 35);
+        // Skia's software 8888 blend can round one channel differently from the
+        // native GPU. The isolated source alpha below is the component contract.
+        Assert.InRange(actual.R, 168, 169); Assert.Equal(163, actual.G); Assert.Equal(170, actual.B);
+        checkbox.Margin = default; host.Render();
+        var size = new PixelSize((int)Math.Ceiling(checkbox.Bounds.Width * density), (int)Math.Ceiling(checkbox.Bounds.Height * density));
+        using var bitmap = new Avalonia.Media.Imaging.RenderTargetBitmap(size, new Vector(96 * density, 96 * density)); bitmap.Render(checkbox);
+        using var pixels = new Avalonia.Media.Imaging.WriteableBitmap(size, new Vector(96 * density, 96 * density),
+            Avalonia.Platform.PixelFormat.Bgra8888, Avalonia.Platform.AlphaFormat.Premul);
+        using var storage = pixels.Lock(); bitmap.CopyPixels(storage);
+        var offset = (int)(20 * density) * storage.RowBytes + (int)(20 * density) * 4;
+        Assert.Equal(97, System.Runtime.InteropServices.Marshal.ReadByte(storage.Address, offset + 3));
+    }
+
+    [AvaloniaTheory]
+    [InlineData("radio", 1.25, 2.5)]
+    [InlineData("radio", 3.5, 7)]
+    [InlineData("switch", 1.25, 3)]
+    [InlineData("switch", 3.5, 7)]
+    [InlineData("button", 1.25, 2)]
+    [InlineData("button", 3.5, 4)]
+    [InlineData("field", 1.25, 2)]
+    [InlineData("field", 3.5, 4)]
+    [InlineData("card", 1.25, 2)]
+    [InlineData("card", 3.5, 4)]
+    public void Each_component_keeps_its_native_stroke_recipe(string family, double density, double expectedStroke)
+    {
+        Control control = family switch
+        {
+            "radio" => new MaterialRadioButton { BorderBrush = Brushes.Black },
+            "switch" => new MaterialSwitch { BorderBrush = Brushes.Black, Background = Brushes.Transparent },
+            "button" => new MaterialButton { Variant = MaterialButtonVariant.Outlined, Width = 100, BorderBrush = Brushes.Black },
+            "card" => new MaterialCard { Variant = MaterialCardVariant.Outlined, Width = 100, Height = 48, BorderBrush = Brushes.Black },
+            _ => new MaterialTextField { Variant = MaterialTextFieldVariant.Outlined, Width = 100, BorderBrush = Brushes.Black }
+        };
+        control.Margin = new Thickness(16); control.HorizontalAlignment = HorizontalAlignment.Left;
+        control.VerticalAlignment = VerticalAlignment.Top;
+        using var host = new GeometryHost(control, 140, 100);
+        host.Window.SetRenderScaling(density); host.Render();
+        using var bitmap = host.Window.CaptureRenderedFrame()!; using var storage = bitmap.Lock();
+        var y = (int)Math.Round((control.Bounds.Top + control.Bounds.Height / 2) * density);
+        var x = (int)Math.Round(control.Bounds.Left * density);
+        if (family == "radio") x += (int)Math.Round(14 * density);
+        double coverage = 0;
+        for (var i = x; i < x + (family == "radio" ? 8 : 7) * density; i++)
+        {
+            var green = System.Runtime.InteropServices.Marshal.ReadByte(storage.Address, y * storage.RowBytes + i * 4 + 1);
+            coverage += (247 - green) / 247d;
+        }
+        Assert.InRange(Math.Abs(expectedStroke - coverage), 0, .04);
+    }
+
+    [AvaloniaTheory]
     [InlineData(1.25, 39, 23, 2)]
     [InlineData(3.5, 109, 63, 7)]
     public void Checkbox_uses_the_native_integer_canvas_placement_and_floored_stroke(double density, int expectedLeft, int expectedSize, double expectedStroke)

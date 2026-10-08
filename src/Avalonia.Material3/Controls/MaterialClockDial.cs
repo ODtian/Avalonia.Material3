@@ -101,9 +101,9 @@ public class MaterialClockDial : Panel
         UpdateExtent();
         Background = Brushes.Transparent;
         ClipToBounds = true;
-        MaterialPickerSupport.Resource(this, DialBrushProperty, "SurfaceContainerHighestBrush");
-        MaterialPickerSupport.Resource(this, TextBlock.FontSizeProperty, "BodyLargeFontSize");
-        MaterialPickerSupport.Resource(this, SelectorBrushProperty, "PrimaryBrush");
+        Bind(DialBrushProperty, this.GetResourceObservable("M3.SurfaceContainerHighestBrush"), Avalonia.Data.BindingPriority.Style);
+        Bind(TextBlock.FontSizeProperty, this.GetResourceObservable("M3.BodyLargeFontSize"), Avalonia.Data.BindingPriority.Style);
+        Bind(SelectorBrushProperty, this.GetResourceObservable("M3.PrimaryBrush"), Avalonia.Data.BindingPriority.Style);
         AddHandler(PointerPressedEvent, Pressed, RoutingStrategies.Tunnel);
         AddHandler(PointerMovedEvent, Moved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, Released, RoutingStrategies.Tunnel);

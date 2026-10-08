@@ -106,6 +106,7 @@ public abstract class MaterialSheet : ContentControl
     private double _gestureExtent, _gestureVelocity;
     private double _sideDuration;
     private bool _sideRecipe;
+    private bool _pendingEntry;
     private Size _surfaceSize;
     private readonly MaterialMotionSettings _motionSettings;
     private bool _hasNatural, _detentsPartial, _detentsHidden;
@@ -446,8 +447,12 @@ public abstract class MaterialSheet : ContentControl
         var supplied = this.GetDiagnostic(SpatialSpringProperty).Priority <= BindingPriority.LocalValue;
         _activeSpring = !IsSide && !_gestureSettlement && State != MaterialSheetState.Expanded && !supplied
             ? _motionSettings.FastEffects : SpatialSpring;
+        _pendingEntry = false;
         if (_activeSpring.IsInstant || TopLevel.GetTopLevel(this) is null || _available <= 0)
-        { _motionVelocity = 0; return; }
+        {
+            _pendingEntry = IsSide && State != MaterialSheetState.Hidden && !_activeSpring.IsInstant;
+            _motionVelocity = 0; return;
+        }
         if (_gestureSettlement) from = _gestureExtent;
         _motionFrom = _motionExtent = from;
         _motionTo = StateExtent;
@@ -529,11 +534,15 @@ public abstract class MaterialSheet : ContentControl
         }
         if (_expanded != expanded || _partial != partial || _available != available) StopMotion();
         _expanded = expanded; _partial = partial; _available = available;
+        // A host can install and expand a new standard side sheet before its first
+        // bounded measure. Start from its still-hidden extent once travel is known.
+        if (_pendingEntry && available > 0 && expanded > 0) StartMotion();
         var extent = IsDragging ? Math.Clamp(_dragExtent, 0, expanded) : IsSettling ? _motionExtent : StateExtent;
         SetAndRaise(VisibleExtentProperty, ref _visibleExtent, extent);
         SetAndRaise(OffsetProperty, ref _offset, available - extent);
         var result = IsSide ? new Size(extent, availableSize.Height) : new Size(availableSize.Width, extent);
         _surfaceSize = IsSide ? new Size(expanded, availableSize.Height) : new Size(availableSize.Width, expanded);
+        PseudoClasses.Set(":empty-extent", extent <= 0);
         base.MeasureOverride(_surfaceSize);
         var compact = _header is not null && _actions is not null && _header.DesiredSize.Height + _actions.DesiredSize.Height + 96 > _surfaceSize.Height;
         if (_compact != compact)
@@ -543,7 +552,6 @@ public abstract class MaterialSheet : ContentControl
             PseudoClasses.Set(":compact-height", compact);
             base.MeasureOverride(_surfaceSize);
         }
-        PseudoClasses.Set(":empty-extent", extent <= 0);
         return result;
     }
     protected override Size ArrangeOverride(Size finalSize)

@@ -15,6 +15,31 @@ namespace Avalonia.Material3.Tests;
 public class NormativeMotionScenarioTests
 {
     [AvaloniaFact]
+    public async Task Standard_side_first_open_waits_for_host_geometry_before_its_native_entry()
+    {
+        var body = new Border { Height = 80, Background = Brushes.Lime };
+        var sheet = new MaterialSideSheet { ExpandedExtent = 320, Title = "Details", Content = body };
+        var panel = new MaterialSheetHost { Content = new Border(), Sheet = sheet };
+        using var host = new GeometryHost(new Border(), 500, 400);
+        host.Theme.Motion = new MaterialMotion(); host.Render();
+        var poses = new List<(double Extent, double BodyHeight)>();
+        host.Window.LayoutUpdated += (_, _) =>
+        {
+            if (sheet.IsArrangeValid && sheet.VisibleExtent > 0 && body.Bounds.Height > 0)
+                poses.Add((sheet.VisibleExtent, body.Bounds.Height));
+        };
+        host.Window.Content = panel;
+        Assert.True(sheet.Expand()); host.Render();
+        Assert.NotEmpty(poses);
+        Assert.InRange(poses[0].Extent, .001, 319.999);
+        var firstHeight = poses[0].BodyHeight;
+        await Task.Delay(650); host.Render();
+        Assert.Equal(320, sheet.VisibleExtent);
+        Assert.Equal(firstHeight, body.Bounds.Height);
+        Assert.All(poses, pose => Assert.Equal(firstHeight, pose.BodyHeight));
+    }
+
+    [AvaloniaFact]
     public async Task Side_sheet_open_uses_the_pinned_ViewDragHelper_quintic_settle_recipe()
     {
         using var host = new ButtonHost(); host.Window.Width = 400; host.Window.Height = 500;

@@ -98,7 +98,7 @@
       <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
     <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialCheckboxBox#Box">
-      <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
+      <Setter Property="ColorAlpha" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
     <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialCheckboxGlyph#Check">
       <Setter Property="CheckBrush" Value="{DynamicResource M3.SurfaceBrush}" />
@@ -121,7 +121,7 @@
             <controls:MaterialStateLayer x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False" />
             <Border x:Name="FocusRing" Width="42" Height="42" CornerRadius="21" BorderThickness="3"
                     BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
-            <Border x:Name="Ring" Width="20" Height="20" CornerRadius="10" BorderThickness="2" BorderBrush="{TemplateBinding BorderBrush}" />
+            <controls:MaterialRadioRing x:Name="Ring" Width="20" Height="20" BorderThickness="2" BorderBrush="{TemplateBinding BorderBrush}" />
             <controls:MaterialCircleGlyph x:Name="Dot" Width="20" Height="20" Fill="{TemplateBinding BorderBrush}" />
           </Grid>
           <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
@@ -143,7 +143,7 @@
     <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#Ring, ^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialCircleGlyph#Dot">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialRadioRing#Ring, ^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialCircleGlyph#Dot">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
   </ControlTheme>
@@ -162,9 +162,9 @@
       <ControlTemplate>
         <Grid ColumnDefinitions="52,*" Background="Transparent">
           <Grid Width="52" Height="48" VerticalAlignment="Center">
-            <Border x:Name="Track" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
+            <controls:MaterialElevationBorder x:Name="Track" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
                     BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" />
-            <Border x:Name="DisabledTrackOutline" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
+            <controls:MaterialElevationBorder x:Name="DisabledTrackOutline" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
                     BorderBrush="{TemplateBinding BorderBrush}" Opacity="{DynamicResource M3.DisabledContainerOpacity}" IsVisible="False" IsHitTestVisible="False" />
             <Canvas x:Name="PART_SwitchKnob" Width="20" Height="48" HorizontalAlignment="Left">
               <Grid x:Name="PART_MovingKnobs" Width="32" Height="48" UseLayoutRounding="False">

@@ -17,6 +17,72 @@ namespace Avalonia.Material3.Tests;
 
 public class SnapshotDpiScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Clock_attach_preserves_authored_brushes_and_live_styles(bool useStyle)
+    {
+        var dial = new MaterialClockDial();
+        if (useStyle) dial.Styles.Add(new Style(selector => selector.OfType<MaterialClockDial>())
+        { Setters = { new Setter(MaterialClockDial.DialBrushProperty, Brushes.Black), new Setter(MaterialClockDial.SelectorBrushProperty, Brushes.Lime) } });
+        else { dial.DialBrush = Brushes.Black; dial.SelectorBrush = Brushes.Lime; }
+        using var host = new GeometryHost(dial, 320, 320);
+        Assert.Same(Brushes.Black, dial.DialBrush); Assert.Same(Brushes.Lime, dial.SelectorBrush);
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 }; host.Render();
+        Assert.Same(Brushes.Black, dial.DialBrush); Assert.Same(Brushes.Lime, dial.SelectorBrush);
+        var source = new Border { Background = Brushes.Magenta };
+        using var binding = dial.Bind(MaterialClockDial.DialBrushProperty,
+            new Avalonia.Data.Binding(nameof(Border.Background)) { Source = source });
+        host.Render(); Assert.Same(Brushes.Magenta, dial.DialBrush);
+        source.Background = Brushes.Red; host.Render(); Assert.Same(Brushes.Red, dial.DialBrush);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(1.25)]
+    [InlineData(3.5)]
+    public void Selected_clock_glyph_antialiasing_composites_once_over_the_selector(double density)
+    {
+        var dial = new MaterialClockDial { Value = 12 };
+        TextOptions.SetTextRenderingMode(dial, TextRenderingMode.Antialias);
+        using var host = new GeometryHost(dial, 320, 320);
+        host.Window.SetRenderScaling(density); host.Render();
+        dial.DialBrush = Brushes.Black;
+        var target = dial.Children.OfType<MaterialClockNumber>().Single(number => number.Value == 3);
+        target.Foreground = Brushes.White; host.Render();
+        Color[,] Capture()
+        {
+            using var frame = host.Window.CaptureRenderedFrame()!; using var storage = frame.Lock();
+            var colors = new Color[frame.PixelSize.Width, frame.PixelSize.Height];
+            for (var y = 0; y < frame.PixelSize.Height; y++)
+            for (var x = 0; x < frame.PixelSize.Width; x++)
+            {
+                var offset = y * storage.RowBytes + x * 4;
+                var first = Marshal.ReadByte(storage.Address, offset); var third = Marshal.ReadByte(storage.Address, offset + 2);
+                colors[x,y] = storage.Format == PixelFormat.Bgra8888 ? Color.FromRgb(third, Marshal.ReadByte(storage.Address, offset + 1), first)
+                    : Color.FromRgb(first, Marshal.ReadByte(storage.Address, offset + 1), third);
+            }
+            return colors;
+        }
+        var normal = Capture();
+        var center = GeometryHost.Box(target, host.Window).Center;
+        var background = ((ISolidColorBrush)dial.DialBrush!).Color;
+        var selector = ((ISolidColorBrush)dial.SelectorBrush!).Color;
+        dial.Value = 3; host.Render();
+        var selected = Capture();
+        var samples = 0; var error = 0d; var diagnostic = "";
+        for (var y = (int)((center.Y - 10) * density); y < (center.Y + 10) * density; y++)
+        for (var x = (int)((center.X - 10) * density); x < (center.X + 10) * density; x++)
+        {
+            var alpha = normal[x, y].R / 255d;
+            if (alpha <= .1 || alpha >= .9) continue;
+            samples++;
+            var actual = selected[x, y];
+            var delta = Math.Abs(actual.R - (255 * alpha + selector.R * (1 - alpha)));
+            if (delta > error) { error = delta; diagnostic = $"at{x},{y}: before={normal[x,y]},after={actual},bg={background},selector={selector},alpha={alpha}"; }
+        }
+        Assert.True(samples > 5); Assert.True(error <= 2, diagnostic);
+    }
+
     [AvaloniaFact]
     public void Clock_target_label_keeps_normal_ink_until_the_moving_selector_overlaps_it()
     {

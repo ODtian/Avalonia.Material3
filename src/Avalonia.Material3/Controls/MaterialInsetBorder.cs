@@ -12,6 +12,6 @@ internal sealed class MaterialInsetBorder : MaterialElevationBorder
         AvaloniaProperty.Register<MaterialInsetBorder, Thickness>(nameof(ReservedBorderThickness));
     public Thickness ReservedBorderThickness { get => GetValue(ReservedBorderThicknessProperty); set => SetValue(ReservedBorderThicknessProperty, value); }
     static MaterialInsetBorder() => AffectsMeasure<MaterialInsetBorder>(ReservedBorderThicknessProperty);
-    protected override Size MeasureOverride(Size availableSize) => LayoutHelper.MeasureChild(Child, availableSize, Padding, ReservedBorderThickness);
-    protected override Size ArrangeOverride(Size finalSize) => LayoutHelper.ArrangeChild(Child, finalSize, Padding, ReservedBorderThickness);
+    protected override Size MeasureOverride(Size availableSize) { UpdateStroke(); return LayoutHelper.MeasureChild(Child, availableSize, Padding, ReservedBorderThickness); }
+    protected override Size ArrangeOverride(Size finalSize) { UpdateStroke(finalSize); return LayoutHelper.ArrangeChild(Child, finalSize, Padding, ReservedBorderThickness); }
 }
