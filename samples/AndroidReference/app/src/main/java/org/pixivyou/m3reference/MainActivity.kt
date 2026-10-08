@@ -44,6 +44,18 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (intent.getBooleanExtra("glyph-probe", false)) {
+            val face = when (intent.getStringExtra("glyph-face")) {
+                "variable" -> ProbeFace.Variable400
+                "static" -> ProbeFace.Static400
+                "gallery" -> ProbeFace.Gallery400
+                else -> ProbeFace.Default
+            }
+            val digit = intent.getStringExtra("glyph-digit") ?: "3"
+            require(digit == "3" || digit == "5")
+            setContentView(NativeGlyphProbeView(this, face, digit))
+            return
+        }
         val initialScene = intent.getStringExtra("scene") ?: "home"
         val initialDark = intent.getBooleanExtra("dark", false)
         val palette = intent.getStringExtra("palette") ?: "classic"
