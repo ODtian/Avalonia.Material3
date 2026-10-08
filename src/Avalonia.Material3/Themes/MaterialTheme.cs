@@ -212,17 +212,21 @@ public class MaterialTheme : Styles
         // Compose selection colours quantize Color.copy alpha to sRGB8. Switch
         // disabled recipes then composite onto Surface before painting the track.
         Color CopyAlpha(Color color, double opacity) => Color.FromArgb((byte)Math.Round(255 * opacity, MidpointRounding.AwayFromZero), color.R, color.G, color.B);
-        Color OverSurface(Color color, double opacity)
+        Color OverSurface(Color color, double opacity, Color? background = null)
         {
             var alpha = CopyAlpha(color, opacity).A / 255d;
-            byte Blend(byte foreground, byte background) => (byte)Math.Round(foreground * alpha + background * (1 - alpha), MidpointRounding.AwayFromZero);
-            return Color.FromRgb(Blend(color.R, scheme.Surface.R), Blend(color.G, scheme.Surface.G), Blend(color.B, scheme.Surface.B));
+            var surface = background ?? scheme.Surface;
+            byte Blend(byte foreground, byte channel) => (byte)Math.Round(foreground * alpha + channel * (1 - alpha), MidpointRounding.AwayFromZero);
+            return Color.FromRgb(Blend(color.R, surface.R), Blend(color.G, surface.G), Blend(color.B, surface.B));
         }
         colors["M3.SelectionDisabledOnSurfaceBrush"] = new ImmutableSolidColorBrush(CopyAlpha(scheme.OnSurface, States.DisabledForegroundOpacity));
         colors["M3.SwitchDisabledOnSurfaceForegroundBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.OnSurface, States.DisabledForegroundOpacity));
         colors["M3.SwitchDisabledOnSurfaceContainerBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.OnSurface, States.DisabledContainerOpacity));
         colors["M3.SwitchDisabledHighestForegroundBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.SurfaceContainerHighest, States.DisabledForegroundOpacity));
         colors["M3.SwitchDisabledHighestContainerBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.SurfaceContainerHighest, States.DisabledContainerOpacity));
+        colors["M3.CardDisabledForegroundBrush"] = new ImmutableSolidColorBrush(CopyAlpha(scheme.OnSurface, States.DisabledForegroundOpacity));
+        colors["M3.CardDisabledFilledContainerBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.SurfaceVariant, States.DisabledForegroundOpacity, scheme.SurfaceContainerHighest));
+        colors["M3.CardDisabledOutlinedBorderBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.Outline, States.DisabledContainerOpacity, scheme.SurfaceContainerLow));
         Resources.ThemeDictionaries[variant] = colors;
     }
 }
