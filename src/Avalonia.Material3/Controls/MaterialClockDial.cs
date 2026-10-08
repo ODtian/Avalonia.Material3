@@ -119,7 +119,7 @@ public class MaterialClockDial : Panel
         for (var index = 0; index < count; index++)
         {
             var number = ActivePart == MaterialTimePickerPart.Minute ? index * 5 : Is24Hour ? index : index == 0 ? 12 : index;
-            var action = new MaterialClockNumber { Value = number, Content = number.ToString(ActivePart == MaterialTimePickerPart.Minute ? "00" : "0", Culture) };
+            var action = new MaterialClockNumber { Value = number, Content = number.ToString("0", Culture) };
             AutomationProperties.SetName(action, number.ToString(Culture) + " " + ValueLabel);
             action.Click += (_, _) => CompleteNativeSelection(number);
             Children.Add(action);

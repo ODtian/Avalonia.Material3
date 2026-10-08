@@ -20,14 +20,16 @@ internal sealed class MaterialClockLabel : Control
     private MaterialClockNumber? Number => this.GetVisualAncestors().OfType<MaterialClockNumber>().FirstOrDefault();
     private MaterialClockDial? Dial => this.GetVisualAncestors().OfType<MaterialClockDial>().FirstOrDefault();
     private static readonly StyledProperty<IBrush?> SelectedBrushProperty = AvaloniaProperty.Register<MaterialClockLabel, IBrush?>("SelectedBrush");
-    private TextLayout? _normal, _selected, _masked;
-    private readonly ClockPalette _palette = new();
-    private readonly VisualBrush _ink;
+    private TextLayout? _normal;
+    private MaterialSnapshot? _mask;
+    private bool _capturingMask;
+    private Size _maskSize;
+    private double _maskDensity;
     private MaterialClockNumber? _subscribedNumber;
     private MaterialClockDial? _subscribedDial;
     private (Typeface Typeface, double Size, double Height, double Tracking, IBrush? Normal, IBrush? Selected) _key;
 
-    internal MaterialClockLabel(string text) { _text = text; _ink = new(_palette) { Stretch = Stretch.Fill }; }
+    internal MaterialClockLabel(string text) { _text = text; UseLayoutRounding = false; }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -61,7 +63,7 @@ internal sealed class MaterialClockLabel : Control
         base.OnPropertyChanged(change);
         if (change.Property == SelectedBrushProperty) InvalidateVisual();
     }
-    private void ClearLayouts() { _normal?.Dispose(); _selected?.Dispose(); _masked?.Dispose(); _normal = _selected = _masked = null; }
+    private void ClearLayouts() { _normal?.Dispose(); _normal = null; _mask?.Dispose(); _mask = null; }
     private void Layouts()
     {
         if (Number is not { } number) return;
@@ -70,52 +72,51 @@ internal sealed class MaterialClockLabel : Control
         if (_normal is not null && key == _key) return;
         ClearLayouts(); _key = key;
         _normal = new TextLayout(_text, key.Item1, key.Item2, key.Item5, lineHeight: key.Item3, letterSpacing: key.Item4);
-        _selected = new TextLayout(_text, key.Item1, key.Item2, key.Item6, lineHeight: key.Item3, letterSpacing: key.Item4);
-        _masked = new TextLayout(_text, key.Item1, key.Item2, _ink, lineHeight: key.Item3, letterSpacing: key.Item4);
     }
     protected override Size MeasureOverride(Size availableSize)
     {
-        Layouts(); return _normal is { } layout ? new Size(layout.Width, layout.Height) : default;
+        Layouts();
+        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        return _normal is { } layout ? new Size(Math.Ceiling(layout.Width * density) / density, Math.Ceiling(layout.Height * density) / density) : default;
     }
     public override void Render(DrawingContext context)
     {
         Layouts();
-        if (_normal is not { } normal || _selected is not { } selected) return;
+        if (_normal is not { } normal) return;
         // Android's offscreen selector mask uses grayscale glyph coverage. Both
         // complementary regions need the same coverage, independent of brush colour.
         using var textOptions = context.PushTextOptions(new TextOptions { TextRenderingMode = TextRenderingMode.Antialias });
-        var origin = new Point((Bounds.Width - normal.Width) / 2, (Bounds.Height - normal.Height) / 2);
+        // Compose places an integer-sized paragraph at an integer centre offset;
+        // paragraph ink starts at its measured top-left, including trailing advance.
+        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        var point = TopLevel.GetTopLevel(this) is { } root ? this.TranslatePoint(default, root) : null;
+        var origin = point is { } position ? new Point(
+            Math.Round(position.X * density, MidpointRounding.AwayFromZero) / density - position.X,
+            Math.Round(position.Y * density, MidpointRounding.AwayFromZero) / density - position.Y) : default;
+        if (_capturingMask) { normal.Draw(context, origin); return; }
         if (Dial is not { } dial || dial.TranslatePoint(dial.SelectorCenter, this) is not { } center)
         { normal.Draw(context, origin); return; }
         var radius = dial.SelectorRadius;
-        var furthestX = Math.Max(Math.Abs(center.X), Math.Abs(Bounds.Width - center.X));
-        var furthestY = Math.Max(Math.Abs(center.Y), Math.Abs(Bounds.Height - center.Y));
-        if (furthestX * furthestX + furthestY * furthestY <= radius * radius)
-        { selected.Draw(context, origin); return; }
         var nearestX = center.X - Math.Clamp(center.X, 0, Bounds.Width);
         var nearestY = center.Y - Math.Clamp(center.Y, 0, Bounds.Height);
         if (nearestX * nearestX + nearestY * nearestY >= radius * radius)
         { normal.Draw(context, origin); return; }
-        // Pinned drawSelector changes overlapping ink spatially, not the native number's selection.
-        // A single glyph pass applies the spatial palette, so antialiased edges composite once.
-        _palette.Normal = _key.Normal; _palette.Selected = _key.Selected;
-        _palette.Center = center - origin; _palette.Radius = radius;
-        var size = new Size(normal.Width, normal.Height);
-        _palette.Measure(size); _palette.Arrange(new Rect(size));
-        _ink.SourceRect = new RelativeRect(new Rect(size), RelativeUnit.Absolute);
-        _ink.DestinationRect = new RelativeRect(new Rect(size), RelativeUnit.Absolute);
-        _palette.InvalidateVisual(); _masked!.Draw(context, origin);
-    }
-
-    private sealed class ClockPalette : Control
-    {
-        internal IBrush? Normal, Selected;
-        internal Point Center;
-        internal double Radius;
-        public override void Render(DrawingContext context)
+        if (_mask is null || _maskSize != Bounds.Size || _maskDensity != density)
         {
-            context.DrawRectangle(Normal, null, new Rect(Bounds.Size));
-            context.DrawEllipse(Selected, null, Center, Radius, Radius);
+            _mask?.Dispose(); _mask = null; _capturingMask = true;
+            try { _mask = MaterialSnapshot.Capture(this, new Rect(Bounds.Size)); }
+            finally { _capturingMask = false; }
+            _maskSize = Bounds.Size; _maskDensity = density;
         }
+        if (_mask is null) return;
+        // Native draws the normal glyph first, then recolours that alpha through
+        // XOR/DstOver. Reuse its cached coverage rather than rasterizing white text.
+        var selector = new EllipseGeometry(new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2));
+        var outside = new GeometryGroup { FillRule = FillRule.EvenOdd,
+            Children = { new RectangleGeometry(new Rect(Bounds.Size)), selector } };
+        using (context.PushGeometryClip(outside)) normal.Draw(context, origin);
+        using (context.PushGeometryClip(new EllipseGeometry(selector.Rect)))
+        using (_mask.OpacityMask(context, new Rect(Bounds.Size)))
+            context.DrawRectangle(_key.Selected, null, new Rect(Bounds.Size));
     }
 }

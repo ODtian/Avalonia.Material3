@@ -249,7 +249,9 @@ public class GeometryQualityScenarioTests
         for (var x = (int)(164 * scale); x < 195 * scale; x++)
         {
             var dx = x + .5 - 195.582191242245 * scale; var dy = y + .5 - 52.9423726267832 * scale;
-            if (dx * dx + dy * dy < 22 * 22 * scale * scale && pixels[x, y] == Color.Parse("#FFFFFF")) ink++;
+            // The source single-digit label's cached grayscale mask is resampled
+            // at export DPI; selected ink need not retain an opaque-white core.
+            if (dx * dx + dy * dy < 22 * 22 * scale * scale && pixels[x, y].R > 200 && pixels[x, y].G > 180) ink++;
         }
         Assert.True(ink > 0, "Spatial selected numeral ink must actually render at this raster DPI.");
     }

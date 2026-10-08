@@ -42,5 +42,13 @@ internal sealed class MaterialSnapshot : IDisposable
         if (_bitmap is { } bitmap && destination.Width > 0 && destination.Height > 0)
             context.DrawImage(bitmap, _source, destination);
     }
+    internal IDisposable OpacityMask(DrawingContext context, Rect destination)
+    {
+        if (_bitmap is not { } bitmap) throw new ObjectDisposedException(nameof(MaterialSnapshot));
+        var source = new Rect(_source.X / bitmap.PixelSize.Width, _source.Y / bitmap.PixelSize.Height,
+            _source.Width / bitmap.PixelSize.Width, _source.Height / bitmap.PixelSize.Height);
+        var brush = new ImageBrush(bitmap) { SourceRect = new RelativeRect(source, RelativeUnit.Relative), Stretch = Stretch.Fill };
+        return context.PushOpacityMask(brush, destination);
+    }
     public void Dispose() { _bitmap?.Dispose(); _bitmap = null; }
 }
