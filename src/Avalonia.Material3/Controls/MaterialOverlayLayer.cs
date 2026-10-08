@@ -50,6 +50,7 @@ internal sealed class MaterialOverlayLayer : Panel
             var margin = options.Margin;
             _surfaceViewport.Clip = new RectangleGeometry(new Rect(margin.Left, margin.Top,
                 Math.Max(0, finalSize.Width - margin.Left - margin.Right), Math.Max(0, finalSize.Height - margin.Top - margin.Bottom)));
+            _surfaceViewport.InvalidateArrange();
             _surfaceViewport.Arrange(new Rect(finalSize));
             return finalSize;
         }
