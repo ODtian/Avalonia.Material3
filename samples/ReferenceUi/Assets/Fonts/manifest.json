@@ -1,0 +1,11 @@
+{
+  "license": "Apache-2.0",
+  "scope": "Reference apps only; exact emulator system font, no global installation",
+  "Roboto-Regular.ttf": {
+    "source": "Android reference emulator /system/fonts/Roboto-Regular.ttf",
+    "sha256": "9CA9DEBB09459BF4E3E7F826F5CD0F35F253902B85684921FCE2BA3F28DD0F50",
+    "family": "Roboto",
+    "format": "Variable TrueType",
+    "licenseMetadata": "OpenType name IDs 13 and 14 explicitly identify Apache License 2.0"
+  }
+}

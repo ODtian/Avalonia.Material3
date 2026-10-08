@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>WinExe</OutputType><IsPackable>false</IsPackable></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../ReferenceUi/ReferenceUi.csproj" /><PackageReference Include="Avalonia.Desktop" Version="$(AvaloniaVersion)" /></ItemGroup>
+</Project>

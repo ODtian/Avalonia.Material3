@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><IsPackable>false</IsPackable><IsAotCompatible>true</IsAotCompatible></PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Material3" Version="$(Material3Version)" />
+    <AvaloniaResource Include="Assets/Fonts/*.ttf;Assets/Fonts/LICENSE.txt;Assets/Fonts/manifest.json" />
+    <None Update="Assets/Fonts/LICENSE.txt;Assets/Fonts/manifest.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
