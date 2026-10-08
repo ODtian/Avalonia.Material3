@@ -119,7 +119,7 @@ internal sealed class MaterialActionReveal : MaterialRevealViewport, IMaterialAc
     internal Size MeasureFullTarget(Size availableSize)
     {
         var rootSize = TopLevel.GetTopLevel(this)?.ClientSize ?? availableSize;
-        if (!_hasFullSize || Child != _measuredChild || Child?.IsMeasureValid == false
+        if (!_hasFullSize || Child != _measuredChild || Child?.IsMeasureValid == false || Child?.DesiredSize != _fullSize
             || rootSize != _rootSize || availableSize.Width != _constraint.Width
             || (!IsRevealing && availableSize != _constraint))
         {

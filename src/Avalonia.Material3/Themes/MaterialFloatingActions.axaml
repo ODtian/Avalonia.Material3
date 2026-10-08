@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:c="using:Avalonia.Material3.Controls"
+        xmlns:themes="using:Avalonia.Material3.Themes"
         xmlns:converters="using:Avalonia.Data.Converters">
   <Styles.Resources>
     <ControlTheme x:Key="M3.ActionItems" TargetType="ItemsControl">
@@ -81,7 +82,9 @@
                   </Viewbox>
                   <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" VerticalAlignment="Center" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
                     <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
-                                      UseLayoutRounding="True" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" TextWrapping="Wrap" />
+                                      UseLayoutRounding="True" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" TextWrapping="Wrap">
+                      <ContentPresenter.DataTemplates><themes:ExtendedFabTextTemplate /></ContentPresenter.DataTemplates>
+                    </ContentPresenter>
                   </c:MaterialActionReveal>
                 </c:MaterialExtendedFabPanel>
               </Grid>

@@ -1,15 +1,30 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Headless.XUnit;
 using Avalonia.Headless;
 using Avalonia.Layout;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
+using Avalonia.VisualTree;
 using Xunit;
 
 namespace Avalonia.Material3.Tests;
 
 public class ActionLayoutScenarioTests
 {
+    [AvaloniaFact]
+    public void Extended_fab_preserves_parent_data_templates_for_non_string_content()
+    {
+        var content = new ActionCaption("Authored action");
+        var authored = new Border { Width = 80, Height = 20, Background = Brushes.Black };
+        var fab = new MaterialExtendedFab { Content = content };
+        using var host = new GeometryHost(fab, 220, 120);
+        host.Window.DataTemplates.Add(new FuncDataTemplate<ActionCaption>((_, _) => authored));
+        fab.Content = null; fab.Content = content; host.Render();
+        Assert.Contains(authored, fab.GetVisualDescendants());
+    }
+    private sealed record ActionCaption(string Text);
+
     [AvaloniaTheory]
     [InlineData(1.25)]
     [InlineData(3.5)]
