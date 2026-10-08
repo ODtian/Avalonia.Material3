@@ -60,7 +60,7 @@ public class SnapshotDpiScenarioTests
         var center = (int)Math.Round(256 * density, MidpointRounding.AwayFromZero) / 2 - target / 2;
         foreach (var number in dial.Children.OfType<MaterialClockNumber>())
         {
-            var angle = number.Value / 5d * Math.PI / 6 - Math.PI / 2;
+            var angle = ((float)(Math.PI * 2) / 12) * (number.Value / 5) - Math.PI / 2;
             var left = Math.Round(101 * density * Math.Cos(angle) + center, MidpointRounding.AwayFromZero);
             var top = Math.Round(101 * density * Math.Sin(angle) + center, MidpointRounding.AwayFromZero);
             Assert.Equal(left, number.Bounds.Left * density, precision: 6);

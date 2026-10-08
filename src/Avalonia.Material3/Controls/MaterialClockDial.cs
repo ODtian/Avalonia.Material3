@@ -220,13 +220,18 @@ public class MaterialClockDial : Panel
         var target = (int)Math.Floor(48 * FontScale * density + .5);
         var side = (int)Math.Floor(FaceSide * density + .5);
         var center = side / 2 - target / 2;
+        var theta = (float)(Math.PI * 2) / 12;
         foreach (var number in Children.OfType<MaterialClockNumber>())
         {
-            var point = Position(number.Value) - FaceOrigin;
+            var index = ActivePart == MaterialTimePickerPart.Minute ? number.Value / 5 : number.Value % 12;
+            var radius = (float)((ActivePart == MaterialTimePickerPart.Hour && Is24Hour && number.Value >= 12 ? 69 : 101) * Scale * density);
+            // Native stores full-circle/theta/index multiplication as Float, then
+            // subtracts the Double quarter-circle before cos/sin and roundToInt.
+            var angle = theta * index - Math.PI / 2;
             // Compose CircularLayout integer-halves the measured face and target,
             // then rounds each polar offset once. Keep ink and mask on that frame.
-            var left = Math.Floor((point.X - FaceSide / 2) * density + center + .5);
-            var top = Math.Floor((point.Y - FaceSide / 2) * density + center + .5);
+            var left = Math.Floor(radius * Math.Cos(angle) + center + .5);
+            var top = Math.Floor(radius * Math.Sin(angle) + center + .5);
             number.Arrange(new Rect(FaceOrigin.X + left / density, FaceOrigin.Y + top / density, target / density, target / density));
         }
         return finalSize;
