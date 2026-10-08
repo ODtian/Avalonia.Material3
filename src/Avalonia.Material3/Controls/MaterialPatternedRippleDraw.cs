@@ -47,7 +47,7 @@ internal sealed class MaterialPatternedRippleDraw(Rect rectangle, Point touch, d
                 surface.Canvas.Scale((float)scale); surface.Canvas.Translate((float)-rectangle.X, (float)-rectangle.Y);
                 Draw(surface.Canvas, scale, 1);
             }
-            context.DrawBitmap(bitmap, rectangle);
+            context.DrawBitmap(bitmap, new Rect(0, 0, size.Width, size.Height), rectangle);
         }
     }
     private void Draw(SKCanvas canvas, double density, double opacity)

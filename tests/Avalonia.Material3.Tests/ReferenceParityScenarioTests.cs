@@ -17,6 +17,32 @@ namespace Avalonia.Material3.Tests;
 
 public class ReferenceParityScenarioTests
 {
+    [AvaloniaFact]
+    public void Native_clock_selector_edge_uses_clear_xor_and_destination_over_colour()
+    {
+        using var host = new ReferenceHost("time");
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        {
+            FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto")
+        };
+        host.Window.SetRenderScaling(3.5); host.Find<MaterialTimePicker>("time-picker").ActivePart = MaterialTimePickerPart.Minute; host.Render();
+        var dial = host.Shell.GetVisualDescendants().OfType<MaterialClockDial>().Single();
+        var box = GeometryHost.Box(dial, host.Window);
+        // Native actual sample840,1124 relative to face172,1022:668,102px.
+        using var bitmap = host.Window.CaptureRenderedFrame()!;
+        using var pixels = bitmap.Lock();
+        var x = (int)Math.Round(box.Left * 3.5) + 668; var y = (int)Math.Round(box.Top * 3.5) + 102;
+        var offset = y * pixels.RowBytes + x * 4;
+        var red = pixels.Format == PixelFormat.Rgba8888 ? 0 : 2;
+        // This headless raster backend covers12/255 of this circle pixel; the
+        // actual GPU's different coverage and175/170/179 remain physical gates.
+        const double c = 12d / 255;
+        double Blend(double b, double p) => b * (1 - c) * (1 - c) + p * c * c + 255 * 2 * c * c * (1 - c);
+        Assert.InRange(Marshal.ReadByte(pixels.Address, offset + red), (int)Blend(230, 103), (int)Math.Ceiling(Blend(230, 103)));
+        Assert.InRange(Marshal.ReadByte(pixels.Address, offset + 1), (int)Blend(224, 80), (int)Math.Ceiling(Blend(224, 80)));
+        Assert.InRange(Marshal.ReadByte(pixels.Address, offset + 2 - red), (int)Blend(233, 164), (int)Math.Ceiling(Blend(233, 164)));
+    }
+
     [AvaloniaTheory]
     [InlineData(1.25, 52, 142)]
     [InlineData(3.5, 146, 398)]

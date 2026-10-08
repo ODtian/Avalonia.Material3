@@ -138,6 +138,12 @@ internal sealed class MaterialNativeText : IDisposable
         context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, solid.Color, solid.Opacity, origin, density, bounds, options));
         return true;
     }
+    internal interface GlyphPaint : IDisposable { void Paint(SKCanvas canvas, double opacity); }
+    internal GlyphPaint? CreateGlyphDraw(IBrush? brush, Point origin, double density, Size bounds, TextOptions options)
+    {
+        if (!(_face.Face.NumericProfile || _face.Face.LatinProfile) || !CanPaint(brush, options) || brush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } solid) return null;
+        return new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, solid.Color, 1, origin, density, bounds, options);
+    }
     private static bool CanPaint(IBrush? brush, TextOptions options) => brush is ISolidColorBrush
         && options.TextHintingMode is not (TextHintingMode.Light or TextHintingMode.None)
         && options.TextRenderingMode is TextRenderingMode.Unspecified or TextRenderingMode.Antialias;
@@ -173,7 +179,7 @@ internal sealed class MaterialNativeText : IDisposable
     public void Dispose() => _face.Dispose();
 
     private sealed class GlyphDraw(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, double tracking, Color color,
-        double alpha, Point origin, double density, Size bounds, TextOptions options) : ICustomDrawOperation
+        double alpha, Point origin, double density, Size bounds, TextOptions options) : ICustomDrawOperation, GlyphPaint
     {
         public Rect Bounds => new(bounds);
         public bool HitTest(Point point) => false;
@@ -190,9 +196,9 @@ internal sealed class MaterialNativeText : IDisposable
             using (var storage = bitmap.Lock())
             using (var surface = SKSurface.Create(new SKImageInfo(pixels.Width, pixels.Height, SKColorType.Bgra8888, SKAlphaType.Premul), storage.Address, storage.RowBytes))
             { surface.Canvas.Clear(SKColors.Transparent); surface.Canvas.Scale((float)density); Paint(surface.Canvas, 1); }
-            context.DrawBitmap(bitmap, new Rect(bounds));
+            context.DrawBitmap(bitmap, new Rect(0, 0, pixels.Width, pixels.Height), new Rect(bounds));
         }
-        private void Paint(SKCanvas canvas, double opacity)
+        public void Paint(SKCanvas canvas, double opacity)
         {
             // Android framework adds FT_LOAD_NO_AUTOHINT for normal text. The
             // matched no-program/pp1=0 faces have the same outlines without
@@ -219,6 +225,7 @@ internal sealed class MaterialNativeText : IDisposable
             {
                 var before = canvas.TotalMatrix;
                 canvas.Scale((float)(1 / density));
+                canvas.Translate((float)(origin.X * density), (float)(origin.Y * density));
                 using var builder = new SKTextBlobBuilder();
                 var run = builder.AllocatePositionedRun(font, indices.Length);
                 run.SetGlyphs(indices); run.SetPositions(positions);
@@ -237,7 +244,7 @@ internal sealed class MaterialNativeText : IDisposable
                     lock (MatrixDiagnostics)
                         if (MatrixDiagnostics.Count < 24 && MatrixDiagnostics.Add(diagnostic)) Console.WriteLine(diagnostic);
                 }
-                canvas.DrawText(blob, (float)(origin.X * density), (float)(origin.Y * density + paragraphBaseline), paint);
+                canvas.DrawText(blob, 0, (float)paragraphBaseline, paint);
             }
             finally { canvas.RestoreToCount(saved); }
         }

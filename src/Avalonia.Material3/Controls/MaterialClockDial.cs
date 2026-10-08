@@ -43,6 +43,7 @@ public class MaterialClockDial : Panel
     private int _beforeValue;
     private MaterialTimePickerPart _beforePart;
     private readonly DialPaint _paint;
+    private static readonly StyledProperty<IBrush?> SelectedInkProperty = AvaloniaProperty.Register<MaterialClockDial, IBrush?>("SelectedInk");
     private readonly MaterialMotionValue _angle, _faceAlpha;
     private readonly MaterialMotionSettings _motion;
     private readonly MaterialFrameLease _confirmationFrames;
@@ -106,6 +107,7 @@ public class MaterialClockDial : Panel
         Bind(DialBrushProperty, this.GetResourceObservable("M3.SurfaceContainerHighestBrush"), Avalonia.Data.BindingPriority.Style);
         Bind(TextBlock.FontSizeProperty, this.GetResourceObservable("M3.BodyLargeFontSize"), Avalonia.Data.BindingPriority.Style);
         Bind(SelectorBrushProperty, this.GetResourceObservable("M3.PrimaryBrush"), Avalonia.Data.BindingPriority.Style);
+        MaterialPickerSupport.Resource(this, SelectedInkProperty, "OnPrimaryBrush");
         AddHandler(PointerPressedEvent, Pressed, RoutingStrategies.Tunnel);
         AddHandler(PointerMovedEvent, Moved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, Released, RoutingStrategies.Tunnel);
@@ -145,6 +147,8 @@ public class MaterialClockDial : Panel
     }
     internal Point SelectorCenter => AnimatedPosition;
     internal double SelectorRadius => 24 * Scale;
+    private bool _compositeDrawn;
+    internal bool NativeSelectorComposition => _compositeDrawn && !_capturingFace;
     private Point Position(int number)
     {
         var index = ActivePart == MaterialTimePickerPart.Minute ? number / 5d : number % 12;
@@ -240,14 +244,19 @@ public class MaterialClockDial : Panel
     }
     private void Draw(DrawingContext context)
     {
+        _compositeDrawn = false;
         if (!_capturingFace)
         {
             var center = FaceCenter;
-            context.DrawEllipse(DialBrush, null, center, 128 * Scale, 128 * Scale);
-            var endpoint = AnimatedPosition;
-            context.DrawLine(new Pen(SelectorBrush, 2), center, endpoint);
-            context.DrawEllipse(SelectorBrush, null, center, 4 * FontScale, 4 * FontScale);
-            context.DrawEllipse(SelectorBrush, null, endpoint, 24 * Scale, 24 * Scale);
+            if (TryComposite(context)) _compositeDrawn = true;
+            else
+            {
+                context.DrawEllipse(DialBrush, null, center, 128 * Scale, 128 * Scale);
+                var endpoint = AnimatedPosition;
+                context.DrawLine(new Pen(SelectorBrush, 2), center, endpoint);
+                context.DrawEllipse(SelectorBrush, null, center, 4 * FontScale, 4 * FontScale);
+                context.DrawEllipse(SelectorBrush, null, endpoint, 24 * Scale, 24 * Scale);
+            }
         }
         if (_oldFace is not null && _faceAlpha.Value < 1)
         {
@@ -255,6 +264,27 @@ public class MaterialClockDial : Panel
             _oldFace.Draw(context, new Rect(FaceOrigin, new Size(FaceSide, FaceSide)));
         }
     }
+    private bool TryComposite(DrawingContext context)
+    {
+        if (_oldFace is not null || DialBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } background
+            || SelectorBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } primary
+            || GetValue(SelectedInkProperty) is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected) return false;
+        var labels = this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>().ToArray();
+        if (labels.Length != Children.OfType<MaterialClockNumber>().Count()) return false;
+        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        var glyphs = new List<MaterialNativeText.GlyphPaint>();
+        foreach (var label in labels)
+        {
+            if (label.CreateGlyphPaint(this, density, selected.Color) is not { } glyph)
+            { foreach (var captured in glyphs) captured.Dispose(); return false; }
+            glyphs.Add(glyph);
+        }
+        using var clip = context.PushGeometryClip(new EllipseGeometry(new Rect(FaceOrigin, new Size(FaceSide, FaceSide))));
+        context.Custom(new MaterialClockCompositeDraw(new Rect(Bounds.Size), FaceCenter, AnimatedPosition, SelectorRadius,
+            2, 4 * FontScale, background.Color, primary.Color, selected.Color, density, glyphs.ToArray()));
+        return true;
+    }
+    internal void InvalidateComposite() => _paint.InvalidateVisual();
     private int FromPoint(Point point, bool tap)
     {
         point = new Point((point.X - FaceOrigin.X) / Scale, (point.Y - FaceOrigin.Y) / Scale);
@@ -352,7 +382,8 @@ public class MaterialClockDial : Panel
         else if (change.Property == Is24HourProperty || change.Property == CultureProperty) { CancelDrag(); Rebuild(); }
         if (change.Property == ValueProperty) { if (!_animateSelection) CancelConfirmation(); UpdateSelection(); UpdateAngle(_partTransition || _animateSelection); }
         else if (change.Property == ValueLabelProperty) UpdateSelection();
-        if (change.Property == SelectorBrushProperty || change.Property == DialBrushProperty) _paint.InvalidateVisual();
+        if (change.Property == SelectorBrushProperty || change.Property == DialBrushProperty || change.Property == SelectedInkProperty)
+        { _paint.InvalidateVisual(); }
         if (change.Property == TextBlock.FontSizeProperty)
         { CancelDrag(); UpdateExtent(); InvalidateMeasure(); _paint.InvalidateVisual(); }
     }
