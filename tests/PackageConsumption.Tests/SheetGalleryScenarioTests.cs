@@ -22,6 +22,7 @@ public class SheetGalleryScenarioTests
         {
             host.Click(Button(page, name)); host.Render();
             var sheet = page.LastModal!;
+            if (sheet is MaterialBottomSheet) host.Click(sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(handle => handle.IsVisible));
             host.Window.Height = 300; host.Render();
             Assert.InRange(sheet.VisibleExtent, 0, sheet is MaterialSideSheet ? width : 300);
             var dismiss = Button(sheet, "Dismiss sheet"); dismiss.BringIntoView(); host.Render();
@@ -45,7 +46,8 @@ public class SheetGalleryScenarioTests
         host.Click(Button(page, "Open modal bottom"));
         Assert.True(page.LastModal!.IsModal);
         Assert.False(page.Layout.IsEffectivelyEnabled);
-        host.Click(Button(page.LastModal, "Expand sheet")); Assert.Equal(MaterialSheetState.Expanded, page.LastModal.State);
+        host.Click(page.LastModal.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(handle => handle.IsVisible));
+        Assert.Equal(MaterialSheetState.Expanded, page.LastModal.State);
         host.Click(Button(page.LastModal, "Dismiss sheet")); Assert.Null(page.LastModal);
         Assert.Contains("Cancelled", page.Result.Text);
         host.Click(Button(page, "Open modal side"));

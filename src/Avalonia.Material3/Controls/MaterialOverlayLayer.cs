@@ -10,12 +10,15 @@ internal sealed class MaterialOverlayLayer : Panel
     private readonly MaterialOverlayHost host;
     private readonly MaterialOverlayOptions options;
     private readonly Border scrim;
+    private readonly SurfaceViewport? _surfaceViewport;
     internal MaterialOverlayMotion? Presentation { get; }
     internal Border Scrim => scrim;
     internal MaterialOverlayOptions Options => options;
+    internal Control PresentationRoot => _surfaceViewport ?? (Control)Container;
     internal MaterialOverlayLayer(MaterialOverlayHost host, MaterialOverlayOptions options, Border scrim, Border container)
     {
         this.host = host; this.options = options; this.scrim = scrim; Container = container;
+        if (container.Child is MaterialSheet) _surfaceViewport = new SurfaceViewport(this) { Children = { container } };
         if (container.Child is MaterialMenu or MaterialTooltip or MaterialSnackbar or MaterialDialog or MaterialNavigationDrawer or MaterialSheet) Presentation = new(this);
     }
     protected override AutomationPeer OnCreateAutomationPeer() => new MaterialOverlayScopeAutomationPeer(this);
@@ -32,13 +35,28 @@ internal sealed class MaterialOverlayLayer : Panel
     protected override Size MeasureOverride(Size availableSize)
     {
         scrim.Measure(availableSize);
+        _surfaceViewport?.Measure(availableSize);
         var margin = options.Margin;
+        var previousSize = Container.DesiredSize;
         Container.Measure(new Size(Math.Max(0, availableSize.Width - margin.Left - margin.Right), Math.Max(0, availableSize.Height - margin.Top - margin.Bottom)));
+        if (previousSize != Container.DesiredSize) _surfaceViewport?.InvalidateArrange();
         return availableSize;
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
         scrim.Arrange(new Rect(finalSize));
+        if (_surfaceViewport is not null)
+        {
+            var margin = options.Margin;
+            _surfaceViewport.Clip = new RectangleGeometry(new Rect(margin.Left, margin.Top,
+                Math.Max(0, finalSize.Width - margin.Left - margin.Right), Math.Max(0, finalSize.Height - margin.Top - margin.Bottom)));
+            _surfaceViewport.Arrange(new Rect(finalSize));
+            return finalSize;
+        }
+        return ArrangeSurface(finalSize);
+    }
+    private Size ArrangeSurface(Size finalSize)
+    {
         if (Presentation?.ExitBounds is { } frozen)
         {
             Container.Arrange(frozen); Presentation.UpdateGeometry(); return finalSize;
@@ -64,6 +82,8 @@ internal sealed class MaterialOverlayLayer : Panel
                 {
                     x = rtl ? anchor.Right - w : anchor.Left;
                     y = anchor.Bottom;
+                    var tooltip = Container.Child is MaterialTooltip;
+                    if (tooltip) x = anchor.Center.X - w / 2;
                     var position = options.AnchorPosition;
                     if (position == MaterialOverlayAnchorPosition.Start) position = rtl ? MaterialOverlayAnchorPosition.Right : MaterialOverlayAnchorPosition.Left;
                     if (position == MaterialOverlayAnchorPosition.End) position = rtl ? MaterialOverlayAnchorPosition.Left : MaterialOverlayAnchorPosition.Right;
@@ -74,13 +94,13 @@ internal sealed class MaterialOverlayLayer : Panel
                     }
                     else if (position is MaterialOverlayAnchorPosition.Left or MaterialOverlayAnchorPosition.Right)
                     {
-                        y = anchor.Top;
+                        y = tooltip ? anchor.Center.Y - h / 2 : anchor.Top;
                         x = position == MaterialOverlayAnchorPosition.Left ? anchor.Left - w : anchor.Right;
                         if (x + offsetX < m.Left) { x = anchor.Right; offsetX = Math.Abs(offsetX); }
                         if (x + w + offsetX > finalSize.Width - m.Right) { x = anchor.Left - w; offsetX = -Math.Abs(offsetX); }
                     }
                     else if (y + h + offsetY > finalSize.Height - m.Bottom) { y = anchor.Top - h; offsetY = -Math.Abs(offsetY); }
-                    if (position is MaterialOverlayAnchorPosition.Above or MaterialOverlayAnchorPosition.Below &&
+                    if (!tooltip && (position is MaterialOverlayAnchorPosition.Above or MaterialOverlayAnchorPosition.Below) &&
                         x + w + options.Offset.X > finalSize.Width - m.Right) x = anchor.Right - w;
                 }
                 break;
@@ -88,6 +108,8 @@ internal sealed class MaterialOverlayLayer : Panel
         x = Math.Clamp(x + offsetX, m.Left, m.Left + width - w);
         y = Math.Clamp(y + offsetY, m.Top, m.Top + height - h);
         Container.Arrange(new Rect(x, y, w, h));
+        if (Container.Child is MaterialTooltip tip && _anchorBounds is { } tooltipAnchor)
+            tip.SetAnchorGeometry(new Rect(tooltipAnchor.Position - new Vector(x, y), tooltipAnchor.Size));
         Presentation?.UpdateGeometry();
         if (Container.Child is MaterialMenu && _anchorBounds is { } pivotAnchor && Presentation is not null)
         {
@@ -98,5 +120,12 @@ internal sealed class MaterialOverlayLayer : Panel
                 Pivot(y, y + h, pivotAnchor.Top, pivotAnchor.Bottom), RelativeUnit.Relative);
         }
         return finalSize;
+    }
+
+    // Keep the viewport fixed while the fully measured sheet surface translates inside it.
+    private sealed class SurfaceViewport(MaterialOverlayLayer layer) : Panel
+    {
+        protected override Size MeasureOverride(Size availableSize) => availableSize;
+        protected override Size ArrangeOverride(Size finalSize) => layer.ArrangeSurface(finalSize);
     }
 }

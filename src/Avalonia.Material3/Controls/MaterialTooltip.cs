@@ -9,8 +9,10 @@ using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Path = Avalonia.Controls.Shapes.Path;
 
 namespace Avalonia.Material3.Controls;
 
@@ -44,6 +46,8 @@ public class MaterialTooltip : ContentControl
     private bool _returningFocus;
     private MaterialFeedbackLifetime? _lifetime;
     private Button? _action;
+    private Path? _caretTop, _caretBottom;
+    private Rect? _anchorGeometry;
     private static readonly ConditionalWeakTable<MaterialOverlayHost, Slot> Slots = new();
     private sealed class Slot { public MaterialTooltip? Current; }
     public MaterialTooltipVariant Variant { get => GetValue(VariantProperty); set => SetValue(VariantProperty, value); }
@@ -84,7 +88,7 @@ public class MaterialTooltip : ContentControl
         var slot = Slots.GetOrCreateValue(host);
         if (slot.Current is { IsOpen: true } old && !old.Dismiss())
             throw new InvalidOperationException("The current tooltip is covered or its close was vetoed.");
-        var spacing = ShowCaret ? 12 : 4;
+        const int spacing = 4;
         var offset = Placement switch
         {
             MaterialOverlayAnchorPosition.Above => new Point(0, -spacing),
@@ -98,7 +102,7 @@ public class MaterialTooltip : ContentControl
         {
             IsModal = false, ShowScrim = false, TakeFocus = false, RestoreFocus = false,
             Placement = MaterialOverlayPlacement.Anchor, Anchor = anchor, AnchorPosition = Placement, Offset = offset,
-            Margin = new Thickness(8), ReturnFocus = anchor
+            Margin = default, ReturnFocus = anchor
         });
         slot.Current = this; Session = session; SetAndRaise(IsOpenProperty, ref _isOpen, true);
         if (ActionCommand is { } command) command.CanExecuteChanged += CommandChanged;
@@ -147,7 +151,10 @@ public class MaterialTooltip : ContentControl
         if (_action is not null) _action.Click -= ActionClick;
         base.OnApplyTemplate(e);
         _action = e.NameScope.Find<Button>("PART_ActionButton");
+        _caretTop = e.NameScope.Find<Path>("CaretTop");
+        _caretBottom = e.NameScope.Find<Path>("CaretBottom");
         if (_action is not null) _action.Click += ActionClick;
+        if (_anchorGeometry is { } anchor) SetAnchorGeometry(anchor);
         RefreshAction();
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -162,18 +169,17 @@ public class MaterialTooltip : ContentControl
         }
         if (change.Property == ActionCommandProperty || change.Property == ActionParameterProperty || change.Property == IsActionEnabledProperty || change.Property == ActionContentProperty || change.Property == VariantProperty) RefreshAction();
     }
-    protected override Size ArrangeOverride(Size finalSize)
+    internal void SetAnchorGeometry(Rect anchor)
     {
-        var result = base.ArrangeOverride(finalSize);
-        if (Session?.Options.Anchor is { } anchor && anchor.TransformToVisual(this) is { } transform)
-        {
-            var rect = new Rect(anchor.Bounds.Size).TransformToAABB(transform);
-            PseudoClasses.Set(":caret-top", rect.Bottom <= 0);
-            PseudoClasses.Set(":caret-bottom", rect.Top >= finalSize.Height);
-            PseudoClasses.Set(":caret-left", rect.Right <= 0);
-            PseudoClasses.Set(":caret-right", rect.Left >= finalSize.Width);
-        }
-        return result;
+        _anchorGeometry = anchor;
+        PseudoClasses.Set(":caret-top", anchor.Bottom <= 0);
+        PseudoClasses.Set(":caret-bottom", anchor.Top >= Bounds.Height);
+        PseudoClasses.Set(":caret-left", anchor.Right <= 0);
+        PseudoClasses.Set(":caret-right", anchor.Left >= Bounds.Width);
+        // Native TooltipCaretShape shifts the caret to the anchor midpoint after window clamping.
+        var offset = anchor.Center.X - Bounds.Width / 2;
+        if (_caretTop is not null) _caretTop.RenderTransform = new TranslateTransform(offset, 0);
+        if (_caretBottom is not null) _caretBottom.RenderTransform = new TranslateTransform(offset, 0);
     }
     private sealed class Attachment : IDisposable
     {
