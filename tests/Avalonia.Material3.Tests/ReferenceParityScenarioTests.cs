@@ -18,6 +18,18 @@ namespace Avalonia.Material3.Tests;
 public class ReferenceParityScenarioTests
 {
     [AvaloniaFact]
+    public void Disabled_selection_profile_keeps_both_radio_and_switch_states_visible()
+    {
+        using var host = new ReferenceHost("selection-disabled");
+        var radios = host.Shell.GetVisualDescendants().OfType<MaterialRadioButton>().ToArray();
+        Assert.Equal(3, radios.Length); Assert.Single(radios, radio => radio.IsChecked == true);
+        Assert.All(radios, radio => Assert.False(radio.IsEffectivelyEnabled));
+        var switches = host.Shell.GetVisualDescendants().OfType<MaterialSwitch>().ToArray();
+        Assert.Equal(4, switches.Length); Assert.Equal(2, switches.Count(control => control.IsChecked == true));
+        Assert.All(switches, control => Assert.False(control.IsEffectivelyEnabled));
+    }
+
+    [AvaloniaFact]
     public void Reference_large_fab_keeps_the_native_24_DIP_content_icon_inside_its_standard_36_DIP_canvas()
     {
         using var host = new ReferenceHost("fab");
