@@ -12,6 +12,91 @@ namespace Avalonia.Material3.Tests;
 public class NormativeOverlayMotionScenarioTests
 {
     [AvaloniaFact]
+    public void Modal_sheet_stops_at_the_declared_viewport_edge_while_its_scrim_covers_the_host()
+    {
+        using var host = new FeedbackHost();
+        host.Overlay.Background = Brushes.White;
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true }; host.Render();
+        var sheet = new MaterialBottomSheet { ExpandedExtent = 400, Background = Brushes.Magenta, Content = "Body" };
+        sheet.Show(host.Overlay, new MaterialOverlayOptions { Placement = MaterialOverlayPlacement.Bottom, Margin = new Thickness(0, 0, 0, 200) }); host.Render();
+        Assert.Equal(200, sheet.VisibleExtent);
+        Assert.Equal(Colors.Magenta, host.PixelAt(new Point(400, 350)));
+        Assert.Equal(host.PixelAt(new Point(780, 100)), host.PixelAt(new Point(400, 450)));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(0)]
+    [InlineData(300)]
+    public void Rich_tooltip_centers_on_its_anchor_and_the_caret_tracks_the_anchor_at_the_window_edge(double anchorLeft)
+    {
+        using var host = new FeedbackHost();
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true };
+        var entry = new MaterialButton { Width = 120, Height = 40, Content = "Anchor" };
+        host.Overlay.Content = new Canvas { Children = { entry } };
+        Canvas.SetLeft(entry, anchorLeft); Canvas.SetTop(entry, 400); host.Render();
+        var tip = new MaterialTooltip { Variant = MaterialTooltipVariant.Rich, Width = 280, Height = 160, Background = Brushes.Magenta,
+            Content = "Description", IsPersistent = true, ShowCaret = true };
+        tip.Show(host.Overlay, entry); host.Render();
+        var bounds = new Rect(tip.Bounds.Size).TransformToAABB(tip.TransformToVisual(host.Window)!.Value);
+        Assert.Equal(Math.Max(0, anchorLeft + 60 - 140), bounds.Left, 3);
+        Assert.Equal(236, bounds.Top, 3); // Native provider always uses4 DIP anchor spacing, including caret.
+        Assert.Equal(Colors.Magenta, host.PixelAt(new Point(anchorLeft + 60, bounds.Bottom + 3)));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(1)]
+    [InlineData(1.25)]
+    [InlineData(1.5)]
+    public void Dialog_exit_retains_the_whole_surface_and_its_shadow_in_the_first_painted_frame(double density)
+    {
+        using var host = new FeedbackHost(480, 360);
+        host.Window.SetRenderScaling(density);
+        host.Overlay.Background = Brushes.White;
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true }; host.Render();
+        var dialog = new MaterialDialog { Width = 300, Height = 200, Background = Brushes.Magenta, Content = "Body", Title = "Dialog" };
+        var session = dialog.Show(host.Overlay); host.Render();
+        var bounds = new Rect(dialog.Bounds.Size).TransformToAABB(dialog.TransformToVisual(host.Window)!.Value);
+        SaveFrame(host, $"dialog-before-{density}.png");
+        host.Theme.Motion = new MaterialMotion(); host.Render();
+        session.Dismiss(); host.Window.UpdateLayout();
+        using var exit = host.Window.CaptureRenderedFrame()!;
+        if (Environment.GetEnvironmentVariable("M3_OVERLAY_SCREENSHOTS") is { } directory)
+            exit.Save(Path.Combine(directory, $"dialog-first-exit-{density}.png"), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+        Assert.True(session.Completion.IsCompleted); Assert.Null(dialog.Parent);
+        var paintedRows = Enumerable.Range(40, 280).Where(y => {
+            var pixel = Pixel(exit, new Point(bounds.Center.X, y), density);
+            return pixel.R > pixel.G + 5 && pixel.B > pixel.G + 5;
+        }).ToArray();
+        Assert.InRange(paintedRows.Length, 198, 202); // Two DIP covers bitmap filtering at fractional density.
+        Assert.InRange(paintedRows[0], 69, 81);
+        var paintedColumns = Enumerable.Range(40, 400).Where(x => {
+            var pixel = Pixel(exit, new Point(x, bounds.Center.Y), density);
+            return pixel.R > pixel.G + 5 && pixel.B > pixel.G + 5;
+        }).ToArray();
+        Assert.InRange(paintedColumns.Length, 298, 302);
+        Assert.InRange(paintedColumns[0], 88, 92);
+        Assert.True(Pixel(exit, new Point(bounds.Center.X, paintedRows[^1] + 4), density).R < Pixel(exit, new Point(460, 340), density).R);
+    }
+
+    private static Color Pixel(Avalonia.Media.Imaging.WriteableBitmap bitmap, Point point, double density = 1)
+    {
+        using var frame = bitmap.Lock();
+        var offset = (int)(point.Y * density) * frame.RowBytes + (int)(point.X * density) * 4;
+        var first = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset);
+        var green = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 1);
+        var third = System.Runtime.InteropServices.Marshal.ReadByte(frame.Address, offset + 2);
+        return frame.Format == Avalonia.Platform.PixelFormat.Bgra8888 ? Color.FromRgb(third, green, first) : Color.FromRgb(first, green, third);
+    }
+
+    private static void SaveFrame(FeedbackHost host, string name)
+    {
+        var directory = Environment.GetEnvironmentVariable("M3_OVERLAY_SCREENSHOTS");
+        if (string.IsNullOrEmpty(directory)) return;
+        Directory.CreateDirectory(directory);
+        using var frame = host.Window.CaptureRenderedFrame(); frame!.Save(Path.Combine(directory, name), Avalonia.Media.Imaging.PngBitmapEncoderOptions.Default);
+    }
+
+    [AvaloniaFact]
     public void Drawer_swipe_close_starts_from_the_dragged_surface_and_retains_its_scrim_fraction()
     {
         using var host = new FeedbackHost();
@@ -160,7 +245,8 @@ public class NormativeOverlayMotionScenarioTests
         Assert.True(session.Dismiss());
         Assert.True(session.Completion.IsCompleted); Assert.Equal(0, host.Overlay.OpenCount);
         Assert.Null(surface.Parent); Assert.Null(surface.GetVisualParent());
-        Assert.NotEqual(host.PixelAt(new Point(780, 100)), host.PixelAt(center)); // retained inert raster
+        using var retained = host.Window.CaptureRenderedFrame()!;
+        Assert.NotEqual(Pixel(retained, new Point(780, 100)), Pixel(retained, center)); // retained inert raster
         var closing = host.PixelAt(center);
         await Task.Delay(120); host.Render();
         Assert.NotEqual(closing, host.PixelAt(center));

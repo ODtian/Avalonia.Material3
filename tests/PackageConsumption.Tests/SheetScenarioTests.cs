@@ -371,7 +371,10 @@ public class SheetScenarioTests
         Assert.Equal(Avalonia.Media.Color.Parse("#F7F2FA"), ((Avalonia.Media.ISolidColorBrush)sheet.Background!).Color);
         Assert.Equal(new CornerRadius(28, 28, 0, 0), sheet.CornerRadius);
         Assert.Equal(16, sheet.FontSize);
+        var handle = sheet.GetVisualDescendants().OfType<MaterialSheetDragHandle>().Single(control => control.IsVisible);
+        host.Click(handle); // The anchored partial sheet exposes its handle; expand to reach the footer.
         var invoked = 0; action.Click += (_, _) => invoked++; host.Click(action); Assert.Equal(1, invoked);
+        host.Click(handle);
         host.Theme.Motion = host.Theme.Motion with { ReduceMotion = false };
         host.Render(); sheet.Expand();
         Assert.True(sheet.IsSettling);
