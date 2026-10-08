@@ -36,6 +36,7 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import java.time.LocalDate
 import java.time.ZoneOffset
+import java.util.Locale
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
         val initialDark = intent.getBooleanExtra("dark", false)
         val palette = intent.getStringExtra("palette") ?: "classic"
         val localeTag = intent.getStringExtra("locale") ?: "en-US"
+        Locale.setDefault(Locale.forLanguageTag(localeTag))
         val expressiveButtons = intent.getBooleanExtra("expressiveButtons", true)
         // The release defaults are preserved; this explicit flag selects the M3 checkbox
         // migration branch for comparison with a library implementing the new M3 styling.

@@ -14,7 +14,7 @@ $env:ANDROID_HOME = 'C:/Users/boqi/Android/Sdk'
 
 APK: `app/build/outputs/apk/debug/app-debug.apk`. Application: `org.pixivyou.m3reference/.MainActivity`.
 
-The manual comparison defaults are `scene=home`, `dark=false`, `palette=classic`, `locale=en-US`, `checkboxM3=true`, `expressiveButtons=true`, matching the Avalonia reference. `palette=classic` chooses the official default `lightColorScheme()` palette; `palette=expressive` selects `expressiveLightColorScheme()`. Shapes and motion remain expressive. The locale extra supplies a localized Android configuration context and Compose locale/resources. Device density and font scale flow through Android configuration. `M3Reference` logcat records the runtime palette, locale, density, flags and hardware acceleration.
+The manual comparison defaults are `scene=home`, `dark=false`, `palette=classic`, `locale=en-US`, `checkboxM3=true`, `expressiveButtons=true`, matching the Avalonia reference. `palette=classic` chooses the official default `lightColorScheme()` palette; `palette=expressive` selects `expressiveLightColorScheme()`. Shapes and motion remain expressive. The locale extra supplies the app-process default Locale together with a localized Android configuration context and Compose locale/resources. Device density and font scale flow through Android configuration. `M3Reference` logcat records the runtime palette, locale, density, flags and hardware acceleration.
 
 | Scene | Official components and initial state |
 | --- | --- |
