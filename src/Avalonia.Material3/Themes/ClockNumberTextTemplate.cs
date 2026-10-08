@@ -150,6 +150,13 @@ internal sealed class MaterialClockLabel : Control
         inherited = DefaultRendering(inherited);
         if (!_measureOptions.Equals(inherited)) { InvalidateMeasure(); InvalidateVisual(); }
     }
+    internal MaterialNativeText.GlyphPaint? CreateGlyphPaint(MaterialClockDial dial, double density, Color selectedColour)
+    {
+        Layouts();
+        if (_key.Selected is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected || selected.Color != selectedColour) return null;
+        if (this.TranslatePoint(default, dial) is not { } point || _nativeText is null || Opacity != 1 || Number?.Opacity != 1) return null;
+        return _nativeText.CreateGlyphDraw(_key.Normal, point, density, Bounds.Size, Options());
+    }
     public override void Render(DrawingContext context)
     {
         Layouts();
@@ -170,6 +177,7 @@ internal sealed class MaterialClockLabel : Control
             if (_nativeText?.Draw(context, _key.Normal, origin, density, Bounds.Size, options) != true) normal.Draw(context, origin);
         }
         if (_capturingMask) { DrawNormal(); return; }
+        if (Dial?.NativeSelectorComposition == true) return;
         if (Dial is not { } dial || dial.TranslatePoint(dial.SelectorCenter, this) is not { } center)
         { DrawNormal(); return; }
         var radius = dial.SelectorRadius;

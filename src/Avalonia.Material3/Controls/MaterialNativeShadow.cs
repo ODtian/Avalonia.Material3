@@ -70,7 +70,7 @@ internal static class MaterialNativeShadow
                 surface.Canvas.Clear(SKColors.Transparent); surface.Canvas.Scale((float)density);
                 surface.Canvas.Translate((float)-bounds.X, (float)-bounds.Y); Draw(surface.Canvas, 1);
             }
-            context.DrawBitmap(bitmap, bounds);
+            context.DrawBitmap(bitmap, new Rect(0, 0, size.Width, size.Height), bounds);
         }
         private void Draw(SKCanvas canvas, double opacity)
         {
