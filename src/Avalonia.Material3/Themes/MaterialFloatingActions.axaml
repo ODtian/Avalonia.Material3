@@ -81,10 +81,8 @@
                     <ContentPresenter Content="{TemplateBinding Icon}" ContentTemplate="{TemplateBinding IconTemplate}" />
                   </Viewbox>
                   <c:MaterialActionReveal IsExpanded="{TemplateBinding IsExpanded}" VerticalAlignment="Center" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
-                    <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
-                                      UseLayoutRounding="True" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" TextWrapping="Wrap">
-                      <ContentPresenter.DataTemplates><themes:ExtendedFabTextTemplate /></ContentPresenter.DataTemplates>
-                    </ContentPresenter>
+                    <themes:MaterialActionContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      UseLayoutRounding="True" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" TextWrapping="Wrap" />
                   </c:MaterialActionReveal>
                 </c:MaterialExtendedFabPanel>
               </Grid>

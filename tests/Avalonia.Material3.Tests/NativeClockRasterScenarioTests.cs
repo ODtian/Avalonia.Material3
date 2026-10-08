@@ -134,7 +134,7 @@ public class NativeClockRasterScenarioTests
         public void Render(ImmediateDrawingContext context)
         {
             using var lease = context.TryGetFeature<ISkiaSharpApiLeaseFeature>()!.Lease();
-            using var font = new SKFont(face, (float)(size * density)) { Subpixel = false, LinearMetrics = false,
+            using var font = new SKFont(face, (float)(size * density)) { Subpixel = false, LinearMetrics = false, EmbeddedBitmaps = true,
                 BaselineSnap = true, Hinting = SKFontHinting.Normal, Edging = SKFontEdging.Antialias };
             using var blob = SKTextBlob.Create("3", font);
             using var paint = new SKPaint { Color = new SKColor(29, 27, 32), IsAntialias = true };
