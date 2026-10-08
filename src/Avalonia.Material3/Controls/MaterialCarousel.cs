@@ -62,6 +62,7 @@ public sealed class MaterialCarousel : TemplatedControl
     private double _gestureInitialPosition;
     private double _dragFraction;
     private double _pointerVelocity, _lastPrimary;
+    private double _wheelRemainder;
     private ulong _lastPointerTimestamp;
     private MaterialSplineDecay _decay;
     private double _decayStride;
@@ -194,6 +195,31 @@ public sealed class MaterialCarousel : TemplatedControl
         }
         e.Handled = true;
     }
+    // Desktop wheel input reuses item navigation and its existing settle recipe.
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+        if (e.Handled || !IsEffectivelyEnabled || _pointer is not null ||
+            (e.KeyModifiers & ~KeyModifiers.Shift) != KeyModifiers.None) return;
+        var vertical = Layout == MaterialCarouselLayout.FullScreen;
+        var shifted = !vertical && e.KeyModifiers.HasFlag(KeyModifiers.Shift) && e.Delta.Y != 0;
+        if (!shifted && (vertical ? Math.Abs(e.Delta.Y) < Math.Abs(e.Delta.X) : Math.Abs(e.Delta.X) < Math.Abs(e.Delta.Y)))
+        { _wheelRemainder = 0; return; }
+        var delta = vertical ? e.Delta.Y
+            : shifted ? e.Delta.Y : e.Delta.X;
+        if (delta == 0) return;
+        if (!double.IsFinite(delta)) return;
+        var movement = -delta;
+        if (!vertical && FlowDirection == FlowDirection.RightToLeft) movement = -movement;
+        if (movement > 0 && !CanMoveNext || movement < 0 && !CanMovePrevious)
+        { _wheelRemainder = 0; return; }
+        _wheelRemainder += movement;
+        // Ten 0.1 deltas form one tick even when binary addition lands just below 1.
+        var steps = Math.Truncate(_wheelRemainder + Math.Sign(_wheelRemainder) * 1e-12);
+        _wheelRemainder -= steps;
+        if (steps != 0) MoveTo((int)Math.Clamp(CurrentIndex + steps, 0, _items.Count - 1));
+        e.Handled = true;
+    }
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -269,6 +295,7 @@ public sealed class MaterialCarousel : TemplatedControl
     }
     private void CancelGesture()
     {
+        _wheelRemainder = 0;
         var pointer = _pointer;
         _pointer = null;
         _pressedItem = null;
