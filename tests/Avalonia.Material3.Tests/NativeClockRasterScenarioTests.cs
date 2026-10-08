@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Material3.Controls;
@@ -8,6 +9,7 @@ using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
 using Avalonia.Rendering.SceneGraph;
 using Avalonia.Skia;
+using Avalonia.VisualTree;
 using SkiaSharp;
 using Xunit;
 
@@ -15,6 +17,20 @@ namespace Avalonia.Material3.Tests;
 
 public class NativeClockRasterScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(1.25, 12)]
+    [InlineData(3.5, 32)]
+    public void Default_clock_paragraph_uses_the_actual_native_integer_intrinsic_width(double density, double pixels)
+    {
+        var family = new FontFamily($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto");
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = family }; host.Window.SetRenderScaling(density); host.Render();
+        var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        var label = number.GetVisualDescendants().OfType<ContentPresenter>().Single().Child!;
+        Assert.Equal(pixels, label.Bounds.Width * density, precision: 6);
+    }
+
     [AvaloniaFact]
     public void Internal_clock_reproduction_has_the_pinned_true_400_face_and_unchanged_glyph_mapping()
     {
