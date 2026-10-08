@@ -16,7 +16,7 @@ public enum MaterialTextFieldVariant
 
 /// <summary>A Material text field retaining Avalonia's native editor, selection, undo and IME client.</summary>
 [TemplatePart("PART_ClearButton", typeof(Button))]
-[PseudoClasses(":outlined", ":invalid", ":clearable", ":unlabelled", ":leading", ":trailing", ":prefix", ":suffix")]
+[PseudoClasses(":outlined", ":invalid", ":clearable", ":unlabelled", ":leading", ":trailing", ":prefix", ":suffix", ":supporting")]
 public class MaterialTextField : TextBox
 {
     public static readonly StyledProperty<MaterialTextFieldVariant> VariantProperty =
@@ -134,6 +134,7 @@ public class MaterialTextField : TextBox
         if (change.Property == ErrorTextProperty || change.Property == SupportingTextProperty || change.Property == IsErrorProperty ||
             change.Property == DataValidationErrors.ErrorsProperty || change.Property == DataValidationErrors.HasErrorsProperty)
             UpdateValidation();
+        if (change.Property == ShowCounterProperty) UpdateSupportingState();
     }
 
     private void UpdateValidation()
@@ -144,5 +145,7 @@ public class MaterialTextField : TextBox
         SetAndRaise(EffectiveSupportingTextProperty, ref _effectiveSupportingText,
             !string.IsNullOrEmpty(ErrorText) ? ErrorText : bindingError ?? SupportingText);
         PseudoClasses.Set(":invalid", HasError);
+        UpdateSupportingState();
     }
+    private void UpdateSupportingState() => PseudoClasses.Set(":supporting", EffectiveSupportingText is not null || ShowCounter);
 }

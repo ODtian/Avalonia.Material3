@@ -112,9 +112,10 @@
     <ControlTheme x:Key="{x:Type c:MaterialFabMenu}" TargetType="c:MaterialFabMenu">
       <Setter Property="ClipToBounds" Value="False" />
       <Setter Property="UseLayoutRounding" Value="False" />
-      <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" /><Setter Property="Margin" Value="16" />
+      <Setter Property="HorizontalAlignment" Value="Right" /><Setter Property="VerticalAlignment" Value="Bottom" /><Setter Property="Padding" Value="16,0,16,16" />
       <Setter Property="Template">
         <ControlTemplate>
+          <Border Padding="{TemplateBinding Padding}">
           <c:MaterialFabMenuPanel Anchor="{TemplateBinding Anchor}">
             <c:MaterialFabMenuDisclosure x:Name="MenuReveal" IsExpanded="{TemplateBinding IsExpanded}">
               <ScrollViewer>
@@ -125,9 +126,10 @@
             </c:MaterialFabMenuDisclosure>
             <c:MaterialExpansionButton x:Name="PART_Toggle" Size="{TemplateBinding TriggerSize}" IsExpanded="{TemplateBinding IsExpanded}" HorizontalAlignment="Right" />
           </c:MaterialFabMenuPanel>
+          </Border>
         </ControlTemplate>
       </Setter>
-      <Style Selector="^:top"><Setter Property="VerticalAlignment" Value="Top" /></Style>
+      <Style Selector="^:top"><Setter Property="VerticalAlignment" Value="Top" /><Setter Property="Padding" Value="16,16,16,0" /></Style>
 
       <Style Selector="^:left"><Setter Property="HorizontalAlignment" Value="Left" /></Style>
 

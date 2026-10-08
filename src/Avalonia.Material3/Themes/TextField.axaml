@@ -247,6 +247,7 @@
       <Setter Property="BorderBrush" Value="{Binding Foreground, RelativeSource={RelativeSource Self}, Converter={StaticResource M3.TextField.BrushOpacity}, ConverterParameter=0.12}" />
       <Setter Property="BorderThickness" Value="1" />
     </Style>
+    <Style Selector="^:not(:supporting):not(:date-input) /template/ Grid#SupportingContent"><Setter Property="IsVisible" Value="False" /></Style>
     <Style Selector="^:date-input /template/ Grid#SupportingContent"><Setter Property="MinHeight" Value="16" /></Style>
     <Style Selector="^:date-input:not(:invalid) /template/ Grid#SupportingContent"><Setter Property="Margin" Value="16,0,16,0" /></Style>
     <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Grid#EditorContent, ^:disabled:not(:modal-paint-enabled) /template/ Grid#SupportingContent, ^:disabled:not(:modal-paint-enabled) /template/ TextBlock#FloatingLabel, ^:disabled:not(:modal-paint-enabled) /template/ TextBlock#RestingLabel">
