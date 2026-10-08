@@ -49,3 +49,5 @@ adb -s 127.0.0.1:16416 shell am start -S -n org.pixivyou.m3reference/.MainActivi
 
 The upstream beta01 release defaults `isCheckboxStylingFixEnabled=false` (legacy M2 checkbox branch) and `isUpdatedTimepickerToggleEnabled=true`. This paired reference explicitly defaults checkbox styling to the M3 migration branch; `--ez checkboxM3 false` preserves access to the upstream legacy branch. Date-range scenes make February 20 unavailable through the official `SelectableDates` API. Selected ranges remain inclusive through that disabled day. The paired layout/action manifest is `../ReferenceUi/scene-parity.json`; unsupported alternate library branches are recorded there.
 
+
+The Avalonia Gallery and paired reference hosts explicitly enable `SkiaOptions.UseStencilBuffers`. Avalonia's default avoids stencil/MSAA edge quantization; the pinned Android15 HWUI OpenGL profile permits stencil and uses internal four-sample MSAA. This host configuration makes their path coverage comparable. Component geometry, tokens and source stroke recipes retain their own rules.
