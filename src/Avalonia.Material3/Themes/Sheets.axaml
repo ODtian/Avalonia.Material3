@@ -32,7 +32,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Border x:Name="SheetSurface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
-                Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                 BoxShadow="{DynamicResource M3.Elevation.Shadow1}">
           <ScrollViewer x:Name="SheetShell" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
             <Grid x:Name="SheetLayout" RowDefinitions="Auto,Auto,*,Auto">
@@ -52,7 +52,7 @@
                 <ContentPresenter Content="{TemplateBinding Header}" ContentTemplate="{TemplateBinding HeaderTemplate}" />
               </StackPanel>
               <ScrollViewer x:Name="PART_BodyScroll" Grid.Row="2" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="16,0,16,16"
+                <ContentPresenter Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                   LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}" />
               </ScrollViewer>
@@ -70,6 +70,7 @@
     <Style Selector="^:side:modal /template/ Border#SheetSurface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
     <Style Selector="^:side /template/ controls|MaterialSheetDragHandle#DragHandle"><Setter Property="IsVisible" Value="False" /></Style>
     <Style Selector="^:side /template/ StackPanel#SheetHeader"><Setter Property="Margin" Value="16,16,16,0" /></Style>
+    <Style Selector="^:not(:side):not(:has-header) /template/ StackPanel#SheetHeader"><Setter Property="IsVisible" Value="False" /></Style>
     <Style Selector="^:side /template/ controls|MaterialIconButton#PART_CloseButton"><Setter Property="IsVisible" Value="True" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:MaterialSheetDragHandle}" TargetType="controls:MaterialSheetDragHandle">

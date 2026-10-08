@@ -12,17 +12,17 @@ public class MaterialCheckBox : CheckBox
     private readonly MaterialMotionSettings _motion;
     private readonly MaterialMotionBrush _fill;
     private readonly MaterialMotionBrush _border;
-    private Border? _box;
+    private Control? _box;
     public MaterialCheckBox()
     {
-        _fill = new(this, null, value => { if (_box is not null) _box.Background = value; });
-        _border = new(this, null, value => { if (_box is not null) _box.BorderBrush = value; });
+        _fill = new(this, null, value => _box?.SetValue(Border.BackgroundProperty, value));
+        _border = new(this, null, value => _box?.SetValue(Border.BorderBrushProperty, value));
         _motion = new(this, UpdateColors);
     }
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _box = e.NameScope.Find<Border>("Box");
+        _box = e.NameScope.Find<MaterialCheckboxBox>("Box") ?? (Control?)e.NameScope.Find<Border>("Box");
         _fill.Snap(Background); _border.Snap(BorderBrush);
     }
     private void UpdateColors()
