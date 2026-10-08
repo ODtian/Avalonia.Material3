@@ -216,10 +216,18 @@ public class MaterialClockDial : Panel
     {
         _faceSize = finalSize; _arranged = true;
         _paint.Arrange(new Rect(finalSize));
+        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        var target = (int)Math.Floor(48 * FontScale * density + .5);
+        var side = (int)Math.Floor(FaceSide * density + .5);
+        var center = side / 2 - target / 2;
         foreach (var number in Children.OfType<MaterialClockNumber>())
         {
-            var center = Position(number.Value);
-            number.Arrange(new Rect(center.X - 24 * FontScale, center.Y - 24 * FontScale, 48 * FontScale, 48 * FontScale));
+            var point = Position(number.Value) - FaceOrigin;
+            // Compose CircularLayout integer-halves the measured face and target,
+            // then rounds each polar offset once. Keep ink and mask on that frame.
+            var left = Math.Floor((point.X - FaceSide / 2) * density + center + .5);
+            var top = Math.Floor((point.Y - FaceSide / 2) * density + center + .5);
+            number.Arrange(new Rect(FaceOrigin.X + left / density, FaceOrigin.Y + top / density, target / density, target / density));
         }
         return finalSize;
     }

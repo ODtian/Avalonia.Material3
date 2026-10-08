@@ -17,6 +17,56 @@ namespace Avalonia.Material3.Tests;
 
 public class SnapshotDpiScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(1.25)]
+    [InlineData(3.5)]
+    public void Clock_targets_use_native_integer_circle_placement(double density)
+    {
+        var dial = new MaterialClockDial { ActivePart = MaterialTimePickerPart.Minute };
+        using var host = new GeometryHost(dial, 256, 256); host.Window.SetRenderScaling(density); host.Render();
+        var target = (int)Math.Round(48 * density, MidpointRounding.AwayFromZero);
+        var center = (int)Math.Round(256 * density, MidpointRounding.AwayFromZero) / 2 - target / 2;
+        foreach (var number in dial.Children.OfType<MaterialClockNumber>())
+        {
+            var angle = number.Value / 5d * Math.PI / 6 - Math.PI / 2;
+            var left = Math.Round(101 * density * Math.Cos(angle) + center, MidpointRounding.AwayFromZero);
+            var top = Math.Round(101 * density * Math.Sin(angle) + center, MidpointRounding.AwayFromZero);
+            Assert.Equal(left, number.Bounds.Left * density, precision: 6);
+            Assert.Equal(top, number.Bounds.Top * density, precision: 6);
+            Assert.Equal(target, number.Bounds.Width * density, precision: 6);
+        }
+    }
+
+    [AvaloniaTheory]
+    [InlineData(1.25)]
+    [InlineData(3.5)]
+    public void Mutable_clock_foreground_updates_its_selected_glyph_alpha(double density)
+    {
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 320, 320); host.Window.SetRenderScaling(density); host.Render();
+        var brush = new SolidColorBrush(Colors.Black);
+        dial.Children.OfType<MaterialClockNumber>().Single(number => number.Value == 3).Foreground = brush; host.Render();
+        var region = new Rect(222, 118, 14, 20);
+        Assert.True(SelectedInkMass(dial, density, region) > 5);
+        brush.Opacity = 0; host.Render();
+        Assert.InRange(SelectedInkMass(dial, density, region), 0, .01);
+    }
+
+    [AvaloniaFact]
+    public void Replaced_clock_gradient_stops_continue_to_update_the_selected_mask()
+    {
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 320, 320);
+        var brush = new LinearGradientBrush { GradientStops = [new GradientStop(Colors.Black, 0), new GradientStop(Colors.Black, 1)] };
+        dial.Children.OfType<MaterialClockNumber>().Single(number => number.Value == 3).Foreground = brush; host.Render();
+        var region = new Rect(222, 118, 14, 20);
+        Assert.True(SelectedInkMass(dial, 1, region) > 5);
+        brush.GradientStops = [new GradientStop(Colors.Black, 0), new GradientStop(Colors.Black, 1)]; host.Render();
+        Assert.True(SelectedInkMass(dial, 1, region) > 5);
+        foreach (var stop in brush.GradientStops) stop.Color = Colors.Transparent;
+        host.Render(); Assert.InRange(SelectedInkMass(dial, 1, region), 0, .01);
+    }
+
     [AvaloniaFact]
     public void Minute_clock_uses_the_source_local_numeric_labels_without_zero_padding()
     {
