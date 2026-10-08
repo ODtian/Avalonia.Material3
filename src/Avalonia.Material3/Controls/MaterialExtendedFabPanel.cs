@@ -12,8 +12,9 @@ internal sealed class MaterialExtendedFabPanel : Panel
     protected override Size MeasureOverride(Size availableSize)
     {
         if (Children.Count != 2 || TemplatedParent is not MaterialExtendedFab owner) return default;
-        _expandedPadding = owner.ExpandedContentPadding;
-        _gap = Children[0].IsVisible ? owner.IconSpacing : 0;
+        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        _expandedPadding = MaterialPhysicalLayout.Insets(owner.ExpandedContentPadding, density);
+        _gap = Children[0].IsVisible ? MaterialPhysicalLayout.Round(owner.IconSpacing, density) : 0;
         Children[0].Measure(availableSize.Deflate(_expandedPadding));
         var icon = Children[0].DesiredSize;
         // Reserve the full recipe while measuring the label, not an ever-changing fraction of its

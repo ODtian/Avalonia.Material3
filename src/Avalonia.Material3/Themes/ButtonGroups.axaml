@@ -5,9 +5,9 @@
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="Template">
         <ControlTemplate>
-          <Grid Background="Transparent">
+          <c:MaterialActionLayoutPanel Background="Transparent">
             <c:MaterialShapeBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}"
-                 VerticalAlignment="Center" Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding GroupCornerRadius}"
+                 VerticalAlignment="Stretch" Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding GroupCornerRadius}"
                  ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
               <c:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                       CornerRadius="{Binding CornerRadius, ElementName=Container}">
@@ -15,7 +15,7 @@
                 <c:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
                         CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False" />
                 <c:MaterialGroupContentPresenter>
-                <DockPanel x:Name="GroupContent" HorizontalAlignment="Center" Margin="{TemplateBinding Padding}" HorizontalSpacing="{TemplateBinding IconSpacing}">
+                <c:MaterialContentPadding Padding="{TemplateBinding Padding}"><DockPanel x:Name="GroupContent" HorizontalAlignment="Center" HorizontalSpacing="{TemplateBinding IconSpacing}">
                   <Viewbox x:Name="SelectionIcon" DockPanel.Dock="Left" Width="18" Height="18" IsVisible="False" VerticalAlignment="Center">
                     <Grid>
                       <ContentPresenter x:Name="SelectedGlyph" Content="{TemplateBinding SelectionIcon}" Opacity="0" />
@@ -33,7 +33,7 @@
                   <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                           TextWrapping="Wrap" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="Center" RecognizesAccessKey="True" />
-                </DockPanel>
+                </DockPanel></c:MaterialContentPadding>
                 </c:MaterialGroupContentPresenter>
               </Grid>
               </c:MaterialInsetBorder>
@@ -42,7 +42,7 @@
                   BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
                   ShapeCornerRadius="{TemplateBinding GroupCornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"
                   ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
-          </Grid>
+          </c:MaterialActionLayoutPanel>
         </ControlTemplate>
       </Setter>
       <Style Selector="^:segmented">

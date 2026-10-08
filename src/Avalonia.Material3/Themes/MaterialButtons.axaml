@@ -52,8 +52,8 @@
       <Setter Property="FocusAdorner" Value="{x:Null}" />
       <Setter Property="Template">
         <ControlTemplate>
-          <Grid Background="Transparent">
-            <controls:MaterialShapeBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Center"
+          <controls:MaterialActionLayoutPanel Background="Transparent">
+            <controls:MaterialShapeBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Stretch"
                     Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                     ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
               <controls:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
@@ -61,7 +61,7 @@
               <Grid>
                 <controls:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0"
                         CornerRadius="{Binding CornerRadius, ElementName=Container}" IsHitTestVisible="False" />
-                <DockPanel Margin="{TemplateBinding Padding}" HorizontalSpacing="{TemplateBinding IconSpacing}">
+                <controls:MaterialContentPadding Padding="{TemplateBinding Padding}"><DockPanel HorizontalSpacing="{TemplateBinding IconSpacing}">
                   <Viewbox DockPanel.Dock="Left" Width="{TemplateBinding IconSize}" Height="{TemplateBinding IconSize}"
                            VerticalAlignment="Center" IsVisible="{TemplateBinding LeadingIcon, Converter={x:Static converters:ObjectConverters.IsNotNull}}">
                     <ContentPresenter Content="{TemplateBinding LeadingIcon}" ContentTemplate="{TemplateBinding LeadingIconTemplate}" />
@@ -76,7 +76,7 @@
                                     LetterSpacing="{TemplateBinding LetterSpacing}"
                                     HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True" />
-                </DockPanel>
+                </DockPanel></controls:MaterialContentPadding>
               </Grid>
               </controls:MaterialInsetBorder>
             </controls:MaterialShapeBorder>
@@ -84,7 +84,7 @@
                     BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
                     ShapeCornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"
                     ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
-          </Grid>
+          </controls:MaterialActionLayoutPanel>
         </ControlTemplate>
       </Setter>
       <Style Selector="^:outlined /template/ controls|MaterialInsetBorder#Stroke, ^:icon-outlined /template/ controls|MaterialInsetBorder#Stroke">
@@ -243,7 +243,7 @@
       <Setter Property="Padding" Value="0" />
       <Setter Property="Template">
         <ControlTemplate>
-          <Grid Background="Transparent">
+          <controls:MaterialActionLayoutPanel Background="Transparent">
             <controls:MaterialShapeBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}"
                     MinWidth="{TemplateBinding ContainerWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"
                     Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
@@ -265,7 +265,7 @@
                     BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
                     ShapeCornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"
                     ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}" />
-          </Grid>
+          </controls:MaterialActionLayoutPanel>
         </ControlTemplate>
       </Setter>
       <Style Selector="^ /template/ Border#Container">
