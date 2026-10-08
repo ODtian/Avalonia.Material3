@@ -261,7 +261,7 @@ public class MaterialTimePicker : TemplatedControl
             _dialog.Title=DialogTitle;
             _mode.IsEnabled=MaterialModalPaintScope.IsEnabledForPaint(this);
             _dialog.ConfirmText = Labels.Confirm; _dialog.CancelText = Labels.Cancel;
-            _dialog.MaxWidth = horizontal ? 584 : 400;
+            _dialogWidth.Maximum = horizontal ? 584 : 400;
             if(_confirmAction is { } confirm){confirm.IsEnabled=IsValid&&MaterialModalPaintScope.IsEnabledForPaint(this);confirm.Content=Labels.Confirm;AutomationProperties.SetName(confirm,Labels.Confirm);}
             if(_cancelAction is { } cancel){cancel.Content=Labels.Cancel;AutomationProperties.SetName(cancel,Labels.Cancel);}
             AutomationProperties.SetName(_dialog, DialogTitle);
@@ -271,8 +271,10 @@ public class MaterialTimePicker : TemplatedControl
     public MaterialOverlaySession Show(MaterialOverlayHost host, MaterialOverlayOptions? options = null)
     {
         if (_dialog?.IsOpen == true) throw new InvalidOperationException("Picker is already open.");
-        var dialog = new MaterialDialog { Content = this, Title=DialogTitle, Padding = new Thickness(0), MaxWidth = _horizontal ? 584 : 400,
+        var dialog = new MaterialDialog { Content = this, Title=DialogTitle, Padding = new Thickness(0),
             ConfirmText = Labels.Confirm, CancelText = Labels.Cancel, IsConfirmEnabled = IsValid && IsEffectivelyEnabled };
+        _dialogWidth.Maximum = _horizontal ? 584 : 400;
+        var widthBinding = dialog.Bind(MaxWidthProperty, _dialogWidth.GetObservable(DialogWidth.MaximumProperty), BindingPriority.Style);
         _dialog = dialog;
         _cancelAction=MaterialPickerSupport.Action(Labels.Cancel,()=>dialog.Cancel());
         _confirmAction=MaterialPickerSupport.Action(Labels.Confirm,()=>dialog.Confirm());
@@ -286,11 +288,17 @@ public class MaterialTimePicker : TemplatedControl
         dialog.Confirming += (_, args) => { args.Cancel = !IsValid || !IsEffectivelyEnabled; if (!args.Cancel) args.Value = SelectedTime; };
         MaterialOverlaySession session;
         try { session = dialog.Show(host, options ?? new MaterialOverlayOptions { InitialFocus = Mode == MaterialTimePickerMode.Input ? HourInput : _hourSelector }); }
-        catch { dialog.Content = null;footer.Children.Remove(_mode);_footer=null;_confirmAction=_cancelAction=null; _dialog = null; throw; }
-        session.Closed += (_, _) => { dialog.Content = null;footer.Children.Remove(_mode);_confirmAction=_cancelAction=null;_footer=null; _dialog = null; };
+        catch { widthBinding.Dispose(); dialog.Content = null;footer.Children.Remove(_mode);_footer=null;_confirmAction=_cancelAction=null; _dialog = null; throw; }
+        session.Closed += (_, _) => { widthBinding.Dispose(); dialog.Content = null;footer.Children.Remove(_mode);_confirmAction=_cancelAction=null;_footer=null; _dialog = null; };
         return session;
     }
     public Task<MaterialOverlayResult> ShowAsync(MaterialOverlayHost host, MaterialOverlayOptions? options = null) => Show(host, options).Completion;
+    private readonly DialogWidth _dialogWidth = new();
+    private sealed class DialogWidth : AvaloniaObject
+    {
+        internal static readonly StyledProperty<double> MaximumProperty = AvaloniaProperty.Register<DialogWidth, double>(nameof(Maximum), 400);
+        internal double Maximum { get => GetValue(MaximumProperty); set => SetValue(MaximumProperty, value); }
+    }
     public bool Confirm() => IsEffectivelyEnabled && (_dialog?.Confirm() ?? false);
     public bool Cancel() => _dialog?.Cancel() ?? false;
     private void UpdateWindowLayout()

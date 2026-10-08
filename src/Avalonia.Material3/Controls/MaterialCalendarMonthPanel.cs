@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.Material3.Tokens;
 
 namespace Avalonia.Material3.Controls;
@@ -12,24 +11,26 @@ internal sealed class MaterialCalendarMonthPanel : Decorator
     private readonly MaterialMotionValue _offset;
     private readonly MaterialMotionSettings _motion;
     private readonly TranslateTransform _transform = new();
-    private RenderTargetBitmap? _previous;
+    private MaterialSnapshot? _previous;
+    private Size _capturedSize;
     private double _width;
     private int _direction;
     internal MaterialCalendarMonthPanel(Control content)
     {
         Child = content; ClipToBounds = true;
         content.RenderTransform = _transform;
-        _offset = new(this, 0, value => { _transform.X = value; InvalidateVisual(); });
+        _offset = new(this, 0, value => { _transform.X = value; if (value == 0) { _previous?.Dispose(); _previous = null; } InvalidateVisual(); });
         _motion = new(this, () => { if (_motion is not null && _motion.FastEffects.IsInstant) _offset.Snap(0); });
         DetachedFromVisualTree += (_, _) => { _previous?.Dispose(); _previous = null; };
     }
     internal void Capture(int direction)
     {
-        _previous?.Dispose(); _previous = null; _width = Bounds.Width; _direction = direction;
-        if (_width <= 0 || Bounds.Height <= 0 || _motion.FastEffects.IsInstant || Child is null) return;
-        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
-        _previous = new(new PixelSize((int)Math.Ceiling(_width * density), (int)Math.Ceiling(Bounds.Height * density)), new Vector(96 * density, 96 * density));
-        _previous.Render(Child);
+        var size = Bounds.Size;
+        var captured = size.Width > 0 && size.Height > 0 && !_motion.FastEffects.IsInstant && Child is not null
+            ? MaterialSnapshot.Capture(this, new Rect(size)) : null;
+        // Capture the displayed composition before releasing its previous retirement: a
+        // reversed scroll can contain both the incoming live month and its outgoing raster.
+        _previous?.Dispose(); _previous = captured; _capturedSize = size; _width = size.Width; _direction = direction;
     }
     internal void Scroll()
     {
@@ -41,6 +42,6 @@ internal sealed class MaterialCalendarMonthPanel : Decorator
     {
         base.Render(context);
         if (_previous is not null && Math.Abs(_offset.Value) > 0)
-            context.DrawImage(_previous, new Rect(_previous.PixelSize.ToSize(1)), new Rect(_offset.Value - _direction * _width, 0, _width, Bounds.Height));
+            _previous.Draw(context, new Rect(new Point(_offset.Value - _direction * _width, 0), _capturedSize));
     }
 }
