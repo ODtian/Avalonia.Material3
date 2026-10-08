@@ -34,7 +34,7 @@ public sealed partial class ReferenceShell
         var actions = SetId(new MaterialButtonGroup(), "button-group");
         foreach (var label in new[] { "Create", "Edit", "Share", "Disabled" })
         {
-            var button = new MaterialGroupButton { Content = label, Variant = MaterialButtonVariant.Tonal, IsEnabled = label != "Disabled" };
+            var button = new MaterialGroupButton { Content = label, Variant = MaterialButtonVariant.Filled, IsEnabled = label != "Disabled" };
             button.Click += (_, _) => Save(); actions.Children.Add(button);
         }
         column.Children.Add(actions);
@@ -63,15 +63,15 @@ public sealed partial class ReferenceShell
         }
         foreach (var (label, index) in new[] { ("Photos", 0), ("Videos", 1), ("Audio", 2) })
         {
-            var button = new MaterialGroupButton { Content = label, Variant = MaterialButtonVariant.Tonal, IsChecked = index == 0, LeadingIcon = Symbol(index == 0 ? "check" : "favorite_border") };
+            var button = new MaterialGroupButton { Content = label, Variant = MaterialButtonVariant.Filled, IsChecked = index == 0, LeadingIcon = Symbol(index == 0 ? "check" : "favorite_border") };
             button.Click += (_, _) => Select(index); singleButtons.Add(button); single.Children.Add(button);
-            var joined = new MaterialGroupButton { Content = label, Variant = MaterialButtonVariant.Tonal, IsChecked = index == 0 };
+            var joined = new MaterialGroupButton { Content = label, Variant = MaterialButtonVariant.Filled, IsChecked = index == 0 };
             joined.Click += (_, _) => Select(index); connectedButtons.Add(joined); connected.Children.Add(joined);
         }
         foreach (var (label, size) in new[] { ("Extra small", MaterialButtonSize.ExtraSmall), ("Small", MaterialButtonSize.Small), ("Medium", MaterialButtonSize.Medium), ("Large", MaterialButtonSize.Large), ("Extra large", MaterialButtonSize.ExtraLarge) })
         {
             column.Children.Add(Text("Elevated · " + label, MaterialTypeRole.TitleMedium));
-            column.Children.Add(Split(label, size, MaterialButtonVariant.Elevated, Save));
+            column.Children.Add(Split(label, size, MaterialButtonVariant.Elevated, Save, false));
         }
         column.Children.Add(Split("Save to Local", MaterialButtonSize.Small, MaterialButtonVariant.Filled, Save));
         var elevated = Button("Elevated", "elevated-button", Save, MaterialButtonVariant.Elevated);
@@ -79,9 +79,9 @@ public sealed partial class ReferenceShell
         column.Children.Add(new MaterialCard { Variant = MaterialCardVariant.Elevated, Padding = new Thickness(24), Content = Text("Elevated card"), HorizontalAlignment = HorizontalAlignment.Stretch });
         return Scroll(column);
     }
-    private MaterialSplitButton Split(string label, MaterialButtonSize size, MaterialButtonVariant variant, Action save)
+    private MaterialSplitButton Split(string label, MaterialButtonSize size, MaterialButtonVariant variant, Action save, bool fill = true)
     {
-        var split = SetId(new MaterialSplitButton { Size = size, Variant = variant, HorizontalAlignment = HorizontalAlignment.Stretch }, "split-" + label.Replace(' ', '-'));
+        var split = SetId(new MaterialSplitButton { Size = size, Variant = variant, HorizontalAlignment = fill ? HorizontalAlignment.Stretch : HorizontalAlignment.Left }, "split-" + label.Replace(' ', '-'));
         split.MainButton.Content = label; split.MainButton.LeadingIcon = Symbol("add", split.MainButton.IconSize);
         split.MainButton.Click += (_, _) => save();
         SetId(split.SecondaryButton, "split-toggle-" + label.Replace(' ', '-'));

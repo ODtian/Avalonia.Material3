@@ -5,7 +5,7 @@
       <Setter Property="Template">
         <ControlTemplate>
           <Grid Background="Transparent">
-            <c:MaterialShapeBorder x:Name="Container" Margin="0,5" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Stretch"
+            <c:MaterialShapeBorder x:Name="Container" Margin="0,4" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Stretch"
                      Background="{TemplateBinding Background}"
                      ShapeCornerRadius="{TemplateBinding SplitCornerRadius}" ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
               <c:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
@@ -44,6 +44,7 @@
       <Style Selector="^:extrasmall"><Setter Property="Padding" Value="12,6,10,6" /></Style>
       <Style Selector="^:extrasmall /template/ Border#Container"><Setter Property="Margin" Value="0,8" /></Style>
       <Style Selector="^:medium"><Setter Property="Padding" Value="24,16" /></Style>
+      <Style Selector="^:medium /template/ Border#Container,^:large /template/ Border#Container,^:extralarge /template/ Border#Container"><Setter Property="Margin" Value="0" /></Style>
       <Style Selector="^:large"><Setter Property="Padding" Value="48,32" /></Style>
       <Style Selector="^:extralarge"><Setter Property="Padding" Value="64,48" /></Style>
       <Style Selector="^:secondary"><Setter Property="Padding" Value="13,0" /></Style>

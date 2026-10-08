@@ -18,6 +18,86 @@ namespace Avalonia.Material3.Tests;
 public class ReferenceParityScenarioTests
 {
     [AvaloniaFact]
+    public void Button_group_overflow_uses_the_native_vertical_more_symbol()
+    {
+        var group = new MaterialButtonGroup();
+        Assert.Equal("more_vert", Assert.IsType<MaterialSymbol>(group.OverflowButton.Content).Symbol);
+    }
+
+    [AvaloniaFact]
+    public void Reference_single_calendar_wraps_to_the_native_512_DIP_surface()
+    {
+        using var host = new ReferenceHost("date-single");
+        var picker = host.Find<MaterialDatePicker>("date-picker");
+        Assert.Equal(512, picker.Bounds.Height, 3);
+        var lastDay = picker.GetVisualDescendants().OfType<MaterialCalendarDay>().Single(day => day.Date == new DateOnly(2024, 2, 29));
+        Assert.True(lastDay.IsEffectivelyVisible && GeometryHost.Box(lastDay, host.Window).Bottom <= GeometryHost.Box(picker, host.Window).Bottom);
+    }
+
+    [AvaloniaFact]
+    public void Reference_toolbar_Escape_returns_focus_to_an_available_core_action()
+    {
+        using var host = new ReferenceHost("fab");
+        host.Find<MaterialIconButton>("toolbar-menu").Focus();
+        host.Window.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None); host.Render();
+        Assert.True(host.Find<MaterialIconButton>("toolbar-edit").IsKeyboardFocusWithin);
+    }
+
+    [AvaloniaFact]
+    public void Reference_date_dialog_centers_inside_the_native_safe_area_while_scrim_covers_the_window()
+    {
+        using var host = new ReferenceHost("date-range-9-16");
+        host.Window.Height = 792; host.Shell.SetSafeArea(new Thickness(0, 24, 0, 0)); host.Render();
+        host.Click("open-date-dialog");
+        var dialog = host.Shell.Overlay.GetVisualDescendants().OfType<MaterialDialog>().Single();
+        var bounds = new Rect(dialog.Bounds.Size).TransformToAABB(dialog.TransformToVisual(host.Window)!.Value);
+        Assert.Equal(408, bounds.Center.Y, 3);
+        Assert.Equal(host.Shell.Overlay.Bounds.Width, bounds.Width, 3);
+    }
+
+    [AvaloniaFact]
+    public void Reference_native_button_families_and_split_wrap_geometry_are_preserved()
+    {
+        using var host = new ReferenceHost("buttons");
+        var group = host.Find<MaterialButtonGroup>("button-group");
+        Assert.All(group.Children.OfType<MaterialGroupButton>(), button => Assert.Equal(MaterialButtonVariant.Filled, button.Variant));
+        foreach (var id in new[] { "button-group-single", "connected-group" })
+            Assert.All(host.Find<MaterialButtonGroup>(id).Children.OfType<MaterialGroupButton>(), button => Assert.Equal(MaterialButtonVariant.Filled, button.Variant));
+        foreach (var label in new[] { "Extra-small", "Small", "Medium", "Large", "Extra-large" })
+            Assert.Equal(Avalonia.Layout.HorizontalAlignment.Left, host.Find<MaterialSplitButton>("split-" + label).HorizontalAlignment);
+    }
+
+    [AvaloniaFact]
+    public void Reference_floating_toolbar_exposes_only_four_native_actions_and_keeps_core_actions_when_collapsed()
+    {
+        using var host = new ReferenceHost("fab");
+        var toolbar = host.Find<MaterialToolbar>("floating-toolbar");
+        var visible = toolbar.GetVisualDescendants().OfType<Avalonia.Controls.Button>().Where(button => button.IsEffectivelyVisible).ToArray();
+        Assert.Equal(4, visible.Length);
+        host.Click("toolbar-toggle");
+        Assert.False(toolbar.IsExpanded);
+        Assert.True(host.Find<MaterialIconButton>("toolbar-edit").IsEffectivelyVisible);
+        Assert.True(host.Find<MaterialIconButton>("toolbar-share").IsEffectivelyVisible);
+        Assert.False(host.Find<MaterialIconButton>("toolbar-menu").IsEffectivelyVisible);
+        Assert.False(host.Find<MaterialIconButton>("toolbar-more").IsEffectivelyVisible);
+    }
+
+    [AvaloniaFact]
+    public void Reference_compose_slider_track_reaches_the_native_thumb_core_inset()
+    {
+        using var host = new ReferenceHost("slider");
+        var slider = host.Find<MaterialSlider>("slider");
+        var point = slider.TranslatePoint(new Point(10, 24), host.Window)!.Value;
+        using var bitmap = host.Window.CaptureRenderedFrame()!; using var pixels = bitmap.Lock();
+        var offset = (int)point.Y * pixels.RowBytes + (int)point.X * 4;
+        var first = Marshal.ReadByte(pixels.Address, offset); var green = Marshal.ReadByte(pixels.Address, offset + 1); var third = Marshal.ReadByte(pixels.Address, offset + 2);
+        Assert.Equal(Color.Parse("#6750A4"), pixels.Format == PixelFormat.Bgra8888 ? Color.FromRgb(third, green, first) : Color.FromRgb(first, green, third));
+        var end = slider.TranslatePoint(new Point(2, 24), host.Window)!.Value;
+        host.Window.MouseDown(end, MouseButton.Left); host.Window.MouseUp(end, MouseButton.Left); host.Render();
+        Assert.Equal(0, slider.Value);
+    }
+
+    [AvaloniaFact]
     public void Reference_range_dialog_keeps_the_native_rounded_surface_corners()
     {
         using var host = new ReferenceHost("date-range-9-16");

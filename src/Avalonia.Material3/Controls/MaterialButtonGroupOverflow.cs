@@ -10,7 +10,7 @@ namespace Avalonia.Material3.Controls;
 
 public partial class MaterialButtonGroup
 {
-    public MaterialIconButton OverflowButton { get; } = new() { Content = new MaterialSymbol { Symbol = "more_horiz" }, IconVariant = MaterialIconButtonVariant.Filled, IsVisible = false };
+    public MaterialIconButton OverflowButton { get; } = new() { Content = new MaterialSymbol { Symbol = "more_vert" }, IconVariant = MaterialIconButtonVariant.Filled, IsVisible = false };
     public IReadOnlyList<MaterialGroupButton> OverflowItems => Buttons.Where(button => _overflowed.Contains(button)).ToArray();
     public IReadOnlyList<MaterialButton> OverflowEntries => _overflowEntries.ToArray();
     public bool IsOverflowOpen => _popup.IsOpen;

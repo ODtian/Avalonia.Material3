@@ -6,7 +6,7 @@
       <Setter Property="Template">
         <ControlTemplate>
           <Grid Background="Transparent">
-            <c:MaterialShapeBorder x:Name="Container" Margin="0,5" MinHeight="{TemplateBinding ContainerHeight}"
+            <c:MaterialShapeBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}"
                  VerticalAlignment="Center" Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding GroupCornerRadius}"
                  ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
               <c:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"

@@ -24,6 +24,7 @@ public sealed partial class ReferenceShell : UserControl, IDisposable
     private readonly MaterialIconButton _home;
     private readonly MaterialIconButton _themeButton;
     private readonly ReferenceConfiguration _configuration;
+    private Thickness _safeArea;
     public MaterialTheme MaterialTheme { get; }
     public MaterialOverlayHost Overlay { get; } = new();
     public MaterialTopAppBar TopBar { get; } = new();
@@ -69,7 +70,7 @@ public sealed partial class ReferenceShell : UserControl, IDisposable
         if (Overlay.OpenCount > 0) { Overlay.RequestBack(); return true; }
         return Scene != "home" && Navigate("home");
     }
-    public void SetSafeArea(Thickness insets) => _layout.Margin = insets;
+    public void SetSafeArea(Thickness insets) { _safeArea = insets; _layout.Margin = insets; }
     private void ToggleTheme() { Dark = !Dark; ApplyTheme(); }
     private void ApplyTheme()
     {

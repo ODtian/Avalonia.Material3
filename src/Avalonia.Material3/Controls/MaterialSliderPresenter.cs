@@ -25,7 +25,7 @@ public sealed class MaterialSliderPresenter : Control
     }
 
     private bool Vertical => _owner?.Orientation == Orientation.Vertical;
-    private MaterialSliderGeometry Geometry => new(Vertical ? Bounds.Height : Bounds.Width, Vertical ? Bounds.Width : Bounds.Height);
+    private MaterialSliderGeometry Geometry => new(Vertical ? Bounds.Height : Bounds.Width, Vertical ? Bounds.Width : Bounds.Height, _owner?.TrackEdgeInset ?? 24);
     private double LabelSpace => _owner is { ValueLabelVisibility: not SliderValueLabelVisibility.Never } ? _owner.FontSize * 1.5 + 24 : 0;
     private double Position(double value) => Geometry.Thumb(_owner!.Fraction(value), _owner.Step > 0);
     private double PhysicalPosition(double value) => _owner!.ReverseDirection ? Geometry.Length - Position(value) : Position(value);
@@ -42,7 +42,7 @@ public sealed class MaterialSliderPresenter : Control
     {
         if (_owner is MaterialRangeSlider range)
         {
-            var geometry = new MaterialSliderGeometry(Vertical ? finalSize.Height : finalSize.Width, Vertical ? finalSize.Width : finalSize.Height);
+            var geometry = new MaterialSliderGeometry(Vertical ? finalSize.Height : finalSize.Width, Vertical ? finalSize.Width : finalSize.Height, range.TrackEdgeInset);
             for (var i = 0; i < 2; i++)
             {
                 var position = geometry.Thumb(range.Fraction(i == 0 ? range.LowerValue : range.UpperValue), range.Step > 0);

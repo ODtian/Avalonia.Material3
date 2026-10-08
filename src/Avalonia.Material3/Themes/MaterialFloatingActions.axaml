@@ -25,7 +25,7 @@
           <c:MaterialFabGeometryPresenter x:Name="Geometry" TargetExtent="{TemplateBinding ContainerSize}" TargetIconSize="{TemplateBinding IconSize}" Spring="{DynamicResource M3.Motion.FastSpatial}"
               AnimateGeometry="{Binding (c:MaterialFabMotion.GeometryAnimated), RelativeSource={RelativeSource TemplatedParent}}">
           <Grid Background="Transparent">
-            <c:MaterialShapeBorder x:Name="Container" Margin="5" MinWidth="{Binding Extent, ElementName=Geometry}" MinHeight="{Binding Extent, ElementName=Geometry}"
+            <c:MaterialShapeBorder x:Name="Container" MinWidth="{Binding Extent, ElementName=Geometry}" MinHeight="{Binding Extent, ElementName=Geometry}"
                        HorizontalAlignment="Center" VerticalAlignment="Center"
                        Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                        ShapeSpring="{Binding ShapeMotionSpring, ElementName=Geometry}" BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
@@ -68,7 +68,7 @@
       <Setter Property="Template">
         <ControlTemplate>
           <Grid Background="Transparent">
-            <c:MaterialShapeBorder x:Name="Container" Margin="5" MinWidth="{TemplateBinding ContainerSize}" MinHeight="{TemplateBinding ContainerSize}"
+            <c:MaterialShapeBorder x:Name="Container" MinWidth="{TemplateBinding ContainerSize}" MinHeight="{TemplateBinding ContainerSize}"
                        VerticalAlignment="Center" Background="{TemplateBinding Background}"
                        ShapeCornerRadius="{TemplateBinding CornerRadius}" ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}"
                        BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
@@ -152,8 +152,7 @@
           <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" MinHeight="64" Padding="{TemplateBinding Padding}"
                   BoxShadow="{DynamicResource M3.Elevation.Shadow0}">
             <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-              <c:MaterialToolbarItemsPanel StretchChildIndex="2" Orientation="{TemplateBinding Orientation}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="4">
-                <c:MaterialExpansionButton x:Name="PART_Toggle" Theme="{StaticResource M3.ToolbarToggle}" IsExpanded="{TemplateBinding IsExpanded}"><c:MaterialSymbol Symbol="more_horiz" /></c:MaterialExpansionButton>
+              <c:MaterialToolbarItemsPanel StretchChildIndex="1" Orientation="{TemplateBinding Orientation}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="4">
                 <c:MaterialActionReveal FadeContent="False" IsExpanded="{TemplateBinding IsExpanded}" Orientation="{TemplateBinding Orientation}" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}">
                   <ItemsControl Theme="{StaticResource M3.ActionItems}" ItemsSource="{TemplateBinding LeadingItems}">
                     <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:MaterialToolbarItemsPanel Spacing="4" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>

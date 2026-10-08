@@ -113,7 +113,11 @@ internal sealed class MaterialCalendarWeekRow : Panel
             var day = (DayOfWeek)(((int)format.FirstDayOfWeek + i) % 7);
             var label = MaterialPickerSupport.Text("BodyLarge");
             label.MinWidth = label.MinHeight = 48; label.TextAlignment = TextAlignment.Center;
-            label.Text = format.GetShortestDayName(day);
+            // CalendarModel uses CLDR NARROW_STANDALONE. Android's .NET shortest English
+            // names are two letters, so keep the native narrow English labels platform independent.
+            label.Text = owner.DateCulture.TwoLetterISOLanguageName == "en"
+                ? new[] { "S", "M", "T", "W", "T", "F", "S" }[(int)day]
+                : format.GetShortestDayName(day);
             Avalonia.Automation.AutomationProperties.SetName(label, format.GetDayName(day));
             Children.Add(label);
         }
