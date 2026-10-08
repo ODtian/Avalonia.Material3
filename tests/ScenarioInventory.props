@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)../samples/ReferenceUi/*.cs" Link="ReferenceUi/%(Filename)%(Extension)" />
+    <AvaloniaResource Include="$(MSBuildThisFileDirectory)../samples/ReferenceUi/Assets/Fonts/*.ttf" Link="ReferenceFonts/%(Filename)%(Extension)" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/carousel-keylines.json" LogicalName="M3.CarouselKeylines.json" />

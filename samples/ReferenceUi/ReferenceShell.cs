@@ -49,8 +49,8 @@ public sealed partial class ReferenceShell : UserControl, IDisposable
     {
         if (Overlay.OpenCount > 0) return false;
         if (scene != "home" && !SceneIds.Contains(scene, StringComparer.Ordinal)) return false;
-        foreach (var lifetime in _sceneLifetime) lifetime.Dispose(); _sceneLifetime.Clear();
         _scene.Content = null;
+        foreach (var lifetime in _sceneLifetime) lifetime.Dispose(); _sceneLifetime.Clear();
         Scene = scene; TopBar.Title = "M3 · " + scene;
         TopBar.NavigationContent = scene == "home" ? null : _home;
         _scene.Content = scene switch

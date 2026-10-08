@@ -5,6 +5,10 @@ using Avalonia.Material3.Tokens;
 using Avalonia.Layout;
 using Avalonia.Automation;
 using Avalonia.VisualTree;
+using Avalonia.Controls.Templates;
+using Avalonia.Controls.Presenters;
+using Avalonia.Media;
+using Avalonia.Markup.Xaml.MarkupExtensions;
 
 namespace Material3.ReferenceUi;
 
@@ -39,11 +43,11 @@ public sealed partial class ReferenceShell
     {
         var column = SceneColumn();
         column.Children.Add(Text("Slider · continuous", MaterialTypeRole.TitleMedium));
-        column.Children.Add(SetId(new MaterialSlider { Minimum = 0, Maximum = 1, Value = .27, LabelFormat = "0.##" }, "slider"));
+        column.Children.Add(SetId(new MaterialSlider { Minimum = 0, Maximum = 1, Value = .27, LabelFormat = "0.##", Height = 48, MinHeight = 48, ValueLabelVisibility = SliderValueLabelVisibility.Never }, "slider"));
         column.Children.Add(Text("Volume · discrete with marks", MaterialTypeRole.TitleMedium));
-        column.Children.Add(SetId(new MaterialSlider { Minimum = 0, Maximum = 100, Value = 70, Step = 10, ShowMarks = true }, "slider-discrete"));
+        column.Children.Add(SetId(new MaterialSlider { Minimum = 0, Maximum = 100, Value = 70, Step = 10, ShowMarks = true, Height = 48, MinHeight = 48, ValueLabelVisibility = SliderValueLabelVisibility.Never }, "slider-discrete"));
         column.Children.Add(Text("Active hours · ordered range", MaterialTypeRole.TitleMedium));
-        column.Children.Add(SetId(new MaterialRangeSlider { Minimum = 0, Maximum = 24, Step = 1, UpperValue = 20, LowerValue = 8, ShowMarks = true }, "slider-range"));
+        column.Children.Add(SetId(new MaterialRangeSlider { Minimum = 0, Maximum = 24, Step = 1, UpperValue = 20, LowerValue = 8, ShowMarks = true, Height = 48, MinHeight = 48, ValueLabelVisibility = SliderValueLabelVisibility.Never }, "slider-range"));
         return Scroll(column);
     }
     private Control CreateFields()
@@ -100,13 +104,45 @@ public sealed partial class ReferenceShell
         {
             if (synchronizing || (change.Property != MaterialDatePicker.SelectedDateProperty && change.Property != MaterialDatePicker.RangeEndProperty && change.Property != MaterialDatePicker.ModeProperty && change.Property != MaterialDatePicker.DisplayMonthProperty)) return;
             synchronizing = true;
-            try { destination.SelectedDate = source.SelectedDate; destination.RangeEnd = source.RangeEnd; destination.Mode = source.Mode; destination.DisplayMonth = source.DisplayMonth; }
+            try
+            {
+                var start = source.SelectedDate; var end = source.RangeEnd;
+                if (source.Mode == MaterialDatePickerMode.Input && (start is null || end is { } last && last < start))
+                {
+                    start = end = null;
+                    source.SelectedDate = null; source.RangeEnd = null;
+                }
+                destination.SelectedDate = start; destination.RangeEnd = end; destination.Mode = source.Mode; destination.DisplayMonth = source.DisplayMonth;
+            }
             finally { synchronizing = false; }
         }
         EventHandler<AvaloniaPropertyChangedEventArgs> fromInline = (_, change) => Sync(inline, picker, change);
         EventHandler<AvaloniaPropertyChangedEventArgs> fromDialog = (_, change) => Sync(picker, inline, change);
         inline.PropertyChanged += fromInline; picker.PropertyChanged += fromDialog;
-        var session = picker.Show(Overlay);
+        // The native comparison host closes OK unconditionally and retains shared drafts.
+        // The library's MaterialDatePicker.Show remains the validated form entry point.
+        var dialog = new MaterialDialog { Content = picker, Padding = default, MaxWidth = 360, MaxHeight = 568,
+            Template = new FuncControlTemplate<MaterialDialog>((owner, scope) =>
+            {
+                var actions = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right,
+                    Spacing = 8, Margin = new Thickness(0, 0, 6, 8) };
+                foreach (var confirm in new[] { false, true })
+                {
+                    var button = new MaterialButton { Content = confirm ? "OK" : "Cancel", Variant = MaterialButtonVariant.Text };
+                    AutomationProperties.SetName(button, confirm ? "OK" : "Cancel");
+                    scope.Register(confirm ? "PART_ConfirmButton" : "PART_CancelButton", button); actions.Children.Add(button);
+                }
+                var body = new ContentPresenter { Content = owner.Content, HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                    VerticalContentAlignment = VerticalAlignment.Stretch };
+                scope.Register("PART_ContentPresenter", body);
+                var grid = new Grid { RowDefinitions = new RowDefinitions("*,Auto"), Children = { body, actions } };
+                Grid.SetRow(actions, 1);
+                var surface = new Border { Child = grid, CornerRadius = new CornerRadius(28) };
+                surface.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
+                surface.Bind(Border.BoxShadowProperty, new DynamicResourceExtension("M3.Elevation.Shadow3"));
+                return surface;
+            }) };
+        var session = dialog.Show(Overlay);
         session.Closed += (_, _) => { inline.PropertyChanged -= fromInline; picker.PropertyChanged -= fromDialog; };
     }
     private Control CreateTime()

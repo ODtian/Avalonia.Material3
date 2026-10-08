@@ -95,6 +95,7 @@ public sealed partial class ReferenceShell
         var synchronizing = false;
         bar.SelectionChanged += (_, _) => { if (synchronizing) return; synchronizing = true; try { tabs.SelectedIndex = Math.Min(bar.SelectedIndex, 2); } finally { synchronizing = false; } };
         tabs.SelectionChanged += (_, _) => { if (synchronizing) return; synchronizing = true; try { bar.SelectedIndex = tabs.SelectedIndex; } finally { synchronizing = false; } };
+        tabs.ItemInvoked += (_, args) => bar.SelectedIndex = tabs.Items.IndexOf(args.Item);
         column.Children.Add(bar); column.Children.Add(tabs); return Scroll(column);
     }
     private Control CreateOverlays()
