@@ -20,6 +20,7 @@ public class MaterialOverlayHost : ContentControl
         AvaloniaProperty.RegisterDirect<MaterialOverlayHost, int>(nameof(OpenCount), host => host.OpenCount);
     private readonly List<MaterialOverlaySession> _sessions = [];
     private readonly HashSet<MaterialOverlayLayer> _exiting = [];
+    private readonly Dictionary<Control, MaterialModalPaintScope> _paintScopes = [];
     private Panel? _layer;
     private MaterialOverlayContentPresenter? _presenter;
     private TopLevel? _root;
@@ -67,6 +68,8 @@ public class MaterialOverlayHost : ContentControl
 
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        foreach (var scope in _paintScopes.Values) scope.Dispose();
+        _paintScopes.Clear();
         ClearExiting();
         if (_layer is not null) _layer.Children.Clear();
         base.OnApplyTemplate(e);
@@ -205,8 +208,13 @@ public class MaterialOverlayHost : ContentControl
     private void UpdateModality()
     {
         var modalIndex = _sessions.FindLastIndex(session => session.Options.IsModal);
-        if (_presenter is not null) _presenter.IsEnabled = modalIndex < 0;
-        for (var index = 0; index < _sessions.Count; index++) _sessions[index].Layer.IsEnabled = index >= modalIndex;
+        var blocked = new HashSet<Control>();
+        if (_presenter is not null && modalIndex >= 0) blocked.Add(_presenter);
+        for (var index = 0; index < modalIndex; index++) blocked.Add(_sessions[index].Layer);
+        foreach (var root in _paintScopes.Keys.Where(root => !blocked.Contains(root)).ToArray())
+        { _paintScopes[root].Dispose(); _paintScopes.Remove(root); }
+        foreach (var root in blocked)
+            if (!_paintScopes.ContainsKey(root)) _paintScopes.Add(root, new MaterialModalPaintScope(root));
     }
 
     private void RootPointerPressed(object? sender, PointerPressedEventArgs e)

@@ -100,7 +100,7 @@ public class SelectionFormScenarioTests
         using var host = new SelectionHost(page);
         Assert.Null(page.Notifications.IsChecked);
         host.Click(page.Post);
-        host.Click(page.AutoSave, new Point(54, 24));
+        host.Click(page.AutoSave, new Point(48, 24));
         host.Click(page.SaveButton);
         Assert.Equal("{\"Notifications\":null,\"Delivery\":\"Post\",\"AutoSave\":true}", page.SavedJson);
         host.Click(page.ResetButton);

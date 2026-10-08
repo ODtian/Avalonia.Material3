@@ -170,7 +170,7 @@ internal sealed class MaterialTextFieldDecoration : Panel
         var stroke = Math.Max(Math.Max(thickness.Left, thickness.Right), Math.Max(thickness.Top, thickness.Bottom));
         var placeholder = phase == 1 || string.IsNullOrWhiteSpace(field.Label) ? 1 : 0;
         var affix = phase != 0 || string.IsNullOrWhiteSpace(field.Label) ? 1 : 0;
-        if (!_initialized || !field.IsEffectivelyEnabled)
+        if (!_initialized || !MaterialModalPaintScope.IsEnabledForPaint(field))
         {
             _labelMotion.Snap(label); _strokeMotion.Snap(stroke); _strokeColor.Snap(field.BorderBrush);
             _labelColor.Snap(LabelBrush);

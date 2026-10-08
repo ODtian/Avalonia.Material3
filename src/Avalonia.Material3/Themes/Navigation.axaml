@@ -99,10 +99,10 @@
     <Style Selector="^:focus-visible /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
 
-    <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
-    <Style Selector="^:disabled /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
-    <Style Selector="^:disabled /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
-    <Style Selector="^:disabled /template/ Border#FocusRing"><Setter Property="IsVisible" Value="False" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Viewbox#Icon controls|MaterialNavigationColorPresenter"><Setter Property="TargetBrush" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#FocusRing"><Setter Property="IsVisible" Value="False" /></Style>
   </ControlTheme>
 </ResourceDictionary>
 

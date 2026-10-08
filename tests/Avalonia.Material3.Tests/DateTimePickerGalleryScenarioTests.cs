@@ -58,7 +58,7 @@ public class DateTimePickerGalleryScenarioTests
                 .Single(b => b.IsEffectivelyVisible && ControlAutomationPeer.CreatePeerForElement(b).GetName() == "OK");
             confirm.BringIntoView(); host.Render();
             var center = confirm.TranslatePoint(new Point(confirm.Bounds.Width / 2, confirm.Bounds.Height / 2), host.Window)!.Value;
-            Assert.InRange(center.Y, 0, 800);
+            Assert.True(center.Y is >= 0 and <= 800, $"{id}: confirm center Y={center.Y}, bounds={confirm.Bounds}, host={host.Window.ClientSize}.");
             host.Click(confirm); host.Render();
             Assert.Equal(MaterialOverlayCloseReason.Confirmed, session.Completion.Result.Reason);
             Assert.True(entry.IsFocused);

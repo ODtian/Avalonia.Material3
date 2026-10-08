@@ -257,12 +257,12 @@ public class MaterialTimePicker : TemplatedControl
         AutomationProperties.SetName(_mode,Mode==MaterialTimePickerMode.Clock?Labels.InputMode:Labels.ClockMode);
         if (_dialog is not null)
         {
-            _dialog.IsConfirmEnabled = IsValid && IsEffectivelyEnabled;
+            _dialog.IsConfirmEnabled = IsValid && MaterialModalPaintScope.IsEnabledForPaint(this);
             _dialog.Title=DialogTitle;
-            _mode.IsEnabled=IsEffectivelyEnabled;
+            _mode.IsEnabled=MaterialModalPaintScope.IsEnabledForPaint(this);
             _dialog.ConfirmText = Labels.Confirm; _dialog.CancelText = Labels.Cancel;
             _dialog.MaxWidth = horizontal ? 584 : 400;
-            if(_confirmAction is { } confirm){confirm.IsEnabled=IsValid&&IsEffectivelyEnabled;confirm.Content=Labels.Confirm;AutomationProperties.SetName(confirm,Labels.Confirm);}
+            if(_confirmAction is { } confirm){confirm.IsEnabled=IsValid&&MaterialModalPaintScope.IsEnabledForPaint(this);confirm.Content=Labels.Confirm;AutomationProperties.SetName(confirm,Labels.Confirm);}
             if(_cancelAction is { } cancel){cancel.Content=Labels.Cancel;AutomationProperties.SetName(cancel,Labels.Cancel);}
             AutomationProperties.SetName(_dialog, DialogTitle);
         }
@@ -324,7 +324,8 @@ public class MaterialTimePicker : TemplatedControl
         if (!_ready || _updating) return;
         if (change.Property != SelectedTimeProperty && change.Property != ModeProperty && change.Property != ActivePartProperty &&
             change.Property != Is24HourProperty && change.Property != LayoutProperty && change.Property != CultureProperty && change.Property != DisplayFormatProperty &&
-            change.Property != MinimumTimeProperty && change.Property != MaximumTimeProperty && change.Property != LabelsProperty && change.Property != IsEnabledProperty && change.Property != IsEffectivelyEnabledProperty) return;
+            change.Property != MinimumTimeProperty && change.Property != MaximumTimeProperty && change.Property != LabelsProperty && change.Property != IsEnabledProperty && change.Property != IsEffectivelyEnabledProperty
+            && change.Property != MaterialModalPaintScope.EnabledForPaintProperty) return;
         if (change.Property == SelectedTimeProperty || (change.Property == Is24HourProperty || change.Property == CultureProperty) && IsValid) SynchronizeText();
         if(change.Property==LayoutProperty)UpdateWindowLayout();else Refresh();
         if(change.Property==ModeProperty && _layoutRoot is not null)

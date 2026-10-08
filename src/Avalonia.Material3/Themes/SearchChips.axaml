@@ -68,14 +68,14 @@
     <Style Selector="^:focus-visible /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
     <Style Selector="^:dragged /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
-    <Style Selector="^:disabled">
+    <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
     </Style>
-    <Style Selector="^:disabled /template/ ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
-    <Style Selector="^:disabled:checked, ^:disabled:elevated"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /></Style>
-    <Style Selector="^:disabled /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
-    <Style Selector="^:disabled /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ ContentPresenter"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled):checked, ^:disabled:not(:modal-paint-enabled):elevated"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ c|MaterialInsetBorder#ChipContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ c|MaterialStateLayer#ChipLayer"><Setter Property="Opacity" Value="0" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="M3.Search.Editor" TargetType="c:MaterialTextField" BasedOn="{StaticResource {x:Type c:MaterialTextField}}">
     <Setter Property="Background" Value="Transparent" />
@@ -186,7 +186,7 @@
     <Style Selector="^:invalid /template/ Border#SearchFocus"><Setter Property="IsVisible" Value="True" /><Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" /></Style>
     <Style Selector="^:bar:pointerover /template/ Border#SearchLayer, ^:view:pointerover /template/ Border#SearchLayer"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:bar:focus-within /template/ Border#SearchLayer, ^:view:focus-within /template/ Border#SearchLayer"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
-    <Style Selector="^:disabled /template/ Border#SearchLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#SearchLayer"><Setter Property="Opacity" Value="0" /></Style>
     <Style Selector="^:view"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" /></Style>
     <Style Selector="^:open"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraLarge}" /></Style>
     <Style Selector="^:bar:open /template/ c|MaterialIconButton#PART_CloseButton, ^:view:open /template/ c|MaterialIconButton#PART_CloseButton"><Setter Property="IsVisible" Value="True" /></Style>

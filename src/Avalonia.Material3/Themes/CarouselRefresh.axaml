@@ -17,7 +17,7 @@
       </ControlTemplate>
     </Setter>
 
-    <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialPullToRefresh}" TargetType="c:MaterialPullToRefresh">
     <Setter Property="MinHeight" Value="48" />

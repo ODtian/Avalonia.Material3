@@ -77,7 +77,7 @@ public abstract class MaterialProgressIndicator : TemplatedControl
     internal double WaveAmplitude => _amplitude;
     internal double CircularStrokeThickness { get; set; } = 4;
     protected virtual bool HasAnimatedFeedback => EffectiveIndeterminate || IsExpressive && (_amplitude > 0 || _amplitudeTarget > 0);
-    private bool ShouldTick => _attached && IsVisible && IsEffectivelyEnabled && Status == MaterialProgressStatus.Running && !ReducedMotion && HasAnimatedFeedback;
+    private bool ShouldTick => _attached && IsVisible && MaterialModalPaintScope.IsEnabledForPaint(this) && Status == MaterialProgressStatus.Running && !ReducedMotion && HasAnimatedFeedback;
     internal event Action? FrameChanged;
     protected override AutomationPeer OnCreateAutomationPeer() => new MaterialProgressAutomationPeer(this);
 

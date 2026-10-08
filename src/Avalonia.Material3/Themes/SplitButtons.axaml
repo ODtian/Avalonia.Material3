@@ -53,14 +53,14 @@
       <Style Selector="^:secondary-icon /template/ DockPanel#MainContent"><Setter Property="IsVisible" Value="False" /></Style>
       <Style Selector="^:secondary-icon /template/ Viewbox#SecondaryContent"><Setter Property="IsVisible" Value="True" /></Style>
       <!-- Split selection morphs shape and adds a state layer; it does not change the action recipe. -->
-      <Style Selector="^:secondary:filled:not(:disabled)"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
-      <Style Selector="^:secondary:tonal:not(:disabled)"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
-      <Style Selector="^:secondary:elevated:not(:disabled)"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
-      <Style Selector="^:secondary:outlined:not(:disabled)"><Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" /></Style>
+      <Style Selector="^:secondary:filled:not(:disabled),^:secondary:filled:modal-paint-enabled"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
+      <Style Selector="^:secondary:tonal:not(:disabled),^:secondary:tonal:modal-paint-enabled"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
+      <Style Selector="^:secondary:elevated:not(:disabled),^:secondary:elevated:modal-paint-enabled"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerLowBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.PrimaryBrush}" /></Style>
+      <Style Selector="^:secondary:outlined:not(:disabled),^:secondary:outlined:modal-paint-enabled"><Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceVariantBrush}" /></Style>
       <Style Selector="^:secondary:outlined"><Setter Property="BorderThickness" Value="1" /></Style>
       <Style Selector="^:secondary:outlined:large"><Setter Property="BorderThickness" Value="2" /></Style>
       <Style Selector="^:secondary:outlined:extralarge"><Setter Property="BorderThickness" Value="3" /></Style>
-      <Style Selector="^:secondary:checked:not(:disabled) /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
+      <Style Selector="^:secondary:checked:not(:disabled) /template/ c|MaterialStateLayer#StateLayer,^:secondary:checked:modal-paint-enabled /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
     </ControlTheme>
   </Styles.Resources>
 </Styles>

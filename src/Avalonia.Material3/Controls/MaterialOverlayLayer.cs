@@ -110,7 +110,7 @@ internal sealed class MaterialOverlayLayer : Panel
         y = Math.Clamp(y + offsetY, m.Top, m.Top + height - h);
         Container.Arrange(new Rect(x, y, w, h));
         if (Container.Child is MaterialTooltip tip && _anchorBounds is { } tooltipAnchor)
-            tip.SetAnchorGeometry(new Rect(tooltipAnchor.Position - new Vector(x, y), tooltipAnchor.Size));
+            tip.SetAnchorGeometry(new Rect(tooltipAnchor.Position - new Vector(x, y), tooltipAnchor.Size), finalSize.Width, x);
         Presentation?.UpdateGeometry();
         if (Container.Child is MaterialMenu && _anchorBounds is { } pivotAnchor && Presentation is not null)
         {

@@ -22,6 +22,16 @@ namespace Avalonia.Material3.Tests;
 public class SliderScenarioTests
 {
     [AvaloniaFact]
+    public void Native_value_indicator_consumes_BodySmall_12_regular_and_preserves_local_font_overrides()
+    {
+        using var host = new SliderHost(new MaterialSlider { Value = 2, ValueLabelVisibility = SliderValueLabelVisibility.Always });
+        Assert.Equal(12, host.Slider.FontSize); Assert.Equal(FontWeight.Normal, host.Slider.FontWeight);
+        host.Slider.FontSize = 23; host.Slider.FontWeight = FontWeight.Bold;
+        host.Theme.Typography = host.Theme.Typography with { Scale = 2 }; host.Capture();
+        Assert.Equal(23, host.Slider.FontSize); Assert.Equal(FontWeight.Bold, host.Slider.FontWeight);
+    }
+
+    [AvaloniaFact]
     public void Single_digit_value_indicator_keeps_the_native_28_by_32_minimum()
     {
         // Locked MDC TooltipDrawable consumes padding 4, minWidth 28 and Slider.Label minHeight 32.
@@ -94,7 +104,7 @@ public class SliderScenarioTests
         host.Theme.Typography = new MaterialTypography
         {
             FontFamily = new FontFamily("Times New Roman"), Scale = 1.5,
-            LabelLarge = new MaterialTypeStyle(18, 24, 0.2, FontWeight.Bold) { FontFamily = new FontFamily("Arial") }
+            BodySmall = new MaterialTypeStyle(18, 24, 0.2, FontWeight.Bold) { FontFamily = new FontFamily("Arial") }
         };
         host.Capture();
         Assert.Equal(new FontFamily("Arial"), host.Slider.FontFamily);
@@ -333,7 +343,7 @@ public class SliderScenarioTests
         Assert.Equal(Color.Parse("#D0BCFF"), Assert.IsAssignableFrom<ISolidColorBrush>(slider.Foreground).Color);
         host.Theme.Typography = new MaterialTypography { Scale = 2 };
         host.Capture();
-        Assert.Equal(28, slider.FontSize);
+        Assert.Equal(24, slider.FontSize);
         Assert.True(slider.Bounds.Height >= 100);
         host.Theme.DarkColorScheme = MaterialColorScheme.Dark with { Primary = Color.Parse("#00FFAA") };
         host.Capture();

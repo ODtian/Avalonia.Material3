@@ -93,6 +93,8 @@ public class ExpressiveButtonScenarioTests
     public async Task Pressed_shape_uses_the_effect_spring_and_runtime_reduce_motion_snaps_the_existing_button()
     {
         using var host = new ButtonHost();
+        // This shape oracle isolates the independent native hover-elevation trajectory.
+        host.Theme.Elevation = host.Theme.Elevation with { Shadow1 = default };
         host.Button.Content = string.Empty;
         host.Button.Background = host.Button.Foreground = Brushes.Red; // Isolate shape from state-layer color animation.
         host.Theme.Motion = new Avalonia.Material3.Tokens.MaterialMotion

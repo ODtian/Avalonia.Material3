@@ -93,7 +93,7 @@
     <Style Selector="^:pointerover /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
     <Style Selector="^:dragging /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
-    <Style Selector="^:disabled /template/ Border#Marker"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#Marker"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     <Style Selector="^:vertical"><Setter Property="MinHeight" Value="56" /></Style>
     <Style Selector="^:vertical /template/ Border#Focus"><Setter Property="Height" Value="48" /></Style>
     <Style Selector="^:vertical /template/ Border#Marker">

@@ -48,6 +48,7 @@ public class MaterialTooltip : ContentControl
     private Button? _action;
     private Path? _caretTop, _caretBottom;
     private Rect? _anchorGeometry;
+    private double _anchorWindowWidth, _popupLeft;
     private static readonly ConditionalWeakTable<MaterialOverlayHost, Slot> Slots = new();
     private sealed class Slot { public MaterialTooltip? Current; }
     public MaterialTooltipVariant Variant { get => GetValue(VariantProperty); set => SetValue(VariantProperty, value); }
@@ -154,7 +155,7 @@ public class MaterialTooltip : ContentControl
         _caretTop = e.NameScope.Find<Path>("CaretTop");
         _caretBottom = e.NameScope.Find<Path>("CaretBottom");
         if (_action is not null) _action.Click += ActionClick;
-        if (_anchorGeometry is { } anchor) SetAnchorGeometry(anchor);
+        if (_anchorGeometry is { } anchor) SetAnchorGeometry(anchor, _anchorWindowWidth, _popupLeft);
         RefreshAction();
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -169,15 +170,22 @@ public class MaterialTooltip : ContentControl
         }
         if (change.Property == ActionCommandProperty || change.Property == ActionParameterProperty || change.Property == IsActionEnabledProperty || change.Property == ActionContentProperty || change.Property == VariantProperty) RefreshAction();
     }
-    internal void SetAnchorGeometry(Rect anchor)
+    internal void SetAnchorGeometry(Rect anchor, double windowWidth, double popupLeft)
     {
         _anchorGeometry = anchor;
+        _anchorWindowWidth = windowWidth; _popupLeft = popupLeft;
         PseudoClasses.Set(":caret-top", anchor.Bottom <= 0);
         PseudoClasses.Set(":caret-bottom", anchor.Top >= Bounds.Height);
         PseudoClasses.Set(":caret-left", anchor.Right <= 0);
         PseudoClasses.Set(":caret-right", anchor.Left >= Bounds.Width);
-        // Native TooltipCaretShape shifts the caret to the anchor midpoint after window clamping.
-        var offset = anchor.Center.X - Bounds.Width / 2;
+        // Exact pinned caretX branches use the anchor's window coordinates after edge clamping.
+        var left = anchor.Left + popupLeft; var right = anchor.Right + popupLeft;
+        var midpoint = (left + right) / 2; var width = Bounds.Width;
+        var caret = width >= windowWidth ? midpoint
+            : midpoint - width / 2 < 0 ? midpoint + Math.Max(width - windowWidth, -left)
+            : midpoint + width / 2 > windowWidth ? midpoint + Math.Min(width - right, 0)
+            : width / 2;
+        var offset = caret - width / 2;
         if (_caretTop is not null) _caretTop.RenderTransform = new TranslateTransform(offset, 0);
         if (_caretBottom is not null) _caretBottom.RenderTransform = new TranslateTransform(offset, 0);
     }

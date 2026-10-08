@@ -168,7 +168,7 @@ internal sealed class MaterialFrameLease : IDisposable
     }
     private void Synchronize()
     {
-        var enabled = _ignoreOwnerEnabled || _owner.IsEffectivelyEnabled;
+        var enabled = _ignoreOwnerEnabled || MaterialModalPaintScope.IsEnabledForPaint(_owner);
         _eligible = _attached && _running && _owner.IsEffectivelyVisible && enabled;
         if (_eligible && !_authored.HasValue) _hub?.Add(this);
         else _hub?.Remove(this);
@@ -181,7 +181,7 @@ internal sealed class MaterialFrameLease : IDisposable
     }
     private void OwnerChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
-        if (change.Property != InputElement.IsEffectivelyEnabledProperty) return;
+        if (change.Property != InputElement.IsEffectivelyEnabledProperty && change.Property != MaterialModalPaintScope.EnabledForPaintProperty) return;
         Accumulate(SourceNow, false);
         Synchronize();
     }

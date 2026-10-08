@@ -23,7 +23,7 @@
         </StackPanel>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:disabled">
+    <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" />
       <Setter Property="TrackBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
     </Style>
@@ -54,7 +54,7 @@
     <Setter Property="ContainedForeground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" />
     <Setter Property="ContainerCornerRadius" Value="{DynamicResource M3.Shape.CornerFull}" />
     <Setter Property="MotionSpring" Value="{DynamicResource M3.Motion.LoadingMorph}" />
-    <Style Selector="^:disabled">
+    <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="ContainerBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
       <Setter Property="ContainedForeground" Value="{DynamicResource M3.DisabledForegroundBrush}" />
     </Style>

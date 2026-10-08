@@ -128,7 +128,7 @@ public class MaterialFabMenu : TemplatedControl, IMaterialExpansion
         base.OnPropertyChanged(change);
         if (change.Property == AnchorProperty || change.Property == FlowDirectionProperty) UpdateAnchor();
         if (change.Property == ToggleIconProperty || change.Property == CloseIconProperty || change.Property == ToggleIconTemplateProperty || change.Property == CloseIconTemplateProperty || change.Property == ExpandLabelProperty || change.Property == CollapseLabelProperty) UpdateToggleName();
-        if (change.Property == IsEffectivelyEnabledProperty && !IsEffectivelyEnabled) Collapse(false);
+        if (change.Property == IsEffectivelyEnabledProperty && !MaterialModalPaintScope.IsEnabledForPaint(this)) Collapse(false);
         if (change.Property == IsExpandedProperty)
         {
             if (IsExpanded && !IsEffectivelyEnabled) { Collapse(false); return; }

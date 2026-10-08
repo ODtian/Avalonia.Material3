@@ -25,7 +25,7 @@ public class SelectionScenarioTests
         using var host = new SelectionHost(control);
         var idle = host.Capture();
         // Start outside the switch thumb: dragging the thumb intentionally selects its endpoint.
-        var point = host.PointIn(control, new Point(kind == "switch" ? 54 : 24, 24));
+        var point = host.PointIn(control, new Point(kind == "switch" ? 48 : 24, 24));
         host.Window.MouseMove(point);
         var hover = host.Capture();
         Assert.NotEqual(idle, hover);
@@ -55,7 +55,7 @@ public class SelectionScenarioTests
         Assert.NotEqual(idle, host.Capture());
         // Pinned Ripple.kt defaults to opacity focus: 10% state ink over the light surface.
         var focus = host.PixelAt(control, new Point(kind == "switch" ? 3 : 4, 24));
-        var expectedFocus = Color.Parse(kind == "switch" ? "#F1EAF2" : "#E8E2EA");
+        var expectedFocus = Color.Parse(kind == "switch" ? "#DBD5DE" : "#E8E2EA");
         Assert.InRange(Math.Abs(focus.R - expectedFocus.R), 0, 1);
         Assert.InRange(Math.Abs(focus.G - expectedFocus.G), 0, 1);
         Assert.InRange(Math.Abs(focus.B - expectedFocus.B), 0, 1);
@@ -133,7 +133,7 @@ public class SelectionScenarioTests
         Assert.NotEqual(normal, host.Capture());
         Assert.Equal("Choose an option / 请选择", ControlAutomationPeer.CreatePeerForElement(control)!.GetHelpText());
         Assert.False(control.IsChecked);
-        host.Click(control, new Point(kind == "switch" ? 54 : 24, 24));
+        host.Click(control, new Point(kind == "switch" ? 48 : 24, 24));
         Assert.True(control.IsChecked);
         Assert.Equal(Color.Parse("#B3261E"), Assert.IsAssignableFrom<ISolidColorBrush>(control.BorderBrush).Color);
         control.IsEnabled = false;
@@ -154,8 +154,8 @@ public class SelectionScenarioTests
         Assert.False(toggle.IsChecked);
         Assert.False(radio.IsThreeState);
         Assert.False(toggle.IsThreeState);
-        host.Click(toggle, new Point(54, 24));
-        host.Click(toggle, new Point(54, 24));
+        host.Click(toggle, new Point(48, 24));
+        host.Click(toggle, new Point(48, 24));
         Assert.False(toggle.IsChecked);
     }
 
@@ -217,8 +217,8 @@ public class SelectionScenarioTests
     {
         var control = new MaterialSwitch();
         using var host = new SelectionHost(control);
-        var off = host.PointIn(control, new Point(22, 24));
-        var on = host.PointIn(control, new Point(42, 24));
+        var off = host.PointIn(control, new Point(16, 24));
+        var on = host.PointIn(control, new Point(36, 24));
         host.Window.MouseDown(off, MouseButton.Left);
         host.Window.MouseMove(on, RawInputModifiers.LeftMouseButton);
         host.Window.MouseUp(on, MouseButton.Left);
@@ -243,7 +243,7 @@ public class SelectionScenarioTests
         Assert.True(IsDisplayed(offText));
         Assert.False(IsDisplayed(onText));
         Assert.True(offIcon.Bounds.Width > 0);
-        host.Click(control, new Point(54, 24));
+        host.Click(control, new Point(48, 24));
         host.Capture();
         Assert.True(control.IsChecked);
         Assert.False(IsDisplayed(offIcon));
@@ -257,7 +257,7 @@ public class SelectionScenarioTests
     {
         var control = new MaterialSwitch { IsEnabled = false };
         using var host = new SelectionHost(control);
-        Assert.Equal(Color.Parse("#E6E0E9"), host.PixelAt(control, new Point(10, 24)));
+        Assert.Equal(Color.Parse("#E6E0E9"), host.PixelAt(control, new Point(4, 24)));
     }
 
     [AvaloniaFact]
@@ -265,7 +265,7 @@ public class SelectionScenarioTests
     {
         var control = new MaterialSwitch();
         using var host = new SelectionHost(control);
-        host.Window.MouseMove(host.PointIn(control, new Point(54, 24)));
+        host.Window.MouseMove(host.PointIn(control, new Point(48, 24)));
         host.Capture();
         Assert.Equal(Color.Parse("#79747E"), Assert.IsAssignableFrom<ISolidColorBrush>(control.BorderBrush).Color);
         host.Window.MouseMove(new Point(390, 690));
@@ -301,14 +301,14 @@ public class SelectionScenarioTests
         var control = new MaterialSwitch { Content = "Auto save" };
         using var host = new SelectionHost(control);
         Assert.True(control.Bounds.Height >= 48);
-        Assert.Equal(Color.Parse("#79747E"), host.PixelAt(control, new Point(22, 24)));
+        Assert.Equal(Color.Parse("#79747E"), host.PixelAt(control, new Point(16, 24)));
         var off = host.Capture();
-        host.Click(control, new Point(42, 24));
+        host.Click(control, new Point(36, 24));
         Assert.True(control.IsChecked);
         Assert.NotEqual(off, host.Capture());
         host.Window.MouseMove(new Point(390, 690));
-        Assert.Equal(Colors.White, host.PixelAt(control, new Point(42, 24)));
-        Assert.Equal(Color.Parse("#6750A4"), host.PixelAt(control, new Point(22, 24)));
+        Assert.Equal(Colors.White, host.PixelAt(control, new Point(36, 24)));
+        Assert.Equal(Color.Parse("#6750A4"), host.PixelAt(control, new Point(16, 24)));
     }
 
     [AvaloniaFact]

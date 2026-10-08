@@ -62,8 +62,8 @@
     <Style Selector="^:focus-visible /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
 
-    <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
-    <Style Selector="^:disabled /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialStateLayer#State"><Setter Property="Opacity" Value="0" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type controls:MaterialNavigationDrawer}" TargetType="controls:MaterialNavigationDrawer">
     <Setter Property="ClipToBounds" Value="False" />

@@ -111,7 +111,7 @@ public sealed class MaterialSliderPresenter : Control
         }
         DrawSegment(context, trailingStart, geometry.End, owner.Background, leadingHandle: !(owner.CenteredTrack && lower < center));
         var trailingStop = trailingStart < geometry.End - geometry.CapInset;
-        using var activeOpacity = context.PushOpacity(owner.IsEffectivelyEnabled ? 1 : owner.DisabledActiveOpacity);
+        using var activeOpacity = context.PushOpacity(MaterialModalPaintScope.IsEnabledForPaint(owner) ? 1 : owner.DisabledActiveOpacity);
         if (owner.ShowMarks) DrawMarks(context, lower, upper, lowerGap, upperGap, leadingStop, trailingStop);
         if (leadingStop) context.DrawEllipse(owner.Foreground, null, new Point(geometry.Start + geometry.CapInset, geometry.Axis), 2, 2);
         if (trailingStop) context.DrawEllipse(owner.Foreground, null, new Point(geometry.End - geometry.CapInset, geometry.Axis), 2, 2);
@@ -123,7 +123,8 @@ public sealed class MaterialSliderPresenter : Control
         bool leadingHandle = false, bool trailingHandle = false)
     {
         if (end <= start) return;
-        using var opacity = context.PushOpacity(_owner!.IsEffectivelyEnabled ? 1 : active ? _owner.DisabledActiveOpacity : _owner.DisabledInactiveOpacity);
+        var owner = _owner!;
+        using var opacity = context.PushOpacity(MaterialModalPaintScope.IsEnabledForPaint(owner) ? 1 : active ? owner.DisabledActiveOpacity : owner.DisabledInactiveOpacity);
         var leading = leadingHandle ? 2 : 8;
         var trailing = trailingHandle ? 2 : 8;
         context.DrawRectangle(brush, null, new RoundedRect(new Rect(start, Geometry.Axis - 8, end - start, 16),
