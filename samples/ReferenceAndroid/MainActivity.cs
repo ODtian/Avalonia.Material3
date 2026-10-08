@@ -9,6 +9,7 @@ using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Media;
+using Avalonia.Material3.Controls;
 using Material3.ReferenceUi;
 
 namespace Material3.ReferenceAndroid;
@@ -60,7 +61,8 @@ public sealed class MainActivity : AvaloniaMainActivity
     private void QueueReadiness(ReferenceShell shell)
     {
         if (_readinessQueued || TopLevel.GetTopLevel(shell) is not { } root || root.ClientSize.Width < 100 || root.RenderScaling < (Resources?.DisplayMetrics?.Density ?? 1)) return;
-        var key = $"{shell.Scene}/{shell.Dark}/{root.ClientSize}";
+        var clock = shell.GetVisualDescendants().OfType<MaterialClockDial>().FirstOrDefault();
+        var key = $"{shell.Scene}/{shell.Dark}/{root.ClientSize}/{root.RenderScaling}/{clock?.ActivePart}/{clock?.Value}";
         if (key == _readyKey) return;
         _readinessQueued = true;
         root.RequestAnimationFrame(_ =>
@@ -70,6 +72,14 @@ public sealed class MainActivity : AvaloniaMainActivity
             foreach (var weight in new[] { FontWeight.Normal, FontWeight.Medium, FontWeight.Bold })
                 if (FontManager.Current.TryGetGlyphTypeface(new Typeface(shell.MaterialTheme.Typography.FontFamily, FontStyle.Normal, weight), out var face))
                     Log.Info("M3AvaloniaReference", $"font requestedWeight={(int)weight} actualWeight={(int)face.Weight} family={face.FamilyName} simulations={face.FontSimulations}");
+            if (clock is not null)
+                foreach (var number in clock.Children.OfType<MaterialClockNumber>().Where(number => number.Value is 3 or 5))
+                    foreach (var visual in number.GetVisualDescendants().OfType<Control>().Prepend(number).Where(control => control == number || control.GetType().Name == "MaterialClockLabel"))
+                        if (visual.TransformToVisual(root) is { } matrix)
+                        {
+                            var box = new Avalonia.Rect(visual.Bounds.Size).TransformToAABB(matrix); var density = root.RenderScaling;
+                            Log.Info("M3AvaloniaReference", $"clock-layout part={clock.ActivePart} value={number.Value} visual={visual.GetType().Name} dip={box} physical={box.X * density},{box.Y * density},{box.Width * density},{box.Height * density} phase={box.X * density - Math.Floor(box.X * density)},{box.Y * density - Math.Floor(box.Y * density)}");
+                        }
             foreach (var control in shell.GetVisualDescendants().OfType<Control>())
             {
                 var id = AutomationProperties.GetAutomationId(control);

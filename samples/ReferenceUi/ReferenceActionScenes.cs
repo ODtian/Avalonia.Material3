@@ -18,7 +18,13 @@ public sealed partial class ReferenceShell
         foreach (var (label, tag, variant) in new[] {
             ("Filled button", "filled", MaterialButtonVariant.Filled), ("Elevated button", "elevated", MaterialButtonVariant.Elevated),
             ("Tonal button", "tonal", MaterialButtonVariant.Tonal), ("Outlined button", "outlined", MaterialButtonVariant.Outlined), ("Text button", "text", MaterialButtonVariant.Text) })
-            column.Children.Add(Button(label, "ripple-" + tag, Increment, variant, true));
+        {
+            var button = Button(label, "ripple-" + tag, Increment, variant, true);
+            // This native scene calls the expressive touch overload of each
+            // family: SmallContentPadding uses10 DIP per vertical edge.
+            button.Padding = new Thickness(16, 10);
+            column.Children.Add(button);
+        }
         var icon = IconButton("edit", "ripple-icon", "Icon button", Increment);
         var fab = SetId(new MaterialFab { Content = Symbol("add") }, "ripple-fab"); fab.Click += (_, _) => Increment();
         var row = Row(24, icon, fab); icon.VerticalAlignment = fab.VerticalAlignment = VerticalAlignment.Top;

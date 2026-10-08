@@ -21,6 +21,7 @@ internal sealed class MaterialClockLabel : Control
     private MaterialClockDial? Dial => this.GetVisualAncestors().OfType<MaterialClockDial>().FirstOrDefault();
     private static readonly StyledProperty<IBrush?> SelectedBrushProperty = AvaloniaProperty.Register<MaterialClockLabel, IBrush?>("SelectedBrush");
     private TextLayout? _normal;
+    private MaterialNativeClockText? _nativeText;
     private MaterialSnapshot? _mask;
     private bool _capturingMask;
     private Size _maskSize;
@@ -72,6 +73,7 @@ internal sealed class MaterialClockLabel : Control
     }
     private void ClearLayouts()
     {
+        _nativeText?.Dispose(); _nativeText = null;
         _normal?.Dispose(); _normal = null; _mask?.Dispose(); _mask = null;
         if (_watchedBrush is not null) _watchedBrush.PropertyChanged -= BrushInvalidated;
         if (_brushTransform is not null) _brushTransform.Changed -= TransformChanged;
@@ -121,6 +123,7 @@ internal sealed class MaterialClockLabel : Control
         _gradient = key.Item5 as GradientBrush;
         WatchStops();
         _normal = new TextLayout(_text, key.Item1, key.Item2, key.Item5, lineHeight: key.Item3, letterSpacing: key.Item4);
+        _nativeText = MaterialNativeClockText.TryCreate(_text, _normal);
     }
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -145,14 +148,18 @@ internal sealed class MaterialClockLabel : Control
         var origin = point is { } position ? new Point(
             Math.Round(position.X * density, MidpointRounding.AwayFromZero) / density - position.X,
             Math.Round(position.Y * density, MidpointRounding.AwayFromZero) / density - position.Y) : default;
-        if (_capturingMask) { normal.Draw(context, origin); return; }
+        void DrawNormal()
+        {
+            if (_nativeText?.Draw(context, _key.Normal, origin, density, Bounds.Size, options) != true) normal.Draw(context, origin);
+        }
+        if (_capturingMask) { DrawNormal(); return; }
         if (Dial is not { } dial || dial.TranslatePoint(dial.SelectorCenter, this) is not { } center)
-        { normal.Draw(context, origin); return; }
+        { DrawNormal(); return; }
         var radius = dial.SelectorRadius;
         var nearestX = center.X - Math.Clamp(center.X, 0, Bounds.Width);
         var nearestY = center.Y - Math.Clamp(center.Y, 0, Bounds.Height);
         if (nearestX * nearestX + nearestY * nearestY >= radius * radius)
-        { normal.Draw(context, origin); return; }
+        { DrawNormal(); return; }
         if (_mask is null || _maskSize != Bounds.Size || _maskDensity != density || _maskOrigin != origin || !_maskOptions.Equals(options))
         {
             _mask?.Dispose(); _mask = null; _capturingMask = true;
@@ -166,7 +173,7 @@ internal sealed class MaterialClockLabel : Control
         var selector = new EllipseGeometry(new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2));
         var outside = new GeometryGroup { FillRule = FillRule.EvenOdd,
             Children = { new RectangleGeometry(new Rect(Bounds.Size)), selector } };
-        using (context.PushGeometryClip(outside)) normal.Draw(context, origin);
+        using (context.PushGeometryClip(outside)) DrawNormal();
         using (context.PushGeometryClip(new EllipseGeometry(selector.Rect)))
         using (_mask.OpacityMask(context, new Rect(Bounds.Size)))
             context.DrawRectangle(_key.Selected, null, new Rect(Bounds.Size));
