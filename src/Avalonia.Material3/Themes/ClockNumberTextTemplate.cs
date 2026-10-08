@@ -25,6 +25,12 @@ internal sealed class MaterialClockLabel : Control
     private bool _capturingMask;
     private Size _maskSize;
     private double _maskDensity;
+    private Point _maskOrigin;
+    private TextOptions _maskOptions;
+    private AvaloniaObject? _watchedBrush;
+    private GradientBrush? _gradient;
+    private GradientStops? _stopCollection;
+    private readonly List<GradientStop> _stops = [];
     private MaterialClockNumber? _subscribedNumber;
     private MaterialClockDial? _subscribedDial;
     private (Typeface Typeface, double Size, double Height, double Tracking, IBrush? Normal, IBrush? Selected) _key;
@@ -63,7 +69,34 @@ internal sealed class MaterialClockLabel : Control
         base.OnPropertyChanged(change);
         if (change.Property == SelectedBrushProperty) InvalidateVisual();
     }
-    private void ClearLayouts() { _normal?.Dispose(); _normal = null; _mask?.Dispose(); _mask = null; }
+    private void ClearLayouts()
+    {
+        _normal?.Dispose(); _normal = null; _mask?.Dispose(); _mask = null;
+        if (_watchedBrush is not null) _watchedBrush.PropertyChanged -= BrushInvalidated;
+        if (_stopCollection is not null) _stopCollection.CollectionChanged -= StopsChanged;
+        foreach (var stop in _stops) stop.PropertyChanged -= BrushInvalidated;
+        _stops.Clear(); _gradient = null; _stopCollection = null;
+        _watchedBrush = null;
+    }
+    private void BrushInvalidated(object? sender, AvaloniaPropertyChangedEventArgs args)
+    {
+        if (args.Property == GradientBrush.GradientStopsProperty) WatchStops();
+        _mask?.Dispose(); _mask = null; InvalidateVisual();
+    }
+    private void WatchStops()
+    {
+        if (_stopCollection is not null) _stopCollection.CollectionChanged -= StopsChanged;
+        foreach (var stop in _stops) stop.PropertyChanged -= BrushInvalidated;
+        _stops.Clear(); _stopCollection = _gradient?.GradientStops;
+        if (_stopCollection is null) return;
+        _stopCollection.CollectionChanged += StopsChanged;
+        foreach (var stop in _stopCollection) { _stops.Add(stop); stop.PropertyChanged += BrushInvalidated; }
+    }
+    private void StopsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs args)
+    {
+        WatchStops();
+        _mask?.Dispose(); _mask = null; InvalidateVisual();
+    }
     private void Layouts()
     {
         if (Number is not { } number) return;
@@ -71,6 +104,10 @@ internal sealed class MaterialClockLabel : Control
             number.GetValue(TextBlock.LineHeightProperty), number.LetterSpacing, number.Foreground, GetValue(SelectedBrushProperty));
         if (_normal is not null && key == _key) return;
         ClearLayouts(); _key = key;
+        _watchedBrush = key.Item5 as AvaloniaObject;
+        if (_watchedBrush is not null) _watchedBrush.PropertyChanged += BrushInvalidated;
+        _gradient = key.Item5 as GradientBrush;
+        WatchStops();
         _normal = new TextLayout(_text, key.Item1, key.Item2, key.Item5, lineHeight: key.Item3, letterSpacing: key.Item4);
     }
     protected override Size MeasureOverride(Size availableSize)
@@ -85,7 +122,10 @@ internal sealed class MaterialClockLabel : Control
         if (_normal is not { } normal) return;
         // Android's offscreen selector mask uses grayscale glyph coverage. Both
         // complementary regions need the same coverage, independent of brush colour.
-        using var textOptions = context.PushTextOptions(new TextOptions { TextRenderingMode = TextRenderingMode.Antialias });
+        var options = new TextOptions();
+        foreach (var visual in this.GetVisualAncestors().Reverse().Append(this)) options = options.MergeWith(TextOptions.GetTextOptions(visual));
+        options = options with { TextRenderingMode = TextRenderingMode.Antialias };
+        using var textOptions = context.PushTextOptions(options);
         // Compose places an integer-sized paragraph at an integer centre offset;
         // paragraph ink starts at its measured top-left, including trailing advance.
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
@@ -101,12 +141,12 @@ internal sealed class MaterialClockLabel : Control
         var nearestY = center.Y - Math.Clamp(center.Y, 0, Bounds.Height);
         if (nearestX * nearestX + nearestY * nearestY >= radius * radius)
         { normal.Draw(context, origin); return; }
-        if (_mask is null || _maskSize != Bounds.Size || _maskDensity != density)
+        if (_mask is null || _maskSize != Bounds.Size || _maskDensity != density || _maskOrigin != origin || !_maskOptions.Equals(options))
         {
             _mask?.Dispose(); _mask = null; _capturingMask = true;
             try { _mask = MaterialSnapshot.Capture(this, new Rect(Bounds.Size)); }
             finally { _capturingMask = false; }
-            _maskSize = Bounds.Size; _maskDensity = density;
+            _maskSize = Bounds.Size; _maskDensity = density; _maskOrigin = origin; _maskOptions = options;
         }
         if (_mask is null) return;
         // Native draws the normal glyph first, then recolours that alpha through
