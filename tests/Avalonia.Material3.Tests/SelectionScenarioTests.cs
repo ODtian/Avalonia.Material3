@@ -53,7 +53,12 @@ public class SelectionScenarioTests
         Assert.True(control.IsFocused);
         Assert.Contains(":focus-visible", control.Classes);
         Assert.NotEqual(idle, host.Capture());
-        Assert.Equal(Color.Parse("#625B71"), host.PixelAt(control, new Point(kind == "switch" ? 3 : 4, 24)));
+        // Pinned Ripple.kt defaults to opacity focus: 10% state ink over the light surface.
+        var focus = host.PixelAt(control, new Point(kind == "switch" ? 3 : 4, 24));
+        var expectedFocus = Color.Parse(kind == "switch" ? "#F1EAF2" : "#E8E2EA");
+        Assert.InRange(Math.Abs(focus.R - expectedFocus.R), 0, 1);
+        Assert.InRange(Math.Abs(focus.G - expectedFocus.G), 0, 1);
+        Assert.InRange(Math.Abs(focus.B - expectedFocus.B), 0, 1);
         host.Window.KeyPressQwerty(PhysicalKey.Space, RawInputModifiers.None);
         Assert.True(control.IsPressed);
         Assert.False(control.IsChecked);

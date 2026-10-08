@@ -2,7 +2,6 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
-using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 
@@ -15,7 +14,7 @@ public class MaterialRadioButton : RadioButton
     private readonly MaterialMotionValue _dotMotion;
     private readonly MaterialMotionSettings _motion;
     private readonly MaterialMotionBrush _color;
-    private Ellipse? _dot;
+    private MaterialCircleGlyph? _dot;
     private Border? _ring;
     public MaterialRadioButton()
     {
@@ -26,7 +25,7 @@ public class MaterialRadioButton : RadioButton
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _dot = e.NameScope.Find<Ellipse>("Dot");
+        _dot = e.NameScope.Find<MaterialCircleGlyph>("Dot");
         _ring = e.NameScope.Find<Border>("Ring");
         _dotMotion.Snap(IsChecked == true ? 6 : 0);
         _color.Snap(BorderBrush);
@@ -42,8 +41,7 @@ public class MaterialRadioButton : RadioButton
     {
         if (_dot is null) return;
         var diameter = Math.Max(0, 2 * (radius - 1));
-        _dot.Width = _dot.Height = diameter;
-        _dot.IsVisible = diameter > 0;
+        _dot.Diameter = diameter;
     }
     public static readonly StyledProperty<bool> IsErrorProperty = MaterialCheckBox.IsErrorProperty.AddOwner<MaterialRadioButton>();
     public static readonly StyledProperty<string?> ErrorTextProperty = MaterialCheckBox.ErrorTextProperty.AddOwner<MaterialRadioButton>();
