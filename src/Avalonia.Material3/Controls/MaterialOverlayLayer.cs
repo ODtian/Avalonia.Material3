@@ -5,8 +5,10 @@ using Avalonia.Media;
 namespace Avalonia.Material3.Controls;
 
 // A layout implementation, not an extension contract. The public seam is host/options/session.
-internal sealed class MaterialOverlayLayer : Panel
+internal sealed class MaterialOverlayLayer : Panel, IMaterialInputScope
 {
+    protected override bool IsEnabledCore => base.IsEnabledCore && MaterialModalPaintScope.IsInputScopeOpen(this);
+    void IMaterialInputScope.RefreshInputScope() => UpdateIsEffectivelyEnabled();
     private readonly MaterialOverlayHost host;
     private readonly MaterialOverlayOptions options;
     private readonly Border scrim;

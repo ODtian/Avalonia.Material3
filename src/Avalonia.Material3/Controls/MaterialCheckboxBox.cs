@@ -16,6 +16,7 @@ internal sealed class MaterialCheckboxBox : Control
     public Thickness BorderThickness { get => GetValue(BorderThicknessProperty); set => SetValue(BorderThicknessProperty, value); }
     public CornerRadius CornerRadius { get => GetValue(CornerRadiusProperty); set => SetValue(CornerRadiusProperty, value); }
     static MaterialCheckboxBox() => AffectsRender<MaterialCheckboxBox>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
+    public MaterialCheckboxBox() => UseLayoutRounding = false;
     public override void Render(DrawingContext context)
     {
         var rect = new Rect(Bounds.Size);
@@ -23,7 +24,7 @@ internal sealed class MaterialCheckboxBox : Control
             Background is ISolidColorBrush fill && BorderBrush is ISolidColorBrush border &&
             fill.Color == border.Color && fill.Opacity == border.Opacity;
         if (matching) { context.DrawRectangle(Background, null, new RoundedRect(rect, CornerRadius)); return; }
-        var stroke = BorderThickness.Left;
+        var stroke = MaterialCheckboxCanvas.Stroke(BorderThickness.Left, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1);
         var radius = CornerRadius.TopLeft;
         context.DrawRectangle(Background, null, new RoundedRect(rect.Deflate(stroke), Math.Max(0, radius - stroke)));
         context.DrawRectangle(null, new Pen(BorderBrush, stroke),

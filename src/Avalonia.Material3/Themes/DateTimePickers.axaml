@@ -199,7 +199,6 @@
         </Grid>
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:checked"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
     <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
   </ControlTheme>

@@ -17,6 +17,22 @@ namespace Avalonia.Material3.Tests;
 
 public class SnapshotDpiScenarioTests
 {
+    [AvaloniaFact]
+    public void Clock_target_label_keeps_normal_ink_until_the_moving_selector_overlaps_it()
+    {
+        var dial = new MaterialClockDial { Value = 12 };
+        using var host = new GeometryHost(dial, 320, 320);
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, .01) } }; host.Render();
+        dial.ValueSelected += (_, selection) => dial.Value = selection.Value;
+        var target = dial.Children.OfType<MaterialClockNumber>().Single(number => number.Value == 3);
+        var region = new Rect(222, 118, 14, 20);
+        Assert.Equal(0, WhiteInk(dial, 1, region));
+        var point = GeometryHost.Box(target, host.Window).Center;
+        host.Window.MouseDown(point, MouseButton.Left); host.Window.MouseUp(point, MouseButton.Left);
+        Assert.True(target.IsChecked); Assert.Equal(3, dial.Value);
+        Assert.Equal(0, WhiteInk(dial, 1, region));
+    }
+
     [AvaloniaTheory]
     [InlineData(1.25)]
     [InlineData(3.5)]

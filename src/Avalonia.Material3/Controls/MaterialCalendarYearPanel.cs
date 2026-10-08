@@ -13,7 +13,7 @@ internal sealed class MaterialCalendarYearPanel : Panel
     private MaterialModalPaintScope? _yearGate, _monthGate;
     internal MaterialCalendarYearPanel(Control month, Control years)
     {
-        _month = month; _years = years; Children.Add(month); Children.Add(years);
+        _month = new MaterialInputScope(month); _years = new MaterialInputScope(years); Children.Add(_month); Children.Add(_years);
         ClipToBounds = true;
         _extent = new(this, 0, _ => InvalidateArrange());
         _alpha = new(this, .6, value => years.Opacity = Math.Clamp(value, 0, 1));

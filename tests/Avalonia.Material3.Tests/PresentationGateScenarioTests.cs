@@ -12,11 +12,56 @@ using Avalonia.Data;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using Xunit;
+using Avalonia.Controls.Templates;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
+using System.Windows.Input;
 
 namespace Avalonia.Material3.Tests;
 
 public class PresentationGateScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Initially_disabled_presenter_binding_can_restore_authored_paint_under_modal_while_actual_core_and_cached_actions_stay_gated(bool coreDisabledRoot)
+    {
+        var state = new MaterialCheckBox { IsChecked = false };
+        var button = new MaterialButton { Content = "", Width = 140 };
+        var hardDisabled = new CoreDisabledButton { Content = "", Width = 140 };
+        var command = new GateCommand();
+        var commanded = new MaterialButton { Content = "", Width = 140, Command = command };
+        MaterialOverlayContentPresenter presenter = coreDisabledRoot ? new CoreDisabledPresenter() : new MaterialOverlayContentPresenter();
+        presenter.Bind(InputElement.IsEnabledProperty, new Binding(nameof(state.IsChecked)) { Source = state });
+        var overlay = new MaterialOverlayHost { Content = new StackPanel { Children = { button, hardDisabled, commanded } } };
+        // These are the host's declared public TemplatePart contracts.
+        overlay.Template = new FuncControlTemplate<MaterialOverlayHost>((owner, scope) => {
+            presenter.Name = "PART_ContentPresenter"; scope.Register(presenter.Name, presenter);
+            presenter.Bind(ContentControl.ContentProperty, new TemplateBinding(ContentControl.ContentProperty));
+            var layers = new Grid { Name = "PART_OverlayLayer" }; scope.Register(layers.Name, layers);
+            return new Grid { Children = { presenter, layers } };
+        });
+        using var host = new GeometryHost(overlay, 500, 400);
+        host.Theme.States = host.Theme.States with { FocusStateLayerOpacity = 0, HoverStateLayerOpacity = 0 }; host.Render();
+        var disabledInk = Painted(button); var hardInk = Painted(hardDisabled);
+        var cached = ControlAutomationPeer.CreatePeerForElement(button)!.GetProvider<IInvokeProvider>()!;
+        var commandCached = ControlAutomationPeer.CreatePeerForElement(commanded)!.GetProvider<IInvokeProvider>()!;
+        var dialog = new MaterialDialog { Width = 160, Height = 100 }; dialog.Show(overlay); host.Render();
+        state.IsChecked = true; host.Render();
+        Assert.True(presenter.IsEnabled);
+        Assert.False(button.IsEffectivelyEnabled); Assert.ThrowsAny<Exception>(() => cached.Invoke());
+        if (coreDisabledRoot) Assert.Equal(disabledInk, Painted(button));
+        else Assert.NotEqual(disabledInk, Painted(button));
+        Assert.Equal(hardInk, Painted(hardDisabled)); Assert.False(hardDisabled.IsEffectivelyEnabled);
+        var commandedEnabled = Painted(commanded);
+        command.Enabled = false; host.Render(); var commandDisabled = Painted(commanded);
+        if (!coreDisabledRoot) Assert.NotEqual(commandedEnabled, commandDisabled);
+        command.Enabled = true; host.Render(); Assert.Equal(commandedEnabled, Painted(commanded));
+        Assert.ThrowsAny<Exception>(() => commandCached.Invoke());
+        dialog.Cancel(); host.Render();
+        Assert.Equal(!coreDisabledRoot, button.IsEffectivelyEnabled); Assert.False(hardDisabled.IsEffectivelyEnabled);
+    }
+
     [AvaloniaFact]
     public void Retiring_toolbar_under_modal_keeps_authored_paint_and_reverses_and_reattaches_with_correct_input()
     {
@@ -102,4 +147,13 @@ public class PresentationGateScenarioTests
         bitmap.Render(control); using var stream = new MemoryStream(); bitmap.Save(stream, PngBitmapEncoderOptions.Default); return stream.ToArray();
     }
     private sealed class CoreDisabledButton : MaterialButton { protected override bool IsEnabledCore => false; }
+    private sealed class CoreDisabledPresenter : MaterialOverlayContentPresenter { protected override bool IsEnabledCore => false; }
+    private sealed class GateCommand : ICommand
+    {
+        private bool _enabled = true;
+        public bool Enabled { get => _enabled; set { _enabled = value; CanExecuteChanged?.Invoke(this, EventArgs.Empty); } }
+        public bool CanExecute(object? parameter) => _enabled;
+        public void Execute(object? parameter) { }
+        public event EventHandler? CanExecuteChanged;
+    }
 }

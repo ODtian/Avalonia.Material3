@@ -11,8 +11,10 @@ internal interface IMaterialActionDisclosure
     event Action? Settled;
 }
 
-internal sealed class MaterialFabMenuDisclosure : Decorator, IMaterialActionDisclosure
+internal sealed class MaterialFabMenuDisclosure : Decorator, IMaterialActionDisclosure, IMaterialInputScope
 {
+    protected override bool IsEnabledCore => base.IsEnabledCore && MaterialModalPaintScope.IsInputScopeOpen(this);
+    void IMaterialInputScope.RefreshInputScope() => UpdateIsEffectivelyEnabled();
     public static readonly StyledProperty<bool> IsExpandedProperty = AvaloniaProperty.Register<MaterialFabMenuDisclosure, bool>(nameof(IsExpanded));
     public bool IsExpanded { get => GetValue(IsExpandedProperty); set => SetValue(IsExpandedProperty, value); }
     public bool IsRevealing { get; private set; }

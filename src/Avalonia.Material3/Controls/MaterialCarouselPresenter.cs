@@ -273,16 +273,16 @@ internal sealed class MaterialCarouselTileContent : Panel
 {
     private readonly Control _image;
     private readonly Control? _overlay;
-    private readonly Border _footer;
+    private readonly MaterialInputScope _footer;
     private double _captionWidth;
     private MaterialModalPaintScope? _footerGate;
     internal double MaskWidth;
     internal MaterialCarouselTileContent(Control image, Control? overlay, Border footer)
     {
-        _image = image; _overlay = overlay; _footer = footer;
+        _image = image; _overlay = overlay; _footer = new MaterialInputScope(footer);
         Children.Add(image);
         if (overlay is not null) Children.Add(overlay);
-        Children.Add(footer);
+        Children.Add(_footer);
     }
     protected override Size MeasureOverride(Size availableSize)
     {
