@@ -123,13 +123,14 @@ internal sealed class MaterialClockLabel : Control
         _gradient = key.Item5 as GradientBrush;
         WatchStops();
         _normal = new TextLayout(_text, key.Item1, key.Item2, key.Item5, lineHeight: key.Item3, letterSpacing: key.Item4);
-        _nativeText = MaterialNativeClockText.TryCreate(_text, _normal);
+        _nativeText = MaterialNativeClockText.TryCreate(_text, _normal, key.Item4);
     }
     protected override Size MeasureOverride(Size availableSize)
     {
         Layouts();
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
-        return _normal is { } layout ? new Size(Math.Ceiling(layout.Width * density) / density, Math.Ceiling(layout.Height * density) / density) : default;
+        return _normal is { } layout ? _nativeText?.Measure(density, layout.Height)
+            ?? new Size(Math.Ceiling(layout.Width * density) / density, Math.Ceiling(layout.Height * density) / density) : default;
     }
     public override void Render(DrawingContext context)
     {

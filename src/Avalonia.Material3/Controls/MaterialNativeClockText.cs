@@ -17,11 +17,12 @@ internal sealed class MaterialNativeClockText : IDisposable
     private const string DefaultRoboto = "9CA9DEBB09459BF4E3E7F826F5CD0F35F253902B85684921FCE2BA3F28DD0F50";
     private const string DerivedRoboto = "BC75B0FDA23E7859E81034E2571126341636CD9C8853B66A57D51D17D094433F";
     private static readonly Dictionary<GlyphTypeface, Face> Faces = [];
-    private sealed class Face(GlyphTypeface owner, SKTypeface typeface)
+    private sealed class Face(GlyphTypeface owner, SKTypeface typeface, bool numericProfile)
     {
         internal readonly GlyphTypeface Owner = owner;
         internal readonly SKTypeface Typeface = typeface;
         internal int References;
+        internal readonly bool NumericProfile = numericProfile;
     }
     private sealed class FaceLease(Face face) : IDisposable
     {
@@ -41,18 +42,18 @@ internal sealed class MaterialNativeClockText : IDisposable
     }
     private readonly FaceLease _face;
     private readonly GlyphInfo[] _glyphs;
-    private readonly double _size, _baseline;
-    private MaterialNativeClockText(FaceLease face, GlyphInfo[] glyphs, double size, double baseline)
-    { _face = face; _glyphs = glyphs; _size = size; _baseline = baseline; }
+    private readonly double _size, _baseline, _tracking;
+    private MaterialNativeClockText(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, double tracking)
+    { _face = face; _glyphs = glyphs; _size = size; _baseline = baseline; _tracking = tracking; }
 
-    internal static MaterialNativeClockText? TryCreate(string text, TextLayout layout)
+    internal static MaterialNativeClockText? TryCreate(string text, TextLayout layout, double tracking)
     {
         if (text.Length == 0 || text.Any(character => character is < '0' or > '9') || layout.TextLines.Count != 1) return null;
         var runs = layout.TextLines[0].TextRuns.OfType<ShapedTextRun>().ToArray();
         if (runs.Length != 1) return null;
         var run = runs[0].GlyphRun;
         var face = Acquire(run.GlyphTypeface);
-        return face is null ? null : new(face, run.GlyphInfos.ToArray(), run.FontRenderingEmSize, layout.TextLines[0].Baseline);
+        return face is null ? null : new(face, run.GlyphInfos.ToArray(), run.FontRenderingEmSize, layout.TextLines[0].Baseline, tracking);
     }
     private static FaceLease? Acquire(GlyphTypeface chosen)
     {
@@ -88,7 +89,7 @@ internal sealed class MaterialNativeClockText : IDisposable
                     candidate.Dispose();
                 }
                 if (imported is null) return null;
-                shared = new(chosen, imported); Faces.Add(chosen, shared);
+                shared = new(chosen, imported, derived); Faces.Add(chosen, shared);
             }
             shared.References++; return new(shared);
         }
@@ -113,12 +114,24 @@ internal sealed class MaterialNativeClockText : IDisposable
     internal bool Draw(DrawingContext context, IBrush? brush, Point origin, double density, Size bounds, TextOptions options)
     {
         if (brush is not ISolidColorBrush solid || options.TextHintingMode == TextHintingMode.Light) return false;
-        context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, solid.Color, solid.Opacity, origin, density, bounds, options));
+        context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, solid.Color, solid.Opacity, origin, density, bounds, options));
         return true;
+    }
+    private double NumericAdvance(double density) => Math.Floor(1151d / 2048 * Math.Floor(_size * density) + .5);
+    internal Size? Measure(double density, double height)
+    {
+        if (!_face.Face.NumericProfile) return null;
+        // This locked face has equal digit advances1151/2048 and phantom pp1=0.
+        // FreeType rounds pp2 even without bytecode. TextLine LEFT/RIGHT trims
+        // edge half-tracking; Compose reserves.5 after the first intrinsic ceil.
+        var shapeSize = Math.Floor(_size * density);
+        var tracking = _tracking / _size * shapeSize;
+        var advance = NumericAdvance(density) * _glyphs.Length + tracking * Math.Max(0, _glyphs.Length - 1);
+        return new Size(Math.Ceiling(Math.Ceiling(advance) + (_tracking == 0 ? 0 : .5)) / density, Math.Ceiling(height * density) / density);
     }
     public void Dispose() => _face.Dispose();
 
-    private sealed class GlyphDraw(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, Color color,
+    private sealed class GlyphDraw(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, double tracking, Color color,
         double alpha, Point origin, double density, Size bounds, TextOptions options) : ICustomDrawOperation
     {
         public Rect Bounds => new(bounds);
@@ -149,11 +162,13 @@ internal sealed class MaterialNativeClockText : IDisposable
             using var paint = new SKPaint { IsAntialias = true, Color = new SKColor(color.R, color.G, color.B,
                 (byte)Math.Clamp(Math.Round(color.A * alpha * opacity), 0, 255)) };
             var indices = new ushort[glyphs.Length]; var positions = new SKPoint[glyphs.Length]; double x = 0;
+            var nativeAdvance = Math.Floor(1151d / 2048 * Math.Floor(size * density) + .5);
+            var nativeTracking = tracking / size * Math.Floor(size * density);
             for (var index = 0; index < glyphs.Length; index++)
             {
                 var glyph = glyphs[index]; indices[index] = glyph.GlyphIndex;
                 positions[index] = new((float)((x + glyph.GlyphOffset.X) * density), (float)(glyph.GlyphOffset.Y * density));
-                x += glyph.GlyphAdvance;
+                x += face.Face.NumericProfile ? (nativeAdvance + nativeTracking) / density : glyph.GlyphAdvance;
             }
             var saved = canvas.Save();
             try
@@ -163,7 +178,9 @@ internal sealed class MaterialNativeClockText : IDisposable
                 var run = builder.AllocatePositionedRun(font, indices.Length);
                 run.SetGlyphs(indices); run.SetPositions(positions);
                 using var blob = builder.Build();
-                canvas.DrawText(blob, (float)(origin.X * density), (float)((origin.Y + baseline) * density), paint);
+                var paragraphBaseline = face.Face.NumericProfile && options.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned
+                    ? Math.Floor(baseline * density + .5) : baseline * density;
+                canvas.DrawText(blob, (float)(origin.X * density), (float)(origin.Y * density + paragraphBaseline), paint);
             }
             finally { canvas.RestoreToCount(saved); }
         }
