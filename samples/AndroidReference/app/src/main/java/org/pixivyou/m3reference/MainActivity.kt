@@ -123,6 +123,7 @@ private fun feb(day: Int): Long = LocalDate.of(2024, 2, day).atStartOfDay(ZoneOf
 
 @Composable
 private fun DateRangeScene(scene: String) {
+    val dialogConfiguration = LocalConfiguration.current
     val start = when (scene) { "date-range-7-24" -> 7; "date-range-9-16" -> 9; else -> 10 }
     val end = when (scene) { "date-range-7-24" -> 24; "date-range-9-16" -> 16; else -> 12 }
     val state = rememberDateRangePickerState(initialSelectedStartDateMillis = feb(start), initialSelectedEndDateMillis = feb(end), initialDisplayedMonthMillis = feb(1), yearRange = 2024..2024,
@@ -135,7 +136,9 @@ private fun DateRangeScene(scene: String) {
     Text("${state.selectedStartDateMillis?.let { java.time.Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).dayOfMonth }} – ${state.selectedEndDateMillis?.let { java.time.Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).dayOfMonth }}", Modifier.padding(horizontal = 16.dp).testTag("selected-range"))
     DateRangePicker(state = state, modifier = Modifier.weightForScene().testTag("date-range-picker"))
     if (modal) DatePickerDialog(onDismissRequest = { modal = false }, confirmButton = { TextButton(onClick = { modal = false }) { Text("OK") } }, dismissButton = { TextButton(onClick = { modal = false }) { Text("Cancel") } }) {
-        DateRangePicker(state = state, modifier = Modifier.height(540.dp).testTag("date-range-dialog-picker"))
+        CompositionLocalProvider(LocalConfiguration provides dialogConfiguration) {
+            DateRangePicker(state = state, modifier = Modifier.height(540.dp).testTag("date-range-dialog-picker"))
+        }
     }
 }
 

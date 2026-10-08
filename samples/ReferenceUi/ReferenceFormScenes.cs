@@ -130,19 +130,20 @@ public sealed partial class ReferenceShell
                 {
                     var button = new MaterialButton { Content = confirm ? "OK" : "Cancel", Variant = MaterialButtonVariant.Text };
                     AutomationProperties.SetName(button, confirm ? "OK" : "Cancel");
-                    scope.Register(confirm ? "PART_ConfirmButton" : "PART_CancelButton", button); actions.Children.Add(button);
+                    button.Click += (_, _) => { if (confirm) owner.Confirm(); else owner.Cancel(); };
+                    actions.Children.Add(button);
                 }
                 var body = new ContentPresenter { Content = owner.Content, HorizontalContentAlignment = HorizontalAlignment.Stretch,
                     VerticalContentAlignment = VerticalAlignment.Stretch };
-                scope.Register("PART_ContentPresenter", body);
                 var grid = new Grid { RowDefinitions = new RowDefinitions("*,Auto"), Children = { body, actions } };
                 Grid.SetRow(actions, 1);
-                var surface = new Border { Child = grid, CornerRadius = new CornerRadius(28) };
+                var clip = new Border { Child = grid, CornerRadius = new CornerRadius(28), ClipToBounds = true };
+                var surface = new Border { Child = clip, CornerRadius = new CornerRadius(28) };
                 surface.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.SurfaceContainerHighBrush"));
                 surface.Bind(Border.BoxShadowProperty, new DynamicResourceExtension("M3.Elevation.Shadow3"));
                 return surface;
             }) };
-        var session = dialog.Show(Overlay);
+        var session = dialog.Show(Overlay, new MaterialOverlayOptions { Margin = default });
         session.Closed += (_, _) => { inline.PropertyChanged -= fromInline; picker.PropertyChanged -= fromDialog; };
     }
     private Control CreateTime()

@@ -18,6 +18,29 @@ namespace Avalonia.Material3.Tests;
 public class ReferenceParityScenarioTests
 {
     [AvaloniaFact]
+    public void Reference_range_dialog_keeps_the_native_rounded_surface_corners()
+    {
+        using var host = new ReferenceHost("date-range-9-16");
+        host.Shell.MaterialTheme.Elevation = host.Shell.MaterialTheme.Elevation with { Shadow3 = default };
+        using var before = host.Window.CaptureRenderedFrame()!;
+        host.Click("open-date-dialog");
+        var dialog = host.Shell.Overlay.GetVisualDescendants().OfType<MaterialDialog>().Single();
+        Assert.Equal(host.Shell.Overlay.Bounds.Width, dialog.Bounds.Width, 3);
+        var corner = dialog.TranslatePoint(new Point(1, 1), host.Window)!.Value;
+        using var bitmap = host.Window.CaptureRenderedFrame()!; using var pixels = bitmap.Lock();
+        var offset = (int)(corner.Y * host.Window.RenderScaling) * pixels.RowBytes + (int)(corner.X * host.Window.RenderScaling) * 4;
+        var first = Marshal.ReadByte(pixels.Address, offset); var green = Marshal.ReadByte(pixels.Address, offset + 1); var third = Marshal.ReadByte(pixels.Address, offset + 2);
+        var color = pixels.Format == PixelFormat.Bgra8888 ? Color.FromRgb(third, green, first) : Color.FromRgb(first, green, third);
+        using var original = before.Lock();
+        var oldFirst = Marshal.ReadByte(original.Address, offset); var oldGreen = Marshal.ReadByte(original.Address, offset + 1); var oldThird = Marshal.ReadByte(original.Address, offset + 2);
+        var oldRed = original.Format == PixelFormat.Bgra8888 ? oldThird : oldFirst;
+        var oldBlue = original.Format == PixelFormat.Bgra8888 ? oldFirst : oldThird;
+        Assert.InRange(Math.Abs(color.R - Math.Round(oldRed * .68)), 0, 1);
+        Assert.InRange(Math.Abs(color.G - Math.Round(oldGreen * .68)), 0, 1);
+        Assert.InRange(Math.Abs(color.B - Math.Round(oldBlue * .68)), 0, 1);
+    }
+
+    [AvaloniaFact]
     public void Reference_Roboto_assets_match_400_500_and_700_without_font_simulation()
     {
         var family = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto");
