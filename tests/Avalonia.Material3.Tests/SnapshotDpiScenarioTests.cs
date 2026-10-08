@@ -17,6 +17,15 @@ namespace Avalonia.Material3.Tests;
 
 public class SnapshotDpiScenarioTests
 {
+    [AvaloniaFact]
+    public void Minute_clock_uses_the_source_local_numeric_labels_without_zero_padding()
+    {
+        var dial = new MaterialClockDial { ActivePart = MaterialTimePickerPart.Minute, Value = 7 };
+        using var host = new GeometryHost(dial, 256, 256);
+        Assert.Equal("5", dial.Children.OfType<MaterialClockNumber>().Single(number => number.Value == 5).Content);
+        Assert.Equal("0", dial.Children.OfType<MaterialClockNumber>().Single(number => number.Value == 0).Content);
+    }
+
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
