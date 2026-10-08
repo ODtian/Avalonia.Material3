@@ -4,6 +4,8 @@
 
 preview.6 修复单选圆点缩放中心、日期选中后的宽度变化、搜索行重叠与浮层裁切，批量更新主题令牌，并适配 Carousel 桌面滚轮。原生几何依据与待完成的产物复验见 [preview.6 复验记录](docs/verification/manual-quality-preview6.md)。纯色扩散与渐变闪光两套 Ripple 保持可选。
 
+[Avalonia 对照 App](samples/ReferenceUi/README.md)共享 Android 与桌面实现，提供与[原生对照 App](samples/AndroidReference/README.md)相同的 15 场景、初始状态和交互；[场景矩阵](samples/ReferenceUi/scene-parity.json)记录布局与组件资源差异。
+
 这是**本地预览候选**，不是已发布到 nuget.org 的声明；也不等于母规格全部验收。真实 App 升级、人工读屏、物理移动设备及 Android 验收仍有明确外部条件，见[最终证据与支持矩阵](docs/verification/m3-19.md)。各组件的 Avalonia 投影边界仍适用，不宣称 Compose 内部物理/帧像素等价。
 
 - .NET SDK **10.0.112** / net10.0；Avalonia **12.1.3**
