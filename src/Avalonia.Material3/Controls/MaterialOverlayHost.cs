@@ -28,6 +28,7 @@ public class MaterialOverlayHost : ContentControl
     private bool _detaching;
     private bool _committingAction;
     private MaterialOverlaySession? _outsidePress;
+    private NavigationMethod _focusMethod;
     public MaterialOverlayHost() => LayoutUpdated += (_, _) =>
     {
         foreach (var session in _sessions) session.Layer.UpdateAnchor();
@@ -40,6 +41,7 @@ public class MaterialOverlayHost : ContentControl
         _root?.AddHandler(GotFocusEvent, RootGotFocus, RoutingStrategies.Bubble, handledEventsToo: true);
         _root?.AddHandler(PointerPressedEvent, RootPointerPressed, RoutingStrategies.Tunnel, handledEventsToo: true);
         _root?.AddHandler(PointerReleasedEvent, RootPointerReleased, RoutingStrategies.Bubble, handledEventsToo: true);
+        _root?.AddHandler(KeyDownEvent, RootKeyDown, RoutingStrategies.Tunnel, handledEventsToo: true);
     }
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
@@ -47,6 +49,7 @@ public class MaterialOverlayHost : ContentControl
         _root?.RemoveHandler(GotFocusEvent, RootGotFocus);
         _root?.RemoveHandler(PointerPressedEvent, RootPointerPressed);
         _root?.RemoveHandler(PointerReleasedEvent, RootPointerReleased);
+        _root?.RemoveHandler(KeyDownEvent, RootKeyDown);
         _outsidePress = null;
         _root = null;
         try { ForceFinishFrom(0, MaterialOverlayCloseReason.HostDetached); }
@@ -55,6 +58,7 @@ public class MaterialOverlayHost : ContentControl
 
     private void RootGotFocus(object? sender, FocusChangedEventArgs e)
     {
+        _focusMethod = e.NavigationMethod;
         if (_redirectingFocus || _sessions.Count == 0 || e.Source is not Visual visual) return;
         var modalIndex = _sessions.FindLastIndex(session => session.Options.IsModal);
         if (modalIndex < 0 || _sessions.Skip(modalIndex).Any(session => session.Layer.IsVisualAncestorOf(visual))) return;
@@ -121,13 +125,13 @@ public class MaterialOverlayHost : ContentControl
         return session;
     }
 
-    private static void FocusContent(MaterialOverlaySession session)
+    private void FocusContent(MaterialOverlaySession session, NavigationMethod? method = null)
     {
         var target = session.Options.InitialFocus;
         if (target is null || !target.Focusable || !(target == session.Content || session.Content.IsVisualAncestorOf(target)) || !target.IsEffectivelyEnabled || !target.IsEffectivelyVisible)
             target = session.Content.GetVisualDescendants().OfType<Control>().Prepend(session.Content)
                 .FirstOrDefault(control => control.Focusable && control.IsEffectivelyEnabled && control.IsEffectivelyVisible);
-        (target ?? session.Layer.Container).Focus(NavigationMethod.Tab);
+        (target ?? session.Layer.Container).Focus(method ?? _focusMethod);
     }
 
     internal bool IsTop(MaterialOverlaySession session) => _sessions.Count > 0 && _sessions[^1] == session;
@@ -147,6 +151,7 @@ public class MaterialOverlayHost : ContentControl
             if (!session.IsOpen || _sessions.Count == 0 || _sessions[^1] != session) return false;
         }
         var oldCount = OpenCount;
+        var restoreMethod = _focusMethod;
         _sessions.RemoveAt(_sessions.Count - 1);
         try
         {
@@ -167,11 +172,11 @@ public class MaterialOverlayHost : ContentControl
             RaisePropertyChanged(OpenCountProperty, oldCount, OpenCount);
             if (!forced && session.Options.RestoreFocus)
             {
-                if (session.ReturnFocus is { IsEffectivelyEnabled: true, IsEffectivelyVisible: true } previous && TopLevel.GetTopLevel(previous) == TopLevel.GetTopLevel(this)) previous.Focus(NavigationMethod.Tab);
-                else if (_sessions.Count > 0) FocusContent(_sessions[^1]);
+                if (session.ReturnFocus is { IsEffectivelyEnabled: true, IsEffectivelyVisible: true } previous && TopLevel.GetTopLevel(previous) == TopLevel.GetTopLevel(this)) previous.Focus(restoreMethod);
+                else if (_sessions.Count > 0) FocusContent(_sessions[^1], restoreMethod);
                 else if (Content is Control control)
                     control.GetVisualDescendants().OfType<Control>().Prepend(control)
-                        .FirstOrDefault(candidate => candidate.Focusable && candidate.IsEffectivelyEnabled && candidate.IsEffectivelyVisible)?.Focus(NavigationMethod.Tab);
+                        .FirstOrDefault(candidate => candidate.Focusable && candidate.IsEffectivelyEnabled && candidate.IsEffectivelyVisible)?.Focus(restoreMethod);
             }
         }
         finally { session.Complete(result); }
@@ -219,6 +224,7 @@ public class MaterialOverlayHost : ContentControl
 
     private void RootPointerPressed(object? sender, PointerPressedEventArgs e)
     {
+        _focusMethod = NavigationMethod.Pointer;
         _outsidePress = null;
         if (_sessions.Count > 0 && e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && e.Source is Visual source)
         {
@@ -226,6 +232,8 @@ public class MaterialOverlayHost : ContentControl
             if (source != top.Content && !top.Content.IsVisualAncestorOf(source)) _outsidePress = top;
         }
     }
+
+    private void RootKeyDown(object? sender, KeyEventArgs e) => _focusMethod = NavigationMethod.Tab;
 
     private void RootPointerReleased(object? sender, PointerReleasedEventArgs e)
     {

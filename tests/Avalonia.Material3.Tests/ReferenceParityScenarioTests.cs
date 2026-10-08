@@ -18,6 +18,21 @@ namespace Avalonia.Material3.Tests;
 public class ReferenceParityScenarioTests
 {
     [AvaloniaTheory]
+    [InlineData("open-dialog")]
+    [InlineData("open-side-sheet")]
+    public void Reference_overlays_apply_the_native_window_safe_area(string action)
+    {
+        using var host = new ReferenceHost("overlays");
+        host.Window.Height = 792; host.Shell.SetSafeArea(new Thickness(0, 24, 0, 0)); host.Render();
+        host.Click(action);
+        Control surface = action == "open-dialog" ? host.Shell.Overlay.GetVisualDescendants().OfType<MaterialDialog>().Single()
+            : host.Shell.Overlay.GetVisualDescendants().OfType<MaterialSideSheet>().Single();
+        var box = GeometryHost.Box(surface, host.Window);
+        if (action == "open-dialog") Assert.Equal(408, box.Center.Y, 3);
+        else { Assert.Equal(24, box.Top, 3); Assert.Equal(792, box.Bottom, 3); }
+    }
+
+    [AvaloniaTheory]
     [InlineData("selection-disabled", 2)]
     [InlineData("selection-disabled-off", 0)]
     public void Disabled_selection_profile_keeps_both_radio_and_switch_states_visible(string scene, int selectedSwitches)
@@ -282,10 +297,10 @@ public class ReferenceParityScenarioTests
     }
 
     [AvaloniaFact]
-    public void Reference_scene_manifest_matches_the_fifteen_native_routes_and_home_navigation()
+    public void Reference_scene_manifest_matches_the_seventeen_native_routes_and_home_navigation()
     {
         using var host = new ReferenceHost();
-        Assert.Equal(new[] { "date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays" }, ReferenceShell.SceneIds);
+        Assert.Equal(new[] { "date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "selection-disabled", "selection-disabled-off", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays" }, ReferenceShell.SceneIds);
         foreach (var scene in ReferenceShell.SceneIds)
         {
             Assert.True(host.Shell.Navigate(scene)); host.Render();

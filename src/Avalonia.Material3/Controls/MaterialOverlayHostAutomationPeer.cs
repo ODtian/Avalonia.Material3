@@ -18,11 +18,11 @@ internal sealed class MaterialOverlayScopeAutomationPeer : ControlAutomationPeer
     {
         owner.PropertyChanged += (_, change) =>
         {
-            if (change.Property != Input.InputElement.IsEnabledProperty) return;
+            if (change.Property != Input.InputElement.IsEffectivelyEnabledProperty) return;
             InvalidateChildren();
             // Reconnect cached parents before the next native focus notification/tree walk.
             GetChildren();
         };
     }
-    protected override IReadOnlyList<AutomationPeer>? GetChildrenCore() => Owner.IsEnabled ? base.GetChildrenCore() : null;
+    protected override IReadOnlyList<AutomationPeer>? GetChildrenCore() => Owner.IsEffectivelyEnabled ? base.GetChildrenCore() : null;
 }
