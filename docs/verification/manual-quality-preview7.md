@@ -11,10 +11,12 @@
 - Checkbox 未选及禁用选中状态，两档密度完整 ROI 与原生一致；350% mixed、Radio 选中状态也一致。
 - 禁用 Radio／Switch 主体及 on／off 图标实心颜色按源 alpha 和 Surface 合成校准。
 - 五种 FAB 上下阴影剖面，在两档密度逐行 RGB 与原生一致；125% Elevated 的实际触摸配方、51px 表面和底部阴影已核对。
+- Extended FAB 两档密度的表面尺寸一致，完整外侧阴影区域逐像素一致。
 - Dialog、Menu、Bottom sheet、Side sheet 的实际边界一致；触摸焦点外观和侧面板首次入场的固定正文布局已核对。
+- 时钟普通数字 3 与完全覆盖后的数字 3，完整原图 ROI 逐像素一致；接近、部分覆盖、完全覆盖、离开四阶段按选择圆实际区域切换字色。
 - Windows 设置切换实测：字体中位数 95.3ms，形状 69.6ms，reduce motion 64.1ms。最终包复验随发布清单记录。
 
-时钟空间覆色、字体源与段落测量继续按原图像素核对。官方阴影来源、字体派生的源／输出哈希与许可随包保存。Material Symbols Rounded 与原生 Compose Filled 素材由场景矩阵分别记录。
+时钟部分覆盖的选择圆边缘正在按原生 Clear／Xor／DstOver 混合顺序完成最后复验。字体 DEFAULT／同源 variable／派生 static400 的数字 3、5，原生相同位置原图逐像素一致。官方阴影来源、字体派生的源／输出哈希与许可随包保存。Material Symbols Rounded 与原生 Compose Filled 素材由场景矩阵分别记录。
 
 最终证据表：
 
