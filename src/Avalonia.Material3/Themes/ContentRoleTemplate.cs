@@ -17,7 +17,7 @@ internal sealed class ContentRoleTemplate : IDataTemplate
         if (data is Control control) return control;
         if (data is null) return null;
         var text = new TextBlock { Text = data.ToString(), TextWrapping = TextWrapping.Wrap };
-        text.Styles.Add(new Style(selector => selector.OfType<TextBlock>().Class(":disabled"))
+        text.Styles.Add(new Style(selector => selector.OfType<TextBlock>().Class(":disabled").Not(value => value.Class(":modal-paint-enabled")))
         {
             Setters = { new Setter(Visual.OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) }
         });
