@@ -11,6 +11,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PackageConsumption.Tests/Sheet*ScenarioTests.cs" Link="Shared/%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)../samples/ReferenceUi/*.cs" Link="ReferenceUi/%(Filename)%(Extension)" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/mcu-0.3.0.json" LogicalName="M3.ReferenceVectors.json" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/androidx-tokens.json" LogicalName="M3.AndroidXTokens.json" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)ReferenceVectors/carousel-keylines.json" LogicalName="M3.CarouselKeylines.json" />

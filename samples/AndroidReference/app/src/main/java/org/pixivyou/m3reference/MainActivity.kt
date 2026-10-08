@@ -43,17 +43,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         val initialScene = intent.getStringExtra("scene") ?: "home"
         val initialDark = intent.getBooleanExtra("dark", false)
-        val palette = intent.getStringExtra("palette") ?: "expressive"
-        val localeTag = intent.getStringExtra("locale")
+        val palette = intent.getStringExtra("palette") ?: "classic"
+        val localeTag = intent.getStringExtra("locale") ?: "en-US"
         val expressiveButtons = intent.getBooleanExtra("expressiveButtons", true)
         // The release defaults are preserved; this explicit flag selects the M3 checkbox
         // migration branch for comparison with a library implementing the new M3 styling.
-        ComposeMaterial3Flags.isCheckboxStylingFixEnabled = intent.getBooleanExtra("checkboxM3", false)
+        ComposeMaterial3Flags.isCheckboxStylingFixEnabled = intent.getBooleanExtra("checkboxM3", true)
         setContent {
             val baseContext = LocalContext.current
             val baseConfiguration = LocalConfiguration.current
             val configuration = remember(baseConfiguration, localeTag) {
-                Configuration(baseConfiguration).apply { if (localeTag != null) setLocales(LocaleList.forLanguageTags(localeTag)) }
+                Configuration(baseConfiguration).apply { setLocales(LocaleList.forLanguageTags(localeTag)) }
             }
             val localizedContext = remember(baseContext, configuration) {
                 android.view.ContextThemeWrapper(baseContext, R.style.ReferenceTheme).apply {

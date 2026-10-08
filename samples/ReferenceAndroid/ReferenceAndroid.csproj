@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-android36.0</TargetFramework>
+    <OutputType>Exe</OutputType><IsPackable>false</IsPackable>
+    <ApplicationId>org.pixivyou.m3avaloniareference</ApplicationId><ApplicationTitle>M3 Avalonia Reference</ApplicationTitle>
+    <ApplicationVersion>1</ApplicationVersion><ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <SupportedOSPlatformVersion>23.0</SupportedOSPlatformVersion>
+    <RuntimeIdentifier>android-x64</RuntimeIdentifier><AndroidPackageFormats>apk</AndroidPackageFormats>
+    <AndroidManifest>Properties/AndroidManifest.xml</AndroidManifest><AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../ReferenceUi/ReferenceUi.csproj" /><PackageReference Include="Avalonia.Android" Version="$(AvaloniaVersion)" /></ItemGroup>
+</Project>

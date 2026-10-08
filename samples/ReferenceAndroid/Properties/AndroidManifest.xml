@@ -1,0 +1,3 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application android:label="M3 Avalonia Reference" android:allowBackup="false" android:supportsRtl="true" android:theme="@style/ReferenceTheme" />
+</manifest>

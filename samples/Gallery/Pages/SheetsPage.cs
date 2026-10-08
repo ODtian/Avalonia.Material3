@@ -27,8 +27,8 @@ public sealed class SheetsPage : UserControl
         Overlay = windowOverlayHost ?? new MaterialOverlayHost();
         AutomationProperties.SetName(Result, "Sheet result");
         AutomationProperties.SetLiveSetting(Result, AutomationLiveSetting.Polite);
-        StandardBottom = new MaterialBottomSheet { Title = "Standard bottom information", ExpandedExtent = 560, Content = InformationBody("Standard bottom") };
-        StandardSide = new MaterialSideSheet { Title = "Standard side information", Content = InformationBody("Standard side") };
+        StandardBottom = new MaterialBottomSheet { Title = "Standard bottom information", ExpandedExtent = 560, Padding = new Thickness(16, 0, 16, 16), Content = InformationBody("Standard bottom") };
+        StandardSide = new MaterialSideSheet { Title = "Standard side information", Padding = new Thickness(16, 0, 16, 16), Content = InformationBody("Standard side") };
         StandardBottom.Actions = StandardActions(StandardBottom);
         StandardSide.Actions = StandardActions(StandardSide);
         var main = new StackPanel { Margin = new Thickness(16), Spacing = 12 };
@@ -81,6 +81,7 @@ public sealed class SheetsPage : UserControl
     {
         if (LastModal is not null) return;
         MaterialSheet sheet = side ? new MaterialSideSheet() : new MaterialBottomSheet { ExpandedExtent = 600 };
+        sheet.Padding = new Thickness(16, 0, 16, 16);
         sheet.Title = side ? "Modal side information" : "Modal bottom information";
         sheet.Content = InformationBody(side ? "Modal side" : "Modal bottom");
         var actions = new WrapPanel();

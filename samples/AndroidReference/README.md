@@ -14,7 +14,7 @@ $env:ANDROID_HOME = 'C:/Users/boqi/Android/Sdk'
 
 APK: `app/build/outputs/apk/debug/app-debug.apk`. Application: `org.pixivyou.m3reference/.MainActivity`.
 
-The `scene` string intent extra opens a component directly. `dark` is a boolean; the toolbar also toggles the theme. `palette=expressive` is the theme default. `palette=classic` chooses the official default `lightColorScheme()` purple palette while retaining the expressive shapes and motion. The optional `locale=en-US` extra supplies a localized Android configuration context and Compose locale/resources for this app. Device density and font scale flow through normal Android configuration. `M3Reference` logcat records the exact runtime palette, locale, density, flags and attached hardware acceleration for the activity decor and Compose root.
+The manual comparison defaults are `scene=home`, `dark=false`, `palette=classic`, `locale=en-US`, `checkboxM3=true`, `expressiveButtons=true`, matching the Avalonia reference. `palette=classic` chooses the official default `lightColorScheme()` palette; `palette=expressive` selects `expressiveLightColorScheme()`. Shapes and motion remain expressive. The locale extra supplies a localized Android configuration context and Compose locale/resources. Device density and font scale flow through Android configuration. `M3Reference` logcat records the runtime palette, locale, density, flags and hardware acceleration.
 
 | Scene | Official components and initial state |
 | --- | --- |
@@ -45,5 +45,5 @@ adb -s 127.0.0.1:16416 install -r app/build/outputs/apk/debug/app-debug.apk
 adb -s 127.0.0.1:16416 shell am start -S -n org.pixivyou.m3reference/.MainActivity --es scene date-range --ez dark false --es locale en-US
 ```
 
-The published beta01 defaults `isCheckboxStylingFixEnabled=false` (legacy M2 checkbox branch) and `isUpdatedTimepickerToggleEnabled=true`. Add the explicit `--ez checkboxM3 true` extra to select the official M3 checkbox migration branch; the default launch preserves the release default. Date-range scenes make February 20 unavailable through the official `SelectableDates` API, matching the library gallery scenario. Selected ranges remain inclusive through that disabled day.
+The upstream beta01 release defaults `isCheckboxStylingFixEnabled=false` (legacy M2 checkbox branch) and `isUpdatedTimepickerToggleEnabled=true`. This paired reference explicitly defaults checkbox styling to the M3 migration branch; `--ez checkboxM3 false` preserves access to the upstream legacy branch. Date-range scenes make February 20 unavailable through the official `SelectableDates` API. Selected ranges remain inclusive through that disabled day. The paired layout/action manifest is `../ReferenceUi/scene-parity.json`; unsupported alternate library branches are recorded there.
 
