@@ -257,9 +257,11 @@
     </Style>
     <Style Selector="^:disabled:not(:modal-paint-enabled):checked /template/ ContentPresenter#OnIcon">
       <Setter Property="Foreground" Value="{DynamicResource M3.SwitchDisabledOnSurfaceForegroundBrush}" />
+      <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="^:disabled:not(:modal-paint-enabled):unchecked /template/ ContentPresenter#OffIcon">
       <Setter Property="Foreground" Value="{DynamicResource M3.SwitchDisabledHighestForegroundBrush}" />
+      <Setter Property="Opacity" Value="1" />
     </Style>
     <Style Selector="^:disabled:not(:modal-paint-enabled):checked /template/ Ellipse#Thumb">
       <Setter Property="Fill" Value="{DynamicResource M3.SurfaceBrush}" />

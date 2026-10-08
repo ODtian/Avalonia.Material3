@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Layout;
@@ -10,6 +11,35 @@ namespace Avalonia.Material3.Tests;
 
 public class PixelStrokeScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(false, 1)]
+    [InlineData(true, 1)]
+    [InlineData(false, .5)]
+    [InlineData(true, .5)]
+    public void Disabled_switch_icon_paints_its_surface_composite_once(bool selected, double opacity)
+    {
+        var icon = new ForegroundInk { Opacity = opacity };
+        var control = new MaterialSwitch { IsChecked = selected, IsEnabled = false, OnIcon = icon, OffIcon = icon,
+            Margin = new Thickness(16), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+        using var host = new GeometryHost(control, 140, 100);
+        var ink = selected ? Color.FromRgb(168, 163, 170) : Color.FromRgb(245, 238, 247);
+        var background = selected ? Color.Parse("#FEF7FF") : Color.FromRgb(168, 163, 170);
+        var actual = host.Pixel(selected ? 54 : 26, 40);
+        byte Blend(byte foreground, byte surface) => (byte)Math.Round(foreground * opacity + surface * (1 - opacity));
+        Assert.InRange(Math.Abs(actual.R - Blend(ink.R, background.R)), 0, 1);
+        Assert.InRange(Math.Abs(actual.G - Blend(ink.G, background.G)), 0, 1);
+        Assert.InRange(Math.Abs(actual.B - Blend(ink.B, background.B)), 0, 1);
+        Assert.False(icon.IsEffectivelyEnabled);
+        host.Window.MouseDown(new Point(selected ? 54 : 26, 40), Avalonia.Input.MouseButton.Left);
+        host.Window.MouseUp(new Point(selected ? 54 : 26, 40), Avalonia.Input.MouseButton.Left);
+        Assert.Equal(selected, control.IsChecked);
+    }
+
+    private sealed class ForegroundInk : Control
+    {
+        public override void Render(DrawingContext context) => context.DrawRectangle(GetValue(TextElement.ForegroundProperty), null, new Rect(Bounds.Size));
+    }
+
     [AvaloniaTheory]
     [InlineData(false)]
     [InlineData(true)]
