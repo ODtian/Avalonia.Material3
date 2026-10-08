@@ -14,7 +14,7 @@ android {
         versionName = "1.5.0-beta01-reference"
     }
     buildFeatures { compose = true }
-    sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/glyphProbeFonts"))
+    sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/glyphProbeFonts").get().asFile)
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
