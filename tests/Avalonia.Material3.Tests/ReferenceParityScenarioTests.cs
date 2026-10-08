@@ -17,15 +17,17 @@ namespace Avalonia.Material3.Tests;
 
 public class ReferenceParityScenarioTests
 {
-    [AvaloniaFact]
-    public void Disabled_selection_profile_keeps_both_radio_and_switch_states_visible()
+    [AvaloniaTheory]
+    [InlineData("selection-disabled", 2)]
+    [InlineData("selection-disabled-off", 0)]
+    public void Disabled_selection_profile_keeps_both_radio_and_switch_states_visible(string scene, int selectedSwitches)
     {
-        using var host = new ReferenceHost("selection-disabled");
+        using var host = new ReferenceHost(scene);
         var radios = host.Shell.GetVisualDescendants().OfType<MaterialRadioButton>().ToArray();
         Assert.Equal(3, radios.Length); Assert.Single(radios, radio => radio.IsChecked == true);
         Assert.All(radios, radio => Assert.False(radio.IsEffectivelyEnabled));
         var switches = host.Shell.GetVisualDescendants().OfType<MaterialSwitch>().ToArray();
-        Assert.Equal(4, switches.Length); Assert.Equal(2, switches.Count(control => control.IsChecked == true));
+        Assert.Equal(4, switches.Length); Assert.Equal(selectedSwitches, switches.Count(control => control.IsChecked == true));
         Assert.All(switches, control => Assert.False(control.IsEffectivelyEnabled));
     }
 

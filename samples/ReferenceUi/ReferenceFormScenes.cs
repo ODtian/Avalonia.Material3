@@ -14,7 +14,7 @@ namespace Material3.ReferenceUi;
 
 public sealed partial class ReferenceShell
 {
-    private Control CreateSelection(bool enabled = true)
+    private Control CreateSelection(bool enabled = true, bool initialChecked = true)
     {
         var column = SceneColumn();
         column.Children.Add(Text("Checkbox / Radio / Switch", MaterialTypeRole.TitleLarge));
@@ -26,8 +26,8 @@ public sealed partial class ReferenceShell
         column.Children.Add(Row(0, new MaterialCheckBox { IsChecked = true, IsEnabled = false }, Text("Disabled")));
         for (var index = 0; index < 3; index++) column.Children.Add(Row(0,
             SetId(new MaterialRadioButton { GroupName = "reference-radio", IsChecked = index == 0, IsEnabled = enabled }, "radio-" + index), Text("Choice " + (index + 1))));
-        var plain = SetId(new MaterialSwitch { IsChecked = true, IsEnabled = enabled }, "switch");
-        var icons = SetId(new MaterialSwitch { IsChecked = true, IsEnabled = enabled, OnIcon = Symbol("check", 16), OffIcon = Symbol("close", 16) }, "switch-icons");
+        var plain = SetId(new MaterialSwitch { IsChecked = initialChecked, IsEnabled = enabled }, "switch");
+        var icons = SetId(new MaterialSwitch { IsChecked = initialChecked, IsEnabled = enabled, OnIcon = Symbol("check", 16), OffIcon = Symbol("close", 16) }, "switch-icons");
         var synchronizing = false;
         void Synchronize(MaterialSwitch source, MaterialSwitch destination, AvaloniaPropertyChangedEventArgs change)
         {
