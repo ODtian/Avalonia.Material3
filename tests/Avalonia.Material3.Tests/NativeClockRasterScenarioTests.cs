@@ -17,6 +17,16 @@ namespace Avalonia.Material3.Tests;
 
 public class NativeClockRasterScenarioTests
 {
+    [AvaloniaFact]
+    public void Clock_cardinal_targets_match_the_actual_native_float_polar_boundary()
+    {
+        var dial = new MaterialClockDial();
+        using var host = new GeometryHost(dial, 256, 256); host.Window.SetRenderScaling(3.5); host.Render();
+        Assert.Equal(717, dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3).Bounds.Left * 3.5, precision: 6);
+        Assert.Equal(717, dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 6).Bounds.Top * 3.5, precision: 6);
+    }
+
+
     [AvaloniaTheory]
     [InlineData(1.25, 12)]
     [InlineData(3.5, 32)]
