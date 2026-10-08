@@ -47,6 +47,22 @@ public class NativeClockRasterScenarioTests
         host.Render(); Assert.Equal(32, Label().Bounds.Width * 3.5, precision: 6);
     }
 
+    [AvaloniaFact]
+    public void Clock_preserves_explicit_caller_rendering_mode_and_can_return_to_native()
+    {
+        var family = new FontFamily($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto");
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = family }; host.Window.SetRenderScaling(3.5); host.Render();
+        var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        Control Label() => number.GetVisualDescendants().OfType<ContentPresenter>().Single().Child!;
+        Assert.Equal(32, Label().Bounds.Width * 3.5, precision: 6);
+        TextOptions.SetTextRenderingMode(host.Window, TextRenderingMode.Alias); host.Render();
+        Assert.Equal(34, Label().Bounds.Width * 3.5, precision: 6);
+        TextOptions.SetTextRenderingMode(host.Window, TextRenderingMode.Antialias); host.Render();
+        Assert.Equal(32, Label().Bounds.Width * 3.5, precision: 6);
+    }
+
     [AvaloniaTheory]
     [InlineData(1.25, 12)]
     [InlineData(3.5, 32)]
