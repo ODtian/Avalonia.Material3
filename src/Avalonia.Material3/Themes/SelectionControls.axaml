@@ -120,7 +120,7 @@
             <Border x:Name="FocusRing" Width="42" Height="42" CornerRadius="21" BorderThickness="3"
                     BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
             <Border x:Name="Ring" Width="20" Height="20" CornerRadius="10" BorderThickness="2" BorderBrush="{TemplateBinding BorderBrush}" />
-            <Ellipse x:Name="Dot" Width="0" Height="0" Fill="{TemplateBinding BorderBrush}" IsVisible="False" />
+            <controls:MaterialCircleGlyph x:Name="Dot" Width="20" Height="20" Fill="{TemplateBinding BorderBrush}" />
           </Grid>
           <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
             <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
@@ -141,7 +141,7 @@
     <Style Selector="^:disabled">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled /template/ Border#Ring, ^:disabled /template/ Ellipse#Dot">
+    <Style Selector="^:disabled /template/ Border#Ring, ^:disabled /template/ controls|MaterialCircleGlyph#Dot">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
   </ControlTheme>
