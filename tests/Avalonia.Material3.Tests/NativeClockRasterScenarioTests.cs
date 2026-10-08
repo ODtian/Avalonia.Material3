@@ -15,6 +15,19 @@ namespace Avalonia.Material3.Tests;
 
 public class NativeClockRasterScenarioTests
 {
+    [AvaloniaFact]
+    public void Internal_clock_reproduction_has_the_pinned_true_400_face_and_unchanged_glyph_mapping()
+    {
+        using var original = AssetLoader.Open(new Uri($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts/Roboto-Regular.ttf"));
+        using var reproduction = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Fonts/Roboto-Clock400.ttf"));
+        using var sourceData = SKData.Create(original); using var derivedData = SKData.Create(reproduction);
+        using var sourceFace = SKTypeface.FromData(sourceData); using var derivedFace = SKTypeface.FromData(derivedData);
+        Assert.Equal(400, derivedFace.FontStyle.Weight); Assert.Equal(5, derivedFace.FontStyle.Width);
+        Assert.Equal(SKFontStyleSlant.Upright, derivedFace.FontStyle.Slant);
+        Assert.Equal(3362, derivedFace.GlyphCount); Assert.Equal(sourceFace.GlyphCount, derivedFace.GlyphCount);
+        Assert.Equal(sourceFace.GetTableData(0x636d6170), derivedFace.GetTableData(0x636d6170));
+    }
+
     [AvaloniaTheory]
     [InlineData(1.25)]
     [InlineData(3.5)]
