@@ -17,6 +17,25 @@ namespace Avalonia.Material3.Tests;
 
 public class ReferenceParityScenarioTests
 {
+    [AvaloniaFact]
+    public void Reference_ripple_buttons_use_native_touch_padding_and_the_51_pixel_surface_at_125_percent()
+    {
+        using var host = new ReferenceHost("ripple"); host.Window.SetRenderScaling(1.25); host.Render();
+        var button = host.Find<MaterialButton>("ripple-elevated"); button.BringIntoView(); host.Render();
+        Assert.Equal(new Thickness(16, 10), button.Padding);
+        var box = GeometryHost.Box(button, host.Window);
+        using var bitmap = host.Window.CaptureRenderedFrame()!; using var pixels = bitmap.Lock();
+        var x = (int)((box.Left + 32) * 1.25); var filled = 0;
+        for (var y = (int)(box.Top * 1.25); y < (int)(box.Bottom * 1.25); y++)
+        {
+            var offset = y * pixels.RowBytes + x * 4;
+            var red = pixels.Format == PixelFormat.Rgba8888 ? 0 : 2;
+            if (Marshal.ReadByte(pixels.Address, offset + red) == 247 && Marshal.ReadByte(pixels.Address, offset + 1) == 242
+                && Marshal.ReadByte(pixels.Address, offset + 2 - red) == 250) filled++;
+        }
+        Assert.Equal(51, filled);
+    }
+
     [AvaloniaTheory]
     [InlineData("open-dialog")]
     [InlineData("open-side-sheet")]
