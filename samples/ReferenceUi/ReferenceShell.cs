@@ -17,7 +17,7 @@ namespace Material3.ReferenceUi;
 /// <summary>A literal host-layout port of the official Android reference, using packaged controls.</summary>
 public sealed partial class ReferenceShell : UserControl, IDisposable
 {
-    public static IReadOnlyList<string> SceneIds { get; } = Array.AsReadOnly(new[] { "date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "selection-disabled", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays" });
+    public static IReadOnlyList<string> SceneIds { get; } = Array.AsReadOnly(new[] { "date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "selection-disabled", "selection-disabled-off", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays" });
     private readonly ContentControl _scene = new() { HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch };
     private readonly Grid _layout = new() { RowDefinitions = new RowDefinitions("Auto,*") };
     private readonly List<IDisposable> _sceneLifetime = [];
@@ -59,6 +59,7 @@ public sealed partial class ReferenceShell : UserControl, IDisposable
             "home" => CreateHome(), "date-range" or "date-range-7-24" or "date-range-9-16" => CreateDateRange(scene),
             "date-single" => CreateDateSingle(), "time" => CreateTime(), "selection" => CreateSelection(),
             "selection-disabled" => CreateSelection(false),
+            "selection-disabled-off" => CreateSelection(false, false),
             "slider" => CreateSlider(), "fields" => CreateFields(), "buttons" => CreateButtons(),
             "ripple" => CreateRipple(), "fab" => CreateFab(), "progress" => CreateProgress(),
             "carousel" => CreateCarousel(), "navigation" => CreateNavigation(), "overlays" => CreateOverlays(),

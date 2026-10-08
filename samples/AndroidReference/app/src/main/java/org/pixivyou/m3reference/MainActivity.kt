@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
 }
 
 internal val LocalNativeExpressiveButtons = staticCompositionLocalOf { true }
-private val scenes = listOf("date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "selection-disabled", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays")
+private val scenes = listOf("date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "selection-disabled", "selection-disabled-off", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays")
 
 @Composable
 private fun ReferenceApp(initialScene: String, initialDark: Boolean, palette: String) {
@@ -112,6 +112,7 @@ private fun ReferenceApp(initialScene: String, initialDark: Boolean, palette: St
                         "time" -> TimeScene()
                         "selection" -> SelectionScene()
                         "selection-disabled" -> SelectionScene(enabled = false)
+                        "selection-disabled-off" -> SelectionScene(enabled = false, initialChecked = false)
                         "slider" -> SliderScene()
                         "fields" -> FieldsScene()
                         else -> ExtendedScene(scene)
@@ -183,11 +184,11 @@ private fun TimeScene() {
 }
 
 @Composable
-private fun SelectionScene(enabled: Boolean = true) = SceneColumn {
+private fun SelectionScene(enabled: Boolean = true, initialChecked: Boolean = true) = SceneColumn {
     var check by remember { mutableStateOf(false) }
     var mixed by remember { mutableStateOf(ToggleableState.Indeterminate) }
     var radio by remember { mutableIntStateOf(0) }
-    var switch by remember { mutableStateOf(true) }
+    var switch by remember { mutableStateOf(initialChecked) }
     Text("Checkbox / Radio / Switch", style = MaterialTheme.typography.titleLarge)
     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { Checkbox(check, { check = it }, Modifier.testTag("checkbox"), enabled = enabled); Text("Notifications") }
     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { TriStateCheckbox(mixed, { mixed = if (mixed == ToggleableState.On) ToggleableState.Off else ToggleableState.On }, Modifier.testTag("checkbox-mixed"), enabled = enabled); Text("Mixed state") }

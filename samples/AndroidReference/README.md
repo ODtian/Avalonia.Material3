@@ -26,6 +26,7 @@ The manual comparison defaults are `scene=home`, `dark=false`, `palette=classic`
 | `time` | TimePicker / TimeInput / TimePickerDialog, 07:07 PM; tap the minute field to inspect the minute dial |
 | `selection` | Checkbox, TriStateCheckbox, RadioButton, Switch and official thumb icons |
 | `selection-disabled` | Disabled checkbox states, selected/unselected radios and on/off switches with/without thumb icons |
+| `selection-disabled-off` | The same disabled profile with its first two switches initially off for exact same-position comparison |
 | `slider` | Stateful Slider at 27%, discrete Slider at 70%, RangeSlider at 8–20 |
 | `fields` | OutlinedTextField and TextField with labels, icons and affixes |
 | `buttons` | ButtonGroup, connected ToggleButton shapes, five official elevated split sizes, filled split, ElevatedButton and ElevatedCard |
