@@ -10,6 +10,8 @@ using Avalonia.VisualTree;
 using Avalonia.Automation;
 using Avalonia.Media;
 using Avalonia.Material3.Controls;
+using Avalonia.Media.TextFormatting;
+using System.Security.Cryptography;
 using Material3.ReferenceUi;
 
 namespace Material3.ReferenceAndroid;
@@ -74,12 +76,21 @@ public sealed class MainActivity : AvaloniaMainActivity
                     Log.Info("M3AvaloniaReference", $"font requestedWeight={(int)weight} actualWeight={(int)face.Weight} family={face.FamilyName} simulations={face.FontSimulations}");
             if (clock is not null)
                 foreach (var number in clock.Children.OfType<MaterialClockNumber>().Where(number => number.Value is 3 or 5))
+                {
+                    var typeface = new Typeface(number.FontFamily, number.FontStyle, number.FontWeight);
+                    using var paragraph = new TextLayout(number.Content?.ToString() ?? string.Empty, typeface, number.FontSize, number.Foreground,
+                        lineHeight: number.GetValue(TextBlock.LineHeightProperty), letterSpacing: number.LetterSpacing);
+                    Log.Info("M3AvaloniaReference", $"clock-font value={number.Value} runs={string.Join(',', paragraph.TextLines.SelectMany(line => line.TextRuns).Select(run => run.GetType().Name))} paragraph={paragraph.Width},{paragraph.Height} baseline={paragraph.TextLines[0].Baseline} options={TextOptions.GetTextOptions(number)}");
+                    if (FontManager.Current.TryGetGlyphTypeface(typeface, out var glyphFace) && glyphFace.PlatformTypeface.TryGetStream(out var fontStream))
+                        using (fontStream)
+                            Log.Info("M3AvaloniaReference", $"clock-font-face value={number.Value} family={glyphFace.FamilyName} weight={glyphFace.Weight} stretch={glyphFace.Stretch} style={glyphFace.Style} simulations={glyphFace.FontSimulations} glyphs={glyphFace.GlyphCount} sha={Convert.ToHexString(SHA256.HashData(fontStream))}");
                     foreach (var visual in number.GetVisualDescendants().OfType<Control>().Prepend(number).Where(control => control == number || control.GetType().Name == "MaterialClockLabel"))
                         if (visual.TransformToVisual(root) is { } matrix)
                         {
                             var box = new Avalonia.Rect(visual.Bounds.Size).TransformToAABB(matrix); var density = root.RenderScaling;
                             Log.Info("M3AvaloniaReference", $"clock-layout part={clock.ActivePart} value={number.Value} visual={visual.GetType().Name} dip={box} physical={box.X * density},{box.Y * density},{box.Width * density},{box.Height * density} phase={box.X * density - Math.Floor(box.X * density)},{box.Y * density - Math.Floor(box.Y * density)}");
                         }
+                }
             foreach (var control in shell.GetVisualDescendants().OfType<Control>())
             {
                 var id = AutomationProperties.GetAutomationId(control);

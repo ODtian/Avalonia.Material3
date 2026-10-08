@@ -15,6 +15,7 @@ namespace Avalonia.Material3.Controls;
 internal sealed class MaterialNativeClockText : IDisposable
 {
     private const string DefaultRoboto = "9CA9DEBB09459BF4E3E7F826F5CD0F35F253902B85684921FCE2BA3F28DD0F50";
+    private const string DerivedRoboto = "BC75B0FDA23E7859E81034E2571126341636CD9C8853B66A57D51D17D094433F";
     private static readonly Dictionary<GlyphTypeface, Face> Faces = [];
     private sealed class Face(GlyphTypeface owner, SKTypeface typeface)
     {
@@ -66,8 +67,14 @@ internal sealed class MaterialNativeClockText : IDisposable
                 // Arbitrary active variation coordinates are absent from this API.
                 // The paired400 file is explicitly pinned at its default axes.
                 var fvar = Tag("fvar");
-                if (chosen.PlatformTypeface.TryGetTable(new OpenTypeTag(fvar), out _) &&
-                    (Convert.ToHexString(SHA256.HashData(bytes)) != DefaultRoboto || (int)chosen.Weight != 400 || (int)chosen.Stretch != 5 || chosen.Style != FontStyle.Normal)) return null;
+                var derived = chosen.PlatformTypeface.TryGetTable(new OpenTypeTag(fvar), out _);
+                if (derived)
+                {
+                    if (Convert.ToHexString(SHA256.HashData(bytes)) != DefaultRoboto || (int)chosen.Weight != 400 || (int)chosen.Stretch != 5 || chosen.Style != FontStyle.Normal) return null;
+                    using var reproduction = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Fonts/Roboto-Clock400.ttf"));
+                    using var copy = new MemoryStream(); reproduction.CopyTo(copy); bytes = copy.ToArray();
+                    if (Convert.ToHexString(SHA256.HashData(bytes)) != DerivedRoboto) return null;
+                }
                 using var data = SKData.CreateCopy(bytes);
                 var count = bytes.Length >= 12 && BinaryPrimitives.ReadUInt32BigEndian(bytes) == Tag("ttcf")
                     ? BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(8)) : 1;
@@ -77,7 +84,7 @@ internal sealed class MaterialNativeClockText : IDisposable
                 {
                     var candidate = SKTypeface.FromData(data, index);
                     if (candidate is null) continue;
-                    if (Corresponds(candidate, chosen)) { imported = candidate; break; }
+                    if (Corresponds(candidate, chosen, derived)) { imported = candidate; break; }
                     candidate.Dispose();
                 }
                 if (imported is null) return null;
@@ -87,12 +94,15 @@ internal sealed class MaterialNativeClockText : IDisposable
         }
     }
     private static uint Tag(string name) => (uint)name[0] << 24 | (uint)name[1] << 16 | (uint)name[2] << 8 | name[3];
-    private static bool Corresponds(SKTypeface imported, GlyphTypeface chosen)
+    private static bool Corresponds(SKTypeface imported, GlyphTypeface chosen, bool derived)
     {
         if (imported.GlyphCount != chosen.GlyphCount || imported.FontStyle.Weight != (int)chosen.Weight ||
             imported.FontStyle.Width != (int)chosen.Stretch ||
             (imported.FontStyle.Slant == SKFontStyleSlant.Upright) != (chosen.Style == FontStyle.Normal)) return false;
-        foreach (var table in new[] { "head", "maxp", "cmap", "name", "OS/2", "glyf", "CFF " })
+        // The explicitly hashed derivation changes variation outlines/metadata;
+        // its exact source/default axes and unchanged cmap/glyph order are recorded
+        // by the offline manifest. Ordinary TTC imports require raw table identity.
+        foreach (var table in derived ? new[] { "cmap" } : new[] { "head", "maxp", "cmap", "name", "OS/2", "glyf", "CFF " })
         {
             var tag = Tag(table);
             if (!chosen.PlatformTypeface.TryGetTable(new OpenTypeTag(tag), out var actual)) continue;
