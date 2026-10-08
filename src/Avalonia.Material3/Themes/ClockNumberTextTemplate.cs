@@ -28,6 +28,7 @@ internal sealed class MaterialClockLabel : Control
     private Point _maskOrigin;
     private TextOptions _maskOptions;
     private AvaloniaObject? _watchedBrush;
+    private Transform? _brushTransform;
     private GradientBrush? _gradient;
     private GradientStops? _stopCollection;
     private readonly List<GradientStop> _stops = [];
@@ -73,16 +74,26 @@ internal sealed class MaterialClockLabel : Control
     {
         _normal?.Dispose(); _normal = null; _mask?.Dispose(); _mask = null;
         if (_watchedBrush is not null) _watchedBrush.PropertyChanged -= BrushInvalidated;
+        if (_brushTransform is not null) _brushTransform.Changed -= TransformChanged;
         if (_stopCollection is not null) _stopCollection.CollectionChanged -= StopsChanged;
         foreach (var stop in _stops) stop.PropertyChanged -= BrushInvalidated;
         _stops.Clear(); _gradient = null; _stopCollection = null;
-        _watchedBrush = null;
+        _watchedBrush = null; _brushTransform = null;
     }
     private void BrushInvalidated(object? sender, AvaloniaPropertyChangedEventArgs args)
     {
         if (args.Property == GradientBrush.GradientStopsProperty) WatchStops();
+        if (args.Property == Brush.TransformProperty) WatchTransform();
         _mask?.Dispose(); _mask = null; InvalidateVisual();
     }
+    private void WatchTransform()
+    {
+        if (_brushTransform is not null) _brushTransform.Changed -= TransformChanged;
+        _brushTransform = (_watchedBrush as Brush)?.Transform as Transform;
+        if (_brushTransform is not null) _brushTransform.Changed += TransformChanged;
+    }
+    private void TransformChanged(object? sender, EventArgs args)
+    { _mask?.Dispose(); _mask = null; InvalidateVisual(); }
     private void WatchStops()
     {
         if (_stopCollection is not null) _stopCollection.CollectionChanged -= StopsChanged;
@@ -106,6 +117,7 @@ internal sealed class MaterialClockLabel : Control
         ClearLayouts(); _key = key;
         _watchedBrush = key.Item5 as AvaloniaObject;
         if (_watchedBrush is not null) _watchedBrush.PropertyChanged += BrushInvalidated;
+        WatchTransform();
         _gradient = key.Item5 as GradientBrush;
         WatchStops();
         _normal = new TextLayout(_text, key.Item1, key.Item2, key.Item5, lineHeight: key.Item3, letterSpacing: key.Item4);
@@ -123,7 +135,7 @@ internal sealed class MaterialClockLabel : Control
         // Android's offscreen selector mask uses grayscale glyph coverage. Both
         // complementary regions need the same coverage, independent of brush colour.
         var options = new TextOptions();
-        foreach (var visual in this.GetVisualAncestors().Reverse().Append(this)) options = options.MergeWith(TextOptions.GetTextOptions(visual));
+        foreach (var visual in this.GetVisualAncestors().Reverse().Append(this)) options = TextOptions.GetTextOptions(visual).MergeWith(options);
         options = options with { TextRenderingMode = TextRenderingMode.Antialias };
         using var textOptions = context.PushTextOptions(options);
         // Compose places an integer-sized paragraph at an integer centre offset;

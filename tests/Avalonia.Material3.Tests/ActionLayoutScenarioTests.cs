@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Headless;
 using Avalonia.Layout;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
@@ -9,6 +10,40 @@ namespace Avalonia.Material3.Tests;
 
 public class ActionLayoutScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(1.25)]
+    [InlineData(3.5)]
+    public void Settled_extended_fab_has_an_integer_native_content_extent(double density)
+    {
+        var fab = new MaterialExtendedFab { Size = MaterialFabSize.Small, Icon = new Border { Width = 24, Height = 24 },
+            Content = "Extended FAB", VerticalAlignment = VerticalAlignment.Top };
+        using var host = new GeometryHost(fab, 240, 120); host.Window.SetRenderScaling(density); host.Render();
+        Assert.Equal(Math.Ceiling(fab.Bounds.Width * density), fab.Bounds.Width * density, precision: 6);
+        var original = fab.Bounds.Width;
+        fab.IsExpanded = false; host.Render(); fab.IsExpanded = true; host.Render();
+        Assert.Equal(original, fab.Bounds.Width);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(false, 1.25, 51, 5)]
+    [InlineData(true, 1.25, 51, 5)]
+    [InlineData(false, 3.5, 140, 14)]
+    public void Stock_action_padding_rounds_each_native_physical_edge(bool group, double density, int height, int top)
+    {
+        MaterialButton button = group ? new MaterialGroupButton() : new MaterialButton();
+        button.Content = new Border { Width = 24, Height = 20 };
+        button.Padding = new Thickness(16, 10); button.Background = Brushes.Black;
+        button.VerticalAlignment = VerticalAlignment.Top;
+        using var host = new GeometryHost(button, 160, 100); host.Window.SetRenderScaling(density); host.Render();
+        using var bitmap = host.Window.CaptureRenderedFrame()!; using var pixels = bitmap.Lock();
+        var x = (int)(button.Bounds.Center.X * density); var rows = new List<int>();
+        for (var y = 0; y < bitmap.PixelSize.Height; y++)
+            if (System.Runtime.InteropServices.Marshal.ReadByte(pixels.Address, y * pixels.RowBytes + x * 4 + 1) == 0) rows.Add(y);
+        Assert.Equal(top, rows[0]); Assert.Equal(height, rows.Count);
+        Assert.Equal(new Thickness(16, 10), button.Padding);
+        Assert.Equal(48 * density, button.Bounds.Height * density, precision: 6);
+    }
+
     [AvaloniaFact]
     public void Button_group_uses_its_native_available_width_without_a_shadow_measurement_inset()
     {

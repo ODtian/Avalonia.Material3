@@ -17,6 +17,38 @@ namespace Avalonia.Material3.Tests;
 
 public class SnapshotDpiScenarioTests
 {
+    [AvaloniaFact]
+    public void Mutating_the_clock_brush_transform_updates_selected_coverage()
+    {
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 320, 320);
+        var transform = new TranslateTransform();
+        var brush = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
+            EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative), Transform = transform,
+            GradientStops = [new GradientStop(Colors.Transparent, 0), new GradientStop(Colors.Black, 1)] };
+        dial.Children.OfType<MaterialClockNumber>().Single(number => number.Value == 3).Foreground = brush; host.Render();
+        var region = new Rect(222, 118, 14, 20);
+        Assert.True(SelectedInkMass(dial, 1, region) > 5);
+        transform.X = 100; host.Render();
+        Assert.InRange(SelectedInkMass(dial, 1, region), 0, .01);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(1.25)]
+    [InlineData(3.5)]
+    public void Local_clock_text_options_override_the_ancestor_mask_options(double density)
+    {
+        var dial = new MaterialClockDial { Value = 3 };
+        TextOptions.SetTextHintingMode(dial, TextHintingMode.Strong);
+        using var host = new GeometryHost(dial, 320, 320); host.Window.SetRenderScaling(density); host.Render();
+        var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        TextOptions.SetTextHintingMode(number, TextHintingMode.None); host.Render();
+        var region = new Rect(222, 118, 14, 20);
+        var localInk = SelectedInkMass(dial, density, region);
+        TextOptions.SetTextHintingMode(dial, TextHintingMode.None); host.Render();
+        Assert.Equal(SelectedInkMass(dial, density, region), localInk, precision: 6);
+    }
+
     [AvaloniaTheory]
     [InlineData(1.25)]
     [InlineData(3.5)]
