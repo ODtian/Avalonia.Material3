@@ -175,8 +175,10 @@ public sealed class MaterialSliderPresenter : Control
         var owner = _owner!;
         var text = new FormattedText(value, CultureInfo.CurrentCulture, FlowDirection.LeftToRight,
             new Typeface(owner.FontFamily, owner.FontStyle, owner.FontWeight), owner.FontSize, owner.ValueIndicatorForeground);
-        var width = Math.Min(Bounds.Width, text.Width + 16);
-        var height = text.Height + 12;
+        // MDC TooltipDrawable consumes the inherited 4-DIP padding and 28-DIP minimum width;
+        // Slider.Label overrides the minimum height to 32. Its start/end padding is not consumed.
+        var width = Math.Min(Bounds.Width, Math.Max(28, text.Width + 8));
+        var height = Math.Max(32, owner.FontSize);
         var x = Math.Clamp(handle - width / 2, 0, Math.Max(0, Bounds.Width - width));
         var y = Geometry.Axis - 22 - 12 - height;
         if (Vertical)
@@ -205,7 +207,9 @@ public sealed class MaterialSliderPresenter : Control
 
     private void DrawLabel(DrawingContext context, LabelLayout label)
     {
-        context.DrawRectangle(_owner!.ValueIndicatorBrush, null, label.Rect, label.Rect.Height / 2, label.Rect.Height / 2);
-        using (context.PushClip(label.Rect)) context.DrawText(label.Text, label.Rect.TopLeft + new Vector(8, 6));
+        var radius = Math.Min(label.Rect.Width, label.Rect.Height) / 2;
+        context.DrawRectangle(_owner!.ValueIndicatorBrush, null, label.Rect, radius, radius);
+        using (context.PushClip(label.Rect)) context.DrawText(label.Text, label.Rect.TopLeft +
+            new Vector((label.Rect.Width - label.Text.Width) / 2, (label.Rect.Height - label.Text.Height) / 2));
     }
 }

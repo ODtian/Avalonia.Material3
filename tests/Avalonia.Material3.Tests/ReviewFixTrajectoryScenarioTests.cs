@@ -110,19 +110,36 @@ public class ReviewFixTrajectoryScenarioTests
     [AvaloniaFact]
     public async Task Fullscreen_search_surface_interpolates_dimensions_corner_and_header_together()
     {
-        var search = new MaterialSearch { Mode = MaterialSearchMode.Bar, ViewPresentation = MaterialSearchViewPresentation.FullScreen };
+        var search = new MaterialSearch { Mode = MaterialSearchMode.Bar, ViewPresentation = MaterialSearchViewPresentation.FullScreen,
+            Background = Brushes.Magenta };
         using var host = new GeometryHost(search, 800, 500);
+        host.Theme.States = new MaterialStates { FocusStateLayerOpacity = 0, HoverStateLayerOpacity = 0 };
         host.Theme.Motion = new MaterialMotion(); host.Render();
-        var surface = search.GetVisualDescendants().OfType<Border>().Single(c => c.Name == "SearchContainer");
-        var closed = surface.Bounds.Size;
+        var closed = PaintedBounds();
         search.Open(); await Task.Delay(200); host.Render();
-        Assert.InRange(surface.Bounds.Height, closed.Height + 1, 499);
-        Assert.InRange(surface.Bounds.Width, closed.Width + 1, 799);
-        Assert.InRange(surface.CornerRadius.TopLeft, .01, 27.99);
+        var intermediate = PaintedBounds();
+        Assert.InRange(intermediate.Height, closed.Height + 1, 499);
+        Assert.InRange(intermediate.Width, closed.Width + 1, 799);
+        Assert.NotEqual(Colors.Magenta, host.Pixel(0, 0));
         Assert.InRange(search.HeaderHeight, 56.01, 71.99);
         host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true }; host.Render();
-        Assert.Equal(new Size(800, 500), surface.Bounds.Size);
+        Assert.Equal(new Rect(0, 0, 800, 500), PaintedBounds());
+        Assert.Equal(Colors.Magenta, host.Pixel(0, 0));
         Assert.Equal(72, search.HeaderHeight);
+
+        Rect PaintedBounds()
+        {
+            var image = host.Offscreen(1);
+            var left = 800; var right = -1; var top = 500; var bottom = -1;
+            for (var y = 0; y < 500; y++)
+            for (var x = 0; x < 800; x++)
+            {
+                if (image[x, y] != Colors.Magenta) continue;
+                left = Math.Min(left, x); right = Math.Max(right, x); top = Math.Min(top, y); bottom = Math.Max(bottom, y);
+            }
+            Assert.True(right >= left && bottom >= top);
+            return new Rect(left, top, right - left + 1, bottom - top + 1);
+        }
     }
 
     [AvaloniaTheory]

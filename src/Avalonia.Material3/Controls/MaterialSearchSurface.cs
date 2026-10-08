@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Diagnostics;
 using Avalonia.Data;
+using Avalonia.Media;
 
 namespace Avalonia.Material3.Controls;
 
@@ -34,7 +35,7 @@ internal sealed class MaterialSearchSurface : Decorator
     private void OwnerChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == MaterialSearch.ModeProperty || change.Property == MaterialSearch.ViewPresentationProperty
-            || change.Property == MaterialSearch.CornerRadiusProperty) ExpansionChanged();
+            || change.Property == MaterialSearch.CornerRadiusProperty || change.Property == MaterialSearch.BackgroundProperty) ExpansionChanged();
     }
     private void ExpansionChanged()
     {
@@ -47,6 +48,7 @@ internal sealed class MaterialSearchSurface : Decorator
                 : owner.CornerRadius);
         }
         InvalidateMeasure();
+        InvalidateVisual();
     }
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -66,5 +68,16 @@ internal sealed class MaterialSearchSurface : Decorator
     {
         Child?.Arrange(new Rect(0, _topInset, _surface.Width, _surface.Height));
         return finalSize;
+    }
+    public override void Render(DrawingContext context)
+    {
+        base.Render(context);
+        if (Owner is not { IsFullscreenPresentation: true } owner || Child is not Border border) return;
+        // The fullscreen shell fills the host viewport. Its content stays in the first row,
+        // leaving the supporting text, tokens and explicit add action their own layout rows.
+        var progress = Math.Clamp(owner.ExpansionProgress, 0, 1);
+        var height = 64 + (owner.Bounds.Height - 64) * progress;
+        context.DrawRectangle(owner.Background, null,
+            new RoundedRect(new Rect(0, _topInset, _surface.Width, Math.Max(0, height - _topInset)), border.CornerRadius));
     }
 }
