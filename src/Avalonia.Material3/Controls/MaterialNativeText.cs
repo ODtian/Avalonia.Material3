@@ -66,6 +66,9 @@ internal sealed class MaterialNativeText : IDisposable
         var run = runs[0].GlyphRun;
         var glyphs = run.GlyphInfos.ToArray();
         if (glyphs.Length != text.Length || glyphs.Any(glyph => glyph.GlyphOffset != default)) return null;
+        // Locked ':'/';' composites round component offsets in native normal
+        // hinting, so their no-hint outlines do not have the simple-glyph proof.
+        if (glyphs.Any(glyph => glyph.GlyphIndex is 31 or 32)) return null;
         var face = Acquire(run.GlyphTypeface);
         if (face is null) return null;
         if (!face.Face.LatinProfile) { face.Dispose(); return null; }
@@ -191,16 +194,19 @@ internal sealed class MaterialNativeText : IDisposable
         }
         private void Paint(SKCanvas canvas, double opacity)
         {
+            // Android framework adds FT_LOAD_NO_AUTOHINT for normal text. The
+            // matched no-program/pp1=0 faces have the same outlines without
+            // hinting; their native rounded advances remain a separate recipe.
+            var nativeProfile = face.Face.NumericProfile || face.Face.LatinProfile;
             using var font = new SKFont(face.Face.Typeface, (float)(size * density))
             {
                 Edging = SKFontEdging.Antialias, Subpixel = false, LinearMetrics = false, EmbeddedBitmaps = true,
                 BaselineSnap = options.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned,
-                Hinting = options.TextHintingMode == TextHintingMode.None ? SKFontHinting.None : SKFontHinting.Normal
+                Hinting = nativeProfile ? SKFontHinting.None : SKFontHinting.Normal
             };
             using var paint = new SKPaint { IsAntialias = true, Color = new SKColor(color.R, color.G, color.B,
                 (byte)Math.Clamp(Math.Round(color.A * alpha * opacity), 0, 255)) };
             var indices = new ushort[glyphs.Length]; var positions = new SKPoint[glyphs.Length]; double x = 0;
-            var nativeProfile = face.Face.NumericProfile || face.Face.LatinProfile;
             var nativeAdvances = nativeProfile ? NativeAdvances(face.Face, glyphs, size, tracking, density) : null;
             for (var index = 0; index < glyphs.Length; index++)
             {
