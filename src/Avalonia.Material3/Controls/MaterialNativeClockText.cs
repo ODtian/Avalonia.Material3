@@ -14,11 +14,6 @@ namespace Avalonia.Material3.Controls;
 // SkFont raster flags. Import only a demonstrably corresponding public face.
 internal sealed class MaterialNativeClockText : IDisposable
 {
-    // Temporary bounded diagnostic for the exact paired Android profile.
-    // Removed after branch/renderer engagement is established by device capture.
-    private static readonly HashSet<string> Diagnostics = [];
-    private static void Diagnose(string value)
-    { lock (Diagnostics) { if (Diagnostics.Count < 160 && Diagnostics.Add(value)) Console.WriteLine(value); } }
     private const string DefaultRoboto = "9CA9DEBB09459BF4E3E7F826F5CD0F35F253902B85684921FCE2BA3F28DD0F50";
     private const string DerivedRoboto = "BC75B0FDA23E7859E81034E2571126341636CD9C8853B66A57D51D17D094433F";
     private static readonly Dictionary<GlyphTypeface, Face> Faces = [];
@@ -52,38 +47,33 @@ internal sealed class MaterialNativeClockText : IDisposable
 
     internal static MaterialNativeClockText? TryCreate(string text, TextLayout layout)
     {
-        Diagnose($"M3FONT create text={text} lines={layout.TextLines.Count} runs={string.Join(',', layout.TextLines.SelectMany(line => line.TextRuns).Select(run => run.GetType().Name))}");
-        if (text.Length == 0 || text.Any(character => character is < '0' or > '9') || layout.TextLines.Count != 1) { Diagnose("M3FONT reject text/lines"); return null; }
+        if (text.Length == 0 || text.Any(character => character is < '0' or > '9') || layout.TextLines.Count != 1) return null;
         var runs = layout.TextLines[0].TextRuns.OfType<ShapedTextRun>().ToArray();
-        if (runs.Length != 1) { Diagnose("M3FONT reject shaped-count=" + runs.Length); return null; }
+        if (runs.Length != 1) return null;
         var run = runs[0].GlyphRun;
         var face = Acquire(run.GlyphTypeface);
-        Diagnose($"M3FONT create-result text={text} native={face is not null}");
         return face is null ? null : new(face, run.GlyphInfos.ToArray(), run.FontRenderingEmSize, layout.TextLines[0].Baseline);
     }
     private static FaceLease? Acquire(GlyphTypeface chosen)
     {
-        Diagnose($"M3FONT acquire chosen={chosen.FamilyName}/{chosen.Weight}/{chosen.Stretch}/{chosen.Style}/{chosen.FontSimulations} count={chosen.GlyphCount}");
-        if (chosen.FontSimulations != FontSimulations.None) { Diagnose("M3FONT reject simulations"); return null; }
+        if (chosen.FontSimulations != FontSimulations.None) return null;
         lock (Faces)
         {
             if (!Faces.TryGetValue(chosen, out var shared))
             {
-                if (!chosen.PlatformTypeface.TryGetStream(out var stream)) { Diagnose("M3FONT reject stream"); return null; }
+                if (!chosen.PlatformTypeface.TryGetStream(out var stream)) return null;
                 byte[] bytes;
                 using (stream) { using var copy = new MemoryStream(); stream.CopyTo(copy); bytes = copy.ToArray(); }
                 // Arbitrary active variation coordinates are absent from this API.
                 // The paired400 file is explicitly pinned at its default axes.
                 var fvar = Tag("fvar");
                 var derived = chosen.PlatformTypeface.TryGetTable(new OpenTypeTag(fvar), out _);
-                Diagnose($"M3FONT fvar={derived} tag={new OpenTypeTag(fvar)} sourceSHA={Convert.ToHexString(SHA256.HashData(bytes))}");
                 if (derived)
                 {
-                    if (Convert.ToHexString(SHA256.HashData(bytes)) != DefaultRoboto || (int)chosen.Weight != 400 || (int)chosen.Stretch != 5 || chosen.Style != FontStyle.Normal) { Diagnose("M3FONT reject derived-profile"); return null; }
+                    if (Convert.ToHexString(SHA256.HashData(bytes)) != DefaultRoboto || (int)chosen.Weight != 400 || (int)chosen.Stretch != 5 || chosen.Style != FontStyle.Normal) return null;
                     using var reproduction = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Fonts/Roboto-Clock400.ttf"));
                     using var copy = new MemoryStream(); reproduction.CopyTo(copy); bytes = copy.ToArray();
-                    Diagnose($"M3FONT derivedSHA={Convert.ToHexString(SHA256.HashData(bytes))}");
-                    if (Convert.ToHexString(SHA256.HashData(bytes)) != DerivedRoboto) { Diagnose("M3FONT reject derived-sha"); return null; }
+                    if (Convert.ToHexString(SHA256.HashData(bytes)) != DerivedRoboto) return null;
                 }
                 using var data = SKData.CreateCopy(bytes);
                 var count = bytes.Length >= 12 && BinaryPrimitives.ReadUInt32BigEndian(bytes) == Tag("ttcf")
@@ -94,11 +84,10 @@ internal sealed class MaterialNativeClockText : IDisposable
                 {
                     var candidate = SKTypeface.FromData(data, index);
                     if (candidate is null) continue;
-                    Diagnose($"M3FONT candidate index={index} family={candidate.FamilyName} weight={candidate.FontStyle.Weight} width={candidate.FontStyle.Width} slant={candidate.FontStyle.Slant} count={candidate.GlyphCount}");
                     if (Corresponds(candidate, chosen, derived)) { imported = candidate; break; }
                     candidate.Dispose();
                 }
-                if (imported is null) { Diagnose("M3FONT reject no-corresponding-face"); return null; }
+                if (imported is null) return null;
                 shared = new(chosen, imported); Faces.Add(chosen, shared);
             }
             shared.References++; return new(shared);
@@ -109,7 +98,7 @@ internal sealed class MaterialNativeClockText : IDisposable
     {
         if (imported.GlyphCount != chosen.GlyphCount || imported.FontStyle.Weight != (int)chosen.Weight ||
             imported.FontStyle.Width != (int)chosen.Stretch ||
-            (imported.FontStyle.Slant == SKFontStyleSlant.Upright) != (chosen.Style == FontStyle.Normal)) { Diagnose("M3FONT reject descriptor"); return false; }
+            (imported.FontStyle.Slant == SKFontStyleSlant.Upright) != (chosen.Style == FontStyle.Normal)) return false;
         // The explicitly hashed derivation changes variation outlines/metadata;
         // its exact source/default axes and unchanged cmap/glyph order are recorded
         // by the offline manifest. Ordinary TTC imports require raw table identity.
@@ -117,14 +106,13 @@ internal sealed class MaterialNativeClockText : IDisposable
         {
             var tag = Tag(table);
             if (!chosen.PlatformTypeface.TryGetTable(new OpenTypeTag(tag), out var actual)) continue;
-            if (imported.GetTableData(tag) is not { } source || !actual.Span.SequenceEqual(source)) { Diagnose($"M3FONT reject table={table} actualLength={actual.Length}"); return false; }
+            if (imported.GetTableData(tag) is not { } source || !actual.Span.SequenceEqual(source)) return false;
         }
         return true;
     }
     internal bool Draw(DrawingContext context, IBrush? brush, Point origin, double density, Size bounds, TextOptions options)
     {
-        if (brush is not ISolidColorBrush solid || options.TextHintingMode == TextHintingMode.Light) { Diagnose($"M3FONT reject draw brush={brush?.GetType().Name} hint={options.TextHintingMode}"); return false; }
-        Diagnose($"M3FONT draw accepted size={_size} density={density} origin={origin} baseline={_baseline} options={options}");
+        if (brush is not ISolidColorBrush solid || options.TextHintingMode == TextHintingMode.Light) return false;
         context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, solid.Color, solid.Opacity, origin, density, bounds, options));
         return true;
     }
@@ -152,7 +140,6 @@ internal sealed class MaterialNativeClockText : IDisposable
         }
         private void Paint(SKCanvas canvas, double opacity)
         {
-            Diagnose($"M3FONT paint fontSize={size * density} subpixel=false linear=false baselineSnap={options.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned} hint={options.TextHintingMode} opacity={opacity} matrix={canvas.TotalMatrix}");
             using var font = new SKFont(face.Face.Typeface, (float)(size * density))
             {
                 Edging = SKFontEdging.Antialias, Subpixel = false, LinearMetrics = false,
