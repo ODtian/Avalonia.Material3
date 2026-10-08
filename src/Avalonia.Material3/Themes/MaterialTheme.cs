@@ -122,31 +122,42 @@ public class MaterialTheme : Styles
 
     private void UpdateTypography()
     {
-        Resources["M3.FontFamily"] = Typography.FontFamily;
+        var resources = new Dictionary<object, object?> { ["M3.FontFamily"] = Typography.FontFamily };
         foreach (var role in Enum.GetValues<MaterialTypeRole>())
         {
             var style = Typography.Get(role);
-            Resources[$"M3.{role}FontFamily"] = Typography.GetFontFamily(role);
-            Resources[$"M3.{role}FontSize"] = style.FontSize * Typography.Scale;
-            Resources[$"M3.{role}LineHeight"] = style.LineHeight * Typography.Scale;
-            Resources[$"M3.{role}LetterSpacing"] = style.LetterSpacing * Typography.Scale;
-            Resources[$"M3.{role}FontWeight"] = style.FontWeight;
+            resources[$"M3.{role}FontFamily"] = Typography.GetFontFamily(role);
+            resources[$"M3.{role}FontSize"] = style.FontSize * Typography.Scale;
+            resources[$"M3.{role}LineHeight"] = style.LineHeight * Typography.Scale;
+            resources[$"M3.{role}LetterSpacing"] = style.LetterSpacing * Typography.Scale;
+            resources[$"M3.{role}FontWeight"] = style.FontWeight;
         }
+        PublishResourceFamily(resources);
+    }
+
+    private void PublishResourceFamily(IEnumerable<KeyValuePair<object, object?>> values)
+    {
+        // Avalonia installs every value before notifying consumers, keeping the family coherent
+        // and avoiding a complete resource traversal for each individual token.
+        if (Resources is ResourceDictionary dictionary) dictionary.SetItems(values);
+        else foreach (var value in values) Resources[value.Key] = value.Value;
     }
 
     private void UpdateShapes()
     {
+        var resources = new Dictionary<object, object?>();
         foreach (var radius in Shapes.GetRadii())
-            Resources[$"M3.Shape.{radius.Key}"] = new CornerRadius(radius.Value);
-        Resources["M3.Shape.CornerExtraSmallTop"] = new CornerRadius(Shapes.CornerExtraSmall, Shapes.CornerExtraSmall, 0, 0);
-        Resources["M3.Shape.CornerLargeTop"] = new CornerRadius(Shapes.CornerLarge, Shapes.CornerLarge, 0, 0);
-        Resources["M3.Shape.CornerExtraLargeTop"] = new CornerRadius(Shapes.CornerExtraLarge, Shapes.CornerExtraLarge, 0, 0);
-        Resources["M3.Shape.CornerLargeStart"] = new CornerRadius(Shapes.CornerLarge, 0, 0, Shapes.CornerLarge);
-        Resources["M3.Shape.CornerLargeEnd"] = new CornerRadius(0, Shapes.CornerLarge, Shapes.CornerLarge, 0);
-        Resources["M3.ButtonCornerRadius"] = new CornerRadius(Shapes.ButtonCornerRadius);
-        Resources["M3.PressedButtonCornerRadius"] = new CornerRadius(Shapes.PressedButtonCornerRadius);
-        Resources["M3.ButtonFocusCornerRadius"] = new CornerRadius(Shapes.ButtonCornerRadius + 5);
-        Resources["M3.PressedButtonFocusCornerRadius"] = new CornerRadius(Shapes.PressedButtonCornerRadius + 5);
+            resources[$"M3.Shape.{radius.Key}"] = new CornerRadius(radius.Value);
+        resources["M3.Shape.CornerExtraSmallTop"] = new CornerRadius(Shapes.CornerExtraSmall, Shapes.CornerExtraSmall, 0, 0);
+        resources["M3.Shape.CornerLargeTop"] = new CornerRadius(Shapes.CornerLarge, Shapes.CornerLarge, 0, 0);
+        resources["M3.Shape.CornerExtraLargeTop"] = new CornerRadius(Shapes.CornerExtraLarge, Shapes.CornerExtraLarge, 0, 0);
+        resources["M3.Shape.CornerLargeStart"] = new CornerRadius(Shapes.CornerLarge, 0, 0, Shapes.CornerLarge);
+        resources["M3.Shape.CornerLargeEnd"] = new CornerRadius(0, Shapes.CornerLarge, Shapes.CornerLarge, 0);
+        resources["M3.ButtonCornerRadius"] = new CornerRadius(Shapes.ButtonCornerRadius);
+        resources["M3.PressedButtonCornerRadius"] = new CornerRadius(Shapes.PressedButtonCornerRadius);
+        resources["M3.ButtonFocusCornerRadius"] = new CornerRadius(Shapes.ButtonCornerRadius + 5);
+        resources["M3.PressedButtonFocusCornerRadius"] = new CornerRadius(Shapes.PressedButtonCornerRadius + 5);
+        PublishResourceFamily(resources);
     }
 
     private void UpdateElevation()
@@ -165,15 +176,18 @@ public class MaterialTheme : Styles
 
     private void UpdateMotion()
     {
-        Resources["M3.StateLayerDuration"] = Motion.ReduceMotion ? TimeSpan.Zero : Motion.StateLayerDuration;
-        Resources["M3.ReduceMotion"] = Motion.ReduceMotion;
+        var resources = new Dictionary<object, object?> {
+            ["M3.StateLayerDuration"] = Motion.ReduceMotion ? TimeSpan.Zero : Motion.StateLayerDuration,
+            ["M3.ReduceMotion"] = Motion.ReduceMotion
+        };
         // Pinned LoadingIndicator component-local morph spring, not the scheme's SlowSpatial pair.
-        Resources["M3.Motion.LoadingMorph"] = new MaterialSpring(0.6, 200) { IsInstant = Motion.ReduceMotion };
+        resources["M3.Motion.LoadingMorph"] = new MaterialSpring(0.6, 200) { IsInstant = Motion.ReduceMotion };
         foreach (var duration in Motion.GetDurations())
-            Resources[$"M3.Motion.{duration.Key}"] = Motion.ReduceMotion ? TimeSpan.Zero : duration.Value;
-        foreach (var easing in Motion.GetEasings()) Resources[$"M3.Motion.{easing.Key}"] = easing.Value.ToEasing();
+            resources[$"M3.Motion.{duration.Key}"] = Motion.ReduceMotion ? TimeSpan.Zero : duration.Value;
+        foreach (var easing in Motion.GetEasings()) resources[$"M3.Motion.{easing.Key}"] = easing.Value.ToEasing();
         foreach (var spring in Motion.Springs.GetSprings())
-            Resources[$"M3.Motion.{spring.Key}"] = spring.Value with { IsInstant = spring.Value.IsInstant || Motion.ReduceMotion };
+            resources[$"M3.Motion.{spring.Key}"] = spring.Value with { IsInstant = spring.Value.IsInstant || Motion.ReduceMotion };
+        PublishResourceFamily(resources);
     }
 
     private void UpdateColorInputs()
