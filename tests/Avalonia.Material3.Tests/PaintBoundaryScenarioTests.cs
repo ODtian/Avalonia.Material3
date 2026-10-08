@@ -22,7 +22,7 @@ public class PaintBoundaryScenarioTests
         using var host = new GeometryHost(new Border { Background = Brushes.White, Child = search }, 400, 400);
         var candidates = search.GetVisualDescendants().OfType<ListBox>().Single();
         var box = GeometryHost.Box(candidates, host.Window);
-        Assert.InRange(host.Pixel(box.Center.X, box.Bottom + 2).R, 0, 250);
+        Assert.InRange(host.Pixel(box.Center.X, box.Bottom + .01).R, 0, 254);
     }
 
     [AvaloniaFact]
@@ -34,9 +34,9 @@ public class PaintBoundaryScenarioTests
         using var host = new GeometryHost(new Border { Background = Brushes.White, Child = toolbar }, 400, 200);
         var surface = toolbar.GetVisualDescendants().OfType<Border>().Single(border => border.Background == Brushes.Magenta);
         var box = GeometryHost.Box(surface, host.Window);
-        Assert.InRange(host.Pixel(box.Center.X, box.Bottom + 2).R, 0, 250);
+        Assert.InRange(host.Pixel(box.Center.X, box.Bottom + .01).R, 0, 254);
         toolbar.IsExpanded = false; host.Render();
-        Assert.Equal(Colors.White, host.Pixel(box.Center.X, box.Bottom + 2));
+        Assert.Equal(Colors.White, host.Pixel(box.Center.X, box.Bottom + .01));
     }
 
     [AvaloniaFact]

@@ -14,13 +14,16 @@ internal abstract class MaterialRevealViewport : Decorator, IMaterialPaintOverfl
     public BoxShadows ElevationShadow { get => GetValue(ElevationShadowProperty); set => SetValue(ElevationShadowProperty, value); }
     public CornerRadius ShadowCornerRadius { get => GetValue(ShadowCornerRadiusProperty); set => SetValue(ShadowCornerRadiusProperty, value); }
     private MaterialClipLease? _foregroundClip;
+    private readonly MaterialElevationTrack _elevation;
     static MaterialRevealViewport() => AffectsRender<MaterialRevealViewport>(ElevationShadowProperty, ShadowCornerRadiusProperty);
-    protected MaterialRevealViewport() { ClipToBounds = true; UseLayoutRounding = false; }
+    protected MaterialRevealViewport()
+    { ClipToBounds = true; UseLayoutRounding = false; _elevation = new(this, () => ElevationShadow, InvalidateVisual); _ = new MaterialShadowSpace(this, InvalidateVisual); }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == ChildProperty) ReleaseClip();
         if (change.Property != ElevationShadowProperty) return;
+        _elevation?.Retarget();
         SetCurrentValue(ClipToBoundsProperty, ElevationShadow == default);
         if (ElevationShadow == default) ReleaseClip();
         InvalidateArrange();
@@ -45,7 +48,9 @@ internal abstract class MaterialRevealViewport : Decorator, IMaterialPaintOverfl
         double Radius(double value) => Math.Min(value, maximum);
         var rounded = new RoundedRect(new Rect(Bounds.Size), Radius(ShadowCornerRadius.TopLeft), Radius(ShadowCornerRadius.TopRight),
             Radius(ShadowCornerRadius.BottomRight), Radius(ShadowCornerRadius.BottomLeft));
-        context.DrawRectangle(null, null, rounded, ElevationShadow);
+        if (_elevation.NativeHeight is { } height) MaterialNativeShadow.Draw(context, this, rounded, height);
+        else context.DrawRectangle(null, null, rounded, ElevationShadow);
     }
-    Rect IMaterialPaintOverflow.GetPaintBounds(Rect bounds) => ElevationShadow.TransformBounds(bounds);
+    Rect IMaterialPaintOverflow.GetPaintBounds(Rect bounds) => _elevation.NativeHeight is { } height
+        ? MaterialNativeShadow.Bounds(this, bounds, height) : ElevationShadow.TransformBounds(bounds);
 }

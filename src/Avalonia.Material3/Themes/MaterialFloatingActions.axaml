@@ -151,7 +151,7 @@
         <ControlTemplate>
           <c:MaterialToolbarLayoutPanel Orientation="{TemplateBinding Orientation}" FloatingActionPosition="{TemplateBinding FloatingActionPosition}">
           <c:MaterialActionReveal x:Name="SurfaceReveal" FadeContent="False" IsExpanded="{TemplateBinding SurfaceIsExpanded}" Orientation="{TemplateBinding Orientation}" SpatialSpring="{DynamicResource M3.Motion.FastSpatial}" EffectsSpring="{DynamicResource M3.Motion.FastEffects}" ShadowCornerRadius="{DynamicResource M3.Shape.CornerFull}">
-          <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" MinHeight="64" Padding="{TemplateBinding Padding}"
+          <c:MaterialElevationBorder x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{DynamicResource M3.Shape.CornerFull}" MinHeight="64" Padding="{TemplateBinding Padding}"
                   BoxShadow="{DynamicResource M3.Elevation.Shadow0}">
             <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
               <c:MaterialToolbarItemsPanel StretchChildIndex="1" Orientation="{TemplateBinding Orientation}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Spacing="4">
@@ -170,7 +170,7 @@
                 </c:MaterialActionReveal>
               </c:MaterialToolbarItemsPanel>
             </ScrollViewer>
-          </Border>
+          </c:MaterialElevationBorder>
           </c:MaterialActionReveal>
           <ContentPresenter Content="{TemplateBinding FloatingAction}" IsVisible="{TemplateBinding FloatingAction, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
           </c:MaterialToolbarLayoutPanel>

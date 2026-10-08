@@ -20,7 +20,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-          <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
+          <controls:MaterialElevationBorder x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
               <controls:MaterialTooltipPanel Variant="{TemplateBinding Variant}">
                 <TextBlock x:Name="Subhead" Text="{TemplateBinding Title}" TextWrapping="Wrap" IsVisible="False"
@@ -32,7 +32,7 @@
                                          IsVisible="{TemplateBinding ActionContent, Converter={x:Static converters:ObjectConverters.IsNotNull}}" />
               </controls:MaterialTooltipPanel>
             </ScrollViewer>
-          </Border>
+          </controls:MaterialElevationBorder>
           <Path x:Name="CaretBottom" Data="M 0,0 L 8,8 L 16,0 Z" Fill="{TemplateBinding Background}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,-8" IsVisible="False" IsHitTestVisible="False" />
           <Path x:Name="CaretTop" Data="M 0,8 L 8,0 L 16,8 Z" Fill="{TemplateBinding Background}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-8,0,0" IsVisible="False" IsHitTestVisible="False" />
           <Path x:Name="CaretLeft" Data="M 8,0 L 0,8 L 8,16 Z" Fill="{TemplateBinding Background}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="-8,0,0,0" IsVisible="False" IsHitTestVisible="False" />
@@ -65,7 +65,7 @@
     <Setter Property="ActionForeground" Value="{DynamicResource M3.InversePrimaryBrush}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
+        <controls:MaterialElevationBorder Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BoxShadow="{DynamicResource M3.Elevation.Shadow3}">
           <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <controls:MaterialFeedbackPanel ActionOnNewLine="{TemplateBinding ActionOnNewLine}" Margin="16,0,8,0">
               <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" Margin="0,14,8,14" VerticalContentAlignment="Center" />
@@ -75,7 +75,7 @@
               <controls:MaterialIconButton x:Name="PART_DismissButton" AutomationProperties.Name="{TemplateBinding DismissText}" Foreground="{DynamicResource M3.InverseOnSurfaceBrush}"><controls:MaterialSymbol Symbol="close" /></controls:MaterialIconButton>
             </controls:MaterialFeedbackPanel>
           </ScrollViewer>
-        </Border>
+        </controls:MaterialElevationBorder>
       </ControlTemplate>
     </Setter>
     <Style Selector="^ /template/ controls|MaterialButton#PART_ActionButton:disabled:not(:modal-paint-enabled)"><Setter Property="Opacity" Value="0.38" /></Style>
@@ -88,12 +88,12 @@
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}"
+        <controls:MaterialElevationBorder Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Padding="{TemplateBinding Padding}"
                 BoxShadow="{DynamicResource M3.Elevation.Shadow2}">
           <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <ItemsPresenter x:Name="PART_ItemsPresenter" ItemsPanel="{TemplateBinding ItemsPanel}" />
           </ScrollViewer>
-        </Border>
+        </controls:MaterialElevationBorder>
       </ControlTemplate>
     </Setter>
     <Setter Property="Padding" Value="0,8" />
@@ -129,7 +129,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid>
-          <Border x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" />
+          <controls:MaterialElevationBorder x:Name="Surface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" />
           <controls:MaterialStateLayer x:Name="State" Background="{TemplateBinding Foreground}" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" IsHitTestVisible="False" />
           <Border x:Name="Focus" BorderBrush="{DynamicResource M3.SecondaryBrush}" BorderThickness="2" CornerRadius="{TemplateBinding CornerRadius}" IsVisible="False" IsHitTestVisible="False" />
           <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto,Auto" Margin="{TemplateBinding Padding}">

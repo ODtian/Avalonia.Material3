@@ -322,14 +322,16 @@ public class SnapshotDpiScenarioTests
         host.Window.SetRenderScaling(from); host.Render();
         host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with {
             DefaultEffects = new(1, .01), DefaultSpatial = new(1, .01) } }; host.Render();
+        var beforeMass = SelectedInkMass(dial, from, new Rect(222, 118, 14, 20));
         dial.ActivePart = MaterialTimePickerPart.Minute;
         host.Window.SetRenderScaling(to);
         host.Theme.Typography = host.Theme.Typography with { Scale = 1.25 }; host.Render();
         var region = new Rect(222 * 1.25, 118 * 1.25, 14 * 1.25, 20 * 1.25);
-        var outgoing = WhiteInk(dial, to, region);
-        Assert.True(outgoing >= 8 * to * to);
+        var outgoingMass = SelectedInkMass(dial, to, region);
+        var expectedMass = beforeMass * Math.Pow(to / from * 1.25, 2);
+        Assert.InRange(outgoingMass / expectedMass, .95, 1.05);
         dial.ActivePart = MaterialTimePickerPart.Hour;
-        Assert.True(WhiteInk(dial, to, region) >= outgoing * .5);
+        Assert.True(SelectedInkMass(dial, to, region) >= outgoingMass * .5);
     }
 
     private static int WhiteInk(Control visual, double density, Rect region)
@@ -346,6 +348,22 @@ public class SnapshotDpiScenarioTests
             if (Marshal.ReadByte(storage.Address, offset) > 240 && Marshal.ReadByte(storage.Address, offset + 1) > 240 && Marshal.ReadByte(storage.Address, offset + 2) > 240) count++;
         }
         return count;
+    }
+
+    private static double SelectedInkMass(Control visual, double density, Rect region)
+    {
+        var size = new PixelSize((int)Math.Ceiling(visual.Bounds.Width * density), (int)Math.Ceiling(visual.Bounds.Height * density));
+        using var bitmap = new RenderTargetBitmap(size, new Vector(96 * density, 96 * density)); bitmap.Render(visual);
+        using var pixels = new WriteableBitmap(size, new Vector(96 * density, 96 * density), PixelFormat.Bgra8888, AlphaFormat.Premul);
+        using var storage = pixels.Lock(); bitmap.CopyPixels(storage);
+        double mass = 0;
+        for (var y = (int)(region.Top * density); y < region.Bottom * density; y++)
+        for (var x = (int)(region.Left * density); x < region.Right * density; x++)
+        {
+            var red = Marshal.ReadByte(storage.Address, y * storage.RowBytes + x * 4 + 2);
+            mass += Math.Clamp((red - 103) / 152d, 0, 1);
+        }
+        return mass;
     }
 
     private static Color Pixel(Control visual, double density, Point point)

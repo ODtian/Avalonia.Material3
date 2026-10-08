@@ -31,7 +31,7 @@
     <Setter Property="VerticalContentAlignment" Value="Top" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border x:Name="SheetSurface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
+        <controls:MaterialElevationBorder x:Name="SheetSurface" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
                 BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                 BoxShadow="{DynamicResource M3.Elevation.Shadow1}">
           <ScrollViewer x:Name="SheetShell" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled">
@@ -59,7 +59,7 @@
               <ContentPresenter x:Name="SheetActions" Grid.Row="3" Content="{TemplateBinding Actions}" ContentTemplate="{TemplateBinding ActionsTemplate}" Margin="16,0,16,8" />
             </Grid>
           </ScrollViewer>
-        </Border>
+        </controls:MaterialElevationBorder>
       </ControlTemplate>
     </Setter>
     <Style Selector="^:compact-height /template/ ScrollViewer#SheetShell"><Setter Property="VerticalScrollBarVisibility" Value="Auto" /></Style>
