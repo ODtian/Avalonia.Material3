@@ -14,14 +14,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalView
+import androidx.lifecycle.findViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.savedstate.findViewTreeSavedStateRegistryOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import android.widget.LinearLayout
-import android.widget.TextView
+import androidx.compose.ui.unit.sp
 import com.google.android.material.sidesheet.SideSheetDialog
 
 @Composable
@@ -225,6 +231,8 @@ private fun OverlaysScene() = SceneColumn {
     var sheet by remember { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val ownerView = LocalView.current
+    val colors = MaterialTheme.colorScheme
     Box {
         Button(onClick = { menu = true }, modifier = Modifier.testTag("open-menu")) { Text("Menu") }
         DropdownMenu(menu, { menu = false }) { listOf("Edit", "Share", "Save").forEach { label -> DropdownMenuItem(text = { Text(label) }, onClick = { menu = false }) } }
@@ -232,12 +240,27 @@ private fun OverlaysScene() = SceneColumn {
     Button(onClick = { dialog = true }, modifier = Modifier.testTag("open-dialog")) { Text("Dialog") }
     Button(onClick = { sheet = true }, modifier = Modifier.testTag("open-sheet")) { Text("Bottom sheet") }
     Button(onClick = {
-        val native = SideSheetDialog(context)
-        val content = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(24, 24, 24, 24)
-            addView(TextView(context).apply { text = "Side sheet · MDC Android 1.14.0"; textSize = 24f })
-            addView(TextView(context).apply { text = "Standard side information\nEditable draft\nIndependent content"; textSize = 18f })
+        val sideContext = android.view.ContextThemeWrapper(context, R.style.ReferenceTheme).apply {
+            applyOverrideConfiguration(android.content.res.Configuration(context.resources.configuration).apply {
+                uiMode = (uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK.inv()) or
+                    if (colors.surface.luminance() < .5f) android.content.res.Configuration.UI_MODE_NIGHT_YES else android.content.res.Configuration.UI_MODE_NIGHT_NO
+            })
+        }
+        val native = SideSheetDialog(sideContext)
+        val content = ComposeView(sideContext).apply {
+            setViewTreeLifecycleOwner(ownerView.findViewTreeLifecycleOwner())
+            setViewTreeSavedStateRegistryOwner(ownerView.findViewTreeSavedStateRegistryOwner())
+            setContent {
+                MaterialExpressiveTheme(colorScheme = colors) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("Side sheet · MDC Android 1.14.0", Modifier.weight(1f), style = MaterialTheme.typography.titleLarge)
+                            IconButton(onClick = { native.dismiss() }, modifier = Modifier.testTag("side-sheet-close")) { Icon(Icons.Default.Close, "Dismiss") }
+                        }
+                        Text("Standard side information\nEditable draft\nIndependent content", fontSize = 18.sp, lineHeight = 24.sp, letterSpacing = 0.sp)
+                    }
+                }
+            }
         }
         native.setContentView(content)
         native.show()

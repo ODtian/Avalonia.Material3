@@ -51,7 +51,8 @@ function New-PackageConsumer([string]$Root, [string]$Destination, [string]$Packa
         if ($LASTEXITCODE -ne 0) { throw "Cannot evaluate project references: $($project.Name)" }
         $allowed = if ($project.BaseName -eq 'PackageConsumption.Tests') {
             @('Gallery','StandaloneHost','TextFieldHost')
-        } elseif ($project.BaseName -in 'Gallery','StandaloneHost') { @() } else { @('Gallery') }
+        } elseif ($project.BaseName -in 'ReferenceDesktop','ReferenceAndroid') { @('ReferenceUi') }
+        elseif ($project.BaseName -in 'Gallery','StandaloneHost','ReferenceUi') { @() } else { @('Gallery') }
         $allowedPaths = @($allowed | ForEach-Object { [IO.Path]::GetFullPath("$Destination/samples/$_/$_.csproj") })
         foreach ($reference in $json.Items.ProjectReference) {
             if ($reference.FullPath -notin $allowedPaths) {
@@ -69,7 +70,7 @@ function Assert-ConsumerAssets([string]$Destination, [string]$Version, [string]$
         $key = 'Avalonia.Material3/' + $Version
         if (!$data.libraries.ContainsKey($key) -or $data.libraries[$key].type -ne 'package') { throw "M3 is not the selected versioned package: $($assets.FullName)" }
         foreach ($entry in $data.libraries.GetEnumerator()) {
-            if ($entry.Value.type -eq 'project' -and ($entry.Key -notmatch '^(Gallery|StandaloneHost|TextFieldHost)/')) { throw "Unexpected project dependency: $($entry.Key)" }
+            if ($entry.Value.type -eq 'project' -and ($entry.Key -notmatch '^(Gallery|StandaloneHost|TextFieldHost|ReferenceUi)/')) { throw "Unexpected project dependency: $($entry.Key)" }
         }
         $cached = Join-Path $Destination "packages/avalonia.material3/$Version/avalonia.material3.$Version.nupkg"
         if ((Get-FileHash $cached -Algorithm SHA256).Hash -cne $Hash) { throw 'Restored package differs from selected artifact.' }
