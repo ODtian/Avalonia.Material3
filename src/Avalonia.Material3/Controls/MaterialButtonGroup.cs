@@ -249,7 +249,7 @@ public partial class MaterialButtonGroup : Panel
         _rows.Clear();
         if (_lastAvailableWidth != availableSize.Width)
         { RestoreOverflow(); _lastAvailableWidth = availableSize.Width; }
-        var availableWidth = Math.Max(48, availableSize.Width - 10);
+        var availableWidth = Math.Max(48, availableSize.Width);
         if (this is MaterialSegmentedButtonGroup && Orientation == Avalonia.Layout.Orientation.Horizontal)
         {
             var children = Children.Where(child => child.IsVisible).ToArray();
@@ -266,7 +266,7 @@ public partial class MaterialButtonGroup : Panel
                 foreach (var child in chunk) child.Measure(new Size(cellWidth, double.PositiveInfinity));
                 _rows.Add(chunk.ToList());
             }
-            return new Size(availableWidth + 10, _rows.Sum(r => r.Max(c => c.DesiredSize.Height)) + Math.Max(0, _rows.Count - 1) * 2);
+            return new Size(availableWidth, _rows.Sum(r => r.Max(c => c.DesiredSize.Height)) + Math.Max(0, _rows.Count - 1) * 2);
         }
         List<Control> row = [];
         double rowWidth = 0;
@@ -286,7 +286,7 @@ public partial class MaterialButtonGroup : Panel
         }
         if (row.Count > 0) _rows.Add(row);
         ApplyOverflow(availableWidth);
-        return new Size(_rows.Select(r => r.Sum(c => c.DesiredSize.Width) + Math.Max(0, r.Count - 1) * Spacing).DefaultIfEmpty(0).Max() + 10,
+        return new Size(_rows.Select(r => r.Sum(c => c.DesiredSize.Width) + Math.Max(0, r.Count - 1) * Spacing).DefaultIfEmpty(0).Max(),
             _rows.Sum(r => r.Max(c => c.DesiredSize.Height)) + Math.Max(0, _rows.Count - 1) * Math.Max(2, Spacing));
     }
 
@@ -298,13 +298,13 @@ public partial class MaterialButtonGroup : Panel
         foreach (var row in _rows)
         {
             if (_widths.Length < row.Count) _widths = new double[row.Count];
-            double height = 0, offset = 5;
+            double height = 0, offset = 0;
             for (var i = 0; i < row.Count; i++)
             {
                 var child = row[i];
                 height = Math.Max(height, child.DesiredSize.Height);
                 _widths[i] = this is MaterialSegmentedButtonGroup && horizontal
-                    ? (finalSize.Width - 10 - (row.Count - 1) * spacing) / row.Count : child.DesiredSize.Width;
+                    ? (finalSize.Width - (row.Count - 1) * spacing) / row.Count : child.DesiredSize.Width;
             }
             if (horizontal && Variant == MaterialButtonGroupVariant.Unconnected && this is not MaterialSegmentedButtonGroup)
             {
@@ -328,7 +328,7 @@ public partial class MaterialButtonGroup : Panel
             for (var i = 0; i < row.Count; i++)
             {
                 var child = row[i];
-                var width = horizontal ? _widths[i] : finalSize.Width - 10;
+                var width = horizontal ? _widths[i] : finalSize.Width;
                 if (child is MaterialGroupButton button && (button.RowFirst != (i == 0) || button.RowLast != (i == row.Count - 1)))
                 {
                     button.RowFirst = i == 0;

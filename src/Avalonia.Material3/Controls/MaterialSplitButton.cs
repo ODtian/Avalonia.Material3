@@ -67,19 +67,19 @@ public class MaterialSplitButton : Panel
     }
     protected override Size MeasureOverride(Size availableSize)
     {
-        SecondaryButton.Measure(new Size(Math.Max(48, availableSize.Width - 12 - MainButton.MinimumReadableWidth), double.PositiveInfinity));
-        MainButton.Measure(new Size(Math.Max(48, availableSize.Width - SecondaryButton.DesiredSize.Width - 12), double.PositiveInfinity));
-        return new Size(MainButton.DesiredSize.Width + SecondaryButton.DesiredSize.Width + 12, Math.Max(MainButton.DesiredSize.Height, SecondaryButton.DesiredSize.Height));
+        SecondaryButton.Measure(new Size(Math.Max(48, availableSize.Width - 2 - MainButton.MinimumReadableWidth), double.PositiveInfinity));
+        MainButton.Measure(new Size(Math.Max(48, availableSize.Width - SecondaryButton.DesiredSize.Width - 2), double.PositiveInfinity));
+        return new Size(MainButton.DesiredSize.Width + SecondaryButton.DesiredSize.Width + 2, Math.Max(MainButton.DesiredSize.Height, SecondaryButton.DesiredSize.Height));
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
         var secondaryWidth = SecondaryButton.DesiredSize.Width;
-        var mainWidth = Math.Max(48, finalSize.Width - secondaryWidth - 12);
+        var mainWidth = Math.Max(48, finalSize.Width - secondaryWidth - 2);
         var height = Math.Max(MainButton.DesiredSize.Height, SecondaryButton.DesiredSize.Height);
         MainButton.SetSharedHeight(height); SecondaryButton.SetSharedHeight(height);
         // Avalonia mirrors at the flow-direction boundary, including asymmetric shapes and slots.
-        MainButton.Arrange(new Rect(5, 0, mainWidth, height));
-        SecondaryButton.Arrange(new Rect(mainWidth + 7, 0, secondaryWidth, height));
+        MainButton.Arrange(new Rect(0, 0, mainWidth, height));
+        SecondaryButton.Arrange(new Rect(mainWidth + 2, 0, secondaryWidth, height));
         return finalSize;
     }
     protected override AutomationPeer OnCreateAutomationPeer() => new SplitGroupPeer(this);

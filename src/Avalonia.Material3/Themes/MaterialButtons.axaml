@@ -53,7 +53,7 @@
       <Setter Property="Template">
         <ControlTemplate>
           <Grid Background="Transparent">
-            <controls:MaterialShapeBorder x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Center"
+            <controls:MaterialShapeBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}" VerticalAlignment="Center"
                     Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                     ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
               <controls:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
@@ -244,7 +244,7 @@
       <Setter Property="Template">
         <ControlTemplate>
           <Grid Background="Transparent">
-            <controls:MaterialShapeBorder x:Name="Container" Margin="5" MinHeight="{TemplateBinding ContainerHeight}"
+            <controls:MaterialShapeBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}"
                     MinWidth="{TemplateBinding ContainerWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"
                     Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                     ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">

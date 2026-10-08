@@ -86,12 +86,15 @@ public class MaterialSlider : TemplatedControl
     internal double PointFraction(Point point)
     {
         var vertical = Orientation == Orientation.Vertical;
-        var geometry = new MaterialSliderGeometry(vertical ? Bounds.Height : Bounds.Width, vertical ? Bounds.Width : Bounds.Height);
+        var geometry = new MaterialSliderGeometry(vertical ? Bounds.Height : Bounds.Width, vertical ? Bounds.Width : Bounds.Height, TrackEdgeInset);
         var position = vertical ? Bounds.Height - point.Y : point.X;
         // Pointer coordinates are already logical: Avalonia mirrors the LTR/RTL visual boundary.
         if (ReverseDirection) position = geometry.Length - position;
         return geometry.Fraction(position, Step > 0);
     }
+    // Compose's 48-DIP no-label layout places the track at half the 4-DIP thumb core.
+    // Labelled/MDC layouts retain their existing 24-DIP endpoint gutters.
+    internal double TrackEdgeInset => ValueLabelVisibility == SliderValueLabelVisibility.Never && (Orientation == Orientation.Horizontal ? Bounds.Height : Bounds.Width) < 64 ? 2 : 24;
 
     private MaterialSliderPresenter? _presenter;
     private IPointer? _dragPointer;

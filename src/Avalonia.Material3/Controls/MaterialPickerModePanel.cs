@@ -69,9 +69,16 @@ internal sealed class MaterialPickerModePanel : Panel
     {
         _calendar.IsVisible = _inputs.IsVisible = true;
         _calendar.Measure(availableSize); _inputs.Measure(new Size(availableSize.Width, double.PositiveInfinity));
+        var sizesChanged = _calendarSize != _calendar.DesiredSize || _inputSize != _inputs.DesiredSize;
         _calendarSize = _calendar.DesiredSize; _inputSize = _inputs.DesiredSize;
-        if (!_initialized) { _initialized = true; Start(true); }
+        if (!_initialized && _calendarSize.Height > 0 && _inputSize.Height > 0) { _initialized = true; Start(true); }
         else if (_pending) { _pending = false; Start(false); }
+        else if (_initialized && sizesChanged && !Range)
+        {
+            var target = Input ? _inputSize.Height : _calendarSize.Height;
+            if (_height.IsRunning) _height.Spring(target, _motion.DefaultSpatial, 1);
+            else _height.Snap(target);
+        }
         var height = Range ? Math.Max(_calendarAlpha.Value > 0 ? _calendarSize.Height : 0, _inputAlpha.Value > 0 ? _inputSize.Height : 0) : Math.Max(0, _height.Value);
         return new(Math.Max(_calendarSize.Width, _inputSize.Width), height);
     }

@@ -25,7 +25,7 @@ public partial class MaterialSplitButtonPart
         AvaloniaProperty.RegisterDirect<MaterialSplitButtonPart, double>(nameof(SharedContainerHeight), button => button.SharedContainerHeight);
     private double _sharedContainerHeight;
     public double SharedContainerHeight => _sharedContainerHeight;
-    internal void SetSharedHeight(double height) => SetAndRaise(SharedContainerHeightProperty, ref _sharedContainerHeight, Math.Max(ContainerHeight, height - (Size == MaterialButtonSize.ExtraSmall ? 16 : 10)));
+    internal void SetSharedHeight(double height) => SetAndRaise(SharedContainerHeightProperty, ref _sharedContainerHeight, Math.Max(ContainerHeight, height - Math.Max(0, 48 - ContainerHeight)));
     public static readonly DirectProperty<MaterialSplitButtonPart, CornerRadius> SplitCornerRadiusProperty =
         AvaloniaProperty.RegisterDirect<MaterialSplitButtonPart, CornerRadius>(nameof(SplitCornerRadius), button => button.SplitCornerRadius);
     public static readonly DirectProperty<MaterialSplitButtonPart, double> SecondaryContentSizeProperty =

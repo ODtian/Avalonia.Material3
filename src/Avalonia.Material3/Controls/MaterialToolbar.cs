@@ -76,6 +76,11 @@ public class MaterialToolbar : TemplatedControl, IMaterialExpansion
         base.OnDetachedFromVisualTree(e);
     }
     private void ToggleClicked(object? sender, RoutedEventArgs e) => SetCurrentValue(IsExpandedProperty, !IsExpanded);
+    private Button[] FocusableActions(bool includeSlots) => (includeSlots ? LeadingItems.Concat(Items).Concat(TrailingItems) : Items).OfType<Control>()
+        .SelectMany(control => control is Button button ? new[] { button }.AsEnumerable() : control.GetVisualDescendants().OfType<Button>())
+        .Where(control => control.Focusable && control.IsEffectivelyEnabled && control.IsEffectivelyVisible).ToArray();
+    private void FocusCollapsedAction() => (_toggle ?? (Control?)FocusableActions(false).FirstOrDefault()
+        ?? (FloatingAction is { IsEffectivelyEnabled: true, IsEffectivelyVisible: true } fab ? fab : null))?.Focus(NavigationMethod.Tab);
     private void UpdateState()
     {
         PseudoClasses.Set(":docked", Variant == MaterialToolbarVariant.Docked);
@@ -91,7 +96,7 @@ public class MaterialToolbar : TemplatedControl, IMaterialExpansion
     {
         base.OnKeyDown(e);
         if (e.Handled) return;
-        if (e.Key == Key.Escape && IsExpanded) { SetCurrentValue(IsExpandedProperty, false); (SurfaceIsExpanded ? (Control?)_toggle : FloatingAction)?.Focus(NavigationMethod.Tab); e.Handled = true; return; }
+        if (e.Key == Key.Escape && IsExpanded) { SetCurrentValue(IsExpandedProperty, false); if (SurfaceIsExpanded) FocusCollapsedAction(); else FloatingAction?.Focus(NavigationMethod.Tab); e.Handled = true; return; }
         if (!SurfaceIsExpanded && e.Key == Key.Down && e.KeyModifiers.HasFlag(KeyModifiers.Alt))
         {
             SetCurrentValue(IsExpandedProperty, true);
@@ -101,9 +106,7 @@ public class MaterialToolbar : TemplatedControl, IMaterialExpansion
         var backward = Orientation == Orientation.Vertical ? Key.Up : FlowDirection == FlowDirection.RightToLeft ? Key.Right : Key.Left;
         var forward = Orientation == Orientation.Vertical ? Key.Down : FlowDirection == FlowDirection.RightToLeft ? Key.Left : Key.Right;
         if (e.Key != backward && e.Key != forward && e.Key is not (Key.Home or Key.End)) return;
-        var actions = (IsExpanded ? LeadingItems.Concat(Items).Concat(TrailingItems) : Items).OfType<Control>()
-            .SelectMany(control => control is Button button ? new[] { button }.AsEnumerable() : control.GetVisualDescendants().OfType<Button>())
-            .Where(control => control.Focusable && control.IsEffectivelyEnabled && control.IsEffectivelyVisible).ToArray();
+        var actions = FocusableActions(IsExpanded);
         if (actions.Length == 0) return;
         var current = Array.FindIndex(actions, control => control.IsKeyboardFocusWithin);
         var index = e.Key == Key.Home ? 0 : e.Key == Key.End ? actions.Length - 1 : e.Key == forward ? (current + 1) % actions.Length : (current + actions.Length - 1) % actions.Length;
@@ -143,7 +146,7 @@ public class MaterialToolbar : TemplatedControl, IMaterialExpansion
         {
             UpdateState();
             if (SurfaceIsExpanded && change.Property == IsExpandedProperty && !IsExpanded && LeadingItems.Concat(TrailingItems).Any(item => item.IsKeyboardFocusWithin))
-                _toggle?.Focus(NavigationMethod.Tab);
+                FocusCollapsedAction();
         }
     }
 }

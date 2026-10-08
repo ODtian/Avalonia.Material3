@@ -77,7 +77,12 @@ public sealed partial class ReferenceShell
         SelectedDate = new DateOnly(2024, 2, start), RangeEnd = end is { } day ? new DateOnly(2024, 2, day) : null,
         SelectableDate = selection == MaterialDateSelectionMode.Range ? day => day != new DateOnly(2024, 2, 20) : null
     };
-    private Control CreateDateSingle() => SetId(DatePicker(MaterialDateSelectionMode.Single, 9), "date-picker");
+    private Control CreateDateSingle()
+    {
+        var picker = SetId(DatePicker(MaterialDateSelectionMode.Single, 9), "date-picker");
+        picker.VerticalAlignment = VerticalAlignment.Top;
+        return picker;
+    }
     private Control CreateDateRange(string scene)
     {
         var (start, end) = scene switch { "date-range-7-24" => (7, 24), "date-range-9-16" => (9, 16), _ => (10, 12) };
@@ -143,7 +148,7 @@ public sealed partial class ReferenceShell
                 surface.Bind(Border.BoxShadowProperty, new DynamicResourceExtension("M3.Elevation.Shadow3"));
                 return surface;
             }) };
-        var session = dialog.Show(Overlay, new MaterialOverlayOptions { Margin = default });
+        var session = dialog.Show(Overlay, new MaterialOverlayOptions { Margin = new Thickness(0, _safeArea.Top, 0, _safeArea.Bottom) });
         session.Closed += (_, _) => { inline.PropertyChanged -= fromInline; picker.PropertyChanged -= fromDialog; };
     }
     private Control CreateTime()

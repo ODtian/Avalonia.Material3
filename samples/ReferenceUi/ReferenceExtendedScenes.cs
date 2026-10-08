@@ -23,14 +23,14 @@ public sealed partial class ReferenceShell
         foreach (var fab in fabs.Children) fab.VerticalAlignment = VerticalAlignment.Top;
         column.Children.Add(fabs);
         column.Children.Add(new MaterialExtendedFab { Icon = Symbol("add"), Content = "Create", HorizontalAlignment = HorizontalAlignment.Left });
-        var toolbar = SetId(new MaterialToolbar { Orientation = Orientation.Horizontal, IsExpanded = true, HorizontalAlignment = HorizontalAlignment.Left }, "floating-toolbar");
+        var toolbar = SetId(new MaterialToolbar { Orientation = Orientation.Horizontal, IsExpanded = true, HorizontalAlignment = HorizontalAlignment.Left, Margin = default }, "floating-toolbar");
         toolbar.LeadingItems.Add(IconButton("menu", "toolbar-menu", "Menu", () => { }));
         toolbar.Items.Add(IconButton("edit", "toolbar-edit", "Edit", () => { }));
         toolbar.Items.Add(IconButton("share", "toolbar-share", "Share", () => { }));
         toolbar.TrailingItems.Add(IconButton("more_vert", "toolbar-more", "More", () => { }));
         column.Children.Add(Button("Toggle toolbar", "toolbar-toggle", () => toolbar.IsExpanded = !toolbar.IsExpanded, MaterialButtonVariant.Text)); column.Children.Add(toolbar);
         root.Children.Add(column);
-        var menu = SetId(new MaterialFabMenu { Anchor = MaterialActionAnchor.BottomEnd, ExpandLabel = "Create actions", CollapseLabel = "Create actions" }, "fab-menu");
+        var menu = SetId(new MaterialFabMenu { Anchor = MaterialActionAnchor.BottomEnd, ExpandLabel = "Create actions", CollapseLabel = "Create actions", Margin = default }, "fab-menu");
         menu.Loaded += (_, _) => { if (menu.GetVisualDescendants().OfType<MaterialFab>().SingleOrDefault() is { } trigger) SetId(trigger, "fab-menu-toggle"); };
         foreach (var (label, icon) in new[] { ("Reply", "reply"), ("Reply all", "people"), ("Forward", "forward") })
         {

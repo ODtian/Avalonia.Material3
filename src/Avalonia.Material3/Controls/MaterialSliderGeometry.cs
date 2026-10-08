@@ -2,10 +2,10 @@ namespace Avalonia.Material3.Controls;
 
 // One axis model for paint, endpoint targets and pointer inverse.24-DIP gutters preserve48-DIP
 // targets; AndroidX Slider.kt 2428–2669 distinguishes outer edges from8-DIP cap centers.
-internal readonly record struct MaterialSliderGeometry(double Length, double Breadth)
+internal readonly record struct MaterialSliderGeometry(double Length, double Breadth, double EdgeInset = 24)
 {
-    public double Start => 24;
-    public double End => Math.Max(Start, Length - 24);
+    public double Start => EdgeInset;
+    public double End => Math.Max(Start, Length - EdgeInset);
     public double Axis => Breadth < 64 ? Breadth / 2 : Breadth - 32;
     public double CapInset => Math.Min(8, (End - Start) / 2);
     public double Tick(double fraction) => Start + CapInset + fraction * (End - Start - 2 * CapInset);

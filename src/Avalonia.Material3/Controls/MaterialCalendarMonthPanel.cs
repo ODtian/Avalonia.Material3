@@ -41,6 +41,6 @@ internal sealed class MaterialCalendarMonthPanel : Decorator
     {
         base.Render(context);
         if (_previous is not null && Math.Abs(_offset.Value) > 0)
-            context.DrawImage(_previous, new Rect(_previous.Size), new Rect(_offset.Value - _direction * _width, 0, _width, Bounds.Height));
+            context.DrawImage(_previous, new Rect(_previous.PixelSize.ToSize(1)), new Rect(_offset.Value - _direction * _width, 0, _width, Bounds.Height));
     }
 }
