@@ -47,3 +47,4 @@
 ## 0.1.0-preview.1 — historical M3-01 / #2
 
 Initial small round filled button, basic theme inputs, six semantic colors, initial Gallery and independent package consumer. Frozen artifact/provenance is recorded in docs/upgrade.md; later development same-version packs in ticket records are historical, not the immutable baseline.
+
