@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
@@ -138,9 +137,8 @@ internal sealed class MaterialOverlayMotion : IDisposable
     internal bool FreezeExit(Control content, Action release)
     {
         if (_settings.FastEffects.IsInstant || content.Bounds.Width <= 0 || content.Bounds.Height <= 0) return false;
-        var density = TopLevel.GetTopLevel(content)?.RenderScaling ?? 1;
         ExitBounds = _layer.Container.Bounds;
-        _snapshot = new Snapshot(_layer, density);
+        _snapshot = new Snapshot(_layer);
         _layer.Container.Child = _snapshot; // Original content is immediately reusable/unparented.
         // The attached-layer raster already includes the presented scale/alpha.
         _capturedScale = Math.Max(.001, _scale.Value); _capturedOffset = _offset.Value; _capturedAlpha = _alpha.Value;
@@ -158,29 +156,20 @@ internal sealed class MaterialOverlayMotion : IDisposable
     private sealed class Snapshot : Control, IDisposable
     {
         private readonly Size _size;
-        private readonly RenderTargetBitmap _bitmap;
+        private readonly MaterialSnapshot? _frame;
         protected override bool BypassFlowDirectionPolicies => true;
         private readonly Rect _destination;
-        internal Snapshot(MaterialOverlayLayer layer, double scale)
+        internal Snapshot(MaterialOverlayLayer layer)
         {
             _size = layer.Container.Bounds.Size;
             var source = PaintBounds(layer);
-            // Pixel-align the crop, keeping fractional layout and all painted shadow tails.
-            source = new Rect(Math.Floor(source.Left * scale) / scale, Math.Floor(source.Top * scale) / scale,
-                Math.Ceiling(source.Right * scale) / scale - Math.Floor(source.Left * scale) / scale,
-                Math.Ceiling(source.Bottom * scale) / scale - Math.Floor(source.Top * scale) / scale);
-            _destination = new Rect(source.Position - layer.Container.Bounds.Position, source.Size);
             IsHitTestVisible = false;
-            _bitmap = new(new PixelSize(Math.Max(1, (int)Math.Round(source.Width * scale)),
-                Math.Max(1, (int)Math.Round(source.Height * scale))), new Vector(96 * scale, 96 * scale));
-            var crop = new Border { Width = source.Width, Height = source.Height,
-                Background = new VisualBrush(layer) { SourceRect = new RelativeRect(source, RelativeUnit.Absolute),
-                    DestinationRect = RelativeRect.Fill, Stretch = Stretch.Fill } };
-            crop.Measure(source.Size); crop.Arrange(new Rect(source.Size));
             // VisualBrush renders the attached layer through an absolute crop; ownership stays live.
             var scrim = layer.Scrim; var opacity = scrim.Opacity;
-            try { scrim.Opacity = 0; _bitmap.Render(crop); }
+            try { scrim.Opacity = 0; _frame = MaterialSnapshot.Capture(layer, source); }
             finally { scrim.Opacity = opacity; }
+            source = _frame?.Bounds ?? source;
+            _destination = new Rect(source.Position - layer.Container.Bounds.Position, source.Size);
         }
         private static Rect PaintBounds(MaterialOverlayLayer layer)
         {
@@ -188,16 +177,14 @@ internal sealed class MaterialOverlayMotion : IDisposable
             foreach (var visual in layer.Container.GetVisualDescendants().Prepend(layer.Container))
             {
                 if (!visual.IsEffectivelyVisible || visual.Bounds.Width <= 0 || visual.Bounds.Height <= 0) continue;
-                var bounds = new Rect(visual.Bounds.Size);
-                if (visual is Border border) bounds = border.BoxShadow.TransformBounds(bounds);
+                var bounds = MaterialPaintBounds.GetLocal(visual);
                 if (visual.TransformToVisual(layer) is { } transform) result = result.Union(bounds.TransformToAABB(transform));
             }
             return result.Intersect(new Rect(layer.Bounds.Size));
         }
         protected override Size MeasureOverride(Size availableSize) => _size;
         // Bitmap source rectangles use physical pixels; the destination retains its DIP crop.
-        public override void Render(DrawingContext context) => context.DrawImage(_bitmap,
-            new Rect(_bitmap.PixelSize.ToSize(1)), _destination);
-        public void Dispose() => _bitmap.Dispose();
+        public override void Render(DrawingContext context) => _frame?.Draw(context, _destination);
+        public void Dispose() => _frame?.Dispose();
     }
 }
