@@ -6,6 +6,8 @@
 
 [17 场景矩阵](../../samples/ReferenceUi/scene-parity.json)记录两端初始状态和操作。对照配置：1240×2772、density 1.25／3.5、fontScale 1、classic、en-US、M3 checkbox、expressive buttons。Avalonia 对照宿主启用 `SkiaOptions.UseStencilBuffers=true`；原生锁定 Material3 1.5.0-beta01／Compose 1.12.0。
 
+原生 OpenGL 目标采用 surface sampleCount 0、SurfaceProps flags 0；GrContext 的 internalMultisampleCount 4 单独记录。选择圆混合目标按前两项配置。
+
 已保存的实际证据：
 
 - Checkbox 未选及禁用选中状态，两档密度完整 ROI 与原生一致；350% mixed、Radio 选中状态也一致。
