@@ -111,7 +111,8 @@ public sealed partial class ReferenceShell
             menu.Show(Overlay, menuEntry!);
         });
         column.Children.Add(menuEntry);
-        column.Children.Add(Button("Dialog", "open-dialog", () => new MaterialDialog { Title = "Edit draft", Content = "Apply changes?" }.Show(Overlay)));
+        column.Children.Add(Button("Dialog", "open-dialog", () => new MaterialDialog { Title = "Edit draft", Content = "Apply changes?" }.Show(Overlay,
+            new MaterialOverlayOptions { Margin = new Thickness(24 + _safeArea.Left, 24 + _safeArea.Top, 24 + _safeArea.Right, 24 + _safeArea.Bottom) })));
         column.Children.Add(Button("Bottom sheet", "open-sheet", () =>
         {
             var body = new StackPanel();
@@ -124,7 +125,7 @@ public sealed partial class ReferenceShell
             var body = new TextBlock { Text = "Standard side information\nEditable draft\nIndependent content", FontSize = 18, LineHeight = 24, TextWrapping = TextWrapping.Wrap };
             var sheet = new MaterialSideSheet { Title = "Side sheet · MDC Android 1.14.0", Content = body, Padding = new Thickness(16, 0, 16, 16) };
             sheet.Loaded += (_, _) => { if (sheet.GetVisualDescendants().OfType<MaterialIconButton>().SingleOrDefault() is { } close) SetId(close, "side-sheet-close"); };
-            sheet.Show(Overlay);
+            sheet.Show(Overlay, new MaterialOverlayOptions { Placement = MaterialOverlayPlacement.End, Margin = _safeArea, CloseOnLightDismiss = true });
         }));
         var tooltipEntry = IconButton("save", "tooltip", "Save", () => { }); column.Children.Add(tooltipEntry);
         var tooltip = new MaterialTooltip { Content = "Save draft" }; _sceneLifetime.Add(tooltip.Attach(Overlay, tooltipEntry));
