@@ -18,6 +18,66 @@ namespace Avalonia.Material3.Tests;
 public class ReferenceParityScenarioTests
 {
     [AvaloniaFact]
+    public void Reference_large_fab_keeps_the_native_24_DIP_content_icon_inside_its_standard_36_DIP_canvas()
+    {
+        using var host = new ReferenceHost("fab");
+        var large = host.Shell.GetVisualDescendants().OfType<MaterialFab>().Single(fab => fab.Size == MaterialFabSize.Large);
+        var icon = large.GetVisualDescendants().OfType<MaterialSymbol>().Single();
+        Assert.Equal(36, large.IconSize);
+        var box = GeometryHost.Box(icon, host.Window);
+        Assert.Equal(new Size(24, 24), box.Size);
+        Assert.Equal(GeometryHost.Box(large, host.Window).Center, box.Center);
+    }
+
+    [AvaloniaFact]
+    public void Reference_elevated_content_lambda_keeps_native_24_DIP_icon_geometry_and_touch_padding()
+    {
+        using var host = new ReferenceHost("buttons");
+        var button = host.Find<MaterialButton>("elevated-button");
+        button.BringIntoView(); host.Render();
+        var icon = button.GetVisualDescendants().OfType<MaterialSymbol>().Single();
+        Assert.Equal(new Size(24, 24), GeometryHost.Box(icon, host.Window).Size);
+        Assert.Equal(new Thickness(16, 10), button.Padding);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("button-group", 24, 8, 24)]
+    [InlineData("button-group-single", 16, 8, 24)]
+    [InlineData("connected-group", 16, 10, 16)]
+    public void Reference_button_groups_preserve_the_exact_native_overload_padding(string id, double left, double vertical, double right)
+    {
+        using var host = new ReferenceHost("buttons");
+        var buttons = host.Find<MaterialButtonGroup>(id).Children.OfType<MaterialGroupButton>().ToArray();
+        Assert.All(buttons, button => Assert.Equal(new Thickness(left, vertical, right, vertical), button.Padding));
+        if (id == "button-group-single") Assert.All(buttons, button => Assert.Equal(24, button.IconSize));
+        if (id == "button-group") Assert.Single(host.Find<MaterialButtonGroup>(id).OverflowItems, button => Equals(button.Content, "Disabled"));
+    }
+
+    [AvaloniaFact]
+    public void Reference_fab_menu_retains_native_intrinsic_16_DIP_padding_inside_the_16_DIP_scene()
+    {
+        using var host = new ReferenceHost("fab");
+        var trigger = host.Find<MaterialFab>("fab-menu-toggle");
+        var box = GeometryHost.Box(trigger, host.Window);
+        Assert.Equal(32, host.Shell.Overlay.Bounds.Width - box.Right, 3);
+        Assert.Equal(32, host.Window.ClientSize.Height - box.Bottom, 3);
+    }
+
+    [AvaloniaFact]
+    public void Empty_supporting_slot_uses_no_height_and_live_counter_or_error_keeps_the_native_20_DIP_feedback_row()
+    {
+        var field = new MaterialTextField { Label = "Amount" };
+        using var host = new GeometryHost(field, 320, 200);
+        field.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top; host.Render();
+        Assert.Equal(56, field.Bounds.Height);
+        field.ShowCounter = true; host.Render(); Assert.Equal(76, field.Bounds.Height);
+        field.ShowCounter = false; host.Render(); Assert.Equal(56, field.Bounds.Height);
+        field.ErrorText = "Invalid"; host.Render(); Assert.Equal(76, field.Bounds.Height);
+        field.ErrorText = null; host.Render(); Assert.Equal(56, field.Bounds.Height);
+        field.SupportingText = ""; host.Render(); Assert.Equal(76, field.Bounds.Height);
+    }
+
+    [AvaloniaFact]
     public void Button_group_overflow_uses_the_native_vertical_more_symbol()
     {
         var group = new MaterialButtonGroup();

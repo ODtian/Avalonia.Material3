@@ -10,6 +10,21 @@ namespace Avalonia.Material3.Tests;
 
 public class CalendarWeekdayScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(1)]
+    [InlineData(2)]
+    public void Weekday_text_wraps_its_line_height_and_is_centered_in_the_native_minimum_48_DIP_cell(double scale)
+    {
+        var picker = new MaterialDatePicker { Culture = CultureInfo.GetCultureInfo("en-US"), DisplayMonth = new(2024, 2, 1) };
+        using var host = new GeometryHost(picker, 720, 1100);
+        host.Theme.Typography = host.Theme.Typography with { Scale = scale }; host.Render();
+        var label = picker.GetVisualDescendants().OfType<TextBlock>().Single(text => AutomationProperties.GetName(text) == "Sunday");
+        Assert.Equal(24 * scale, label.Bounds.Height);
+        var parent = Assert.IsAssignableFrom<Control>(label.GetVisualParent());
+        Assert.True(parent.Bounds.Height >= 48);
+        Assert.Equal(GeometryHost.Box(parent, host.Window).Center.Y, GeometryHost.Box(label, host.Window).Center.Y, 3);
+    }
+
     [AvaloniaFact]
     public void Android_English_short_weekday_data_still_renders_the_native_narrow_labels()
     {

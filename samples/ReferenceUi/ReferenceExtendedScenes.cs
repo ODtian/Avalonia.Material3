@@ -16,10 +16,12 @@ public sealed partial class ReferenceShell
     {
         var root = new Grid { Margin = new Thickness(16) };
         var column = new StackPanel { Spacing = 16, VerticalAlignment = VerticalAlignment.Top };
+        var largeIcon = Symbol("edit");
+        largeIcon.HorizontalAlignment = HorizontalAlignment.Center; largeIcon.VerticalAlignment = VerticalAlignment.Center;
         var fabs = Row(16,
             new MaterialFab { Size = MaterialFabSize.Small, Content = Symbol("edit") },
             new MaterialFab { Content = Symbol("edit") },
-            new MaterialFab { Size = MaterialFabSize.Large, Content = Symbol("edit", 36) });
+            new MaterialFab { Size = MaterialFabSize.Large, Content = new Border { Width = 36, Height = 36, Child = largeIcon } });
         foreach (var fab in fabs.Children) fab.VerticalAlignment = VerticalAlignment.Top;
         column.Children.Add(fabs);
         column.Children.Add(new MaterialExtendedFab { Icon = Symbol("add"), Content = "Create", HorizontalAlignment = HorizontalAlignment.Left });
