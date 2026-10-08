@@ -13,6 +13,26 @@ namespace Avalonia.Material3.Tests;
 
 public class ModalPaintScenarioTests
 {
+    [AvaloniaFact]
+    public void String_body_content_keeps_its_authored_paint_under_a_nested_modal_gate()
+    {
+        using var host = new DialogHost(600, 500);
+        host.Theme.States = new MaterialStates { FocusStateLayerOpacity = 0, HoverStateLayerOpacity = 0 };
+        var outer = new MaterialDialog { Width = 360, Height = 240, Content = "Authored body text / 原始正文" };
+        outer.Show(host.Overlay); host.Render();
+        var before = Painted();
+        var inner = new MaterialDialog { Width = 120, Height = 80 }; inner.Show(host.Overlay); host.Render();
+        Assert.False(outer.IsEffectivelyEnabled); Assert.Equal(before, Painted());
+        inner.Cancel(); host.Render(); Assert.True(outer.IsEffectivelyEnabled);
+        outer.IsEnabled = false; host.Render(); Assert.NotEqual(before, Painted());
+
+        byte[] Painted()
+        {
+            using var bitmap = new RenderTargetBitmap(new PixelSize((int)outer.Bounds.Width, (int)outer.Bounds.Height), new Vector(96, 96));
+            bitmap.Render(outer); using var stream = new MemoryStream(); bitmap.Save(stream, PngBitmapEncoderOptions.Default); return stream.ToArray();
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)] [InlineData(6)]
     public void Modal_gate_keeps_each_selection_field_chip_slider_and_icon_family_authored_paint(int family)
