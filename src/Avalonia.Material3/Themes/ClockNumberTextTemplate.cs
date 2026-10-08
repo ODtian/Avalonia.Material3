@@ -72,8 +72,10 @@ internal sealed class MaterialClockLabel : Control
     {
         var options = new TextOptions();
         foreach (var visual in this.GetVisualAncestors().Reverse().Append(this)) options = TextOptions.GetTextOptions(visual).MergeWith(options);
-        return options with { TextRenderingMode = TextRenderingMode.Antialias };
+        return DefaultRendering(options);
     }
+    private static TextOptions DefaultRendering(TextOptions options) => options.TextRenderingMode == TextRenderingMode.Unspecified
+        ? options with { TextRenderingMode = TextRenderingMode.Antialias } : options;
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -145,7 +147,7 @@ internal sealed class MaterialClockLabel : Control
     {
         foreach (var visual in this.GetVisualAncestors().TakeWhile(visual => visual is not MaterialClockDial).Reverse().Append(this))
             inherited = TextOptions.GetTextOptions(visual).MergeWith(inherited);
-        inherited = inherited with { TextRenderingMode = TextRenderingMode.Antialias };
+        inherited = DefaultRendering(inherited);
         if (!_measureOptions.Equals(inherited)) { InvalidateMeasure(); InvalidateVisual(); }
     }
     public override void Render(DrawingContext context)
