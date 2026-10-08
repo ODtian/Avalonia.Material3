@@ -89,7 +89,7 @@ internal class NativeGlyphProbeView(context: Context, mode: ProbeFace, private v
             "fontMetrics=${paint.fontMetricsInt} abstractBounds=$bounds digitWidths=${digitWidths.contentToString()}")
         if (Build.VERSION.SDK_INT >= 31) {
             val glyphs = TextRunShaper.shapeTextRun(digit, 0, digit.length, 0, digit.length, 0f, 0f, false, paint)
-            for (index in 0 until glyphs.glyphCount) {
+            for (index in 0 until glyphs.glyphCount()) {
                 val font = glyphs.getFont(index)
                 val buffer = font.buffer.duplicate().apply { position(0) }
                 val bytes = ByteArray(buffer.remaining()).also { buffer.get(it) }
