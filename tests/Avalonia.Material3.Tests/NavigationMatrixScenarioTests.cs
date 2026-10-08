@@ -12,12 +12,52 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
+using Avalonia.Media.Imaging;
+using Avalonia.Platform;
+using System.Runtime.InteropServices;
 using Xunit;
 
 namespace Avalonia.Material3.Tests;
 
 public class NavigationMatrixScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(0, false)]
+    [InlineData(0, true)]
+    [InlineData(5, false)]
+    [InlineData(5, true)]
+    public void Navigation_selection_and_hover_use_circular_full_corners_with_a_straight_capsule_middle(int recipe, bool hover)
+    {
+        using var host = new NavigationHost(Create(recipe));
+        host.Theme.LightColorScheme = MaterialColorScheme.Light with {
+            SecondaryContainer = hover ? Colors.Gray : Colors.Magenta, OnSecondaryContainer = Colors.Magenta };
+        host.Theme.States = new MaterialStates { HoverStateLayerOpacity = 1, FocusStateLayerOpacity = 0 };
+        host.First.Content = ""; host.First.Icon = null; host.Second.Content = ""; host.Second.Icon = null;
+        var item = hover ? host.Second : host.First;
+        host.Capture();
+        if (hover) { host.Window.MouseMove(host.Center(item)); host.Capture(); }
+        using var bitmap = new RenderTargetBitmap(new PixelSize((int)item.Bounds.Width, (int)item.Bounds.Height), new Vector(96, 96));
+        using var pixels = new WriteableBitmap(bitmap.PixelSize, new Vector(96, 96), PixelFormat.Bgra8888, AlphaFormat.Premul);
+        bitmap.Render(item);
+        using var frame = pixels.Lock(); bitmap.CopyPixels(frame);
+        bool IsInk(int x, int y)
+        {
+            var offset = y * frame.RowBytes + x * 4;
+            return Marshal.ReadByte(frame.Address, offset) == 255 && Marshal.ReadByte(frame.Address, offset + 1) == 0
+                && Marshal.ReadByte(frame.Address, offset + 2) == 255 && Marshal.ReadByte(frame.Address, offset + 3) == 255;
+        }
+        var points = (from y in Enumerable.Range(0, frame.Size.Height)
+                      from x in Enumerable.Range(0, frame.Size.Width) where IsInk(x, y) select new PixelPoint(x, y)).ToArray();
+        Assert.NotEmpty(points);
+        var left = points.Min(point => point.X); var right = points.Max(point => point.X);
+        var top = points.Min(point => point.Y); var bottom = points.Max(point => point.Y);
+        var width = right - left + 1; var height = bottom - top + 1;
+        var nearTop = Enumerable.Range(left, width).Count(x => IsInk(x, top + 1));
+        // Native 50% CornerSize resolves against the shorter edge: the top retains a straight
+        // middle plus circular shoulder ink. An ellipse has only a narrow curved apex.
+        Assert.True(nearTop >= width - height + 10, $"Capsule {width}×{height}: second ink row spans {nearTop} pixels.");
+    }
+
     public static MaterialNavigation Create(int recipe) => recipe switch
     {
         0 => new MaterialNavigationBar(),

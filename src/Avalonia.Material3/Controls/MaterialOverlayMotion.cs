@@ -195,8 +195,9 @@ internal sealed class MaterialOverlayMotion : IDisposable
             return result.Intersect(new Rect(layer.Bounds.Size));
         }
         protected override Size MeasureOverride(Size availableSize) => _size;
+        // Bitmap source rectangles use physical pixels; the destination retains its DIP crop.
         public override void Render(DrawingContext context) => context.DrawImage(_bitmap,
-            new Rect(_bitmap.Size), _destination);
+            new Rect(_bitmap.PixelSize.ToSize(1)), _destination);
         public void Dispose() => _bitmap.Dispose();
     }
 }
