@@ -90,7 +90,7 @@ public class CarouselRefreshScenarioTests
     [InlineData(MaterialCarouselLayout.Uncontained)]
     [InlineData(MaterialCarouselLayout.Hero)]
     [InlineData(MaterialCarouselLayout.FullScreen)]
-    public void Touch_tracks_image_geometry_before_release_then_advances_one_item(MaterialCarouselLayout layout)
+    public async Task Touch_tracks_image_geometry_before_release_then_advances_one_item(MaterialCarouselLayout layout)
     {
         var carousel = new MaterialCarousel { Layout = layout, ItemsSource = Enumerable.Range(0, 5).Select(i => new MaterialCarouselItem { Title = $"Photo {i}", Image = Picture(Brushes.Green) }), Height = 240 };
         using var host = new BrowseHost(carousel);
@@ -98,12 +98,16 @@ public class CarouselRefreshScenarioTests
         var border = image.GetVisualAncestors().OfType<Border>().First();
         var before = border.Bounds;
         var start = host.At(carousel, new Point(220, 160));
-        var end = start - (layout == MaterialCarouselLayout.FullScreen ? new Vector(0, 100) : new Vector(100, 0));
+        // Cross the pinned pager's 0.5-page threshold; use the visible native item width.
+        var end = start - (layout == MaterialCarouselLayout.FullScreen
+            ? new Vector(0, carousel.Bounds.Height * .65) : new Vector(image.Bounds.Width * .65, 0));
         using var touch = host.Window.TouchBegin(start);
         host.Window.TouchMove(touch, end);
         host.Render();
         Assert.NotEqual(before, border.Bounds);
         Assert.Equal(0, carousel.CurrentIndex);
+        // A held release tests positional settling, independently of wall-clock fling velocity.
+        await Task.Delay(120);
         host.Window.TouchEnd(touch, end);
         host.Render();
         Assert.Equal(1, carousel.CurrentIndex);
