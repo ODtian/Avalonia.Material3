@@ -19,6 +19,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
     public static readonly StyledProperty<bool> IsEdgeSwipeEnabledProperty = AvaloniaProperty.Register<MaterialNavigationDrawerLayout, bool>(nameof(IsEdgeSwipeEnabled));
     public bool IsEdgeSwipeEnabled { get => GetValue(IsEdgeSwipeEnabledProperty); set => SetValue(IsEdgeSwipeEnabledProperty, value); }
     private ContentPresenter? _drawerPresenter;
+    private readonly MaterialInputScope _drawerInput = new(null);
     private MaterialNavigationDrawer? _subscribed;
     private bool _reconciling;
     private IPointer? _edgePointer;
@@ -51,7 +52,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         if (_drawerPresenter is not null)
-        { MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerPresenter, true); _drawerPresenter.Content = null; }
+        { MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerInput, true); _drawerPresenter.Content = null; _drawerInput.Child = null; }
         base.OnApplyTemplate(e);
         _drawerPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerPresenter");
         WatchDrawer();
@@ -90,8 +91,9 @@ public class MaterialNavigationDrawerLayout : ContentControl
                     else _presentation.Spring(drawer.IsOpen ? 1 : 0, drawer.IsOpen ? _motion.DefaultSpatial : _motion.FastEffects, PixelThreshold);
                 }
                 var persistent = drawer.Mode == MaterialNavigationDrawerMode.Standard && (drawer.IsOpen || _presentation.IsRunning || PresentationFraction > 0);
-                _drawerPresenter.Content = persistent ? drawer : null;
-                MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerPresenter, drawer.IsOpen);
+                _drawerInput.Child = persistent ? drawer : null;
+                _drawerPresenter.Content = persistent ? _drawerInput : null;
+                MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerInput, drawer.IsOpen);
                 _drawerPresenter.UpdateChild();
                 if (drawer.IsOpen && drawer.Mode == MaterialNavigationDrawerMode.Modal && drawer.Session is null)
                 {
@@ -106,7 +108,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
                 else if (persistent && focused is not null)
                     Dispatcher.UIThread.Post(() => { if (drawer.IsOpen && drawer.Mode == MaterialNavigationDrawerMode.Standard && focused.IsEffectivelyEnabled && focused.IsEffectivelyVisible && TopLevel.GetTopLevel(focused) == TopLevel.GetTopLevel(this)) focused.Focus(NavigationMethod.Tab); }, DispatcherPriority.Loaded);
             }
-            else { MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerPresenter, true); _drawerPresenter.Content = null; _drawerPresenter.UpdateChild(); }
+            else { MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerInput, true); _drawerPresenter.Content = null; _drawerInput.Child = null; _drawerPresenter.UpdateChild(); }
             _drawerPresenter.InvalidateMeasure();
             (_drawerPresenter.GetVisualParent() as Control)?.InvalidateMeasure();
             InvalidateMeasure();
@@ -127,7 +129,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
         CancelEdge();
         if (_subscribed is not null) _subscribed.PropertyChanged -= DrawerChanged;
         _subscribed = null;
-        if (_drawerPresenter is not null) MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerPresenter, true);
+        if (_drawerPresenter is not null) MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerInput, true);
         base.OnDetachedFromVisualTree(e);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

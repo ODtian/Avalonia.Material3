@@ -61,10 +61,12 @@
             <controls:MaterialStateLayer x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False" />
             <Border x:Name="FocusRing" Width="42" Height="42" CornerRadius="21" BorderThickness="3"
                     BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
-            <controls:MaterialCheckboxBox x:Name="Box" Width="18" Height="18" CornerRadius="2" BorderThickness="2"
+            <controls:MaterialCheckboxCanvas>
+            <controls:MaterialCheckboxBox x:Name="Box" CornerRadius="2" BorderThickness="2"
                     BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" />
-            <controls:MaterialCheckboxGlyph x:Name="Check" Width="18" Height="18" Value="{TemplateBinding IsChecked}"
+            <controls:MaterialCheckboxGlyph x:Name="Check" Value="{TemplateBinding IsChecked}"
                   CheckBrush="{DynamicResource M3.OnPrimaryBrush}" />
+            </controls:MaterialCheckboxCanvas>
           </Grid>
           <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
             <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}"

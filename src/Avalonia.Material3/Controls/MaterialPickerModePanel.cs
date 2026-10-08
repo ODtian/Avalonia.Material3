@@ -16,7 +16,7 @@ internal sealed class MaterialPickerModePanel : Panel
     private MaterialModalPaintScope? _calendarGate, _inputGate;
     internal MaterialPickerModePanel(MaterialDatePicker owner, Control calendar, Control inputs)
     {
-        _owner = owner; _calendar = calendar; _inputs = inputs; Children.Add(calendar); Children.Add(inputs);
+        _owner = owner; _calendar = new MaterialInputScope(calendar); _inputs = new MaterialInputScope(inputs); Children.Add(_calendar); Children.Add(_inputs);
         ClipToBounds = true; UseLayoutRounding = false;
         calendar.RenderTransform = _calendarTransform; inputs.RenderTransform = _inputTransform;
         _calendarAlpha = new(this, 1, value => { calendar.Opacity = Math.Clamp(value, 0, 1); InvalidateMeasure(); });

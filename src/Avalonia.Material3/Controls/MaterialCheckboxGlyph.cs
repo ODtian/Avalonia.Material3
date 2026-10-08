@@ -79,11 +79,10 @@ internal sealed class MaterialCheckboxGlyph : Control
         if (_markColor.Value is null || DrawProgress <= 0) return;
         // AndroidX11ece46a, the M3 stylingFix=true branch.
         // Keep the nominal canvas origin; tight path bounds must never determine alignment.
-        var origin = new Point((Bounds.Width - 18) / 2, (Bounds.Height - 18) / 2);
         static double Mix(double from, double to, double progress) => from + (to - from) * progress;
-        var left = origin + new Vector(4.5, 9);
-        var cross = origin + new Vector(Mix(7.2, 9, CrossProgress), Mix(11.7, 9, CrossProgress));
-        var right = origin + new Vector(13.5, Mix(5.4, 9, CrossProgress));
+        var left = new Point(Bounds.Width * .25, Bounds.Height * .5);
+        var cross = new Point(Bounds.Width * Mix(.4, .5, CrossProgress), Bounds.Height * Mix(.65, .5, CrossProgress));
+        var right = new Point(Bounds.Width * .75, Bounds.Height * Mix(.3, .5, CrossProgress));
         var firstVector = new Vector(cross.X - left.X, cross.Y - left.Y);
         var secondVector = new Vector(right.X - cross.X, right.Y - cross.Y);
         var first = firstVector.Length; var second = secondVector.Length;
@@ -96,6 +95,6 @@ internal sealed class MaterialCheckboxGlyph : Control
             if (distance > first) path.LineTo(cross + secondVector * Math.Min(1, (distance - first) / second));
         }
         using (context.PushOpacity(Math.Clamp(_markAlpha.Value, 0, 1)))
-            context.DrawGeometry(null, new Pen(_markColor.Value, 2, lineCap: PenLineCap.Square), geometry);
+            context.DrawGeometry(null, new Pen(_markColor.Value, MaterialCheckboxCanvas.Stroke(2, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1), lineCap: PenLineCap.Square), geometry);
     }
 }

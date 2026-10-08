@@ -5,8 +5,10 @@ using Avalonia.VisualTree;
 namespace Avalonia.Material3.Controls;
 
 // The foreground obeys the reveal viewport; decorative elevation paints outside it.
-internal abstract class MaterialRevealViewport : Decorator, IMaterialPaintOverflow
+internal abstract class MaterialRevealViewport : Decorator, IMaterialPaintOverflow, IMaterialInputScope
 {
+    protected override bool IsEnabledCore => base.IsEnabledCore && MaterialModalPaintScope.IsInputScopeOpen(this);
+    void IMaterialInputScope.RefreshInputScope() => UpdateIsEffectivelyEnabled();
     public static readonly StyledProperty<BoxShadows> ElevationShadowProperty = AvaloniaProperty.Register<MaterialRevealViewport, BoxShadows>(nameof(ElevationShadow));
     public static readonly StyledProperty<CornerRadius> ShadowCornerRadiusProperty = AvaloniaProperty.Register<MaterialRevealViewport, CornerRadius>(nameof(ShadowCornerRadius));
     public BoxShadows ElevationShadow { get => GetValue(ElevationShadowProperty); set => SetValue(ElevationShadowProperty, value); }

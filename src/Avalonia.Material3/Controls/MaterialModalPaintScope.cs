@@ -17,13 +17,13 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
     private static readonly ConditionalWeakTable<Control, MaterialModalPaintScope> Active = new();
     private const string PaintClass = ":modal-paint-enabled";
     private readonly Control _root;
-    private readonly bool _rootCoreEnabled;
-    private readonly IDisposable _inputBinding;
+    [ThreadStatic] private static Control? _authoredCoreQuery;
     private readonly Dictionary<Control, Watch> _controls = [];
     private readonly Dictionary<Control, Watch> _ancestors = [];
     private bool _refreshing, _disposed;
 
     internal static bool IsEnabledForPaint(Control control) => control.IsEffectivelyEnabled || control.GetValue(EnabledForPaintProperty);
+    internal static bool IsInputScopeOpen(Control control) => _authoredCoreQuery == control || !Active.TryGetValue(control, out _);
     internal static Selector DisabledPaint(Selector? selector) => selector.Class(":disabled").Not(value => value.Class(PaintClass));
     internal static Selector EnabledPaint(Selector? selector) => selector.Not(value => DisabledPaint(value));
 
@@ -35,11 +35,11 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
 
     internal MaterialModalPaintScope(Control root)
     {
-        _root = root; _rootCoreEnabled = AuthoredEnabledCore(root);
+        _root = root;
         Active.Add(root, this);
         root.LayoutUpdated += LayoutUpdated;
         Refresh(); // Set paint eligibility before the real gate changes.
-        _inputBinding = root.Bind(InputElement.IsEnabledProperty, DisabledInput.Instance, BindingPriority.Animation);
+        ((IMaterialInputScope)root).RefreshInputScope();
     }
     private void LayoutUpdated(object? sender, EventArgs args) => Refresh();
     private void Refresh()
@@ -72,7 +72,7 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
             if (visual is not Control ancestor) continue;
             var gated = Active.TryGetValue(ancestor, out var scope);
             covered |= gated;
-            if (gated ? !scope!._rootCoreEnabled || !ancestor.GetBaseValue(InputElement.IsEnabledProperty).GetValueOrDefault(true) : !AuthoredEnabledCore(ancestor))
+            if (!ReadAuthoredCore(ancestor))
                 authoredEnabled = false;
         }
         var enabled = covered && authoredEnabled;
@@ -90,7 +90,7 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
     {
         if (_disposed) return;
         _disposed = true; _root.LayoutUpdated -= LayoutUpdated;
-        Active.Remove(_root); _inputBinding.Dispose();
+        Active.Remove(_root); ((IMaterialInputScope)_root).RefreshInputScope();
         foreach (var pair in _controls) { pair.Value.Dispose(); Apply(pair.Key); }
         _controls.Clear();
         foreach (var watch in _ancestors.Values) watch.Dispose();
@@ -100,11 +100,11 @@ internal sealed class MaterialModalPaintScope : AvaloniaObject, IDisposable
     // Runtime-generated callvirt preserves that dispatch and is supported by NativeAOT.
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_IsEnabledCore")]
     private static extern bool AuthoredEnabledCore(InputElement control);
-    private sealed class DisabledInput : IObservable<bool>, IDisposable
+    private static bool ReadAuthoredCore(Control control)
     {
-        internal static readonly DisabledInput Instance = new();
-        public IDisposable Subscribe(IObserver<bool> observer) { observer.OnNext(false); return this; }
-        public void Dispose() { }
+        var previous = _authoredCoreQuery; _authoredCoreQuery = control;
+        try { return AuthoredEnabledCore(control); }
+        finally { _authoredCoreQuery = previous; }
     }
     private sealed class Watch : IDisposable
     {
