@@ -13,6 +13,7 @@ internal sealed class MaterialPickerModePanel : Panel
     private readonly TranslateTransform _calendarTransform = new(), _inputTransform = new();
     private bool _initialized, _pending;
     private Size _calendarSize, _inputSize;
+    private MaterialModalPaintScope? _calendarGate, _inputGate;
     internal MaterialPickerModePanel(MaterialDatePicker owner, Control calendar, Control inputs)
     {
         _owner = owner; _calendar = calendar; _inputs = inputs; Children.Add(calendar); Children.Add(inputs);
@@ -33,7 +34,7 @@ internal sealed class MaterialPickerModePanel : Panel
     internal void Prepare()
     {
         _pending = true; _calendar.IsVisible = _inputs.IsVisible = true;
-        _calendar.IsEnabled = !Input; _inputs.IsEnabled = Input; InvalidateMeasure();
+        UpdateInput(); InvalidateMeasure();
     }
     private bool Input => _owner.Mode == MaterialDatePickerMode.Input;
     private bool Range => _owner.SelectionMode == MaterialDateSelectionMode.Range;
@@ -44,7 +45,7 @@ internal sealed class MaterialPickerModePanel : Panel
     }
     private void Start(bool instant)
     {
-        _calendar.IsEnabled = !Input; _inputs.IsEnabled = Input;
+        UpdateInput();
         if (instant || _motion.FastEffects.IsInstant)
         {
             _calendarAlpha.Snap(Input ? 0 : 1); _inputAlpha.Snap(Input ? 1 : 0);
@@ -81,6 +82,19 @@ internal sealed class MaterialPickerModePanel : Panel
         }
         var height = Range ? Math.Max(_calendarAlpha.Value > 0 ? _calendarSize.Height : 0, _inputAlpha.Value > 0 ? _inputSize.Height : 0) : Math.Max(0, _height.Value);
         return new(Math.Max(_calendarSize.Width, _inputSize.Width), height);
+    }
+    private void UpdateInput()
+    {
+        MaterialModalPaintScope.SetInputEnabled(ref _calendarGate, _calendar, !Input || VisualRoot is null);
+        MaterialModalPaintScope.SetInputEnabled(ref _inputGate, _inputs, Input || VisualRoot is null);
+    }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    { base.OnAttachedToVisualTree(e); UpdateInput(); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        MaterialModalPaintScope.SetInputEnabled(ref _calendarGate, _calendar, true);
+        MaterialModalPaintScope.SetInputEnabled(ref _inputGate, _inputs, true);
+        base.OnDetachedFromVisualTree(e);
     }
     protected override Size ArrangeOverride(Size finalSize)
     {

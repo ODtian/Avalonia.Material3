@@ -17,13 +17,23 @@ internal sealed class MaterialFabMenuDisclosure : Decorator, IMaterialActionDisc
     public bool IsExpanded { get => GetValue(IsExpandedProperty); set => SetValue(IsExpandedProperty, value); }
     public bool IsRevealing { get; private set; }
     public event Action? Settled;
-    public MaterialFabMenuDisclosure() { ClipToBounds = true; UseLayoutRounding = false; IsEnabled = IsHitTestVisible = IsVisible = false; }
+    private MaterialModalPaintScope? _inputGate;
+    public MaterialFabMenuDisclosure() { ClipToBounds = true; UseLayoutRounding = false; IsHitTestVisible = IsVisible = false; }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    { base.OnAttachedToVisualTree(e); UpdateInput(); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    { MaterialModalPaintScope.SetInputEnabled(ref _inputGate, this, true); base.OnDetachedFromVisualTree(e); }
+    private void UpdateInput()
+    {
+        MaterialModalPaintScope.SetInputEnabled(ref _inputGate, this, IsExpanded || VisualRoot is null);
+        IsHitTestVisible = IsExpanded;
+    }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property != IsExpandedProperty) return;
         IsRevealing = true;
-        IsEnabled = IsHitTestVisible = IsExpanded;
+        UpdateInput();
         if (IsExpanded) IsVisible = true;
     }
     internal void Complete()
@@ -100,8 +110,8 @@ internal sealed class MaterialFabMenuItemMask : ContentPresenter
     {
         public override void Render(DrawingContext context)
         {
-            if (owner._item is null || !owner.HasPaint || Bounds.Width <= 10 || Bounds.Height <= 10) return;
-            var rect = new Rect(5, 5, Bounds.Width - 10, Bounds.Height - 10);
+            if (owner._item is null || !owner.HasPaint || Bounds.Width <= 0 || Bounds.Height <= 0) return;
+            var rect = new Rect(Bounds.Size);
             context.DrawRectangle(owner._item.Background, null, new RoundedRect(rect, Math.Min(rect.Width, rect.Height) / 2));
         }
     }

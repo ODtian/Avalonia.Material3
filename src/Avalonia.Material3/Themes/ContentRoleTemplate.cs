@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Material3.Tokens;
+using Avalonia.Material3.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
 
@@ -17,7 +18,7 @@ internal sealed class ContentRoleTemplate : IDataTemplate
         if (data is Control control) return control;
         if (data is null) return null;
         var text = new TextBlock { Text = data.ToString(), TextWrapping = TextWrapping.Wrap };
-        text.Styles.Add(new Style(selector => selector.OfType<TextBlock>().Class(":disabled").Not(value => value.Class(":modal-paint-enabled")))
+        text.Styles.Add(new Style(selector => MaterialModalPaintScope.DisabledPaint(selector.OfType<TextBlock>()))
         {
             Setters = { new Setter(Visual.OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) }
         });

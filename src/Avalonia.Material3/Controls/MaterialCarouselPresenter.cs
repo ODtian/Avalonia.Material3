@@ -131,7 +131,7 @@ public sealed class MaterialCarouselPresenter : Panel
     {
         if (owner.ItemTemplate is { } template) return template.Build(item) ?? new Panel();
         var image = new Image { Source = item.Image, Stretch = Stretch.UniformToFill, IsVisible = item.Image is not null };
-        image.Styles.Add(new Style(selector => selector.OfType<Image>().Class(":disabled"))
+        image.Styles.Add(new Style(selector => MaterialModalPaintScope.DisabledPaint(selector.OfType<Image>()))
         { Setters = { new Setter(OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) } });
         AutomationProperties.SetName(image, item.Title);
         Control? overlay = null;
@@ -162,7 +162,7 @@ public sealed class MaterialCarouselPresenter : Panel
     private static TextBlock Text(string text)
     {
         var block = new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap };
-        block.Styles.Add(new Style(selector => selector.OfType<TextBlock>().Class(":disabled"))
+        block.Styles.Add(new Style(selector => MaterialModalPaintScope.DisabledPaint(selector.OfType<TextBlock>()))
         { Setters = { new Setter(OpacityProperty, new DynamicResourceExtension("M3.DisabledForegroundOpacity")) } });
         block.Bind(TextBlock.ForegroundProperty, new DynamicResourceExtension("M3.OnSurfaceBrush"));
         foreach (var (property, suffix) in new (AvaloniaProperty, string)[] { (TextBlock.FontFamilyProperty, "FontFamily"), (TextBlock.FontSizeProperty, "FontSize"), (TextBlock.FontWeightProperty, "FontWeight"), (TextBlock.LineHeightProperty, "LineHeight"), (TextBlock.LetterSpacingProperty, "LetterSpacing") })
@@ -275,6 +275,7 @@ internal sealed class MaterialCarouselTileContent : Panel
     private readonly Control? _overlay;
     private readonly Border _footer;
     private double _captionWidth;
+    private MaterialModalPaintScope? _footerGate;
     internal double MaskWidth;
     internal MaterialCarouselTileContent(Control image, Control? overlay, Border footer)
     {
@@ -296,8 +297,11 @@ internal sealed class MaterialCarouselTileContent : Panel
         _image.Arrange(new Rect(finalSize));
         _overlay?.Arrange(new Rect(finalSize));
         _footer.Opacity = Math.Clamp((MaskWidth - 116) / 8, 0, 1);
-        _footer.IsEnabled = _footer.IsHitTestVisible = MaskWidth >= 120;
+        MaterialModalPaintScope.SetInputEnabled(ref _footerGate, _footer, MaskWidth >= 120 || VisualRoot is null);
+        _footer.IsHitTestVisible = MaskWidth >= 120;
         _footer.Arrange(new Rect((finalSize.Width - MaskWidth) / 2, Math.Max(0, finalSize.Height - _footer.DesiredSize.Height), _captionWidth, _footer.DesiredSize.Height));
         return finalSize;
     }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    { MaterialModalPaintScope.SetInputEnabled(ref _footerGate, _footer, true); base.OnDetachedFromVisualTree(e); }
 }

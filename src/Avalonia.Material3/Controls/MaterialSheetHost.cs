@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Media;
 
 namespace Avalonia.Material3.Controls;
 
@@ -21,15 +22,18 @@ public class MaterialSheetHost : ContentControl
 public class MaterialSheetHostPanel : Panel
 {
     private MaterialSheetHost? _host;
+    private MaterialClipLease? _viewportClip;
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         _host = TemplatedParent as MaterialSheetHost;
         if (_host is not null) _host.PropertyChanged += HostChanged;
+        InvalidateArrange();
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (_host is not null) _host.PropertyChanged -= HostChanged;
+        _viewportClip?.Dispose(); _viewportClip = null;
         _host = null;
         base.OnDetachedFromVisualTree(e);
     }
@@ -57,6 +61,10 @@ public class MaterialSheetHostPanel : Panel
     {
         if (TemplatedParent is not MaterialSheetHost host || Children.Count != 2) return base.ArrangeOverride(finalSize);
         var sizeAvailable = Constrain(host, finalSize);
+        // AvailableSize declares this host's viewport, not only a measurement hint.
+        var viewport = new RectangleGeometry(new Rect(sizeAvailable));
+        if (_viewportClip is null) _viewportClip = new(this, viewport);
+        else _viewportClip.Update(viewport);
         var reservation = Reservation(host, sizeAvailable);
         var size = Children[1].DesiredSize;
         if (host.Sheet?.IsSideSheet == true)

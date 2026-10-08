@@ -54,18 +54,18 @@ public class FloatingActionScenarioTests
         host.Window.Content = new Grid { Children = { toolbar } };
         host.Theme.Motion = new Avalonia.Material3.Tokens.MaterialMotion { Springs = Avalonia.Material3.Tokens.MaterialSpringScheme.Expressive with { FastSpatial = new(1, 100) } };
         host.Capture();
-        Assert.Equal(66, fab.Bounds.Width);
+        Assert.Equal(56, fab.Bounds.Width);
         toolbar.IsExpanded = false;
         await Task.Delay(60);
         host.Capture();
         Assert.Equal(80, fab.ContainerSize);
-        Assert.InRange(fab.Bounds.Width, 66.01, 89.99);
+        Assert.InRange(fab.Bounds.Width, 56.01, 79.99);
         host.Theme.Motion = host.Theme.Motion with { ReduceMotion = true };
         host.Capture();
-        Assert.Equal(90, fab.Bounds.Width);
+        Assert.Equal(80, fab.Bounds.Width);
         toolbar.IsExpanded = true;
         host.Capture();
-        Assert.Equal(66, fab.Bounds.Width);
+        Assert.Equal(56, fab.Bounds.Width);
     }
 
     [AvaloniaTheory]
@@ -157,7 +157,7 @@ public class FloatingActionScenarioTests
         host.Capture();
         Assert.InRange(menu.Bounds.Height, 70, 280); // The pinned column reserves every row once its first item paints.
         var nearest = menu.Items[^1];
-        var center = nearest.TranslatePoint(new Point(nearest.Bounds.Width - 18, nearest.Bounds.Height / 2), host.Window)!.Value;
+        var center = nearest.TranslatePoint(new Point(nearest.Bounds.Width - .5, nearest.Bounds.Height / 2), host.Window)!.Value;
         Assert.True(center.Y >= menu.TranslatePoint(default, host.Window)!.Value.Y);
         Assert.True(center.Y <= host.Window.Height);
         var hit = host.Window.InputHitTest(center) as Visual;
