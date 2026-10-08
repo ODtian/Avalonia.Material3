@@ -21,7 +21,7 @@ internal sealed class MaterialClockLabel : Control
     private MaterialClockDial? Dial => this.GetVisualAncestors().OfType<MaterialClockDial>().FirstOrDefault();
     private static readonly StyledProperty<IBrush?> SelectedBrushProperty = AvaloniaProperty.Register<MaterialClockLabel, IBrush?>("SelectedBrush");
     private TextLayout? _normal;
-    private MaterialNativeClockText? _nativeText;
+    private MaterialNativeText? _nativeText;
     private MaterialSnapshot? _mask;
     private bool _capturingMask;
     private Size _maskSize;
@@ -131,7 +131,7 @@ internal sealed class MaterialClockLabel : Control
         _gradient = key.Item5 as GradientBrush;
         WatchStops();
         _normal = new TextLayout(_text, key.Item1, key.Item2, key.Item5, lineHeight: key.Item3, letterSpacing: key.Item4);
-        _nativeText = MaterialNativeClockText.TryCreate(_text, _normal, key.Item4);
+        _nativeText = MaterialNativeText.TryCreate(_text, _normal, key.Item4);
     }
     protected override Size MeasureOverride(Size availableSize)
     {

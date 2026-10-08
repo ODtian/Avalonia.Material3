@@ -17,6 +17,43 @@ namespace Avalonia.Material3.Tests;
 
 public class ReferenceParityScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(1.25, 52, 142)]
+    [InlineData(3.5, 146, 398)]
+    public void Reference_extended_fab_wraps_the_actual_native_Create_paragraph(double density, double paragraphWidth, double surfaceWidth)
+    {
+        using var host = new ReferenceHost("fab");
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        {
+            FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto")
+        };
+        host.Window.SetRenderScaling(density); host.Render();
+        var fab = host.Shell.GetVisualDescendants().OfType<MaterialExtendedFab>().Single();
+        var label = fab.GetVisualDescendants().OfType<Avalonia.Controls.Presenters.ContentPresenter>()
+            .Single(presenter => presenter.Name == "PART_ContentPresenter").Child!;
+        Assert.Equal(paragraphWidth, label.Bounds.Width * density, precision: 5);
+        Assert.Equal(surfaceWidth, fab.Bounds.Width * density, precision: 5);
+    }
+
+    [AvaloniaTheory]
+    [InlineData(TextHintingMode.None)]
+    [InlineData(TextHintingMode.Light)]
+    public void Extended_native_label_keeps_caller_hinting_measure_and_paint_routes_coherent(TextHintingMode hint)
+    {
+        using var host = new ReferenceHost("fab");
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        {
+            FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto")
+        };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        var fab = host.Shell.GetVisualDescendants().OfType<MaterialExtendedFab>().Single();
+        Assert.Equal(398, fab.Bounds.Width * 3.5, precision: 5);
+        TextOptions.SetTextHintingMode(host.Window, hint); host.Render();
+        Assert.Equal(399, fab.Bounds.Width * 3.5, precision: 5);
+        TextOptions.SetTextHintingMode(host.Window, TextHintingMode.Strong); host.Render();
+        Assert.Equal(398, fab.Bounds.Width * 3.5, precision: 5);
+    }
+
     [AvaloniaFact]
     public void Reference_ripple_buttons_use_native_touch_padding_and_the_51_pixel_surface_at_125_percent()
     {

@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
 
@@ -26,7 +27,36 @@ public class MaterialExtendedFab : MaterialFab
         MaterialFabSize.Small => new(16, 8), _ => new(16, 8, 20, 8)
     };
     protected override Type StyleKeyOverride => typeof(MaterialExtendedFab);
-    public MaterialExtendedFab() => PseudoClasses.Set(":expanded", true);
+    private readonly MaterialFrameLease _textOptionsFrames;
+    private Themes.MaterialActionLabel? _textLabel;
+    public MaterialExtendedFab()
+    {
+        PseudoClasses.Set(":expanded", true);
+        _textOptionsFrames = MaterialRenderFrames.Bind(this, _ =>
+        {
+            _textLabel?.ReconcileTextOptions();
+            return _textLabel is not null;
+        }, ignoreOwnerEnabled: true);
+    }
+    internal void RegisterTextLabel(Themes.MaterialActionLabel label)
+    {
+        _textLabel = label; _textOptionsFrames.SetRunning(true);
+    }
+    internal void UnregisterTextLabel(Themes.MaterialActionLabel label)
+    {
+        if (_textLabel != label) return;
+        _textLabel = null; _textOptionsFrames.SetRunning(false);
+    }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _textOptionsFrames.SetRunning(_textLabel is not null);
+    }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _textOptionsFrames.SetRunning(false);
+        base.OnDetachedFromVisualTree(e);
+    }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
