@@ -11,6 +11,19 @@ namespace Avalonia.Material3.Tests;
 public class PixelStrokeScenarioTests
 {
     [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Disabled_switch_roles_are_opaque_native_surface_composites(bool selected)
+    {
+        var control = new MaterialSwitch { IsChecked = selected, IsEnabled = false, Margin = new Thickness(16),
+            HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top };
+        using var host = new GeometryHost(control, 140, 100);
+        Assert.Equal(selected ? Color.FromRgb(227, 220, 228) : Color.FromRgb(251, 244, 252), host.Pixel(selected ? 26 : 42, 40));
+        Assert.Equal(selected ? Color.Parse("#FEF7FF") : Color.FromRgb(168, 163, 170), host.Pixel(selected ? 54 : 26, 40));
+        Assert.Equal(Color.FromRgb(227, 220, 228), host.Pixel(17, 40));
+    }
+
+    [AvaloniaTheory]
     [InlineData(1.25)]
     [InlineData(3.5)]
     public void Disabled_checkbox_uses_the_native_quantized_color_alpha(double density)
