@@ -182,7 +182,7 @@
       <Style Selector="^:top"><Setter Property="VerticalAlignment" Value="Top" /></Style>
       <Style Selector="^:docked"><Setter Property="HorizontalAlignment" Value="Stretch" /><Setter Property="Margin" Value="0" /><Setter Property="Padding" Value="16,0" /></Style>
       <Style Selector="^:docked /template/ Border#Surface"><Setter Property="CornerRadius" Value="0" /><Setter Property="BoxShadow" Value="none" /></Style>
-      <Style Selector="^:with-fab:not(:docked) /template/ c|MaterialActionReveal#SurfaceReveal"><Setter Property="ElevationShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+      <Style Selector="^:with-fab:not(:docked):expanded /template/ c|MaterialActionReveal#SurfaceReveal"><Setter Property="ElevationShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
       <Style Selector="^:vertical /template/ Border#Surface"><Setter Property="MinHeight" Value="0" /><Setter Property="MinWidth" Value="64" /></Style>
       <Style Selector="^:vertical /template/ ScrollViewer#Scroller"><Setter Property="HorizontalScrollBarVisibility" Value="Disabled" /><Setter Property="VerticalScrollBarVisibility" Value="Auto" /></Style>
       <Style Selector="^:docked:vertical"><Setter Property="HorizontalAlignment" Value="Left" /><Setter Property="VerticalAlignment" Value="Stretch" /><Setter Property="Padding" Value="0,16" /></Style>

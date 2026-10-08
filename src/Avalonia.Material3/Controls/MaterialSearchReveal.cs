@@ -3,11 +3,12 @@ using Avalonia.Controls;
 namespace Avalonia.Material3.Controls;
 
 // The current public bool API follows pinned SearchBar/DockedSearchBar expanded overloads.
-internal sealed class MaterialSearchReveal : Decorator
+internal sealed class MaterialSearchReveal : MaterialRevealViewport
 {
     public static readonly StyledProperty<MaterialSearch?> OwnerProperty = AvaloniaProperty.Register<MaterialSearchReveal, MaterialSearch?>(nameof(Owner));
     public MaterialSearch? Owner { get => GetValue(OwnerProperty); set => SetValue(OwnerProperty, value); }
     private Size _natural;
+    private MaterialModalPaintScope? _inputGate;
     public MaterialSearchReveal()
     {
         ClipToBounds = true; UseLayoutRounding = false;
@@ -21,6 +22,7 @@ internal sealed class MaterialSearchReveal : Decorator
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (Owner is { } owner) { owner.PropertyChanged -= OwnerChanged; owner.ExpansionChanged -= Update; }
+        MaterialModalPaintScope.SetInputEnabled(ref _inputGate, this, true);
         base.OnDetachedFromVisualTree(e);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -38,7 +40,8 @@ internal sealed class MaterialSearchReveal : Decorator
     private void Update()
     {
         var open = Owner?.IsOpen == true; var progress = Owner?.ExpansionProgress ?? 0;
-        IsEnabled = IsHitTestVisible = open;
+        MaterialModalPaintScope.SetInputEnabled(ref _inputGate, this, open || VisualRoot is null);
+        IsHitTestVisible = open;
         IsVisible = open || progress > 0; Opacity = Math.Clamp(progress, 0, 1); InvalidateMeasure();
     }
     protected override Size MeasureOverride(Size availableSize)
@@ -48,6 +51,6 @@ internal sealed class MaterialSearchReveal : Decorator
     }
     protected override Size ArrangeOverride(Size finalSize)
     {
-        Child?.Arrange(new Rect(0, 0, finalSize.Width, _natural.Height)); return finalSize;
+        Child?.Arrange(new Rect(0, 0, finalSize.Width, _natural.Height)); UpdateForegroundClip(finalSize); return finalSize;
     }
 }

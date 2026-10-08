@@ -105,7 +105,7 @@ public class MaterialTopAppBar : TemplatedControl
         if (content is null) return;
         foreach (var icon in content.GetVisualDescendants().OfType<MaterialIconButton>().Concat(content is MaterialIconButton button ? [button] : Array.Empty<MaterialIconButton>()))
         {
-            var role = new Style(selector => selector.OfType<MaterialIconButton>().Class(":icon-standard").Not(disabled => disabled.Class(":disabled")))
+            var role = new Style(selector => MaterialModalPaintScope.EnabledPaint(selector.OfType<MaterialIconButton>().Class(":icon-standard")))
             {
                 Setters = { new Setter(ForegroundProperty, new DynamicResourceExtension("M3.OnSurfaceBrush")) }
             };

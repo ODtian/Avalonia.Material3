@@ -88,7 +88,9 @@ public class SheetScenarioTests
         var content = new Border();
         var sheet = new MaterialBottomSheet { ExpandedExtent = 600, Content = content, Padding = new Thickness(20) };
         sheet.Show(host.Overlay); host.Render();
-        Assert.Equal(568, content.Bounds.Width);
+        Assert.Equal(640, sheet.Bounds.Width);
+        Assert.Equal(20, content.TranslatePoint(default, sheet)!.Value.X);
+        Assert.Equal(600, content.Bounds.Width);
         Assert.Equal(new Thickness(20), sheet.Padding);
     }
 

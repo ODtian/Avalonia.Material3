@@ -29,6 +29,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
     private readonly MaterialMotionValue _presentation;
     private readonly MaterialMotionSettings _motion;
     private bool _presentationInitialized;
+    private MaterialModalPaintScope? _drawerGate;
     internal double PresentationFraction => Math.Max(0, _presentation.Value);
     internal void SetDrawerGesture(double offset)
     {
@@ -49,7 +50,8 @@ public class MaterialNavigationDrawerLayout : ContentControl
     protected override Type StyleKeyOverride => typeof(MaterialNavigationDrawerLayout);
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        if (_drawerPresenter is not null) _drawerPresenter.Content = null;
+        if (_drawerPresenter is not null)
+        { MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerPresenter, true); _drawerPresenter.Content = null; }
         base.OnApplyTemplate(e);
         _drawerPresenter = e.NameScope.Find<ContentPresenter>("PART_DrawerPresenter");
         WatchDrawer();
@@ -89,7 +91,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
                 }
                 var persistent = drawer.Mode == MaterialNavigationDrawerMode.Standard && (drawer.IsOpen || _presentation.IsRunning || PresentationFraction > 0);
                 _drawerPresenter.Content = persistent ? drawer : null;
-                _drawerPresenter.IsEnabled = drawer.IsOpen;
+                MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerPresenter, drawer.IsOpen);
                 _drawerPresenter.UpdateChild();
                 if (drawer.IsOpen && drawer.Mode == MaterialNavigationDrawerMode.Modal && drawer.Session is null)
                 {
@@ -104,7 +106,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
                 else if (persistent && focused is not null)
                     Dispatcher.UIThread.Post(() => { if (drawer.IsOpen && drawer.Mode == MaterialNavigationDrawerMode.Standard && focused.IsEffectivelyEnabled && focused.IsEffectivelyVisible && TopLevel.GetTopLevel(focused) == TopLevel.GetTopLevel(this)) focused.Focus(NavigationMethod.Tab); }, DispatcherPriority.Loaded);
             }
-            else { _drawerPresenter.Content = null; _drawerPresenter.UpdateChild(); }
+            else { MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerPresenter, true); _drawerPresenter.Content = null; _drawerPresenter.UpdateChild(); }
             _drawerPresenter.InvalidateMeasure();
             (_drawerPresenter.GetVisualParent() as Control)?.InvalidateMeasure();
             InvalidateMeasure();
@@ -125,6 +127,7 @@ public class MaterialNavigationDrawerLayout : ContentControl
         CancelEdge();
         if (_subscribed is not null) _subscribed.PropertyChanged -= DrawerChanged;
         _subscribed = null;
+        if (_drawerPresenter is not null) MaterialModalPaintScope.SetInputEnabled(ref _drawerGate, _drawerPresenter, true);
         base.OnDetachedFromVisualTree(e);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)

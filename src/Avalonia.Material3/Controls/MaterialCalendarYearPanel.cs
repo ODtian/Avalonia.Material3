@@ -10,6 +10,7 @@ internal sealed class MaterialCalendarYearPanel : Panel
     private readonly MaterialMotionSettings _motion;
     private bool _showYears, _initialized;
     private Size _yearSize;
+    private MaterialModalPaintScope? _yearGate, _monthGate;
     internal MaterialCalendarYearPanel(Control month, Control years)
     {
         _month = month; _years = years; Children.Add(month); Children.Add(years);
@@ -22,7 +23,7 @@ internal sealed class MaterialCalendarYearPanel : Panel
     {
         var appeared = show && !_showYears; _showYears = show;
         if (_motion is null || !_initialized) return;
-        _years.IsEnabled = show; _month.IsEnabled = !show;
+        UpdateInput();
         if (_motion.FastEffects.IsInstant)
         { _extent.Snap(show ? 1 : 0); _alpha.Snap(show ? 1 : 0); return; }
         if (appeared && _extent.Value <= 0) _alpha.Snap(.6);
@@ -34,6 +35,19 @@ internal sealed class MaterialCalendarYearPanel : Panel
         _month.Measure(availableSize); _years.IsVisible = true; _years.Measure(availableSize); _yearSize = _years.DesiredSize;
         if (!_initialized) { _initialized = true; Update(_showYears); }
         return new(Math.Max(_month.DesiredSize.Width, _yearSize.Width), Math.Max(_month.DesiredSize.Height, _yearSize.Height));
+    }
+    private void UpdateInput()
+    {
+        MaterialModalPaintScope.SetInputEnabled(ref _yearGate, _years, _showYears || VisualRoot is null);
+        MaterialModalPaintScope.SetInputEnabled(ref _monthGate, _month, !_showYears || VisualRoot is null);
+    }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    { base.OnAttachedToVisualTree(e); UpdateInput(); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        MaterialModalPaintScope.SetInputEnabled(ref _yearGate, _years, true);
+        MaterialModalPaintScope.SetInputEnabled(ref _monthGate, _month, true);
+        base.OnDetachedFromVisualTree(e);
     }
     protected override Size ArrangeOverride(Size finalSize)
     {

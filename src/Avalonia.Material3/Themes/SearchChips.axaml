@@ -23,7 +23,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Background="Transparent">
-          <c:MaterialInsetBorder x:Name="ChipContainer" Margin="4,8" MinHeight="32" VerticalAlignment="Center" ReservedBorderThickness="1"
+          <c:MaterialInsetBorder x:Name="ChipContainer" MinHeight="32" VerticalAlignment="Center" ReservedBorderThickness="1"
                   Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
                   BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid>
@@ -196,6 +196,6 @@
     <Style Selector="^:outlinedautocomplete /template/ c|MaterialTextField#PART_Editor"><Setter Property="Variant" Value="Outlined" /></Style>
     <Style Selector="^:filledautocomplete, ^:outlinedautocomplete"><Setter Property="Background" Value="Transparent" /><Setter Property="CornerRadius" Value="0" /></Style>
     <Style Selector="^:filledautocomplete /template/ Border#SearchContainer, ^:outlinedautocomplete /template/ Border#SearchContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
-    <Style Selector="^:filledautocomplete /template/ Border#CandidatesHost, ^:outlinedautocomplete /template/ Border#CandidatesHost"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /></Style>
+    <Style Selector="^:filledautocomplete /template/ c|MaterialSearchReveal, ^:outlinedautocomplete /template/ c|MaterialSearchReveal"><Setter Property="ElevationShadow" Value="{DynamicResource M3.Elevation.Shadow2}" /><Setter Property="ShadowCornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" /></Style>
   </ControlTheme>
 </ResourceDictionary>
