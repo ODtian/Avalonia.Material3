@@ -143,7 +143,7 @@
     <Setter Property="Template">
       <ControlTemplate>
         <Grid RowDefinitions="*,Auto,Auto">
-          <c:MaterialSearchSurface Grid.RowSpan="3" Owner="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+          <c:MaterialSearchSurface Owner="{Binding RelativeSource={RelativeSource TemplatedParent}}">
           <Border x:Name="SearchContainer" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
             <Grid RowDefinitions="Auto,*">
               <Border x:Name="SearchLayer" Background="{DynamicResource M3.OnSurfaceBrush}" Opacity="0" CornerRadius="{TemplateBinding CornerRadius}" IsHitTestVisible="False">
@@ -192,6 +192,7 @@
     <Style Selector="^:bar:open /template/ c|MaterialIconButton#PART_CloseButton, ^:view:open /template/ c|MaterialIconButton#PART_CloseButton"><Setter Property="IsVisible" Value="True" /></Style>
     <Style Selector="^:bar /template/ Border#CandidatesHost, ^:view /template/ Border#CandidatesHost"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /><Setter Property="BorderThickness" Value="0,1,0,0" /><Setter Property="CornerRadius" Value="0" /></Style>
     <Style Selector="^:fullscreen"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerNone}" /></Style>
+    <Style Selector="^:fullpresentation /template/ Border#SearchContainer"><Setter Property="Background" Value="Transparent" /></Style>
     <Style Selector="^:outlinedautocomplete /template/ c|MaterialTextField#PART_Editor"><Setter Property="Variant" Value="Outlined" /></Style>
     <Style Selector="^:filledautocomplete, ^:outlinedautocomplete"><Setter Property="Background" Value="Transparent" /><Setter Property="CornerRadius" Value="0" /></Style>
     <Style Selector="^:filledautocomplete /template/ Border#SearchContainer, ^:outlinedautocomplete /template/ Border#SearchContainer"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
