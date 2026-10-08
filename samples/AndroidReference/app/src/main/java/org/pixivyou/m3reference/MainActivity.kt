@@ -73,7 +73,7 @@ class MainActivity : ComponentActivity() {
 }
 
 internal val LocalNativeExpressiveButtons = staticCompositionLocalOf { true }
-private val scenes = listOf("date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays")
+private val scenes = listOf("date-range", "date-range-7-24", "date-range-9-16", "date-single", "time", "selection", "selection-disabled", "slider", "fields", "buttons", "ripple", "fab", "progress", "carousel", "navigation", "overlays")
 
 @Composable
 private fun ReferenceApp(initialScene: String, initialDark: Boolean, palette: String) {
@@ -111,6 +111,7 @@ private fun ReferenceApp(initialScene: String, initialDark: Boolean, palette: St
                         "date-single" -> DateSingleScene()
                         "time" -> TimeScene()
                         "selection" -> SelectionScene()
+                        "selection-disabled" -> SelectionScene(enabled = false)
                         "slider" -> SliderScene()
                         "fields" -> FieldsScene()
                         else -> ExtendedScene(scene)
@@ -182,21 +183,29 @@ private fun TimeScene() {
 }
 
 @Composable
-private fun SelectionScene() = SceneColumn {
+private fun SelectionScene(enabled: Boolean = true) = SceneColumn {
     var check by remember { mutableStateOf(false) }
     var mixed by remember { mutableStateOf(ToggleableState.Indeterminate) }
     var radio by remember { mutableIntStateOf(0) }
     var switch by remember { mutableStateOf(true) }
     Text("Checkbox / Radio / Switch", style = MaterialTheme.typography.titleLarge)
-    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { Checkbox(check, { check = it }, Modifier.testTag("checkbox")); Text("Notifications") }
-    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { TriStateCheckbox(mixed, { mixed = if (mixed == ToggleableState.On) ToggleableState.Off else ToggleableState.On }, Modifier.testTag("checkbox-mixed")); Text("Mixed state") }
+    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { Checkbox(check, { check = it }, Modifier.testTag("checkbox"), enabled = enabled); Text("Notifications") }
+    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { TriStateCheckbox(mixed, { mixed = if (mixed == ToggleableState.On) ToggleableState.Off else ToggleableState.On }, Modifier.testTag("checkbox-mixed"), enabled = enabled); Text("Mixed state") }
     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { Checkbox(true, {}, enabled = false); Text("Disabled") }
-    repeat(3) { index -> Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { RadioButton(radio == index, { radio = index }, Modifier.testTag("radio-$index")); Text("Choice ${index + 1}") } }
+    repeat(3) { index -> Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) { RadioButton(radio == index, { radio = index }, Modifier.testTag("radio-$index"), enabled = enabled); Text("Choice ${index + 1}") } }
     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Switch(switch, { switch = it }, Modifier.testTag("switch")); Text("Switch")
+        Switch(switch, { switch = it }, Modifier.testTag("switch"), enabled = enabled); Text("Switch")
     }
     Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Switch(switch, { switch = it }, Modifier.testTag("switch-icons"), thumbContent = { Icon(if (switch) Icons.Default.Check else Icons.Default.Close, null, Modifier.size(SwitchDefaults.IconSize)) }); Text("Thumb icons")
+        Switch(switch, { switch = it }, Modifier.testTag("switch-icons"), enabled = enabled, thumbContent = { Icon(if (switch) Icons.Default.Check else Icons.Default.Close, null, Modifier.size(SwitchDefaults.IconSize)) }); Text("Thumb icons")
+    }
+    if (!enabled) {
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Switch(false, {}, Modifier.testTag("switch-off"), enabled = false); Text("Switch off")
+        }
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Switch(false, {}, Modifier.testTag("switch-off-icons"), enabled = false, thumbContent = { Icon(Icons.Default.Close, null, Modifier.size(SwitchDefaults.IconSize)) }); Text("Thumb icons off")
+        }
     }
 }
 

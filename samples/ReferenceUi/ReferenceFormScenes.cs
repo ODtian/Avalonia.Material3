@@ -14,20 +14,20 @@ namespace Material3.ReferenceUi;
 
 public sealed partial class ReferenceShell
 {
-    private Control CreateSelection()
+    private Control CreateSelection(bool enabled = true)
     {
         var column = SceneColumn();
         column.Children.Add(Text("Checkbox / Radio / Switch", MaterialTypeRole.TitleLarge));
-        column.Children.Add(Row(0, SetId(new MaterialCheckBox { IsChecked = false }, "checkbox"), Text("Notifications")));
+        column.Children.Add(Row(0, SetId(new MaterialCheckBox { IsChecked = false, IsEnabled = enabled }, "checkbox"), Text("Notifications")));
         bool? mixedValue = null;
-        var mixed = SetId(new MaterialCheckBox { IsChecked = null }, "checkbox-mixed");
+        var mixed = SetId(new MaterialCheckBox { IsChecked = null, IsEnabled = enabled }, "checkbox-mixed");
         mixed.Click += (_, _) => { mixedValue = mixedValue == true ? false : true; mixed.IsChecked = mixedValue; };
         column.Children.Add(Row(0, mixed, Text("Mixed state")));
         column.Children.Add(Row(0, new MaterialCheckBox { IsChecked = true, IsEnabled = false }, Text("Disabled")));
         for (var index = 0; index < 3; index++) column.Children.Add(Row(0,
-            SetId(new MaterialRadioButton { GroupName = "reference-radio", IsChecked = index == 0 }, "radio-" + index), Text("Choice " + (index + 1))));
-        var plain = SetId(new MaterialSwitch { IsChecked = true }, "switch");
-        var icons = SetId(new MaterialSwitch { IsChecked = true, OnIcon = Symbol("check", 16), OffIcon = Symbol("close", 16) }, "switch-icons");
+            SetId(new MaterialRadioButton { GroupName = "reference-radio", IsChecked = index == 0, IsEnabled = enabled }, "radio-" + index), Text("Choice " + (index + 1))));
+        var plain = SetId(new MaterialSwitch { IsChecked = true, IsEnabled = enabled }, "switch");
+        var icons = SetId(new MaterialSwitch { IsChecked = true, IsEnabled = enabled, OnIcon = Symbol("check", 16), OffIcon = Symbol("close", 16) }, "switch-icons");
         var synchronizing = false;
         void Synchronize(MaterialSwitch source, MaterialSwitch destination, AvaloniaPropertyChangedEventArgs change)
         {
@@ -37,6 +37,11 @@ public sealed partial class ReferenceShell
         plain.PropertyChanged += (_, change) => Synchronize(plain, icons, change);
         icons.PropertyChanged += (_, change) => Synchronize(icons, plain, change);
         column.Children.Add(Row(12, plain, Text("Switch"))); column.Children.Add(Row(12, icons, Text("Thumb icons")));
+        if (!enabled)
+        {
+            column.Children.Add(Row(12, SetId(new MaterialSwitch { IsChecked = false, IsEnabled = false }, "switch-off"), Text("Switch off")));
+            column.Children.Add(Row(12, SetId(new MaterialSwitch { IsChecked = false, IsEnabled = false, OnIcon = Symbol("check", 16), OffIcon = Symbol("close", 16) }, "switch-off-icons"), Text("Thumb icons off")));
+        }
         return Scroll(column);
     }
     private Control CreateSlider()
