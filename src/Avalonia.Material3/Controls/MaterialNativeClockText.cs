@@ -16,6 +16,7 @@ internal sealed class MaterialNativeClockText : IDisposable
 {
     private const string DefaultRoboto = "9CA9DEBB09459BF4E3E7F826F5CD0F35F253902B85684921FCE2BA3F28DD0F50";
     private const string DerivedRoboto = "BC75B0FDA23E7859E81034E2571126341636CD9C8853B66A57D51D17D094433F";
+    private const string GalleryRoboto = "AA6F953F06F8070C8CB258E686743EF3214A38B612B946FB5EBCD79772FFF5A7";
     private static readonly Dictionary<GlyphTypeface, Face> Faces = [];
     private sealed class Face(GlyphTypeface owner, SKTypeface typeface, bool numericProfile)
     {
@@ -67,11 +68,13 @@ internal sealed class MaterialNativeClockText : IDisposable
                 using (stream) { using var copy = new MemoryStream(); stream.CopyTo(copy); bytes = copy.ToArray(); }
                 // Arbitrary active variation coordinates are absent from this API.
                 // The paired400 file is explicitly pinned at its default axes.
+                var sourceHash = Convert.ToHexString(SHA256.HashData(bytes));
+                var numericProfile = sourceHash == GalleryRoboto && (int)chosen.Weight == 400 && (int)chosen.Stretch == 5 && chosen.Style == FontStyle.Normal;
                 var fvar = Tag("fvar");
                 var derived = chosen.PlatformTypeface.TryGetTable(new OpenTypeTag(fvar), out _);
                 if (derived)
                 {
-                    if (Convert.ToHexString(SHA256.HashData(bytes)) != DefaultRoboto || (int)chosen.Weight != 400 || (int)chosen.Stretch != 5 || chosen.Style != FontStyle.Normal) return null;
+                    if (sourceHash != DefaultRoboto || (int)chosen.Weight != 400 || (int)chosen.Stretch != 5 || chosen.Style != FontStyle.Normal) return null;
                     using var reproduction = AssetLoader.Open(new Uri("avares://Avalonia.Material3/Assets/Fonts/Roboto-Clock400.ttf"));
                     using var copy = new MemoryStream(); reproduction.CopyTo(copy); bytes = copy.ToArray();
                     if (Convert.ToHexString(SHA256.HashData(bytes)) != DerivedRoboto) return null;
@@ -89,7 +92,7 @@ internal sealed class MaterialNativeClockText : IDisposable
                     candidate.Dispose();
                 }
                 if (imported is null) return null;
-                shared = new(chosen, imported, derived); Faces.Add(chosen, shared);
+                shared = new(chosen, imported, derived || numericProfile); Faces.Add(chosen, shared);
             }
             shared.References++; return new(shared);
         }
@@ -113,14 +116,15 @@ internal sealed class MaterialNativeClockText : IDisposable
     }
     internal bool Draw(DrawingContext context, IBrush? brush, Point origin, double density, Size bounds, TextOptions options)
     {
-        if (brush is not ISolidColorBrush solid || options.TextHintingMode == TextHintingMode.Light) return false;
+        if (!CanPaint(brush, options) || brush is not ISolidColorBrush solid) return false;
         context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, solid.Color, solid.Opacity, origin, density, bounds, options));
         return true;
     }
+    private static bool CanPaint(IBrush? brush, TextOptions options) => brush is ISolidColorBrush && options.TextHintingMode != TextHintingMode.Light;
     private double NumericAdvance(double density) => Math.Floor(1151d / 2048 * Math.Floor(_size * density) + .5);
-    internal Size? Measure(double density, double height)
+    internal Size? Measure(double density, double height, IBrush? brush, TextOptions options)
     {
-        if (!_face.Face.NumericProfile) return null;
+        if (!_face.Face.NumericProfile || !CanPaint(brush, options)) return null;
         // This locked face has equal digit advances1151/2048 and phantom pp1=0.
         // FreeType rounds pp2 even without bytecode. TextLine LEFT/RIGHT trims
         // edge half-tracking; Compose reserves.5 after the first intrinsic ceil.

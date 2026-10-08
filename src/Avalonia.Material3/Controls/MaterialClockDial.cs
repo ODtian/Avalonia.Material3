@@ -46,6 +46,7 @@ public class MaterialClockDial : Panel
     private readonly MaterialMotionValue _angle, _faceAlpha;
     private readonly MaterialMotionSettings _motion;
     private readonly MaterialFrameLease _confirmationFrames;
+    private readonly MaterialFrameLease _textOptionsFrames;
     private int? _confirmationValue;
     private double? _confirmationHold;
     private MaterialSnapshot? _oldFace;
@@ -82,6 +83,7 @@ public class MaterialClockDial : Panel
     {
         _paint = new DialPaint(this) { IsHitTestVisible = false };
         _confirmationFrames = MaterialRenderFrames.Bind(this, ConfirmSelection);
+        _textOptionsFrames = MaterialRenderFrames.Bind(this, ReconcileTextOptions, ignoreOwnerEnabled: true);
         _angle = new(this, -Math.PI / 2, _ =>
         {
             _paint.InvalidateVisual();
@@ -325,7 +327,21 @@ public class MaterialClockDial : Panel
         ValueSelected?.Invoke(this, new(ActivePart, next, false));
         e.Handled = true;
     }
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { CancelConfirmation(); CancelDrag(); _oldFace?.Dispose(); _oldFace = null; base.OnDetachedFromVisualTree(e); }
+    private bool ReconcileTextOptions(MaterialFrame frame)
+    {
+        var inherited = new TextOptions();
+        foreach (var visual in this.GetVisualAncestors().Reverse().Append(this))
+            inherited = TextOptions.GetTextOptions(visual).MergeWith(inherited);
+        foreach (var label in this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>())
+            label.ReconcileTextOptions(inherited);
+        return true;
+    }
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _textOptionsFrames.Restart(); _textOptionsFrames.SetRunning(true);
+    }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { _textOptionsFrames.SetRunning(false); CancelConfirmation(); CancelDrag(); _oldFace?.Dispose(); _oldFace = null; base.OnDetachedFromVisualTree(e); }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

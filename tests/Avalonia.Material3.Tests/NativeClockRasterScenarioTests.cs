@@ -26,6 +26,25 @@ public class NativeClockRasterScenarioTests
         Assert.Equal(717, dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 6).Bounds.Top * 3.5, precision: 6);
     }
 
+    [AvaloniaTheory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void Caller_clock_raster_fallback_keeps_its_matching_measure_route_and_can_return_to_native(bool lightHint)
+    {
+        var family = new FontFamily($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto");
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = family }; host.Window.SetRenderScaling(3.5); host.Render();
+        var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        Control Label() => number.GetVisualDescendants().OfType<ContentPresenter>().Single().Child!;
+        Assert.Equal(32, Label().Bounds.Width * 3.5, precision: 6);
+        if (lightHint) TextOptions.SetTextHintingMode(host.Window, TextHintingMode.Light);
+        else number.Foreground = new LinearGradientBrush { GradientStops = [new GradientStop(Colors.Black, 0), new GradientStop(Colors.Blue, 1)] };
+        host.Render(); Assert.Equal(34, Label().Bounds.Width * 3.5, precision: 6);
+        if (lightHint) TextOptions.SetTextHintingMode(host.Window, TextHintingMode.Strong);
+        else number.Foreground = Brushes.Black;
+        host.Render(); Assert.Equal(32, Label().Bounds.Width * 3.5, precision: 6);
+    }
 
     [AvaloniaTheory]
     [InlineData(1.25, 12)]
@@ -39,6 +58,17 @@ public class NativeClockRasterScenarioTests
         var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
         var label = number.GetVisualDescendants().OfType<ContentPresenter>().Single().Child!;
         Assert.Equal(pixels, label.Bounds.Width * density, precision: 6);
+    }
+
+    [AvaloniaFact]
+    public void Gallery_default_roboto_numeral_uses_the_same_proven_numeric_measure_recipe()
+    {
+        var family = new FontFamily($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/GalleryClockFonts#Gallery Roboto");
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = family }; host.Window.SetRenderScaling(3.5); host.Render();
+        var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        Assert.Equal(32, number.GetVisualDescendants().OfType<ContentPresenter>().Single().Child!.Bounds.Width * 3.5, precision: 6);
     }
 
     [AvaloniaFact]
@@ -91,8 +121,8 @@ public class NativeClockRasterScenarioTests
     // supplies only its measured box/baseline; font flags are pinned native values.
     private sealed class NativeLabel(SKTypeface face, TextLayout layout, double size, double density) : Control
     {
-        protected override Size MeasureOverride(Size availableSize) => new(Math.Ceiling(layout.Width * density) / density, Math.Ceiling(layout.Height * density) / density);
-        public override void Render(DrawingContext context) => context.Custom(new NativeInk(face, size, layout.TextLines[0].Baseline, density, Bounds.Size));
+        protected override Size MeasureOverride(Size availableSize) => new((density == 1.25 ? 12 : 32) / density, Math.Ceiling(layout.Height * density) / density);
+        public override void Render(DrawingContext context) => context.Custom(new NativeInk(face, size, (density == 1.25 ? 22 : 61) / density, density, Bounds.Size));
     }
     private sealed class NativeInk(SKTypeface face, double size, double baseline, double density, Size bounds) : ICustomDrawOperation
     {
