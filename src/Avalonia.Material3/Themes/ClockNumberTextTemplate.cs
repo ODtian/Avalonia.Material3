@@ -14,15 +14,20 @@ internal sealed class ClockNumberTextTemplate : IDataTemplate
     public Control? Build(object? data) => data is string text ? new MaterialClockLabel(text) : null;
 }
 
-internal sealed class MaterialClockLabel(string text) : Control
+internal sealed class MaterialClockLabel : Control
 {
+    private readonly string _text;
     private MaterialClockNumber? Number => this.GetVisualAncestors().OfType<MaterialClockNumber>().FirstOrDefault();
     private MaterialClockDial? Dial => this.GetVisualAncestors().OfType<MaterialClockDial>().FirstOrDefault();
     private static readonly StyledProperty<IBrush?> SelectedBrushProperty = AvaloniaProperty.Register<MaterialClockLabel, IBrush?>("SelectedBrush");
-    private TextLayout? _normal, _selected;
+    private TextLayout? _normal, _selected, _masked;
+    private readonly ClockPalette _palette = new();
+    private readonly VisualBrush _ink;
     private MaterialClockNumber? _subscribedNumber;
     private MaterialClockDial? _subscribedDial;
     private (Typeface Typeface, double Size, double Height, double Tracking, IBrush? Normal, IBrush? Selected) _key;
+
+    internal MaterialClockLabel(string text) { _text = text; _ink = new(_palette) { Stretch = Stretch.Fill }; }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -56,7 +61,7 @@ internal sealed class MaterialClockLabel(string text) : Control
         base.OnPropertyChanged(change);
         if (change.Property == SelectedBrushProperty) InvalidateVisual();
     }
-    private void ClearLayouts() { _normal?.Dispose(); _selected?.Dispose(); _normal = _selected = null; }
+    private void ClearLayouts() { _normal?.Dispose(); _selected?.Dispose(); _masked?.Dispose(); _normal = _selected = _masked = null; }
     private void Layouts()
     {
         if (Number is not { } number) return;
@@ -64,8 +69,9 @@ internal sealed class MaterialClockLabel(string text) : Control
             number.GetValue(TextBlock.LineHeightProperty), number.LetterSpacing, number.Foreground, GetValue(SelectedBrushProperty));
         if (_normal is not null && key == _key) return;
         ClearLayouts(); _key = key;
-        _normal = new TextLayout(text, key.Item1, key.Item2, key.Item5, lineHeight: key.Item3, letterSpacing: key.Item4);
-        _selected = new TextLayout(text, key.Item1, key.Item2, key.Item6, lineHeight: key.Item3, letterSpacing: key.Item4);
+        _normal = new TextLayout(_text, key.Item1, key.Item2, key.Item5, lineHeight: key.Item3, letterSpacing: key.Item4);
+        _selected = new TextLayout(_text, key.Item1, key.Item2, key.Item6, lineHeight: key.Item3, letterSpacing: key.Item4);
+        _masked = new TextLayout(_text, key.Item1, key.Item2, _ink, lineHeight: key.Item3, letterSpacing: key.Item4);
     }
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -75,11 +81,41 @@ internal sealed class MaterialClockLabel(string text) : Control
     {
         Layouts();
         if (_normal is not { } normal || _selected is not { } selected) return;
+        // Android's offscreen selector mask uses grayscale glyph coverage. Both
+        // complementary regions need the same coverage, independent of brush colour.
+        using var textOptions = context.PushTextOptions(new TextOptions { TextRenderingMode = TextRenderingMode.Antialias });
         var origin = new Point((Bounds.Width - normal.Width) / 2, (Bounds.Height - normal.Height) / 2);
-        normal.Draw(context, origin);
-        if (Dial is not { } dial || dial.TranslatePoint(dial.SelectorCenter, this) is not { } center) return;
+        if (Dial is not { } dial || dial.TranslatePoint(dial.SelectorCenter, this) is not { } center)
+        { normal.Draw(context, origin); return; }
+        var radius = dial.SelectorRadius;
+        var furthestX = Math.Max(Math.Abs(center.X), Math.Abs(Bounds.Width - center.X));
+        var furthestY = Math.Max(Math.Abs(center.Y), Math.Abs(Bounds.Height - center.Y));
+        if (furthestX * furthestX + furthestY * furthestY <= radius * radius)
+        { selected.Draw(context, origin); return; }
+        var nearestX = center.X - Math.Clamp(center.X, 0, Bounds.Width);
+        var nearestY = center.Y - Math.Clamp(center.Y, 0, Bounds.Height);
+        if (nearestX * nearestX + nearestY * nearestY >= radius * radius)
+        { normal.Draw(context, origin); return; }
         // Pinned drawSelector changes overlapping ink spatially, not the native number's selection.
-        using (context.PushGeometryClip(new EllipseGeometry(new Rect(center.X - dial.SelectorRadius, center.Y - dial.SelectorRadius,
-                   dial.SelectorRadius * 2, dial.SelectorRadius * 2)))) selected.Draw(context, origin);
+        // A single glyph pass applies the spatial palette, so antialiased edges composite once.
+        _palette.Normal = _key.Normal; _palette.Selected = _key.Selected;
+        _palette.Center = center - origin; _palette.Radius = radius;
+        var size = new Size(normal.Width, normal.Height);
+        _palette.Measure(size); _palette.Arrange(new Rect(size));
+        _ink.SourceRect = new RelativeRect(new Rect(size), RelativeUnit.Absolute);
+        _ink.DestinationRect = new RelativeRect(new Rect(size), RelativeUnit.Absolute);
+        _palette.InvalidateVisual(); _masked!.Draw(context, origin);
+    }
+
+    private sealed class ClockPalette : Control
+    {
+        internal IBrush? Normal, Selected;
+        internal Point Center;
+        internal double Radius;
+        public override void Render(DrawingContext context)
+        {
+            context.DrawRectangle(Normal, null, new Rect(Bounds.Size));
+            context.DrawEllipse(Selected, null, Center, Radius, Radius);
+        }
     }
 }

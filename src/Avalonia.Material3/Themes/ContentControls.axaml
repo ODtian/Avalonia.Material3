@@ -51,7 +51,7 @@
       <ControlTemplate>
         <Grid Background="Transparent">
           <c:MaterialElevationBorder x:Name="Container" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" BoxShadow="{DynamicResource M3.Elevation.Shadow0}" />
-          <Border x:Name="Outline" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
+          <c:MaterialElevationBorder x:Name="Outline" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" IsHitTestVisible="False" />
           <c:MaterialStateLayer x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" IsHitTestVisible="False" CornerRadius="{TemplateBinding CornerRadius}" />
           <Grid ColumnDefinitions="Auto,Auto,*,Auto" Margin="{TemplateBinding Padding}">
             <ContentPresenter x:Name="Leading" Content="{TemplateBinding Leading}" ContentTemplate="{TemplateBinding LeadingTemplate}" TextBlock.Foreground="{DynamicResource M3.OnSurfaceVariantBrush}" VerticalAlignment="Center" Margin="0,0,12,0" IsVisible="{Binding Leading, RelativeSource={RelativeSource TemplatedParent}, Converter={x:Static conv:ObjectConverters.IsNotNull}}" />

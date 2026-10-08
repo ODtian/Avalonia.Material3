@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.VisualTree;
 using Avalonia.Threading;
+using Avalonia.Layout;
 using System.Collections.Specialized;
 
 namespace Avalonia.Material3.Controls;
@@ -16,15 +17,32 @@ internal class MaterialElevationBorder : Border
     private readonly MaterialElevationTrack _elevation;
     private readonly ShadowValues _paint = new();
     protected override Type StyleKeyOverride => typeof(Border);
+    private readonly StrokeValues _stroke = new();
     public MaterialElevationBorder()
     {
         _elevation = new(this, () => GetBaseValue(BoxShadowProperty).GetValueOrDefault(), Paint);
         Bind(BoxShadowProperty, _paint, BindingPriority.Animation);
+        Bind(BorderThicknessProperty, _stroke, BindingPriority.Animation);
     }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
         if (change.Property == BoxShadowProperty && change.Priority != BindingPriority.Animation) _elevation?.Retarget();
+        if (change.Property == BorderThicknessProperty && change.Priority != BindingPriority.Animation) UpdateStroke();
+    }
+    // Physical stroke quantization is paint-only; retain the authored layout reserve.
+    protected override Size MeasureOverride(Size availableSize)
+    { UpdateStroke(); return LayoutHelper.MeasureChild(Child, availableSize, Padding, GetBaseValue(BorderThicknessProperty).GetValueOrDefault()); }
+    protected override Size ArrangeOverride(Size finalSize)
+    { UpdateStroke(finalSize); return LayoutHelper.ArrangeChild(Child, finalSize, Padding, GetBaseValue(BorderThicknessProperty).GetValueOrDefault()); }
+    protected void UpdateStroke(Size? size = null)
+    {
+        if (_stroke is null) return;
+        var authored = GetBaseValue(BorderThicknessProperty).GetValueOrDefault();
+        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        var extent = size ?? new Size(double.PositiveInfinity, double.PositiveInfinity);
+        var next = authored.IsUniform ? new Thickness(MaterialStroke.Foundation(authored.Left, density, extent)) : authored;
+        _stroke.Publish(next);
     }
     private void Paint()
     {
@@ -41,6 +59,14 @@ internal class MaterialElevationBorder : Border
         { foreach (var observer in _observers) observer.OnNext(value); }
         private sealed class Subscription(Action dispose) : IDisposable
         { public void Dispose() => dispose(); }
+    }
+    private sealed class StrokeValues : IObservable<Thickness>
+    {
+        private IObserver<Thickness>? _observer;
+        private Thickness? _value;
+        public IDisposable Subscribe(IObserver<Thickness> observer) { _observer = observer; return new Subscription(() => _observer = null); }
+        internal void Publish(Thickness value) { if (_value == value) return; _value = value; _observer?.OnNext(value); }
+        private sealed class Subscription(Action dispose) : IDisposable { public void Dispose() => dispose(); }
     }
 }
 

@@ -263,7 +263,10 @@ internal sealed class MaterialTextFieldPainter : Control
             context.DrawLine(pen, new Point(0, rect.Bottom - stroke / 2), new Point(rect.Right, rect.Bottom - stroke / 2));
             return;
         }
+        stroke = MaterialStroke.Foundation(stroke, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1, rect.Size);
+        pen = new Pen(layout.StrokeBrush, stroke);
         var outline = rect.Deflate(stroke / 2);
+        corner = MaterialStroke.Inset(corner, stroke / 2);
         var label = layout.Children.OfType<TextBlock>().FirstOrDefault(child => child.IsVisible);
         var labelRect = label is not null && label.TransformToVisual(layout) is { } transform
             ? new Rect(label.Bounds.Size).TransformToAABB(transform) : default;

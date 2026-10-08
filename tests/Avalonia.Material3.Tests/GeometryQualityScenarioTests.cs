@@ -460,7 +460,7 @@ public class GeometryQualityScenarioTests
         var second = new MaterialNavigationItem { Content = "Second", PageContent = new TextBlock { Text = "Second page" } };
         var tabs = new MaterialTabs { Items = { first, second } };
         using var host = new GeometryHost(tabs, 320, 200);
-        host.Theme.Motion = new MaterialMotion { StateLayerDuration = TimeSpan.FromMilliseconds(400) };
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with { DefaultSpatial = new(1, 40) } };
         host.Render();
         var header = GeometryHost.Box(second, host.Window);
         tabs.SelectedIndex = 1;
@@ -468,17 +468,26 @@ public class GeometryQualityScenarioTests
         Assert.True(second.IsSelected);
         var immediate = host.Pixel(header.Center.X, header.Bottom - 1);
         Assert.NotEqual(Color.Parse("#6750A4"), immediate);
-        var intermediate = false;
+        var positions = new List<int>();
+        int InkLeft()
+        {
+            var frame = host.Offscreen(1);
+            var y = (int)header.Bottom - 1;
+            for (var x = 0; x < frame.GetLength(0); x++)
+                if (frame[x, y] == Color.Parse("#6750A4")) return x;
+            return -1;
+        }
+        var from = InkLeft();
         for (var i = 0; i < 35; i++)
         {
             await Task.Delay(16); host.Render();
             Assert.Equal(header, GeometryHost.Box(second, host.Window));
-            var color = host.Pixel(header.Center.X, header.Bottom - 1);
-            if (color != Color.Parse("#6750A4") && color != Color.Parse("#FEF7FF")) intermediate = true;
+            positions.Add(InkLeft());
         }
-        Assert.True(intermediate, "Selection must render intermediate underline alpha/width, not just final semantic state.");
+        host.Theme.Motion = new MaterialMotion { ReduceMotion = true }; host.Render();
+        var to = InkLeft();
+        Assert.Contains(positions, position => position > from + 1 && position < to - 1);
         Assert.Equal(Color.Parse("#6750A4"), host.Pixel(header.Center.X, header.Bottom - 1));
-        host.Theme.Motion = new MaterialMotion { ReduceMotion = true };
         tabs.SelectedIndex = 0; host.Render();
         Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(header.Center.X, header.Bottom - 1));
     }

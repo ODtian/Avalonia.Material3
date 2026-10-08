@@ -15,18 +15,18 @@ public class MaterialRadioButton : RadioButton
     private readonly MaterialMotionSettings _motion;
     private readonly MaterialMotionBrush _color;
     private MaterialCircleGlyph? _dot;
-    private Border? _ring;
+    private Control? _ring;
     public MaterialRadioButton()
     {
         _dotMotion = new(this, 0, PaintDot);
-        _color = new(this, null, value => { if (_dot is not null) _dot.Fill = value; if (_ring is not null) _ring.BorderBrush = value; });
+        _color = new(this, null, value => { if (_dot is not null) _dot.Fill = value; _ring?.SetCurrentValue(Border.BorderBrushProperty, value); });
         _motion = new(this, UpdateDot);
     }
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         _dot = e.NameScope.Find<MaterialCircleGlyph>("Dot");
-        _ring = e.NameScope.Find<Border>("Ring");
+        _ring = e.NameScope.Find<Control>("Ring");
         _dotMotion.Snap(IsChecked == true ? 6 : 0);
         _color.Snap(BorderBrush);
     }
