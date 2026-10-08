@@ -2,7 +2,7 @@ using Avalonia.Media;
 
 namespace Avalonia.Material3.Tokens;
 
-/// <summary>Six Material elevation heights with the official Material Web key and ambient shadow recipes.</summary>
+/// <summary>Six Material elevation heights and compatible Web BoxShadow tokens. Stock surfaces use the pinned Android/Skia native renderer; custom recipes retain Avalonia shadow painting.</summary>
 public sealed record MaterialElevation
 {
     public double Level0 { get; init; }

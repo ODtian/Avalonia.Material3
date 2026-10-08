@@ -209,6 +209,20 @@ public class MaterialTheme : Styles
         colors["M3.DisabledContainerBrush"] = new ImmutableSolidColorBrush(scheme.OnSurface, States.DisabledButtonContainerOpacity);
         colors["M3.DisabledSurfaceContainerBrush"] = new ImmutableSolidColorBrush(scheme.OnSurface, States.DisabledContainerOpacity);
         colors["M3.DisabledForegroundBrush"] = new ImmutableSolidColorBrush(scheme.OnSurfaceVariant, States.DisabledForegroundOpacity);
+        // Compose selection colours quantize Color.copy alpha to sRGB8. Switch
+        // disabled recipes then composite onto Surface before painting the track.
+        Color CopyAlpha(Color color, double opacity) => Color.FromArgb((byte)Math.Round(255 * opacity, MidpointRounding.AwayFromZero), color.R, color.G, color.B);
+        Color OverSurface(Color color, double opacity)
+        {
+            var alpha = CopyAlpha(color, opacity).A / 255d;
+            byte Blend(byte foreground, byte background) => (byte)Math.Round(foreground * alpha + background * (1 - alpha), MidpointRounding.AwayFromZero);
+            return Color.FromRgb(Blend(color.R, scheme.Surface.R), Blend(color.G, scheme.Surface.G), Blend(color.B, scheme.Surface.B));
+        }
+        colors["M3.SelectionDisabledOnSurfaceBrush"] = new ImmutableSolidColorBrush(CopyAlpha(scheme.OnSurface, States.DisabledForegroundOpacity));
+        colors["M3.SwitchDisabledOnSurfaceForegroundBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.OnSurface, States.DisabledForegroundOpacity));
+        colors["M3.SwitchDisabledOnSurfaceContainerBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.OnSurface, States.DisabledContainerOpacity));
+        colors["M3.SwitchDisabledHighestForegroundBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.SurfaceContainerHighest, States.DisabledForegroundOpacity));
+        colors["M3.SwitchDisabledHighestContainerBrush"] = new ImmutableSolidColorBrush(OverSurface(scheme.SurfaceContainerHighest, States.DisabledContainerOpacity));
         Resources.ThemeDictionaries[variant] = colors;
     }
 }

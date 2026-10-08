@@ -106,7 +106,7 @@ public class SelectionScenarioTests
         var enabled = host.Capture();
         control.IsEnabled = false;
         Assert.NotEqual(enabled, host.Capture());
-        Assert.Equal(Color.Parse("#1D1B20"), Assert.IsAssignableFrom<ISolidColorBrush>(control.BorderBrush).Color);
+        Assert.Equal(Color.Parse(kind == "radio" ? "#611D1B20" : kind == "switch" ? "#E3DCE4" : "#1D1B20"), Assert.IsAssignableFrom<ISolidColorBrush>(control.BorderBrush).Color);
         var point = host.PointIn(control, new Point(24, 1));
         using (var contact = host.Window.TouchBegin(point))
             host.Window.TouchEnd(contact, point);
@@ -163,7 +163,7 @@ public class SelectionScenarioTests
         Assert.Equal(Color.Parse("#B3261E"), Assert.IsAssignableFrom<ISolidColorBrush>(control.BorderBrush).Color);
         control.IsEnabled = false;
         host.Capture();
-        Assert.Equal(Color.Parse("#1D1B20"), Assert.IsAssignableFrom<ISolidColorBrush>(control.BorderBrush).Color);
+        Assert.Equal(Color.Parse(kind == "radio" ? "#611D1B20" : kind == "switch" ? "#E3DCE4" : "#1D1B20"), Assert.IsAssignableFrom<ISolidColorBrush>(control.BorderBrush).Color);
         control.IsEnabled = true;
         SetError(control, false, "Choose an option / 请选择");
         Assert.Equal("", ControlAutomationPeer.CreatePeerForElement(control)!.GetHelpText());
@@ -282,7 +282,7 @@ public class SelectionScenarioTests
     {
         var control = new MaterialSwitch { IsEnabled = false };
         using var host = new SelectionHost(control);
-        Assert.Equal(Color.Parse("#E6E0E9"), host.PixelAt(control, new Point(4, 24)));
+        Assert.Equal(Color.Parse("#FBF4FC"), host.PixelAt(control, new Point(4, 24)));
     }
 
     [AvaloniaFact]
