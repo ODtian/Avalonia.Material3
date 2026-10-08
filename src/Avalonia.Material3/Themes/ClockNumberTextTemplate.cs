@@ -28,6 +28,7 @@ internal sealed class MaterialClockLabel : Control
     private double _maskDensity;
     private Point _maskOrigin;
     private TextOptions _maskOptions;
+    private TextOptions _measureOptions;
     private AvaloniaObject? _watchedBrush;
     private Transform? _brushTransform;
     private GradientBrush? _gradient;
@@ -65,7 +66,14 @@ internal sealed class MaterialClockLabel : Control
             e.Property == TextBlock.LineHeightProperty || e.Property == TextBlock.LetterSpacingProperty || e.Property == TextBlock.ForegroundProperty)
         { InvalidateMeasure(); InvalidateVisual(); }
     }
-    private void DialChanged(object? sender, AvaloniaPropertyChangedEventArgs e) => InvalidateVisual();
+    private void DialChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    { InvalidateVisual(); }
+    private TextOptions Options()
+    {
+        var options = new TextOptions();
+        foreach (var visual in this.GetVisualAncestors().Reverse().Append(this)) options = TextOptions.GetTextOptions(visual).MergeWith(options);
+        return options with { TextRenderingMode = TextRenderingMode.Antialias };
+    }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -129,8 +137,16 @@ internal sealed class MaterialClockLabel : Control
     {
         Layouts();
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
-        return _normal is { } layout ? _nativeText?.Measure(density, layout.Height)
+        _measureOptions = Options();
+        return _normal is { } layout ? _nativeText?.Measure(density, layout.Height, _key.Normal, _measureOptions)
             ?? new Size(Math.Ceiling(layout.Width * density) / density, Math.Ceiling(layout.Height * density) / density) : default;
+    }
+    internal void ReconcileTextOptions(TextOptions inherited)
+    {
+        foreach (var visual in this.GetVisualAncestors().TakeWhile(visual => visual is not MaterialClockDial).Reverse().Append(this))
+            inherited = TextOptions.GetTextOptions(visual).MergeWith(inherited);
+        inherited = inherited with { TextRenderingMode = TextRenderingMode.Antialias };
+        if (!_measureOptions.Equals(inherited)) { InvalidateMeasure(); InvalidateVisual(); }
     }
     public override void Render(DrawingContext context)
     {
@@ -138,9 +154,7 @@ internal sealed class MaterialClockLabel : Control
         if (_normal is not { } normal) return;
         // Android's offscreen selector mask uses grayscale glyph coverage. Both
         // complementary regions need the same coverage, independent of brush colour.
-        var options = new TextOptions();
-        foreach (var visual in this.GetVisualAncestors().Reverse().Append(this)) options = TextOptions.GetTextOptions(visual).MergeWith(options);
-        options = options with { TextRenderingMode = TextRenderingMode.Antialias };
+        var options = Options();
         using var textOptions = context.PushTextOptions(options);
         // Compose places an integer-sized paragraph at an integer centre offset;
         // paragraph ink starts at its measured top-left, including trailing advance.
