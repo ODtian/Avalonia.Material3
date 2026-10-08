@@ -9,7 +9,7 @@
     <EnableAotAnalyzer>true</EnableAotAnalyzer>
     <Authors>ODtian</Authors>
     <PackageProjectUrl>https://github.com/ODtian/Avalonia.Material3</PackageProjectUrl>
-    <PackageReleaseNotes>preview.6: centered radio motion, stable date width, search layout, native slider labels and tooltip placement, scaled overlay exit, bounded sheets, coherent theme updates, and desktop carousel wheel input. See CHANGELOG.md.</PackageReleaseNotes>
+    <PackageReleaseNotes>preview.7: shared DPI-aware snapshot rendering and consistent content clipping, elevation overflow, and live presentation boundaries. See CHANGELOG.md.</PackageReleaseNotes>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
@@ -25,3 +25,4 @@
     <None Update="Assets/Icons/LICENSE.txt;Assets/Icons/manifest.json;Assets/Icons/*.codepoints" Pack="true" PackagePath="licenses/MaterialSymbols/" />
   </ItemGroup>
 </Project>
+
