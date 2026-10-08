@@ -1,5 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Controls.Presenters;
+using Avalonia.LogicalTree;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
@@ -7,67 +9,82 @@ using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Themes;
 
+internal sealed class MaterialActionContentPresenter : ContentPresenter
+{
+    private static readonly ExtendedFabTextTemplate DefaultText = new();
+    static MaterialActionContentPresenter() => ContentTemplateProperty.OverrideMetadata<MaterialActionContentPresenter>(
+        new StyledPropertyMetadata<IDataTemplate?>(coerce: (owner, value) =>
+        {
+            var presenter = (MaterialActionContentPresenter)owner;
+            return value ?? (presenter.Content is string && presenter.FindDataTemplate(presenter.Content, null) is null ? DefaultText : null);
+        }));
+    protected override Type StyleKeyOverride => typeof(ContentPresenter);
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ContentProperty || change.Property == TemplatedParentProperty) CoerceValue(ContentTemplateProperty);
+    }
+    protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+    {
+        CoerceValue(ContentTemplateProperty);
+        base.OnAttachedToLogicalTree(e);
+    }
+}
+
 internal sealed class ExtendedFabTextTemplate : IDataTemplate
 {
     public bool Match(object? data) => data is string;
-    public Control? Build(object? data) => data is string text ? new MaterialActionLabel(text) : null;
+    public Control? Build(object? data) => data is string text ? new MaterialActionLabel { Text = text, TextWrapping = TextWrapping.Wrap } : null;
 }
 
-// Only the locked Latin face uses native integer advances; other caller fonts,
-// wrapping and custom brushes retain the public TextLayout shaping path.
-internal sealed class MaterialActionLabel(string text) : Control
+// The ordinary TextBlock owns the full caller text/style contract. Its protected
+// paint seam supplies the locked single-line native recipe without bypassing it.
+internal sealed class MaterialActionLabel : TextBlock
 {
-    private TextLayout? _layout;
     private MaterialNativeText? _native;
     private TextOptions _measuredOptions;
-    private Size _constraint;
     private bool _nativeRoute;
     private MaterialExtendedFab? _owner;
-    private (Typeface Typeface, double Size, double Height, double Tracking, IBrush? Brush, Size Constraint) _key;
-    static MaterialActionLabel()
-    {
-        AffectsMeasure<MaterialActionLabel>(TextBlock.FontFamilyProperty, TextBlock.FontSizeProperty, TextBlock.FontWeightProperty,
-            TextBlock.FontStyleProperty, TextBlock.LineHeightProperty, TextBlock.LetterSpacingProperty, TextBlock.ForegroundProperty);
-        AffectsRender<MaterialActionLabel>(TextBlock.ForegroundProperty);
-    }
+    protected override Type StyleKeyOverride => typeof(TextBlock);
     private TextOptions Options()
     {
         var options = new TextOptions();
         foreach (var visual in this.GetVisualAncestors().Reverse().Append(this))
             options = TextOptions.GetTextOptions(visual).MergeWith(options);
-        return options with { TextRenderingMode = TextRenderingMode.Antialias };
+        return options;
     }
     internal void ReconcileTextOptions()
     {
         if (!_measuredOptions.Equals(Options())) { InvalidateMeasure(); InvalidateVisual(); }
     }
-    private void Layouts(Size constraint)
-    {
-        var key = (new Typeface(GetValue(TextBlock.FontFamilyProperty), GetValue(TextBlock.FontStyleProperty), GetValue(TextBlock.FontWeightProperty)),
-            GetValue(TextBlock.FontSizeProperty), GetValue(TextBlock.LineHeightProperty), GetValue(TextBlock.LetterSpacingProperty), GetValue(TextBlock.ForegroundProperty), constraint);
-        if (_layout is not null && key == _key) return;
-        _native?.Dispose(); _layout?.Dispose(); _key = key;
-        _layout = new TextLayout(text, key.Item1, key.Item2, key.Item5, textWrapping: TextWrapping.Wrap,
-            flowDirection: FlowDirection, maxWidth: constraint.Width, maxHeight: constraint.Height, lineHeight: key.Item3, letterSpacing: key.Item4);
-        _native = MaterialNativeText.TryCreateAction(text, _layout, key.Item4);
-    }
+    private bool StandardParagraph => FlowDirection == FlowDirection.LeftToRight && TextAlignment is TextAlignment.Start or TextAlignment.Left
+        && TextTrimming == TextTrimming.None && MaxLines == 0 && Padding == default && LineSpacing == 0
+        && (FontFeatures is null || FontFeatures.Count == 0) && (TextDecorations is null || TextDecorations.Count == 0)
+        && (Inlines is null || Inlines.Count == 0) && VerticalAlignment == Avalonia.Layout.VerticalAlignment.Stretch;
     protected override Size MeasureOverride(Size availableSize)
     {
-        _constraint = availableSize; Layouts(availableSize);
+        var ordinary = base.MeasureOverride(availableSize);
+        _native?.Dispose(); _native = null;
+        if (StandardParagraph) _native = MaterialNativeText.TryCreateAction(Text ?? "", TextLayout, LetterSpacing);
         _measuredOptions = Options();
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
-        var measured = _native?.Measure(density, _layout!.Height, _key.Brush, _measuredOptions);
+        var measured = _native?.Measure(density, TextLayout.Height, Foreground, _measuredOptions);
         _nativeRoute = measured is { } size && size.Width <= availableSize.Width;
-        return _nativeRoute ? measured!.Value : new Size(Math.Ceiling(_layout!.Width * density) / density, Math.Ceiling(_layout.Height * density) / density);
+        return _nativeRoute ? measured!.Value : ordinary;
     }
-    public override void Render(DrawingContext context)
+    protected override Size ArrangeOverride(Size finalSize) => _nativeRoute ? finalSize : base.ArrangeOverride(finalSize);
+    protected override void RenderTextLayout(DrawingContext context, Point origin)
     {
-        Layouts(_constraint);
         var options = Options();
         using var scope = context.PushTextOptions(options);
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
-        if (!_nativeRoute || _native?.Draw(context, _key.Brush, default, density, Bounds.Size, options) != true)
-            _layout!.Draw(context, default);
+        if (!_nativeRoute || _native?.Draw(context, Foreground, origin, density, Bounds.Size, options) != true)
+            base.RenderTextLayout(context, origin);
+    }
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == ForegroundProperty) InvalidateMeasure();
     }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -78,7 +95,7 @@ internal sealed class MaterialActionLabel(string text) : Control
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _owner?.UnregisterTextLabel(this); _owner = null;
-        _native?.Dispose(); _native = null; _layout?.Dispose(); _layout = null;
+        _native?.Dispose(); _native = null;
         base.OnDetachedFromVisualTree(e);
     }
 }

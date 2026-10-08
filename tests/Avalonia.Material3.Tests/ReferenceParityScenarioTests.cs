@@ -55,6 +55,23 @@ public class ReferenceParityScenarioTests
     }
 
     [AvaloniaFact]
+    public void Extended_label_preserves_an_explicit_caller_rendering_mode()
+    {
+        using var host = new ReferenceHost("fab");
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        {
+            FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto")
+        };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        var fab = host.Shell.GetVisualDescendants().OfType<MaterialExtendedFab>().Single();
+        Assert.Equal(398, fab.Bounds.Width * 3.5, precision: 5);
+        TextOptions.SetTextRenderingMode(host.Window, TextRenderingMode.Alias); host.Render();
+        Assert.Equal(399, fab.Bounds.Width * 3.5, precision: 5);
+        TextOptions.SetTextRenderingMode(host.Window, TextRenderingMode.Antialias); host.Render();
+        Assert.Equal(398, fab.Bounds.Width * 3.5, precision: 5);
+    }
+
+    [AvaloniaFact]
     public void Reference_ripple_buttons_use_native_touch_padding_and_the_51_pixel_surface_at_125_percent()
     {
         using var host = new ReferenceHost("ripple"); host.Window.SetRenderScaling(1.25); host.Render();

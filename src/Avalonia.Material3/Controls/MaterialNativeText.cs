@@ -135,7 +135,9 @@ internal sealed class MaterialNativeText : IDisposable
         context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, solid.Color, solid.Opacity, origin, density, bounds, options));
         return true;
     }
-    private static bool CanPaint(IBrush? brush, TextOptions options) => brush is ISolidColorBrush && options.TextHintingMode is not (TextHintingMode.Light or TextHintingMode.None);
+    private static bool CanPaint(IBrush? brush, TextOptions options) => brush is ISolidColorBrush
+        && options.TextHintingMode is not (TextHintingMode.Light or TextHintingMode.None)
+        && options.TextRenderingMode is TextRenderingMode.Unspecified or TextRenderingMode.Antialias;
     private static double[] NativeAdvances(Face face, GlyphInfo[] glyphs, double size, double tracking, double density)
     {
         var shapeSize = Math.Floor(size * density);
@@ -191,7 +193,7 @@ internal sealed class MaterialNativeText : IDisposable
         {
             using var font = new SKFont(face.Face.Typeface, (float)(size * density))
             {
-                Edging = SKFontEdging.Antialias, Subpixel = false, LinearMetrics = false,
+                Edging = SKFontEdging.Antialias, Subpixel = false, LinearMetrics = false, EmbeddedBitmaps = true,
                 BaselineSnap = options.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned,
                 Hinting = options.TextHintingMode == TextHintingMode.None ? SKFontHinting.None : SKFontHinting.Normal
             };

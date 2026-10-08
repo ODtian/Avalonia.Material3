@@ -25,6 +25,40 @@ public class ActionLayoutScenarioTests
     }
     private sealed record ActionCaption(string Text);
 
+    [AvaloniaFact]
+    public void Extended_fab_preserves_parent_string_templates_and_explicit_caller_templates()
+    {
+        var parent = new Border { Width = 80, Height = 20, Background = Brushes.Black };
+        var explicitContent = new Border { Width = 90, Height = 20, Background = Brushes.Blue };
+        var fab = new MaterialExtendedFab { Content = "Create" };
+        fab.DataTemplates.Add(new FuncDataTemplate<string>((_, _) => parent));
+        using var host = new GeometryHost(fab, 220, 120);
+        Assert.Contains(parent, fab.GetVisualDescendants());
+        fab.ContentTemplate = new FuncDataTemplate<string>((_, _) => explicitContent); host.Render();
+        Assert.Contains(explicitContent, fab.GetVisualDescendants());
+    }
+
+    [AvaloniaFact]
+    public void Extended_default_text_keeps_framework_live_direction_and_inherited_text_style_rendering()
+    {
+        var fab = new MaterialExtendedFab { Content = "ABC אבג long wrapped caption", HorizontalAlignment = HorizontalAlignment.Stretch };
+        fab.SetValue(TextBlock.MaxLinesProperty, 1);
+        fab.SetValue(TextBlock.TextAlignmentProperty, TextAlignment.End);
+        fab.SetValue(TextBlock.TextTrimmingProperty, TextTrimming.CharacterEllipsis);
+        using var host = new GeometryHost(fab, 160, 100);
+        fab.FlowDirection = FlowDirection.RightToLeft; host.Render();
+        using var original = host.Window.CaptureRenderedFrame()!;
+        fab.ContentTemplate = new FuncDataTemplate<string>((text, _) => new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap }); host.Render();
+        using var expected = host.Window.CaptureRenderedFrame()!;
+        using var first = original.Lock(); using var second = expected.Lock();
+        var differences = 0;
+        for (var y = 0; y < original.PixelSize.Height; y++)
+        for (var x = 0; x < original.PixelSize.Width * 4; x++)
+            if (System.Runtime.InteropServices.Marshal.ReadByte(first.Address, y * first.RowBytes + x) !=
+                System.Runtime.InteropServices.Marshal.ReadByte(second.Address, y * second.RowBytes + x)) differences++;
+        Assert.Equal(0, differences);
+    }
+
     [AvaloniaTheory]
     [InlineData(1.25)]
     [InlineData(3.5)]
