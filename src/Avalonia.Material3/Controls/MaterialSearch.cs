@@ -139,6 +139,7 @@ public class MaterialSearch : TemplatedControl
         foreach (var mode in Enum.GetValues<MaterialSearchMode>())
             PseudoClasses.Set(":" + mode.ToString().ToLowerInvariant(), Mode == mode);
         PseudoClasses.Set(":open", IsOpen);
+        PseudoClasses.Set(":fullpresentation", IsFullscreenPresentation);
         var fullScreen = IsOpen && (Mode is MaterialSearchMode.Bar or MaterialSearchMode.View) && ViewPresentation == MaterialSearchViewPresentation.FullScreen;
         PseudoClasses.Set(":fullscreen", fullScreen);
         UpdateExpansion(_attached);

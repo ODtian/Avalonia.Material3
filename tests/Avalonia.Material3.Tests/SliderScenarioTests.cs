@@ -22,6 +22,22 @@ namespace Avalonia.Material3.Tests;
 public class SliderScenarioTests
 {
     [AvaloniaFact]
+    public void Single_digit_value_indicator_keeps_the_native_28_by_32_minimum()
+    {
+        // Locked MDC TooltipDrawable consumes padding 4, minWidth 28 and Slider.Label minHeight 32.
+        var slider = new MaterialSlider { Value = 2, ValueLabelVisibility = SliderValueLabelVisibility.Always,
+            ValueIndicatorBrush = Brushes.Magenta, ValueIndicatorForeground = Brushes.Transparent };
+        using var host = new SliderHost(slider);
+        var ink = host.InkBounds(Color.FromRgb(255, 0, 255));
+        Assert.InRange(ink.Width, 27, 29);
+        Assert.InRange(ink.Height, 31, 33);
+        slider.Value = 82; host.Capture();
+        var twoDigits = host.InkBounds(Color.FromRgb(255, 0, 255));
+        Assert.InRange(twoDigits.Width, 27, 29);
+        Assert.InRange(twoDigits.Height, 31, 33);
+    }
+
+    [AvaloniaFact]
     public void Existing_slider_resolves_full_seed_and_platform_roles_and_restores_both_modes()
     {
         using var host = new SliderHost(new MaterialSlider { Value = 50, ValueLabelVisibility = SliderValueLabelVisibility.Always });
@@ -458,6 +474,26 @@ public class SliderScenarioTests
             var third = Marshal.ReadByte(frame.Address, offset + 2);
             var alpha = Marshal.ReadByte(frame.Address, offset + 3);
             return frame.Format == PixelFormat.Bgra8888 ? Color.FromArgb(alpha, third, green, first) : Color.FromArgb(alpha, first, green, third);
+        }
+        public Rect InkBounds(Color color)
+        {
+            using var bitmap = Window.CaptureRenderedFrame()!;
+            using var frame = bitmap.Lock();
+            var left = frame.Size.Width; var top = frame.Size.Height; var right = -1; var bottom = -1;
+            for (var y = 0; y < frame.Size.Height; y++)
+            for (var x = 0; x < frame.Size.Width; x++)
+            {
+                var offset = y * frame.RowBytes + x * 4;
+                var first = Marshal.ReadByte(frame.Address, offset); var green = Marshal.ReadByte(frame.Address, offset + 1);
+                var third = Marshal.ReadByte(frame.Address, offset + 2);
+                var red = frame.Format == PixelFormat.Bgra8888 ? third : first;
+                var blue = frame.Format == PixelFormat.Bgra8888 ? first : third;
+                if (red != color.R || green != color.G || blue != color.B) continue;
+                left = Math.Min(left, x); right = Math.Max(right, x); top = Math.Min(top, y); bottom = Math.Max(bottom, y);
+            }
+            Assert.True(right >= left && bottom >= top);
+            return new Rect(left / Window.RenderScaling, top / Window.RenderScaling,
+                (right - left + 1) / Window.RenderScaling, (bottom - top + 1) / Window.RenderScaling);
         }
         public void Dispose() { Window.Close(); Application.Current!.Styles.Remove(Theme); }
     }

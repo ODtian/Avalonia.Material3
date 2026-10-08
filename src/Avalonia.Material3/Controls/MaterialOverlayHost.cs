@@ -94,7 +94,8 @@ public class MaterialOverlayHost : ContentControl
         scrim.Bind(Border.BackgroundProperty, new DynamicResourceExtension("M3.ScrimBrush"));
         var container = new Border { Child = content, Focusable = true, FlowDirection = FlowDirection };
         KeyboardNavigation.SetTabNavigation(container, options.IsModal ? KeyboardNavigationMode.Cycle : KeyboardNavigationMode.Continue);
-        var layer = new MaterialOverlayLayer(this, options, scrim, container) { FlowDirection = Avalonia.Media.FlowDirection.LeftToRight, Children = { scrim, container } };
+        var layer = new MaterialOverlayLayer(this, options, scrim, container) { FlowDirection = Avalonia.Media.FlowDirection.LeftToRight };
+        layer.Children.Add(scrim); layer.Children.Add(layer.PresentationRoot);
         layer.UpdateAnchor();
         var session = new MaterialOverlaySession(this, content, options, previousFocus, layer);
         var oldCount = OpenCount;
