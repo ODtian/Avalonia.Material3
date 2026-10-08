@@ -137,12 +137,12 @@ internal sealed class MaterialElevationTrack
         // A single pointer change notifies both pseudo-classes and the public property.
         // Preserve the outgoing epoch when the second notification describes the same state.
         if (_initialized && _recognized && level >= 0 && nextHeight == _targetHeight && interaction == previous
-            && !_motion.FastEffects.IsInstant && _owner is { IsEffectivelyEnabled: true })
+            && !_motion.FastEffects.IsInstant && _owner is not null && MaterialModalPaintScope.IsEnabledForPaint(_owner))
         { _invalidate(); return; }
         _previousInteraction = interaction;
         _recognized = level >= 0;
         _targetHeight = nextHeight;
-        if (!_initialized || !_motion.IsAttached || _motion.FastEffects.IsInstant || _owner is null || !_owner.IsEffectivelyEnabled || !_recognized)
+        if (!_initialized || !_motion.IsAttached || _motion.FastEffects.IsInstant || _owner is null || !MaterialModalPaintScope.IsEnabledForPaint(_owner) || !_recognized)
         {
             _height.Snap(_targetHeight); _initialized = _motion.IsAttached;
         }
@@ -156,7 +156,7 @@ internal sealed class MaterialElevationTrack
     }
     private int Interaction()
     {
-        if (_owner is null || !_owner.IsEffectivelyEnabled) return 0;
+        if (_owner is null || !MaterialModalPaintScope.IsEnabledForPaint(_owner)) return 0;
         if (_owner.IsPressed) return 4;
         if (_owner is MaterialCard { IsDragged: true } or MaterialChip { IsDragged: true } or MaterialListItem { IsReordering: true }) return 3;
         if (_owner.IsFocused) return 2;

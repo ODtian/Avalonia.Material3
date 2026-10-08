@@ -29,7 +29,7 @@ public class MaterialCheckBox : CheckBox
     {
         if (_motion is null || _box is null) return;
         var spring = IsChecked == false ? _motion.FastEffects : _motion.DefaultEffects;
-        if (IsEffectivelyEnabled) { _fill.Set(Background, spring); _border.Set(BorderBrush, spring); }
+        if (MaterialModalPaintScope.IsEnabledForPaint(this)) { _fill.Set(Background, spring); _border.Set(BorderBrush, spring); }
         else { _fill.Snap(Background); _border.Snap(BorderBrush); }
     }
     public static readonly StyledProperty<bool> IsErrorProperty =

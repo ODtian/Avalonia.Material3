@@ -119,7 +119,7 @@ internal sealed class MaterialStateLayer : Control
     private void UpdateState()
     {
         if (_owner is null || _initializing) return;
-        var enabled = _owner.IsEffectivelyEnabled && (_owner is not MaterialContentItem item || item.IsInteractive);
+        var enabled = MaterialModalPaintScope.IsEnabledForPaint(_owner) && (_owner is not MaterialContentItem item || item.IsInteractive);
         var dragging = _owner.Classes.Contains(":dragging") || _owner.Classes.Contains(":dragged") || _owner.Classes.Contains(":reordering");
         var focused = _owner.Classes.Contains(":focus-visible");
         var target = !enabled ? 0 : dragging ? _drag : focused ? _focus : _owner.IsPointerOver ? _hover : 0;

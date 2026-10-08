@@ -52,7 +52,7 @@ internal sealed class MaterialChipIconSlot : Decorator
     }
     private void OwnerChanged(object? sender, AvaloniaPropertyChangedEventArgs change)
     {
-        if (change.Property == MaterialButton.IsCheckedProperty || change.Property == IsEffectivelyEnabledProperty ||
+        if (change.Property == MaterialButton.IsCheckedProperty || change.Property == IsEffectivelyEnabledProperty || change.Property == MaterialModalPaintScope.EnabledForPaintProperty ||
             change.Property == IsPointerOverProperty || change.Property == IsKeyboardFocusWithinProperty || change.Property == MaterialChip.IsDraggedProperty) UpdateColor();
         if (change.Property == MaterialButton.LeadingIconProperty || change.Property == MaterialButton.TrailingIconProperty ||
             change.Property == MaterialButton.LeadingIconTemplateProperty || change.Property == MaterialButton.TrailingIconTemplateProperty ||
@@ -83,7 +83,7 @@ internal sealed class MaterialChipIconSlot : Decorator
     private void UpdateColor()
     {
         if (Owner is not { } owner) return;
-        var role = !owner.IsEffectivelyEnabled ? "OnSurface" : !Leading ? owner.IsChecked ? "OnSecondaryContainer" : "OnSurfaceVariant"
+        var role = !MaterialModalPaintScope.IsEnabledForPaint(owner) ? "OnSurface" : !Leading ? owner.IsChecked ? "OnSecondaryContainer" : "OnSurfaceVariant"
             : owner.ChipVariant == MaterialChipVariant.Input ? owner.IsChecked && owner.IsDragged ? "OnSecondaryContainer"
                 : owner.IsChecked || owner.IsPointerOver || owner.IsKeyboardFocusWithin ? "Primary" : "OnSurfaceVariant"
             : owner.ChipVariant == MaterialChipVariant.Filter && owner.IsChecked ? "OnSecondaryContainer" : "Primary";

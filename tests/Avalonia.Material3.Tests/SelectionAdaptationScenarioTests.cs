@@ -14,6 +14,18 @@ namespace Avalonia.Material3.Tests;
 
 public class SelectionAdaptationScenarioTests
 {
+    [AvaloniaFact]
+    public void Default_switch_uses_the_native_52_by_48_clickable_slot_without_extra_track_inset()
+    {
+        var toggle = new MaterialSwitch { HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left };
+        using var host = new SelectionHost(toggle);
+        Assert.Equal(new Size(52, 48), toggle.Bounds.Size);
+        host.Theme.LightColorScheme = host.Theme.LightColorScheme with { Outline = Colors.Magenta };
+        host.Capture();
+        Assert.Equal(Colors.Magenta, host.PixelAt(toggle, new Point(.5, 24)));
+        host.Click(toggle, new Point(48, 24)); Assert.True(toggle.IsChecked);
+    }
+
     [AvaloniaTheory]
     [InlineData(0)]
     [InlineData(1)]
@@ -62,7 +74,7 @@ public class SelectionAdaptationScenarioTests
         using var host = new SelectionHost(control);
         Assert.True(label.Bounds.Width > 0);
         Assert.True(label.IsEffectivelyVisible);
-        host.Click(control, new Point(kind == "switch" ? 54 : 24, 24));
+        host.Click(control, new Point(kind == "switch" ? 48 : 24, 24));
         Assert.True(control.IsChecked);
         host.Window.RequestedThemeVariant = ThemeVariant.Dark;
         host.Capture();
@@ -117,7 +129,7 @@ public class SelectionAdaptationScenarioTests
             _ => new MaterialSwitch { Content = "Auto save" }
         };
         using var host = new SelectionHost(control);
-        host.Window.MouseMove(host.PointIn(control, new Point(kind == "switch" ? 54 : 24, 24)));
+        host.Window.MouseMove(host.PointIn(control, new Point(kind == "switch" ? 48 : 24, 24)));
         var hovered = host.Capture();
         host.Theme.States = host.Theme.States with { HoverStateLayerOpacity = 0.4 };
         Assert.NotEqual(hovered, host.Capture());

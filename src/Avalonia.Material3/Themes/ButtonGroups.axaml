@@ -53,7 +53,7 @@
         <Setter Property="Padding" Value="12,8" />
       </Style>
       <Style Selector="^:segmented /template/ c|MaterialInsetBorder#Stroke"><Setter Property="ReservedBorderThickness" Value="1" /></Style>
-      <Style Selector="^:segmented:checked:not(:disabled)">
+      <Style Selector="^:segmented:checked:not(:disabled),^:segmented:checked:modal-paint-enabled">
         <Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" />
         <Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" />
       </Style>
@@ -65,13 +65,13 @@
       <Style Selector="^:segmented:checked /template/ ContentPresenter#SelectedGlyph"><Setter Property="Opacity" Value="1" /></Style>
       <Style Selector="^:segmented:checked /template/ ContentPresenter#UnselectedGlyph"><Setter Property="Opacity" Value="0" /></Style>
       <Style Selector="^:segmented:not(:checked) /template/ Viewbox#LeadingIcon"><Setter Property="Width" Value="18" /><Setter Property="Height" Value="18" /></Style>
-      <Style Selector="^:segmented:disabled">
+      <Style Selector="^:segmented:disabled:not(:modal-paint-enabled)">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" />
       </Style>
-      <Style Selector="^:segmented:disabled:checked"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /></Style>
-      <Style Selector="^:segmented:disabled /template/ DockPanel#GroupContent"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
+      <Style Selector="^:segmented:disabled:not(:modal-paint-enabled):checked"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /></Style>
+      <Style Selector="^:segmented:disabled:not(:modal-paint-enabled) /template/ DockPanel#GroupContent"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     </ControlTheme>
   </Styles.Resources>
 </Styles>

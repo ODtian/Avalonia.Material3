@@ -34,7 +34,7 @@ public class MaterialRadioButton : RadioButton
     {
         if (_motion is null || _dot is null) return;
         _dotMotion.Spring(IsChecked == true ? 6 : 0, _motion.FastSpatial);
-        if (IsEffectivelyEnabled) _color.Set(BorderBrush, _motion.DefaultEffects);
+        if (MaterialModalPaintScope.IsEnabledForPaint(this)) _color.Set(BorderBrush, _motion.DefaultEffects);
         else _color.Snap(BorderBrush);
     }
     private void PaintDot(double radius)

@@ -253,7 +253,7 @@ public class MaterialDatePicker : TemplatedControl
         AutomationProperties.SetItemStatus(this, message ?? _headline.Text ?? "");
         if (_dialog is not null)
         {
-            _dialog.IsConfirmEnabled = IsValid && IsEffectivelyEnabled;
+            _dialog.IsConfirmEnabled = IsValid && MaterialModalPaintScope.IsEnabledForPaint(this);
             _dialog.ConfirmText = Labels.Confirm; _dialog.CancelText = Labels.Cancel;
             AutomationProperties.SetName(_dialog, Labels.Title);
         }
@@ -437,7 +437,8 @@ public class MaterialDatePicker : TemplatedControl
             change.Property != DisplayFormatProperty && change.Property != ModeProperty &&
             change.Property != SelectionModeProperty && change.Property != LabelsProperty &&
             change.Property != DisplayMonthProperty && change.Property != MinimumDateProperty &&
-            change.Property != MaximumDateProperty && change.Property != TodayProperty && change.Property != SelectableDateProperty && change.Property != IsEnabledProperty) return;
+            change.Property != MaximumDateProperty && change.Property != TodayProperty && change.Property != SelectableDateProperty && change.Property != IsEnabledProperty
+            && change.Property != MaterialModalPaintScope.EnabledForPaintProperty) return;
         if (change.Property == MinimumDateProperty || change.Property == MaximumDateProperty)
             _years.Children.Clear();
         if (change.Property == MinimumDateProperty || change.Property == MaximumDateProperty || change.Property == DisplayMonthProperty)

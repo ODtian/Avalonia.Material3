@@ -74,9 +74,9 @@
 
     <Style Selector="^:selected"><Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
     <Style Selector="^:selected /template/ ContentPresenter#Overline, ^:selected /template/ ContentPresenter#Supporting, ^:selected /template/ ContentPresenter#Leading, ^:selected /template/ ContentPresenter#Trailing"><Setter Property="TextBlock.Foreground" Value="{DynamicResource M3.OnSecondaryContainerBrush}" /></Style>
-    <Style Selector="^:disabled"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:disabled /template/ ContentPresenter#Overline, ^:disabled /template/ ContentPresenter#Supporting, ^:disabled /template/ ContentPresenter#Leading, ^:disabled /template/ ContentPresenter#Trailing"><Setter Property="TextBlock.Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
-    <Style Selector="^:disabled /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ ContentPresenter#Overline, ^:disabled:not(:modal-paint-enabled) /template/ ContentPresenter#Supporting, ^:disabled:not(:modal-paint-enabled) /template/ ContentPresenter#Leading, ^:disabled:not(:modal-paint-enabled) /template/ ContentPresenter#Trailing"><Setter Property="TextBlock.Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialList}" TargetType="c:MaterialList">
     <Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" />
@@ -92,9 +92,9 @@
     <Style Selector="^:expressive:pointerover"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerMedium}" /></Style>
     <Style Selector="^:expressive:pressed, ^:expressive:focus-visible, ^:expanded, ^:revealed"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
     <Style Selector="^:selected"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
-    <Style Selector="^:expressive:disabled"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" /></Style>
-    <Style Selector="^:selected:disabled"><Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
-    <Style Selector="^:selected:disabled /template/ Border#Container"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
+    <Style Selector="^:expressive:disabled:not(:modal-paint-enabled)"><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerExtraSmall}" /></Style>
+    <Style Selector="^:selected:disabled:not(:modal-paint-enabled)"><Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" /><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
+    <Style Selector="^:selected:disabled:not(:modal-paint-enabled) /template/ Border#Container"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /></Style>
     <Style Selector="^:expanded /template/ c|MaterialSymbol#DisclosureIcon"><Setter Property="Symbol" Value="expand_less" /></Style>
     <Style Selector="^:reordering"><Setter Property="Background" Value="{DynamicResource M3.TertiaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnTertiaryContainerBrush}" /><Setter Property="CornerRadius" Value="{DynamicResource M3.Shape.CornerLarge}" /></Style>
     <Style Selector="^:reordering /template/ Border#ElevationSurface"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
@@ -115,12 +115,12 @@
     <Style Selector="^:dragged /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
     <Style Selector="^:elevated:dragged /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow4}" /></Style>
     <Style Selector="^:dragged /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.DraggedStateLayerOpacity}" /></Style>
-    <Style Selector="^:disabled"><Setter Property="Background" Value="{DynamicResource M3.SurfaceVariantBrush}" /></Style>
-    <Style Selector="^:elevated:disabled"><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /></Style>
-    <Style Selector="^:disabled /template/ Border#Container"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
-    <Style Selector="^:elevated:disabled /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
-    <Style Selector="^:outlined:disabled"><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /></Style>
-    <Style Selector="^:outlined:disabled /template/ Border#Container"><Setter Property="Opacity" Value="1" /></Style>
-    <Style Selector="^:outlined:disabled /template/ Border#Outline"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledContainerOpacity}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Background" Value="{DynamicResource M3.SurfaceVariantBrush}" /></Style>
+    <Style Selector="^:elevated:disabled:not(:modal-paint-enabled)"><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#Container"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" /><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow0}" /></Style>
+    <Style Selector="^:elevated:disabled:not(:modal-paint-enabled) /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow1}" /></Style>
+    <Style Selector="^:outlined:disabled:not(:modal-paint-enabled)"><Setter Property="Background" Value="{DynamicResource M3.SurfaceBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" /></Style>
+    <Style Selector="^:outlined:disabled:not(:modal-paint-enabled) /template/ Border#Container"><Setter Property="Opacity" Value="1" /></Style>
+    <Style Selector="^:outlined:disabled:not(:modal-paint-enabled) /template/ Border#Outline"><Setter Property="Opacity" Value="{DynamicResource M3.DisabledContainerOpacity}" /></Style>
   </ControlTheme>
 </ResourceDictionary>

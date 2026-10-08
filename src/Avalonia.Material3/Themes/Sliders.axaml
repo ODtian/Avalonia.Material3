@@ -10,16 +10,16 @@
     <Setter Property="Background" Value="{DynamicResource M3.SecondaryContainerBrush}" />
     <Setter Property="ValueIndicatorBrush" Value="{DynamicResource M3.InverseSurfaceBrush}" />
     <Setter Property="ValueIndicatorForeground" Value="{DynamicResource M3.InverseOnSurfaceBrush}" />
-    <Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" />
-    <Setter Property="FontSize" Value="{DynamicResource M3.LabelLargeFontSize}" />
-    <Setter Property="FontWeight" Value="{DynamicResource M3.LabelLargeFontWeight}" />
+    <Setter Property="FontFamily" Value="{DynamicResource M3.BodySmallFontFamily}" />
+    <Setter Property="FontSize" Value="{DynamicResource M3.BodySmallFontSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource M3.BodySmallFontWeight}" />
     <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Template">
       <ControlTemplate>
         <controls:MaterialSliderPresenter x:Name="PART_Surface" />
       </ControlTemplate>
     </Setter>
-    <Style Selector="^:disabled">
+    <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>

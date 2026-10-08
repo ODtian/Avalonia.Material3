@@ -132,11 +132,11 @@ public sealed class MaterialCarousel : TemplatedControl
         }
         if (change.Property == AnimationTimeProperty) _frames.SetTime(AnimationTime);
         if (change.Property == MotionDurationProperty || change.Property == MotionEasingProperty || change.Property == ReducedMotionSpringProperty) _frames.Sample();
-        if (change.Property == IsEffectivelyEnabledProperty && !IsEffectivelyEnabled) CancelGesture();
+        if (change.Property == IsEffectivelyEnabledProperty && !MaterialModalPaintScope.IsEnabledForPaint(this)) CancelGesture();
         if (change.Property == LayoutProperty || change.Property == PreferredItemWidthProperty || change.Property == ItemSpacingProperty || change.Property == CornerRadiusProperty || change.Property == FlowDirectionProperty)
         {
             CancelGesture();
-            _layoutAnimating = HasDurationOverride && _attached && IsEffectivelyEnabled && !GetValue(ReducedMotionSpringProperty).IsInstant && MotionDuration > TimeSpan.Zero
+            _layoutAnimating = HasDurationOverride && _attached && MaterialModalPaintScope.IsEnabledForPaint(this) && !GetValue(ReducedMotionSpringProperty).IsInstant && MotionDuration > TimeSpan.Zero
                 && change.Property != FlowDirectionProperty && change.Property != CornerRadiusProperty;
             _layoutStart = _frames.Elapsed.TotalMilliseconds;
             _layoutProgress = _layoutAnimating ? 0 : 1;
@@ -316,7 +316,7 @@ public sealed class MaterialCarousel : TemplatedControl
     private bool Advance(MaterialFrame frame)
     {
         var changed = false;
-        var instant = frame.Rewound || GetValue(ReducedMotionSpringProperty).IsInstant || HasDurationOverride && MotionDuration == TimeSpan.Zero || !IsEffectivelyEnabled || !_attached;
+        var instant = frame.Rewound || GetValue(ReducedMotionSpringProperty).IsInstant || HasDurationOverride && MotionDuration == TimeSpan.Zero || !MaterialModalPaintScope.IsEnabledForPaint(this) || !_attached;
         var time = frame.Elapsed.TotalMilliseconds;
         if (_animating)
         {

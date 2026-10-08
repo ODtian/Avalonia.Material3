@@ -177,7 +177,7 @@
     <Style Selector="^:prefix /template/ TextBlock#Prefix, ^:suffix /template/ TextBlock#Suffix">
       <Setter Property="IsVisible" Value="True" />
     </Style>
-    <Style Selector="^:clearable:not(:disabled) /template/ Button#PART_ClearButton">
+    <Style Selector="^:clearable:not(:disabled) /template/ Button#PART_ClearButton,^:clearable:modal-paint-enabled /template/ Button#PART_ClearButton">
       <Setter Property="IsVisible" Value="True" />
     </Style>
     <Style Selector="^:focus /template/ TextBlock#FloatingLabel, ^:not(:empty) /template/ TextBlock#FloatingLabel">
@@ -236,26 +236,26 @@
     <Style Selector="^:invalid:pointerover:not(:focus) /template/ ContentPresenter#Trailing, ^:invalid:pointerover:not(:focus) /template/ Button#PART_ClearButton">
       <Setter Property="TextElement.Foreground" Value="{DynamicResource M3.OnErrorContainerBrush}" />
     </Style>
-    <Style Selector="^:disabled">
+    <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="Background" Value="{Binding Foreground, RelativeSource={RelativeSource Self}, Converter={StaticResource M3.TextField.BrushOpacity}, ConverterParameter=0.04}" />
       <Setter Property="BorderBrush" Value="{Binding Foreground, RelativeSource={RelativeSource Self}, Converter={StaticResource M3.TextField.BrushOpacity}, ConverterParameter=0.38}" />
       <Setter Property="BorderThickness" Value="0,0,0,1" />
     </Style>
-    <Style Selector="^:outlined:disabled">
+    <Style Selector="^:outlined:disabled:not(:modal-paint-enabled)">
       <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderBrush" Value="{Binding Foreground, RelativeSource={RelativeSource Self}, Converter={StaticResource M3.TextField.BrushOpacity}, ConverterParameter=0.12}" />
       <Setter Property="BorderThickness" Value="1" />
     </Style>
     <Style Selector="^:date-input /template/ Grid#SupportingContent"><Setter Property="MinHeight" Value="16" /></Style>
     <Style Selector="^:date-input:not(:invalid) /template/ Grid#SupportingContent"><Setter Property="Margin" Value="16,0,16,0" /></Style>
-    <Style Selector="^:disabled /template/ Grid#EditorContent, ^:disabled /template/ Grid#SupportingContent, ^:disabled /template/ TextBlock#FloatingLabel, ^:disabled /template/ TextBlock#RestingLabel">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Grid#EditorContent, ^:disabled:not(:modal-paint-enabled) /template/ Grid#SupportingContent, ^:disabled:not(:modal-paint-enabled) /template/ TextBlock#FloatingLabel, ^:disabled:not(:modal-paint-enabled) /template/ TextBlock#RestingLabel">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
-    <Style Selector="^:disabled /template/ controls|MaterialTextFieldDecoration#Container">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialTextFieldDecoration#Container">
       <Setter Property="LabelBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled /template/ TextBlock#Supporting, ^:disabled /template/ TextBlock#Counter, ^:disabled /template/ TextBlock#Prefix, ^:disabled /template/ TextBlock#Suffix">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ TextBlock#Supporting, ^:disabled:not(:modal-paint-enabled) /template/ TextBlock#Counter, ^:disabled:not(:modal-paint-enabled) /template/ TextBlock#Prefix, ^:disabled:not(:modal-paint-enabled) /template/ TextBlock#Suffix">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
   </ControlTheme>

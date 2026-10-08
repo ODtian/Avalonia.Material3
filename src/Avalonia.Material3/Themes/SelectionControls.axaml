@@ -28,17 +28,17 @@
     <Style Selector="^:unchecked:pointerover, ^:unchecked:pressed, ^:unchecked:focus-visible">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled /template/ controls|MaterialStateLayer#StateLayer">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialStateLayer#StateLayer">
       <Setter Property="Opacity" Value="0" />
     </Style>
-    <Style Selector="^:disabled /template/ Border#FocusRing">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#FocusRing">
       <Setter Property="IsVisible" Value="False" />
     </Style>
-    <Style Selector="^:disabled /template/ TextBlock#ErrorLabel">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ TextBlock#ErrorLabel">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
-    <Style Selector="^:disabled /template/ ContentPresenter">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ ContentPresenter">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
@@ -80,25 +80,25 @@
       <Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" />
     </Style>
-    <Style Selector="^:error:not(:disabled)">
+    <Style Selector="^:error:not(:disabled),^:error:modal-paint-enabled">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
     </Style>
-    <Style Selector="^:error:checked:not(:disabled), ^:error:indeterminate:not(:disabled)">
+    <Style Selector="^:error:checked:not(:disabled),^:error:checked:modal-paint-enabled, ^:error:indeterminate:not(:disabled), ^:error:indeterminate:modal-paint-enabled">
       <Setter Property="Background" Value="{DynamicResource M3.ErrorBrush}" />
     </Style>
-    <Style Selector="^:error:not(:disabled) /template/ controls|MaterialCheckboxGlyph#Check">
+    <Style Selector="^:error:not(:disabled) /template/ controls|MaterialCheckboxGlyph#Check,^:error:modal-paint-enabled /template/ controls|MaterialCheckboxGlyph#Check">
       <Setter Property="CheckBrush" Value="{DynamicResource M3.OnErrorBrush}" />
     </Style>
-    <Style Selector="^:disabled">
+    <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled:checked, ^:disabled:indeterminate">
+    <Style Selector="^:disabled:not(:modal-paint-enabled):checked, ^:disabled:not(:modal-paint-enabled):indeterminate">
       <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled /template/ Border#Box">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#Box">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
-    <Style Selector="^:disabled /template/ controls|MaterialCheckboxGlyph#Check">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialCheckboxGlyph#Check">
       <Setter Property="CheckBrush" Value="{DynamicResource M3.SurfaceBrush}" />
     </Style>
   </ControlTheme>
@@ -135,19 +135,19 @@
     <Style Selector="^:checked">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" />
     </Style>
-    <Style Selector="^:error:not(:disabled)">
+    <Style Selector="^:error:not(:disabled),^:error:modal-paint-enabled">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
     </Style>
-    <Style Selector="^:disabled">
+    <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled /template/ Border#Ring, ^:disabled /template/ controls|MaterialCircleGlyph#Dot">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#Ring, ^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialCircleGlyph#Dot">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
   </ControlTheme>
   <!-- SwitchTokens v0_210: 52x32 track, 2 outline, 16/24 handle; 48 target. -->
   <ControlTheme x:Key="{x:Type controls:MaterialSwitch}" TargetType="controls:MaterialSwitch" BasedOn="{StaticResource M3.SelectionInteraction}">
-    <Setter Property="MinWidth" Value="64" />
+    <Setter Property="MinWidth" Value="52" />
     <Setter Property="MinHeight" Value="48" />
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource M3.OutlineBrush}" />
@@ -158,13 +158,13 @@
     <Setter Property="VerticalContentAlignment" Value="Center" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Grid ColumnDefinitions="64,*" Background="Transparent">
-          <Grid Width="64" Height="48" VerticalAlignment="Center">
+        <Grid ColumnDefinitions="52,*" Background="Transparent">
+          <Grid Width="52" Height="48" VerticalAlignment="Center">
             <Border x:Name="Track" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
                     BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" />
             <Border x:Name="DisabledTrackOutline" Width="52" Height="32" CornerRadius="16" BorderThickness="2"
                     BorderBrush="{TemplateBinding BorderBrush}" Opacity="{DynamicResource M3.DisabledContainerOpacity}" IsVisible="False" IsHitTestVisible="False" />
-            <Canvas x:Name="PART_SwitchKnob" Width="20" Height="48" HorizontalAlignment="Left" Margin="6,0,0,0">
+            <Canvas x:Name="PART_SwitchKnob" Width="20" Height="48" HorizontalAlignment="Left">
               <Grid x:Name="PART_MovingKnobs" Width="32" Height="48" UseLayoutRounding="False">
                 <controls:MaterialStateLayer x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False" />
                 <Ellipse x:Name="Thumb" Width="16" Height="16" Fill="{DynamicResource M3.OutlineBrush}" />
@@ -212,10 +212,10 @@
       <Setter Property="Height" Value="24" />
       <Setter Property="Fill" Value="{DynamicResource M3.OnPrimaryBrush}" />
     </Style>
-    <Style Selector="^:error:not(:disabled)">
+    <Style Selector="^:error:not(:disabled),^:error:modal-paint-enabled">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" />
     </Style>
-    <Style Selector="^:error:checked:not(:disabled)">
+    <Style Selector="^:error:checked:not(:disabled),^:error:checked:modal-paint-enabled">
       <Setter Property="Background" Value="{DynamicResource M3.ErrorBrush}" />
     </Style>
     <Style Selector="^:unchecked:pointerover:not(:error), ^:unchecked:pressed:not(:error), ^:unchecked:focus-visible:not(:error)">
@@ -237,33 +237,33 @@
     <Style Selector="^:checked /template/ ContentPresenter#PART_OnContentPresenter">
       <Setter Property="IsVisible" Value="True" />
     </Style>
-    <Style Selector="^:disabled">
+    <Style Selector="^:disabled:not(:modal-paint-enabled)">
       <Setter Property="BorderBrush" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
     </Style>
-    <Style Selector="^:disabled:checked">
+    <Style Selector="^:disabled:not(:modal-paint-enabled):checked">
       <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled:checked /template/ Border#Track">
+    <Style Selector="^:disabled:not(:modal-paint-enabled):checked /template/ Border#Track">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledContainerOpacity}" />
     </Style>
-    <Style Selector="^:disabled:unchecked /template/ Border#Track">
+    <Style Selector="^:disabled:not(:modal-paint-enabled):unchecked /template/ Border#Track">
       <Setter Property="BorderThickness" Value="0" />
     </Style>
-    <Style Selector="^:disabled:unchecked /template/ Border#DisabledTrackOutline">
+    <Style Selector="^:disabled:not(:modal-paint-enabled):unchecked /template/ Border#DisabledTrackOutline">
       <Setter Property="IsVisible" Value="True" />
     </Style>
-    <Style Selector="^:disabled /template/ Ellipse#Thumb">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Ellipse#Thumb">
       <Setter Property="Fill" Value="{DynamicResource M3.OnSurfaceBrush}" />
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
-    <Style Selector="^:disabled:checked /template/ ContentPresenter#OnIcon">
+    <Style Selector="^:disabled:not(:modal-paint-enabled):checked /template/ ContentPresenter#OnIcon">
       <Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled:unchecked /template/ ContentPresenter#OffIcon">
+    <Style Selector="^:disabled:not(:modal-paint-enabled):unchecked /template/ ContentPresenter#OffIcon">
       <Setter Property="Foreground" Value="{DynamicResource M3.SurfaceContainerHighestBrush}" />
     </Style>
-    <Style Selector="^:disabled:checked /template/ Ellipse#Thumb">
+    <Style Selector="^:disabled:not(:modal-paint-enabled):checked /template/ Ellipse#Thumb">
       <Setter Property="Fill" Value="{DynamicResource M3.SurfaceBrush}" />
       <Setter Property="Opacity" Value="1" />
     </Style>

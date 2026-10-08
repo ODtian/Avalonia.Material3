@@ -34,7 +34,7 @@
     <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
 
-    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialCalendarYear}" TargetType="c:MaterialCalendarYear">
     <Setter Property="MinWidth" Value="72" /><Setter Property="MinHeight" Value="48" />
@@ -57,7 +57,7 @@
       </ControlTemplate>
     </Setter>
     <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryBrush}" /></Style>
-    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialDatePicker}" TargetType="c:MaterialDatePicker">
     <Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerHighBrush}" />
@@ -113,7 +113,7 @@
     </Setter>
     <Style Selector="^:focus"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /><Setter Property="BorderBrush" Value="{DynamicResource M3.PrimaryBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
     <Style Selector="^:invalid"><Setter Property="BorderBrush" Value="{DynamicResource M3.ErrorBrush}" /><Setter Property="BorderThickness" Value="2" /></Style>
-    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialTimeSelector}" TargetType="c:MaterialTimeSelector">
     <Setter Property="MinWidth" Value="96" /><Setter Property="MinHeight" Value="80" />
@@ -144,7 +144,7 @@
     <Style Selector="^:checked"><Setter Property="Background" Value="{DynamicResource M3.PrimaryContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
     <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialTimePeriodButton}" TargetType="c:MaterialTimePeriodButton">
     <Setter Property="MinWidth" Value="52" /><Setter Property="MinHeight" Value="48" />
@@ -177,7 +177,7 @@
     <Style Selector="^:focus /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.FocusStateLayerOpacity}" /></Style>
     <Style Selector="^:pointerover /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.HoverStateLayerOpacity}" /></Style>
     <Style Selector="^:pressed /template/ c|MaterialStateLayer#State"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
-    <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.38" /></Style>
+    <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Opacity" Value="0.38" /></Style>
   </ControlTheme>
   <ControlTheme x:Key="{x:Type c:MaterialClockNumber}" TargetType="c:MaterialClockNumber">
     <Setter Property="ContentTemplate"><themes:ClockNumberTextTemplate /></Setter>

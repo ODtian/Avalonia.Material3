@@ -25,9 +25,12 @@ public class NormativeOverlayMotionScenarioTests
     }
 
     [AvaloniaTheory]
-    [InlineData(0)]
-    [InlineData(300)]
-    public void Rich_tooltip_centers_on_its_anchor_and_the_caret_tracks_the_anchor_at_the_window_edge(double anchorLeft)
+    [InlineData(0, 60)]
+    [InlineData(20, 60)]
+    [InlineData(300, 140)]
+    [InlineData(660, 220)]
+    [InlineData(680, 220)]
+    public void Rich_tooltip_centers_on_its_anchor_and_the_caret_tracks_the_anchor_at_the_window_edge(double anchorLeft, double caretX)
     {
         using var host = new FeedbackHost();
         host.Theme.Motion = new MaterialMotion { ReduceMotion = true };
@@ -38,9 +41,9 @@ public class NormativeOverlayMotionScenarioTests
             Content = "Description", IsPersistent = true, ShowCaret = true };
         tip.Show(host.Overlay, entry); host.Render();
         var bounds = new Rect(tip.Bounds.Size).TransformToAABB(tip.TransformToVisual(host.Window)!.Value);
-        Assert.Equal(Math.Max(0, anchorLeft + 60 - 140), bounds.Left, 3);
+        Assert.Equal(Math.Clamp(anchorLeft + 60 - 140, 0, 520), bounds.Left, 3);
         Assert.Equal(236, bounds.Top, 3); // Native provider always uses4 DIP anchor spacing, including caret.
-        Assert.Equal(Colors.Magenta, host.PixelAt(new Point(anchorLeft + 60, bounds.Bottom + 3)));
+        Assert.Equal(Colors.Magenta, host.PixelAt(new Point(bounds.Left + caretX, bounds.Bottom + 3)));
     }
 
     [AvaloniaTheory]

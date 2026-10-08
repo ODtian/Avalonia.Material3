@@ -14,6 +14,8 @@ internal sealed class MaterialTimeDialogPanel : Panel
         var width=content.DesiredSize.Width;
         title.Measure(new Size(width,double.PositiveInfinity));actions.Measure(new Size(width,double.PositiveInfinity));
         _landscape=content.DesiredSize.Width>content.DesiredSize.Height&&content.DesiredSize.Height>=200;
+        if (!_landscape && double.IsFinite(availableSize.Height))
+            content.Measure(new Size(width, Math.Max(0, availableSize.Height - 48 - title.DesiredSize.Height - actions.DesiredSize.Height)));
         var height=_landscape?(double.IsFinite(availableSize.Height)?availableSize.Height:16+content.DesiredSize.Height+4+actions.DesiredSize.Height+8)
             :24+title.DesiredSize.Height+content.DesiredSize.Height+actions.DesiredSize.Height+24;
         return new(width+48,height);

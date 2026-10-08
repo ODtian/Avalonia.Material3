@@ -27,7 +27,7 @@ public class SelectionCenterMotionScenarioTests
             HorizontalAlignment = HorizontalAlignment.Left };
         host.Window.Content = new StackPanel { Margin = new Thickness(24.3, 24.65, 0, 0), Children = { toggle } };
         host.Capture();
-        var center = toggle.TranslatePoint(new Point(22, 24), host.Window)!.Value * scale;
+        var center = toggle.TranslatePoint(new Point(16, 24), host.Window)!.Value * scale;
         var rest = Centroid(ReadFrame(host.Window), center, 15 * scale, background: 765);
         host.Theme.Motion = new MaterialMotion
         { Springs = MaterialSpringScheme.Expressive with { FastSpatial = new(1, 100) } };

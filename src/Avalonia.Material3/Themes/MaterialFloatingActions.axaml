@@ -55,9 +55,9 @@
 
       <Style Selector="^:pressed /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="{DynamicResource M3.PressedStateLayerOpacity}" /></Style>
       <Style Selector="^:pressed /template/ Border#Container"><Setter Property="BoxShadow" Value="{DynamicResource M3.Elevation.Shadow3}" /></Style>
-      <Style Selector="^:disabled"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
-      <Style Selector="^:disabled /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
-      <Style Selector="^:disabled /template/ Border#Container"><Setter Property="BoxShadow" Value="none" /></Style>
+      <Style Selector="^:disabled:not(:modal-paint-enabled)"><Setter Property="Background" Value="{DynamicResource M3.DisabledSurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.DisabledForegroundBrush}" /></Style>
+      <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ c|MaterialStateLayer#StateLayer"><Setter Property="Opacity" Value="0" /></Style>
+      <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#Container"><Setter Property="BoxShadow" Value="none" /></Style>
     </ControlTheme>
     <ControlTheme x:Key="{x:Type c:MaterialExtendedFab}" TargetType="c:MaterialExtendedFab" BasedOn="{StaticResource {x:Type c:MaterialFab}}">
       <Setter Property="FontFamily" Value="{DynamicResource M3.LabelLargeFontFamily}" />
@@ -187,6 +187,6 @@
       <Style Selector="^:docked:vertical"><Setter Property="HorizontalAlignment" Value="Left" /><Setter Property="VerticalAlignment" Value="Stretch" /><Setter Property="Padding" Value="0,16" /></Style>
     </ControlTheme>
   </Styles.Resources>
-  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:icon-standard:not(:disabled):not(:checked)"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
-  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:icon-standard:not(:disabled):checked"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
+  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:icon-standard:not(:disabled):not(:checked),c|MaterialToolbar:vibrant c|MaterialIconButton:icon-standard:modal-paint-enabled:not(:checked)"><Setter Property="Foreground" Value="{DynamicResource M3.OnPrimaryContainerBrush}" /></Style>
+  <Style Selector="c|MaterialToolbar:vibrant c|MaterialIconButton:icon-standard:not(:disabled):checked,c|MaterialToolbar:vibrant c|MaterialIconButton:icon-standard:modal-paint-enabled:checked"><Setter Property="Background" Value="{DynamicResource M3.SurfaceContainerBrush}" /><Setter Property="Foreground" Value="{DynamicResource M3.OnSurfaceBrush}" /></Style>
 </Styles>

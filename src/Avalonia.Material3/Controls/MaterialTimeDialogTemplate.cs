@@ -22,7 +22,9 @@ internal sealed class MaterialTimeDialogTemplate : FuncControlTemplate<MaterialD
         var actions = new ContentPresenter { HorizontalContentAlignment = HorizontalAlignment.Stretch };
         actions.Bind(ContentPresenter.ContentProperty, new TemplateBinding(MaterialDialog.ActionsProperty));
         actions.Bind(ContentPresenter.ContentTemplateProperty, new TemplateBinding(MaterialDialog.ActionsTemplateProperty));
-        var surface = new Border { Child = new MaterialTimeDialogPanel(title, body, actions) };
+        var scroll = new ScrollViewer { Content = body,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        var surface = new Border { Child = new MaterialTimeDialogPanel(title, scroll, actions) };
         surface.Bind(Border.BackgroundProperty, new TemplateBinding(TemplatedControl.BackgroundProperty));
         surface.Bind(Border.CornerRadiusProperty, new TemplateBinding(TemplatedControl.CornerRadiusProperty));
         surface.Bind(Border.BorderBrushProperty, new TemplateBinding(TemplatedControl.BorderBrushProperty));
