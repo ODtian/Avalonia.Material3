@@ -2,9 +2,9 @@
 
 独立、通用、版本化的 Material 3 Expressive 控件库。当前本地候选为 **0.1.0-preview.7**，覆盖完整锁定组件清单：设计令牌、按钮/FAB/工具栏/分组、选择/输入/搜索/Chips、内容/导航、进度/加载、共享 overlay/对话框/菜单/提示/面板、应用栏/抽屉、日期时间与 Carousel/刷新。17 个页面由静态工厂显式注册，Gallery 与独立包宿主访问相同完整展厅。
 
-preview.7 将位图快照、内容裁切、海拔溢出与临时输入门控统一为共同渲染规则，按控件族覆盖 DPI 与动态布局变化。历史实拍与发布记录见 [preview.6 记录](docs/verification/manual-quality-preview6.md)。纯色扩散与渐变闪光两套 Ripple 保持可选。
+preview.7 将位图快照、内容裁切、海拔溢出与临时输入门控统一为共同渲染规则，按控件族覆盖 DPI 与动态布局变化。[preview.7 记录](docs/verification/manual-quality-preview7.md)保存本轮原生像素对照与发布验证；[preview.6 记录](docs/verification/manual-quality-preview6.md)保存历史产物。纯色扩散与渐变闪光两套 Ripple 保持可选。
 
-[Avalonia 对照 App](samples/ReferenceUi/README.md)共享 Android 与桌面实现，提供与[原生对照 App](samples/AndroidReference/README.md)相同的 15 场景、初始状态和交互；[场景矩阵](samples/ReferenceUi/scene-parity.json)记录布局与组件资源差异。
+[Avalonia 对照 App](samples/ReferenceUi/README.md)共享 Android 与桌面实现，提供与[原生对照 App](samples/AndroidReference/README.md)相同的 17 场景、初始状态和交互；[场景矩阵](samples/ReferenceUi/scene-parity.json)记录布局与组件资源差异。
 
 这是**本地预览候选**，不是已发布到 nuget.org 的声明；也不等于母规格全部验收。真实 App 升级、人工读屏、物理移动设备及 Android 验收仍有明确外部条件，见[最终证据与支持矩阵](docs/verification/m3-19.md)。各组件的 Avalonia 投影边界仍适用，不宣称 Compose 内部物理/帧像素等价。
 
@@ -46,4 +46,4 @@ NativeSmoke 操作真实桌面焦点/键盘，不能并行运行。发布门禁�
 
 通用设计系统不包含 Pixiv 业务。实际消费方 [MaterixivYou](https://github.com/ODtian/MaterixivYou) 通过版本化包采用公开契约；其 docs-only 基线不是可执行消费方，M11 不能由本仓库样例替代。
 
-本轮修复与产物复验：[preview.6 复验记录](docs/verification/manual-quality-preview6.md)。此前产物与指标见 [preview.5 记录](docs/verification/manual-quality-preview5.md)与 [preview.3 记录](docs/verification/manual-quality-preview3.md)。
+本轮修复与产物复验：[preview.7 复验记录](docs/verification/manual-quality-preview7.md)。此前产物与指标见 [preview.6 记录](docs/verification/manual-quality-preview6.md)、[preview.5 记录](docs/verification/manual-quality-preview5.md)与 [preview.3 记录](docs/verification/manual-quality-preview3.md)。
