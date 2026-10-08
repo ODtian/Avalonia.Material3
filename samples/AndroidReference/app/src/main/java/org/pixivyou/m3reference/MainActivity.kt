@@ -21,6 +21,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
@@ -157,6 +159,12 @@ private fun DateSingleScene() {
 
 @Composable
 private fun TimeScene() {
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = MaterialTheme.typography.bodyLarge
+    val sample = textMeasurer.measure(AnnotatedString("3"), style = textStyle)
+    LaunchedEffect(sample) {
+        Log.i("M3NativeReference", "text-probe kind=clock3 size=${sample.size} baseline=${sample.firstBaseline} left=${sample.getLineLeft(0)} right=${sample.getLineRight(0)} paragraph=${sample.multiParagraph.width},${sample.multiParagraph.height} tracking=${textStyle.letterSpacing}")
+    }
     val state = rememberTimePickerState(initialHour = 19, initialMinute = 7, is24Hour = false)
     var modal by remember { mutableStateOf(false) }
     var input by remember { mutableStateOf(false) }
