@@ -7,7 +7,7 @@ using Avalonia.VisualTree;
 namespace Avalonia.Material3.Controls;
 
 /// <summary>Private bounded reveal. Semantic input closes immediately; presentation has a stable measured target.</summary>
-internal sealed class MaterialActionReveal : Decorator, IMaterialActionDisclosure
+internal sealed class MaterialActionReveal : Decorator, IMaterialActionDisclosure, IMaterialPaintOverflow
 {
     public static readonly StyledProperty<bool> IsExpandedProperty = AvaloniaProperty.Register<MaterialActionReveal, bool>(nameof(IsExpanded), true);
     public static readonly StyledProperty<bool> RevealFromEndProperty = AvaloniaProperty.Register<MaterialActionReveal, bool>(nameof(RevealFromEnd));
@@ -176,6 +176,7 @@ internal sealed class MaterialActionReveal : Decorator, IMaterialActionDisclosur
             Radius(ShadowCornerRadius.BottomRight), Radius(ShadowCornerRadius.BottomLeft));
         context.DrawRectangle(null, null, rounded, ElevationShadow);
     }
+    Rect IMaterialPaintOverflow.GetPaintBounds(Rect bounds) => ElevationShadow.TransformBounds(bounds);
 
     private void ReleaseShadowClip()
     {
