@@ -16,6 +16,31 @@ namespace Avalonia.Material3.Tests;
 public class SelectionScenarioTests
 {
     [AvaloniaTheory]
+    [InlineData(true, true)] [InlineData(true, false)]
+    [InlineData(null, true)] [InlineData(null, false)]
+    [InlineData(false, true)] [InlineData(false, false)]
+    public void Checkbox_box_uses_one_flat_fill_when_its_colours_match_and_an_independent_outline_otherwise(bool? selected, bool enabled)
+    {
+        var checkbox = new MaterialCheckBox { IsThreeState = true, IsChecked = selected, IsEnabled = enabled };
+        using var host = new SelectionHost(checkbox);
+        var edge = host.PixelAt(checkbox, new Point(24, 16));
+        var interior = host.PixelAt(checkbox, new Point(24, 19));
+        if (selected != false)
+        {
+            Assert.Equal(interior, edge);
+            if (!enabled)
+            {
+                // Native single OnSurface fill at .38 alpha over light Surface.
+                var expected = Color.Parse("#A9A3AA");
+                Assert.InRange(Math.Abs(edge.R - expected.R), 0, 1);
+                Assert.InRange(Math.Abs(edge.G - expected.G), 0, 1);
+                Assert.InRange(Math.Abs(edge.B - expected.B), 0, 1);
+            }
+        }
+        else { Assert.NotEqual(interior, edge); Assert.Equal(Color.Parse("#FEF7FF"), interior); }
+    }
+
+    [AvaloniaTheory]
     [InlineData("checkbox")]
     [InlineData("radio")]
     [InlineData("switch")]

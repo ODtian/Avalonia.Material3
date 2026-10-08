@@ -61,7 +61,7 @@
             <controls:MaterialStateLayer x:Name="StateLayer" Width="40" Height="40" CornerRadius="20" Background="{TemplateBinding BorderBrush}" Opacity="0" IsHitTestVisible="False" />
             <Border x:Name="FocusRing" Width="42" Height="42" CornerRadius="21" BorderThickness="3"
                     BorderBrush="{DynamicResource M3.SecondaryBrush}" IsVisible="False" IsHitTestVisible="False" />
-            <Border x:Name="Box" Width="18" Height="18" CornerRadius="2" BorderThickness="2"
+            <controls:MaterialCheckboxBox x:Name="Box" Width="18" Height="18" CornerRadius="2" BorderThickness="2"
                     BorderBrush="{TemplateBinding BorderBrush}" Background="{TemplateBinding Background}" />
             <controls:MaterialCheckboxGlyph x:Name="Check" Width="18" Height="18" Value="{TemplateBinding IsChecked}"
                   CheckBrush="{DynamicResource M3.OnPrimaryBrush}" />
@@ -95,7 +95,7 @@
     <Style Selector="^:disabled:not(:modal-paint-enabled):checked, ^:disabled:not(:modal-paint-enabled):indeterminate">
       <Setter Property="Background" Value="{DynamicResource M3.OnSurfaceBrush}" />
     </Style>
-    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ Border#Box">
+    <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialCheckboxBox#Box">
       <Setter Property="Opacity" Value="{DynamicResource M3.DisabledForegroundOpacity}" />
     </Style>
     <Style Selector="^:disabled:not(:modal-paint-enabled) /template/ controls|MaterialCheckboxGlyph#Check">

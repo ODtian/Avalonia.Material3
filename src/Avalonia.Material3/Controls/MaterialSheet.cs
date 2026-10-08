@@ -243,6 +243,8 @@ public abstract class MaterialSheet : ContentControl
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
+        if (change.Property == TitleProperty || change.Property == HeaderProperty)
+            PseudoClasses.Set(":has-header", !string.IsNullOrWhiteSpace(Title) || Header is not null);
         if (change.Property == ContentProperty || change.Property == ContentTemplateProperty || change.Property == HeaderProperty
             || change.Property == ActionsProperty || change.Property == HeaderTemplateProperty || change.Property == ActionsTemplateProperty
             || change.Property == TitleProperty || change.Property == PaddingProperty || change.Property == FontSizeProperty
