@@ -162,7 +162,7 @@ public class MaterialDatePicker : TemplatedControl
         _header = new(_title, _headline, _mode);
         _modePanel = new(this, _calendarModes, _inputs);
         MaterialPickerSupport.Resource(_divider, Border.BackgroundProperty, "OutlineVariantBrush");
-        Surface = new MaterialDatePickerPanel(_header, _divider, _modePanel, _error);
+        Surface = new MaterialDatePickerPanel(this, _header, _divider, _modePanel, _error);
         _error.Margin = new Thickness(24, 0, 24, 12);
         AutomationProperties.SetLiveSetting(_error, AutomationLiveSetting.Polite);
         StartInput.TextChanged += (_, _) => ReadInput();
