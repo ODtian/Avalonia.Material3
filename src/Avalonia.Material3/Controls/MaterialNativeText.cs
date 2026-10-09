@@ -137,7 +137,7 @@ internal sealed class MaterialNativeText : IDisposable
         context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, solid.Color, solid.Opacity, origin, density, bounds, options));
         return true;
     }
-    internal interface GlyphPaint : IDisposable { void Paint(SKCanvas canvas, double opacity); }
+    internal interface GlyphPaint : IDisposable { void Paint(SKCanvas canvas, double opacity, double density, Color? normal = null); GlyphPaint Retain(); }
     internal GlyphPaint? CreateGlyphDraw(IBrush? brush, Point origin, double density, Size bounds, TextOptions options)
     {
         if (!(_face.Face.NumericProfile || _face.Face.LatinProfile) || !CanPaint(brush, options) || brush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } solid) return null;
@@ -178,26 +178,27 @@ internal sealed class MaterialNativeText : IDisposable
     public void Dispose() => _face.Dispose();
 
     private sealed class GlyphDraw(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, double tracking, Color color,
-        double alpha, Point origin, double density, Size bounds, TextOptions options) : ICustomDrawOperation, GlyphPaint
+        double alpha, Point origin, double captureDensity, Size bounds, TextOptions options) : ICustomDrawOperation, GlyphPaint
     {
         public Rect Bounds => new(bounds);
         public bool HitTest(Point point) => false;
         public bool Equals(ICustomDrawOperation? other) => ReferenceEquals(this, other);
         public void Dispose() => face.Dispose();
+        public GlyphPaint Retain() => new GlyphDraw(face.Retain(), glyphs, size, baseline, tracking, color, alpha, origin, captureDensity, bounds, options);
         public void Render(ImmediateDrawingContext context)
         {
             if (context.TryGetFeature<ISkiaSharpApiLeaseFeature>() is { } feature)
             {
-                using var lease = feature.Lease(); Paint(lease.SkCanvas, lease.CurrentOpacity); return;
+                using var lease = feature.Lease(); Paint(lease.SkCanvas, lease.CurrentOpacity, captureDensity); return;
             }
-            var pixels = new PixelSize(Math.Max(1, (int)Math.Ceiling(bounds.Width * density)), Math.Max(1, (int)Math.Ceiling(bounds.Height * density)));
-            using var bitmap = new Avalonia.Media.Imaging.WriteableBitmap(pixels, new Vector(96 * density, 96 * density), PixelFormat.Bgra8888, AlphaFormat.Premul);
+            var pixels = new PixelSize(Math.Max(1, (int)Math.Ceiling(bounds.Width * captureDensity)), Math.Max(1, (int)Math.Ceiling(bounds.Height * captureDensity)));
+            using var bitmap = new Avalonia.Media.Imaging.WriteableBitmap(pixels, new Vector(96 * captureDensity, 96 * captureDensity), PixelFormat.Bgra8888, AlphaFormat.Premul);
             using (var storage = bitmap.Lock())
             using (var surface = SKSurface.Create(new SKImageInfo(pixels.Width, pixels.Height, SKColorType.Bgra8888, SKAlphaType.Premul), storage.Address, storage.RowBytes))
-            { surface.Canvas.Clear(SKColors.Transparent); surface.Canvas.Scale((float)density); Paint(surface.Canvas, 1); }
+            { surface.Canvas.Clear(SKColors.Transparent); surface.Canvas.Scale((float)captureDensity); Paint(surface.Canvas, 1, captureDensity); }
             context.DrawBitmap(bitmap, new Rect(0, 0, pixels.Width, pixels.Height), new Rect(bounds));
         }
-        public void Paint(SKCanvas canvas, double opacity)
+        public void Paint(SKCanvas canvas, double opacity, double density, Color? normal = null)
         {
             // Android framework adds FT_LOAD_NO_AUTOHINT for normal text. The
             // matched no-program/pp1=0 faces have the same outlines without
@@ -209,8 +210,9 @@ internal sealed class MaterialNativeText : IDisposable
                 BaselineSnap = options.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned,
                 Hinting = nativeProfile ? SKFontHinting.None : SKFontHinting.Normal
             };
-            using var paint = new SKPaint { IsAntialias = true, Color = new SKColor(color.R, color.G, color.B,
-                (byte)Math.Clamp(Math.Round(color.A * alpha * opacity), 0, 255)) };
+            var ink = normal ?? color;
+            using var paint = new SKPaint { IsAntialias = true, Color = new SKColor(ink.R, ink.G, ink.B,
+                (byte)Math.Clamp(Math.Round(ink.A * alpha * opacity), 0, 255)) };
             var indices = new ushort[glyphs.Length]; var positions = new SKPoint[glyphs.Length]; double x = 0;
             var nativeAdvances = nativeProfile ? NativeAdvances(face.Face, glyphs, size, tracking, density) : null;
             for (var index = 0; index < glyphs.Length; index++)

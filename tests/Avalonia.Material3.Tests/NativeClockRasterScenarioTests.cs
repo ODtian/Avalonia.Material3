@@ -4,6 +4,7 @@ using Avalonia.Controls.Presenters;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Material3.Controls;
+using Avalonia.Material3.Tokens;
 using Avalonia.Media;
 using Avalonia.Media.TextFormatting;
 using Avalonia.Platform;
@@ -17,6 +18,52 @@ namespace Avalonia.Material3.Tests;
 
 public class NativeClockRasterScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(3, false)]
+    [InlineData(12, true)]
+    [InlineData(3, false, "opacity")]
+    [InlineData(3, false, "template")]
+    [InlineData(3, false, "role")]
+    [InlineData(3, false, "template_reverse")]
+    public void Retiring_clock_marks_follow_the_current_selector_palette(int oldMark, bool selectedInk, string? fallback = null)
+    {
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = ReferenceFamily() };
+        host.Window.SetRenderScaling(1.5); host.Render();
+        var old = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == oldMark);
+        var box = GeometryHost.Box(old, host.Window);
+        host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with
+        { DefaultSpatial = new(1, 100) { IsInstant = true }, DefaultEffects = new(1, .01) } };
+        host.Render(); dial.ActivePart = MaterialTimePickerPart.Minute; dial.Value = 0;
+        if (fallback is not null)
+        {
+            var incoming = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 0);
+            if (fallback == "opacity") incoming.Opacity = .5;
+            else if (fallback.StartsWith("template", StringComparison.Ordinal)) incoming.ContentTemplate = new FuncDataTemplate<string>((_, _) => new Border { Width = 8, Height = 8, Background = Brushes.Lime });
+            else host.Theme.DynamicColors = new(MaterialColorScheme.Light with { OnSurface = Colors.Red }, MaterialColorScheme.Dark);
+        }
+        if (fallback == "template_reverse")
+        {
+            dial.ActivePart = MaterialTimePickerPart.Hour;
+        }
+        if (fallback == "role") { Assert.True(CountColour(host, box, Colors.Red) > 10); return; }
+        using var bitmap = host.Window.CaptureRenderedFrame()!; using var pixels = bitmap.Lock();
+        var ordinary = 0; var selected = 0;
+        for (var y = (int)(box.Top * 1.5); y < box.Bottom * 1.5; y++)
+        for (var x = (int)(box.Left * 1.5); x < box.Right * 1.5; x++)
+        {
+            var offset = y * pixels.RowBytes + x * 4;
+            var red = System.Runtime.InteropServices.Marshal.ReadByte(pixels.Address, offset);
+            var green = System.Runtime.InteropServices.Marshal.ReadByte(pixels.Address, offset + 1);
+            var blue = System.Runtime.InteropServices.Marshal.ReadByte(pixels.Address, offset + 2);
+            if (red < 80 && green < 80 && blue < 80) ordinary++;
+            if (red > 240 && green > 240 && blue > 240) selected++;
+        }
+        if (selectedInk) Assert.True(selected > 10, $"Retiring{oldMark} lacks current selected ink ({selected}).");
+        else { Assert.True(ordinary > 10, $"Retiring{oldMark} lacks current normal ink ({ordinary})."); Assert.Equal(0, selected); }
+    }
+
     [AvaloniaFact]
     public void Clock_composite_refreshes_live_solid_roles_and_generated_numeral_ink()
     {

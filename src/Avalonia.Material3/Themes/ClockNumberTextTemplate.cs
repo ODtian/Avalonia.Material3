@@ -171,19 +171,20 @@ internal sealed class MaterialClockLabel : Control
         inherited = DefaultRendering(inherited);
         if (!_measureOptions.Equals(inherited)) { _subscribedDial?.InvalidateComposite(); InvalidateMeasure(); InvalidateVisual(); }
     }
-    internal MaterialNativeText.GlyphPaint? CreateGlyphPaint(MaterialClockDial dial, double density, Color selectedColour)
+    internal MaterialNativeText.GlyphPaint? CreateGlyphPaint(MaterialClockDial dial, double density, Color selectedColour, double numberOpacity = 1)
     {
         Layouts();
         if (this.TransformToVisual(dial) is not { M11: 1, M12: 0, M21: 0, M22: 1 }) return null;
         foreach (var visual in _paintAncestors)
         {
-            if (!visual.IsVisible || visual.Opacity != 1 || visual.RenderTransform is not null || visual.Clip is not null
+            if (!visual.IsVisible || visual.Opacity != (visual is MaterialClockNumber ? numberOpacity : 1)
+                || visual.RenderTransform is not null || visual.Clip is not null
                 || visual.OpacityMask is not null || visual.Effect is not null) return null;
             if (visual.ClipToBounds && this.TransformToVisual(visual) is { } clipTransform
                 && !new Rect(visual.Bounds.Size).Contains(new Rect(Bounds.Size).TransformToAABB(clipTransform))) return null;
         }
         if (_key.Selected is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected || selected.Color != selectedColour) return null;
-        if (this.TranslatePoint(default, dial) is not { } point || _nativeText is null || Opacity != 1 || Number?.Opacity != 1) return null;
+        if (this.TranslatePoint(default, dial) is not { } point || _nativeText is null || Opacity != 1 || Number?.Opacity != numberOpacity) return null;
         if (TopLevel.GetTopLevel(this) is { } root && this.TranslatePoint(default, root) is { } global)
             point += new Vector(Math.Round(global.X * density, MidpointRounding.AwayFromZero) / density - global.X,
                 Math.Round(global.Y * density, MidpointRounding.AwayFromZero) / density - global.Y);
@@ -208,7 +209,7 @@ internal sealed class MaterialClockLabel : Control
         {
             if (_nativeText?.Draw(context, _key.Normal, origin, density, Bounds.Size, options) != true) normal.Draw(context, origin);
         }
-        if (_capturingMask) { DrawNormal(); return; }
+        if (_capturingMask || Dial?.CapturingNormalFace == true) { DrawNormal(); return; }
         if (Dial?.NativeSelectorComposition == true) return;
         if (Dial is not { } dial || dial.TranslatePoint(dial.SelectorCenter, this) is not { } center)
         { DrawNormal(); return; }
