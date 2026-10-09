@@ -52,6 +52,7 @@ public class MaterialClockDial : Panel
     private double? _confirmationHold;
     private MaterialSnapshot? _oldFace;
     private bool _partTransition, _animateSelection, _capturingFace;
+    private readonly List<AvaloniaObject> _paintBrushes = [];
     public int Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
     public MaterialTimePickerPart ActivePart { get => GetValue(ActivePartProperty); set => SetValue(ActivePartProperty, value); }
     public bool Is24Hour { get => GetValue(Is24HourProperty); set => SetValue(Is24HourProperty, value); }
@@ -254,7 +255,7 @@ public class MaterialClockDial : Panel
                 context.DrawEllipse(DialBrush, null, center, 128 * Scale, 128 * Scale);
                 var endpoint = AnimatedPosition;
                 context.DrawLine(new Pen(SelectorBrush, 2), center, endpoint);
-                context.DrawEllipse(SelectorBrush, null, center, 4 * FontScale, 4 * FontScale);
+                context.DrawEllipse(SelectorBrush, null, center, 4, 4);
                 context.DrawEllipse(SelectorBrush, null, endpoint, 24 * Scale, 24 * Scale);
             }
         }
@@ -279,12 +280,21 @@ public class MaterialClockDial : Panel
             { foreach (var captured in glyphs) captured.Dispose(); return false; }
             glyphs.Add(glyph);
         }
-        using var clip = context.PushGeometryClip(new EllipseGeometry(new Rect(FaceOrigin, new Size(FaceSide, FaceSide))));
-        context.Custom(new MaterialClockCompositeDraw(new Rect(Bounds.Size), FaceCenter, AnimatedPosition, SelectorRadius,
-            2, 4 * FontScale, background.Color, primary.Color, selected.Color, density, glyphs.ToArray()));
+        context.Custom(new MaterialClockCompositeDraw(new Rect(Bounds.Size), FaceCenter, FaceSide / 2, AnimatedPosition, SelectorRadius,
+            2, 4, background.Color, primary.Color, selected.Color, density, glyphs.ToArray()));
         return true;
     }
     internal void InvalidateComposite() => _paint.InvalidateVisual();
+    private void WatchPaintBrushes()
+    {
+        foreach (var brush in _paintBrushes) brush.PropertyChanged -= PaintBrushChanged;
+        _paintBrushes.Clear();
+        if (!this.IsAttachedToVisualTree()) return;
+        foreach (var brush in new[] { DialBrush, SelectorBrush, GetValue(SelectedInkProperty) }.OfType<AvaloniaObject>().Distinct())
+        { _paintBrushes.Add(brush); brush.PropertyChanged += PaintBrushChanged; }
+    }
+    private void PaintBrushChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    { InvalidateComposite(); foreach (var label in this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>()) label.InvalidateVisual(); }
     private int FromPoint(Point point, bool tap)
     {
         point = new Point((point.X - FaceOrigin.X) / Scale, (point.Y - FaceOrigin.Y) / Scale);
@@ -369,9 +379,10 @@ public class MaterialClockDial : Panel
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        WatchPaintBrushes();
         _textOptionsFrames.Restart(); _textOptionsFrames.SetRunning(true);
     }
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { _textOptionsFrames.SetRunning(false); CancelConfirmation(); CancelDrag(); _oldFace?.Dispose(); _oldFace = null; base.OnDetachedFromVisualTree(e); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { foreach (var brush in _paintBrushes) brush.PropertyChanged -= PaintBrushChanged; _paintBrushes.Clear(); _textOptionsFrames.SetRunning(false); CancelConfirmation(); CancelDrag(); _oldFace?.Dispose(); _oldFace = null; base.OnDetachedFromVisualTree(e); }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -383,7 +394,7 @@ public class MaterialClockDial : Panel
         if (change.Property == ValueProperty) { if (!_animateSelection) CancelConfirmation(); UpdateSelection(); UpdateAngle(_partTransition || _animateSelection); }
         else if (change.Property == ValueLabelProperty) UpdateSelection();
         if (change.Property == SelectorBrushProperty || change.Property == DialBrushProperty || change.Property == SelectedInkProperty)
-        { _paint.InvalidateVisual(); }
+        { WatchPaintBrushes(); _paint.InvalidateVisual(); }
         if (change.Property == TextBlock.FontSizeProperty)
         { CancelDrag(); UpdateExtent(); InvalidateMeasure(); _paint.InvalidateVisual(); }
     }

@@ -36,6 +36,8 @@ internal sealed class MaterialClockLabel : Control
     private readonly List<GradientStop> _stops = [];
     private MaterialClockNumber? _subscribedNumber;
     private MaterialClockDial? _subscribedDial;
+    private readonly List<Visual> _paintAncestors = [];
+    private AvaloniaObject? _selectedBrush;
     private (Typeface Typeface, double Size, double Height, double Tracking, IBrush? Normal, IBrush? Selected) _key;
 
     internal MaterialClockLabel(string text) { _text = text; UseLayoutRounding = false; }
@@ -48,12 +50,17 @@ internal sealed class MaterialClockLabel : Control
         _subscribedDial = Dial;
         if (_subscribedNumber is { } number) number.PropertyChanged += NumberChanged;
         if (_subscribedDial is { } dial) dial.PropertyChanged += DialChanged;
+        for (Visual? visual = this; visual is not null && visual != _subscribedDial; visual = visual.GetVisualParent())
+        { _paintAncestors.Add(visual); visual.PropertyChanged += PaintConstraintChanged; }
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         // Panel removal has already severed ancestor links when this callback runs.
         if (_subscribedNumber is { } number) number.PropertyChanged -= NumberChanged;
         if (_subscribedDial is { } dial) dial.PropertyChanged -= DialChanged;
+        _subscribedDial?.InvalidateComposite();
+        foreach (var visual in _paintAncestors) visual.PropertyChanged -= PaintConstraintChanged;
+        _paintAncestors.Clear();
         _subscribedNumber = null;
         _subscribedDial = null;
         base.OnDetachedFromVisualTree(e);
@@ -61,6 +68,7 @@ internal sealed class MaterialClockLabel : Control
     }
     private void NumberChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
+        _subscribedDial?.InvalidateComposite();
         if (e.Property == TextBlock.FontFamilyProperty || e.Property == TextBlock.FontSizeProperty ||
             e.Property == TextBlock.FontWeightProperty || e.Property == TextBlock.FontStyleProperty ||
             e.Property == TextBlock.LineHeightProperty || e.Property == TextBlock.LetterSpacingProperty || e.Property == TextBlock.ForegroundProperty)
@@ -68,6 +76,12 @@ internal sealed class MaterialClockLabel : Control
     }
     private void DialChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     { InvalidateVisual(); }
+    private void PaintConstraintChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == BoundsProperty || e.Property == OpacityProperty || e.Property == IsVisibleProperty
+            || e.Property == RenderTransformProperty || e.Property == ClipProperty || e.Property == ClipToBoundsProperty)
+            _subscribedDial?.InvalidateComposite();
+    }
     private TextOptions Options()
     {
         var options = new TextOptions();
@@ -79,13 +93,15 @@ internal sealed class MaterialClockLabel : Control
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == SelectedBrushProperty) InvalidateVisual();
+        if (change.Property == SelectedBrushProperty) { _subscribedDial?.InvalidateComposite(); InvalidateVisual(); }
     }
     private void ClearLayouts()
     {
         _nativeText?.Dispose(); _nativeText = null;
         _normal?.Dispose(); _normal = null; _mask?.Dispose(); _mask = null;
         if (_watchedBrush is not null) _watchedBrush.PropertyChanged -= BrushInvalidated;
+        if (_selectedBrush is not null) _selectedBrush.PropertyChanged -= BrushInvalidated;
+        _selectedBrush = null;
         if (_brushTransform is not null) _brushTransform.Changed -= TransformChanged;
         if (_stopCollection is not null) _stopCollection.CollectionChanged -= StopsChanged;
         foreach (var stop in _stops) stop.PropertyChanged -= BrushInvalidated;
@@ -94,6 +110,7 @@ internal sealed class MaterialClockLabel : Control
     }
     private void BrushInvalidated(object? sender, AvaloniaPropertyChangedEventArgs args)
     {
+        _subscribedDial?.InvalidateComposite();
         if (args.Property == GradientBrush.GradientStopsProperty) WatchStops();
         if (args.Property == Brush.TransformProperty) WatchTransform();
         _mask?.Dispose(); _mask = null; InvalidateVisual();
@@ -105,7 +122,7 @@ internal sealed class MaterialClockLabel : Control
         if (_brushTransform is not null) _brushTransform.Changed += TransformChanged;
     }
     private void TransformChanged(object? sender, EventArgs args)
-    { _mask?.Dispose(); _mask = null; InvalidateVisual(); }
+    { _subscribedDial?.InvalidateComposite(); _mask?.Dispose(); _mask = null; InvalidateVisual(); }
     private void WatchStops()
     {
         if (_stopCollection is not null) _stopCollection.CollectionChanged -= StopsChanged;
@@ -117,6 +134,7 @@ internal sealed class MaterialClockLabel : Control
     }
     private void StopsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs args)
     {
+        _subscribedDial?.InvalidateComposite();
         WatchStops();
         _mask?.Dispose(); _mask = null; InvalidateVisual();
     }
@@ -128,6 +146,8 @@ internal sealed class MaterialClockLabel : Control
         if (_normal is not null && key == _key) return;
         ClearLayouts(); _key = key;
         _watchedBrush = key.Item5 as AvaloniaObject;
+        _selectedBrush = key.Item6 as AvaloniaObject;
+        if (_selectedBrush is not null && !ReferenceEquals(_selectedBrush, _watchedBrush)) _selectedBrush.PropertyChanged += BrushInvalidated;
         if (_watchedBrush is not null) _watchedBrush.PropertyChanged += BrushInvalidated;
         WatchTransform();
         _gradient = key.Item5 as GradientBrush;
@@ -148,13 +168,22 @@ internal sealed class MaterialClockLabel : Control
         foreach (var visual in this.GetVisualAncestors().TakeWhile(visual => visual is not MaterialClockDial).Reverse().Append(this))
             inherited = TextOptions.GetTextOptions(visual).MergeWith(inherited);
         inherited = DefaultRendering(inherited);
-        if (!_measureOptions.Equals(inherited)) { InvalidateMeasure(); InvalidateVisual(); }
+        if (!_measureOptions.Equals(inherited)) { _subscribedDial?.InvalidateComposite(); InvalidateMeasure(); InvalidateVisual(); }
     }
     internal MaterialNativeText.GlyphPaint? CreateGlyphPaint(MaterialClockDial dial, double density, Color selectedColour)
     {
         Layouts();
+        foreach (var visual in _paintAncestors)
+        {
+            if (!visual.IsVisible || visual.Opacity != 1 || visual.RenderTransform is not null || visual.Clip is not null) return null;
+            if (visual.ClipToBounds && this.TransformToVisual(visual) is { } clipTransform
+                && !new Rect(visual.Bounds.Size).Contains(new Rect(Bounds.Size).TransformToAABB(clipTransform))) return null;
+        }
         if (_key.Selected is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected || selected.Color != selectedColour) return null;
         if (this.TranslatePoint(default, dial) is not { } point || _nativeText is null || Opacity != 1 || Number?.Opacity != 1) return null;
+        if (TopLevel.GetTopLevel(this) is { } root && this.TranslatePoint(default, root) is { } global)
+            point += new Vector(Math.Round(global.X * density, MidpointRounding.AwayFromZero) / density - global.X,
+                Math.Round(global.Y * density, MidpointRounding.AwayFromZero) / density - global.Y);
         return _nativeText.CreateGlyphDraw(_key.Normal, point, density, Bounds.Size, Options());
     }
     public override void Render(DrawingContext context)
