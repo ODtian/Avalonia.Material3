@@ -59,8 +59,14 @@ public partial class MaterialButtonGroup
         var all = _rows.SelectMany(row => row).ToArray();
         OverflowButton.SetCurrentValue(IsVisibleProperty, true);
         OverflowButton.Measure(new Size(width, double.PositiveInfinity));
+        var surfaces = OverflowButton.GetVisualDescendants().OfType<MaterialIconContainerBorder>().ToArray();
+        var intrinsicWidth = Math.Max(OverflowButton.DesiredSize.Width, surfaces.Select(surface => surface.NaturalWidth).DefaultIfEmpty(0).Max()
+            + OverflowButton.Margin.Left + OverflowButton.Margin.Right);
+        if (!double.IsNaN(OverflowButton.Width)) intrinsicWidth = OverflowButton.Width + OverflowButton.Margin.Left + OverflowButton.Margin.Right;
+        intrinsicWidth = Math.Clamp(intrinsicWidth, OverflowButton.MinWidth + OverflowButton.Margin.Left + OverflowButton.Margin.Right,
+            Math.Max(OverflowButton.MinWidth, OverflowButton.MaxWidth) + OverflowButton.Margin.Left + OverflowButton.Margin.Right);
         List<Control> visible = [];
-        var remaining = width - OverflowButton.DesiredSize.Width;
+        var remaining = width - intrinsicWidth;
         foreach (var child in all)
         {
             var size = NaturalSize(child);
@@ -68,8 +74,8 @@ public partial class MaterialButtonGroup
             if (size.Width > remaining) break;
             visible.Add(child); remaining -= size.Width + Spacing;
         }
-        _overflowLayoutWidth = Math.Max(0, remaining + OverflowButton.DesiredSize.Width);
-        foreach (var surface in OverflowButton.GetVisualDescendants().OfType<MaterialIconContainerBorder>())
+        _overflowLayoutWidth = Math.Max(0, remaining + intrinsicWidth);
+        foreach (var surface in surfaces)
             surface.SetVisualConstraint(_overflowLayoutWidth);
         _updatingOverflow = true;
         foreach (var child in all)
