@@ -63,7 +63,7 @@ internal sealed class MaterialShadowSpace
     private void PositionChanged(object? sender, PixelPointEventArgs args) => Refresh();
     private void Refresh()
     {
-        if (_root is null || !_root.IsAttachedToVisualTree()) return;
+        if (_root?.PlatformImpl is null || !_root.IsAttachedToVisualTree()) return;
         var matrix = _owner.TransformToVisual(_root); var density = _root.RenderScaling;
         var origin = _root.PointToScreen(default); var screen = _root.Screens?.ScreenFromTopLevel(_root)?.Bounds;
         var opacity = _owner.Opacity;

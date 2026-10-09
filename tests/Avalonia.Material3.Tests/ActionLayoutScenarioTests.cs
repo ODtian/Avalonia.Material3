@@ -19,10 +19,10 @@ public class ActionLayoutScenarioTests
     {
         var button = new MaterialIconButton { IconVariant = MaterialIconButtonVariant.Filled };
         button.Classes.Add("authored");
-        button.Styles.Add(new Avalonia.Styling.Style(selector => selector.OfType<MaterialIconButton>().Class("authored").Template().OfType<Border>().Name("Container"))
-        { Setters = { new Avalonia.Styling.Setter(Border.BackgroundProperty, Brushes.Red) } });
+        button.Styles.Add(new Avalonia.Styling.Style(selector => selector.OfType<MaterialIconButton>().Class("authored").Template().OfType<Border>())
+        { Setters = { new Avalonia.Styling.Setter(Visual.OpacityProperty, 0d) } });
         using var host = new GeometryHost(button, 80, 80); host.Render();
-        Assert.Equal(Colors.Red, host.Pixel(40, 30));
+        Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(40, 30));
     }
 
     [AvaloniaTheory]

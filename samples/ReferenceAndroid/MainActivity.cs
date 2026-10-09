@@ -12,6 +12,7 @@ using Avalonia.Media;
 using Avalonia.Material3.Controls;
 using Avalonia.Media.TextFormatting;
 using System.Security.Cryptography;
+using SkiaSharp;
 using Material3.ReferenceUi;
 
 namespace Material3.ReferenceAndroid;
@@ -74,6 +75,19 @@ public sealed class MainActivity : AvaloniaMainActivity
             foreach (var weight in new[] { FontWeight.Normal, FontWeight.Medium, FontWeight.Bold })
                 if (FontManager.Current.TryGetGlyphTypeface(new Typeface(shell.MaterialTheme.Typography.FontFamily, FontStyle.Normal, weight), out var face))
                     Log.Info("M3AvaloniaReference", $"font requestedWeight={(int)weight} actualWeight={(int)face.Weight} family={face.FamilyName} simulations={face.FontSimulations}");
+            if (shell.Scene == "buttons")
+            {
+                var systemMedium = SKTypeface.FromFamilyName("sans-serif", 500, 5, SKFontStyleSlant.Upright);
+                if (systemMedium is not null)
+                {
+                    using var stream = systemMedium.OpenStream(out var index);
+                    if (stream is not null)
+                    {
+                        using var data = SKData.Create(stream);
+                        if (data is not null) Log.Info("M3AvaloniaReference", $"system-medium family={systemMedium.FamilyName} weight={systemMedium.FontStyle.Weight} width={systemMedium.FontStyle.Width} slant={systemMedium.FontStyle.Slant} glyphs={systemMedium.GlyphCount} ttc={index} sha={Convert.ToHexString(SHA256.HashData(data.ToArray()))}");
+                    }
+                }
+            }
             if (clock is not null)
                 foreach (var number in clock.Children.OfType<MaterialClockNumber>().Where(number => number.Value is 3 or 5))
                 {
