@@ -149,6 +149,7 @@ public class MaterialClockDial : Panel
     internal Point SelectorCenter => AnimatedPosition;
     internal double SelectorRadius => 24 * Scale;
     private bool _compositeDrawn;
+    private static readonly HashSet<string> CompositeDiagnostics = [];
     internal bool NativeSelectorComposition => _compositeDrawn && !_capturingFace;
     private Point Position(int number)
     {
@@ -177,9 +178,13 @@ public class MaterialClockDial : Panel
     {
         if (_motion is null || _angle is null) return;
         var target = TargetAngle;
-        while (_angle.Value - target > Math.PI) target += 2 * Math.PI;
-        while (_angle.Value - target <= -Math.PI) target -= 2 * Math.PI;
-        if (animate || _partTransition || _animateSelection) _angle.Spring(target, _motion.DefaultSpatial);
+        if (animate || _partTransition || _animateSelection)
+        {
+            var circle = (float)(Math.PI * 2);
+            while (_angle.Value - target > circle / 2f) target += circle;
+            while (_angle.Value - target <= -circle / 2f) target -= circle;
+            _angle.Spring(target, _motion.DefaultSpatial);
+        }
         else _angle.Snap(target);
     }
     private void CompleteNativeSelection(int value, bool tap = true)
@@ -274,17 +279,29 @@ public class MaterialClockDial : Panel
     }
     private bool TryComposite(DrawingContext context)
     {
-        if (_oldFace is not null || DialBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } background
+        bool Reject(string reason)
+        {
+            lock (CompositeDiagnostics)
+                if (CompositeDiagnostics.Count < 8 && CompositeDiagnostics.Add(reason))
+                    Console.WriteLine($"M3ClockRejected reason={reason} angle={_angle.Value:R} value={Value} part={ActivePart}");
+            return false;
+        }
+        if (_oldFace is not null) return Reject("old-face");
+        if (DialBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } background
             || SelectorBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } primary
-            || GetValue(SelectedInkProperty) is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected) return false;
+            || GetValue(SelectedInkProperty) is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected) return Reject("brush");
         var labels = this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>().ToArray();
-        if (labels.Length != Children.OfType<MaterialClockNumber>().Count()) return false;
+        if (labels.Length != Children.OfType<MaterialClockNumber>().Count()) return Reject("label-count");
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         var glyphs = new List<MaterialNativeText.GlyphPaint>();
         foreach (var label in labels)
         {
             if (label.CreateGlyphPaint(this, density, selected.Color) is not { } glyph)
-            { foreach (var captured in glyphs) captured.Dispose(); return false; }
+            {
+                foreach (var captured in glyphs) captured.Dispose();
+                var number = label.GetVisualAncestors().OfType<MaterialClockNumber>().FirstOrDefault();
+                return Reject($"glyph-{number?.Value} bounds={label.Bounds} matrix={label.TransformToVisual(this)} opacity={number?.Opacity} family={number?.FontFamily} foreground={number?.Foreground}");
+            }
             glyphs.Add(glyph);
         }
         context.Custom(new MaterialClockCompositeDraw(new Rect(Bounds.Size), FaceCenter, FaceSide / 2, AnimatedPosition, SelectorRadius,

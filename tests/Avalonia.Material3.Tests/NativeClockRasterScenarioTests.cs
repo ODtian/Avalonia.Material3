@@ -225,13 +225,15 @@ public class NativeClockRasterScenarioTests
     [AvaloniaTheory]
     [InlineData(1.25)]
     [InlineData(3.5)]
-    public void Default_roboto_numeral_matches_the_native_public_font_raster(double density)
+    [InlineData(3.5, true)]
+    public void Default_roboto_numeral_matches_the_native_public_font_raster(double density, bool rightToLeft = false)
     {
         var family = new FontFamily($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto");
         var dial = new MaterialClockDial { Value = 12 };
         using var host = new GeometryHost(dial, 256, 256);
         host.Theme.Typography = host.Theme.Typography with { FontFamily = family }; host.Window.SetRenderScaling(density); host.Render();
         var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        if (rightToLeft) { number.FlowDirection = FlowDirection.RightToLeft; host.Render(); }
         using var before = host.Window.CaptureRenderedFrame()!;
         var box = GeometryHost.Box(number, host.Window);
         using var source = AssetLoader.Open(new Uri($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts/Roboto-Regular.ttf"));
