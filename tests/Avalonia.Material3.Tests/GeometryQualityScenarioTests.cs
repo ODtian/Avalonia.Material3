@@ -402,10 +402,15 @@ public class GeometryQualityScenarioTests
     {
         var dial = new MaterialClockDial { Value = 0, ActivePart = MaterialTimePickerPart.Minute };
         using var host = new GeometryHost(dial, 256, 256);
-        var ordinaryNumeral = host.Region(164, 27, 31, 30); //05 wholly outside the00 bubble
+        // Use the paired font whose partial5 coverage is proven by the native PNG;
+        // the host fallback face can fit all of5 inside this selector.
+        host.Theme.Typography = host.Theme.Typography with
+        { FontFamily = new FontFamily($"avares://{typeof(GeometryQualityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto") };
+        host.Render();
+        var ordinaryNumeral = host.Region(164, 27, 31, 30); //5 wholly outside the0 bubble
         dial.Value = 7; host.Render();
-        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(209, 53)); // inside07 bubble, outside05 bubble
-        Assert.Equal(Color.Parse("#E6E0E9"), host.Pixel(177, 20)); // outside07 bubble (not snapped to05)
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(209, 53)); // inside07 bubble, outside5 bubble
+        Assert.Equal(Color.Parse("#E6E0E9"), host.Pixel(177, 20)); // outside07 bubble
         var selectedInk = 0; var unselectedInk = 0;
         var pixels = host.Region(164, 27, 31, 30);
         for (var y = 27; y < 57; y++)

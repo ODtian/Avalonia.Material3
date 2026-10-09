@@ -76,6 +76,25 @@ public class NativeClockRasterScenarioTests
 
     private static FontFamily ReferenceFamily() => new($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto");
     [AvaloniaFact]
+    public void Clock_generated_numeral_keeps_its_live_local_selected_colour_resource()
+    {
+        var dial = new MaterialClockDial { Value = 3 };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = ReferenceFamily() };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        var box = GeometryHost.Box(number, host.Window);
+        var original = CountColour(host, box, Colors.White); Assert.True(original > 10);
+        var brush = new SolidColorBrush(Colors.Red); number.Resources["M3.OnPrimaryBrush"] = brush;
+        Assert.True(CountColour(host, box, Colors.Red) > 10);
+        brush.Color = Colors.Lime;
+        Assert.True(CountColour(host, box, Colors.Lime) > 10);
+        Assert.Equal(0, CountColour(host, box, Colors.Red));
+        number.Resources.Remove("M3.OnPrimaryBrush");
+        Assert.Equal(original, CountColour(host, box, Colors.White));
+    }
+
+    [AvaloniaFact]
     public void Clock_composite_route_changes_refresh_unchanged_numerals_together()
     {
         var dial = new MaterialClockDial { Value = 12 };
