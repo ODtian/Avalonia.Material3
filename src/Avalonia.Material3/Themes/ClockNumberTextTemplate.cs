@@ -192,8 +192,8 @@ internal sealed class MaterialClockLabel : Control
     {
         Layouts();
         if (_normal is not { } normal) return;
-        // Android's offscreen selector mask uses grayscale glyph coverage. Both
-        // complementary regions need the same coverage, independent of brush colour.
+        // The fallback shares grayscale glyph coverage between complementary
+        // regions, independent of brush colour.
         var options = Options();
         using var textOptions = context.PushTextOptions(options);
         // Compose places an integer-sized paragraph at an integer centre offset;

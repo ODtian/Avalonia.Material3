@@ -86,7 +86,7 @@ public class MaterialClockDial : Panel
         _paint = new DialPaint(this) { IsHitTestVisible = false };
         _confirmationFrames = MaterialRenderFrames.Bind(this, ConfirmSelection);
         _textOptionsFrames = MaterialRenderFrames.Bind(this, ReconcileTextOptions, ignoreOwnerEnabled: true);
-        _angle = new(this, -Math.PI / 2, _ =>
+        _angle = new(this, -(float)(Math.PI * 2) / 4f, _ =>
         {
             _paint.InvalidateVisual();
             foreach (var label in this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>()) label.InvalidateVisual();
@@ -157,13 +157,20 @@ public class MaterialClockDial : Panel
         var angle = index * Math.PI / 6 - Math.PI / 2;
         return FaceOrigin + new Vector((128 + radius * Math.Cos(angle)) * Scale, (128 + radius * Math.Sin(angle)) * Scale);
     }
-    private double TargetAngle => (ActivePart == MaterialTimePickerPart.Minute ? Value / 60d : Value % 12 / 12d) * 2 * Math.PI - Math.PI / 2;
+    private double TargetAngle => ActivePart == MaterialTimePickerPart.Minute
+        ? (float)(Math.PI * 2) / 60f * Value - (float)(Math.PI * 2) / 4f
+        : (float)(Math.PI * 2) / 12f * (Value % 12) - (float)(Math.PI * 2) / 4f;
     private Point AnimatedPosition
     {
         get
         {
-            var radius = ActivePart == MaterialTimePickerPart.Hour && Is24Hour && Value >= 12 ? 69 : 101;
-            return FaceOrigin + new Vector((128 + radius * Math.Cos(_angle.Value)) * Scale, (128 + radius * Math.Sin(_angle.Value)) * Scale);
+            var diameter = (float)FaceSide;
+            var handleRadius = 24f * (diameter / 256f);
+            var ratio = ActivePart == MaterialTimePickerPart.Hour && Is24Hour && Value >= 12 ? 69f / 256f : 101f / 256f;
+            var length = Math.Max(0, diameter * ratio - handleRadius) + handleRadius;
+            var angle = (float)_angle.Value;
+            return FaceOrigin + new Vector(length * (float)Math.Cos(angle) + diameter / 2f,
+                length * (float)Math.Sin(angle) + diameter / 2f);
         }
     }
     private void UpdateAngle(bool animate)
@@ -281,7 +288,7 @@ public class MaterialClockDial : Panel
             glyphs.Add(glyph);
         }
         context.Custom(new MaterialClockCompositeDraw(new Rect(Bounds.Size), FaceCenter, FaceSide / 2, AnimatedPosition, SelectorRadius,
-            2, 4, background.Color, primary.Color, selected.Color, density, glyphs.ToArray()));
+            (float)_angle.Value, 2, 4, background.Color, primary.Color, selected.Color, density, glyphs.ToArray()));
         return true;
     }
     internal void InvalidateComposite()
