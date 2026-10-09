@@ -67,7 +67,8 @@ internal sealed class MaterialActionLabel : TextBlock
     {
         var ordinary = base.MeasureOverride(availableSize);
         _native?.Dispose(); _native = null;
-        if (StandardParagraph) _native = MaterialNativeText.TryCreateAction(Text ?? "", TextLayout, LetterSpacing);
+        if (StandardParagraph && (_owner is not null || _groupOwner is not null))
+            _native = MaterialNativeText.TryCreateAction(Text ?? "", TextLayout, LetterSpacing);
         _measuredOptions = Options();
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         var measured = _native?.Measure(density, TextLayout.Height, Foreground, _measuredOptions);
@@ -101,6 +102,7 @@ internal sealed class MaterialActionLabel : TextBlock
         _owner?.UnregisterTextLabel(this); _owner = null;
         _groupOwner?.UnregisterTextLabel(this); _groupOwner = null;
         _native?.Dispose(); _native = null;
+        _nativeRoute = false; InvalidateMeasure();
         base.OnDetachedFromVisualTree(e);
     }
 }
