@@ -32,6 +32,9 @@ M3.BodySmallLetterSpacing
 M3.BodySmallLineHeight
 M3.ButtonCornerRadius
 M3.ButtonFocusCornerRadius
+M3.CardDisabledFilledContainerBrush
+M3.CardDisabledForegroundBrush
+M3.CardDisabledOutlinedBorderBrush
 M3.DisabledButtonContainerOpacity
 M3.DisabledContainerBrush
 M3.DisabledContainerOpacity
@@ -248,6 +251,7 @@ M3.SecondaryFixedBrush
 M3.SecondaryFixedColor
 M3.SecondaryFixedDimBrush
 M3.SecondaryFixedDimColor
+M3.SelectionDisabledOnSurfaceBrush
 M3.ShadowBrush
 M3.ShadowColor
 M3.Shape.CornerExtraExtraLarge
@@ -286,6 +290,10 @@ M3.SurfaceTintBrush
 M3.SurfaceTintColor
 M3.SurfaceVariantBrush
 M3.SurfaceVariantColor
+M3.SwitchDisabledHighestContainerBrush
+M3.SwitchDisabledHighestForegroundBrush
+M3.SwitchDisabledOnSurfaceContainerBrush
+M3.SwitchDisabledOnSurfaceForegroundBrush
 M3.TertiaryBrush
 M3.TertiaryColor
 M3.TertiaryContainerBrush
