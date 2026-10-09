@@ -24,7 +24,6 @@ internal sealed class MaterialClockCompositeDraw(Rect bounds, Point center, doub
         if (context.TryGetFeature<ISkiaSharpApiLeaseFeature>() is { } feature)
         {
             using var lease = feature.Lease();
-            if (angle == 0 || angle == -.8377580642700195f)
             {
                 var key = $"{lease.GrContext is not null}/{lease.CurrentOpacity:R}/{angle:R}";
                 lock (BranchDiagnostics)

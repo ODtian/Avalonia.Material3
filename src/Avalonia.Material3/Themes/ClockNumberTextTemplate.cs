@@ -80,7 +80,7 @@ internal sealed class MaterialClockLabel : Control
     {
         if (e.Property == BoundsProperty || e.Property == OpacityProperty || e.Property == IsVisibleProperty
             || e.Property == RenderTransformProperty || e.Property == ClipProperty || e.Property == ClipToBoundsProperty
-            || e.Property == OpacityMaskProperty || e.Property == EffectProperty)
+            || e.Property == OpacityMaskProperty || e.Property == EffectProperty || e.Property == FlowDirectionProperty)
             _subscribedDial?.InvalidateComposite();
     }
     private TextOptions Options()
@@ -174,6 +174,7 @@ internal sealed class MaterialClockLabel : Control
     internal MaterialNativeText.GlyphPaint? CreateGlyphPaint(MaterialClockDial dial, double density, Color selectedColour)
     {
         Layouts();
+        if (this.TransformToVisual(dial) is not { M11: 1, M12: 0, M21: 0, M22: 1 }) return null;
         foreach (var visual in _paintAncestors)
         {
             if (!visual.IsVisible || visual.Opacity != 1 || visual.RenderTransform is not null || visual.Clip is not null
