@@ -16,13 +16,14 @@ internal sealed class MaterialActionContentPresenter : ContentPresenter
         new StyledPropertyMetadata<IDataTemplate?>(coerce: (owner, value) =>
         {
             var presenter = (MaterialActionContentPresenter)owner;
-            return value ?? (presenter.Content is string && presenter.FindDataTemplate(presenter.Content, null) is null ? DefaultText : null);
+            return value ?? (presenter.Content is string text && !(presenter.RecognizesAccessKey && text.Contains('_'))
+                && presenter.FindDataTemplate(presenter.Content, null) is null ? DefaultText : null);
         }));
     protected override Type StyleKeyOverride => typeof(ContentPresenter);
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == ContentProperty || change.Property == TemplatedParentProperty) CoerceValue(ContentTemplateProperty);
+        if (change.Property == ContentProperty || change.Property == TemplatedParentProperty || change.Property == RecognizesAccessKeyProperty) CoerceValue(ContentTemplateProperty);
     }
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
@@ -45,6 +46,7 @@ internal sealed class MaterialActionLabel : TextBlock
     private TextOptions _measuredOptions;
     private bool _nativeRoute;
     private MaterialExtendedFab? _owner;
+    private MaterialButtonGroup? _groupOwner;
     protected override Type StyleKeyOverride => typeof(TextBlock);
     private TextOptions Options()
     {
@@ -65,7 +67,8 @@ internal sealed class MaterialActionLabel : TextBlock
     {
         var ordinary = base.MeasureOverride(availableSize);
         _native?.Dispose(); _native = null;
-        if (StandardParagraph) _native = MaterialNativeText.TryCreateAction(Text ?? "", TextLayout, LetterSpacing);
+        if (StandardParagraph && (_owner is not null || _groupOwner is not null))
+            _native = MaterialNativeText.TryCreateAction(Text ?? "", TextLayout, LetterSpacing);
         _measuredOptions = Options();
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         var measured = _native?.Measure(density, TextLayout.Height, Foreground, _measuredOptions);
@@ -91,11 +94,15 @@ internal sealed class MaterialActionLabel : TextBlock
         base.OnAttachedToVisualTree(e);
         _owner = this.GetVisualAncestors().OfType<MaterialExtendedFab>().FirstOrDefault();
         _owner?.RegisterTextLabel(this);
+        if (_owner is null) _groupOwner = this.GetVisualAncestors().OfType<MaterialButtonGroup>().FirstOrDefault();
+        _groupOwner?.RegisterTextLabel(this);
     }
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _owner?.UnregisterTextLabel(this); _owner = null;
+        _groupOwner?.UnregisterTextLabel(this); _groupOwner = null;
         _native?.Dispose(); _native = null;
+        _nativeRoute = false; InvalidateMeasure();
         base.OnDetachedFromVisualTree(e);
     }
 }

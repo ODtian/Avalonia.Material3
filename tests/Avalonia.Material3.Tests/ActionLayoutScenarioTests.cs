@@ -13,6 +13,22 @@ namespace Avalonia.Material3.Tests;
 public class ActionLayoutScenarioTests
 {
     [AvaloniaFact]
+    public void Standalone_group_button_keeps_ordinary_measure_when_font_options_change()
+    {
+        var button = new MaterialGroupButton { Content = "Create" };
+        using var host = new GeometryHost(button, 260, 80);
+        host.Theme.Typography = host.Theme.Typography with
+        { FontFamily = new FontFamily($"avares://{typeof(ActionLayoutScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto") };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        var label = button.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Create");
+        Assert.Equal(147, label.Bounds.Width * 3.5, precision: 6);
+        TextOptions.SetTextHintingMode(host.Window, TextHintingMode.None); host.Render();
+        Assert.Equal(147, label.Bounds.Width * 3.5, precision: 6);
+        TextOptions.SetTextHintingMode(host.Window, TextHintingMode.Strong); host.Render();
+        Assert.Equal(147, label.Bounds.Width * 3.5, precision: 6);
+    }
+
+    [AvaloniaFact]
     public void Unconnected_overflow_uses_native_remaining_space_before_the_final_gap()
     {
         var group = new MaterialButtonGroup { Width = 1128 / 3.5, HorizontalAlignment = HorizontalAlignment.Left };
