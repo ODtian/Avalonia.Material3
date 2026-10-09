@@ -26,4 +26,3 @@
 字体源／派生哈希、许可证与阴影源码许可随包保存。Android Medium 字形仅在公开系统 face 的 SHA、style、glyph count、cmap guard 全部匹配时使用；其他调用方字体保留原有路径。Material Symbols Rounded 与原生 Compose Filled 的素材由矩阵分别记录：More 的 147 个图标像素差属于该已声明素材分区，外表面一致。
 
 Standards／Spec 固定点审查记录均保存于 `analysis/m3-pattern-audit/review-*.md`，具体发现已闭环。此次资源库存同步精确增加已实现的 8 个 Card／Selection／Switch 资源名，原有名称、公开 API 与 Ordinal 强断言保持；[历史 preview.6](manual-quality-preview6.md)与母规格平台矩阵继续保存各自范围。
-
