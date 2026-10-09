@@ -6,6 +6,7 @@ using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 using Xunit;
 
@@ -13,6 +14,37 @@ namespace Avalonia.Material3.Tests;
 
 public class ActionLayoutScenarioTests
 {
+    [AvaloniaFact]
+    public void Icon_container_keeps_ordinary_border_template_styles()
+    {
+        var button = new MaterialIconButton { IconVariant = MaterialIconButtonVariant.Filled };
+        button.Classes.Add("authored");
+        button.Styles.Add(new Avalonia.Styling.Style(selector => selector.OfType<MaterialIconButton>().Class("authored").Template().OfType<Border>().Name("Container"))
+        { Setters = { new Avalonia.Styling.Setter(Border.BackgroundProperty, Brushes.Red) } });
+        using var host = new GeometryHost(button, 80, 80); host.Render();
+        Assert.Equal(Colors.Red, host.Pixel(40, 30));
+    }
+
+    [AvaloniaTheory]
+    [InlineData(MaterialIconButtonWidth.Default, 56)]
+    [InlineData(MaterialIconButtonWidth.Wide, 72)]
+    public void Overflow_intrinsic_measure_recovers_after_its_secondary_slot_was_constrained(MaterialIconButtonWidth widthMode, double nominal)
+    {
+        var group = new MaterialButtonGroup { Width = nominal + 174, HorizontalAlignment = HorizontalAlignment.Left };
+        group.OverflowButton.Size = MaterialButtonSize.Medium; group.OverflowButton.WidthMode = widthMode;
+        foreach (var item in new[] { ("First",100d), ("Second",60d), ("Third",400d) })
+            group.Children.Add(new MaterialGroupButton { Content = item.Item1, Width = item.Item2 });
+        using var host = new GeometryHost(group, 360, 100); host.Render();
+        Assert.Equal(new[] { "Third" }, group.OverflowItems.Select(button => button.Content));
+        for (var attempt = 0; attempt < 3; attempt++)
+        {
+            group.Width = nominal + 164; host.Render();
+            Assert.Equal(new[] { "Second", "Third" }, group.OverflowItems.Select(button => button.Content));
+            group.Width = nominal + 174; host.Render();
+            Assert.Equal(new[] { "Third" }, group.OverflowItems.Select(button => button.Content));
+        }
+    }
+
     [AvaloniaFact]
     public void Hidden_action_icon_slot_changes_restore_its_current_intrinsic_size()
     {

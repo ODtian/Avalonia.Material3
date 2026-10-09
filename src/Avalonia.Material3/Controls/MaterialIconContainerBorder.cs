@@ -7,7 +7,13 @@ internal sealed class MaterialIconContainerBorder : MaterialShapeBorder
         AvaloniaProperty.Register<MaterialIconContainerBorder, double>(nameof(NominalWidth));
     public double NominalWidth { get => GetValue(NominalWidthProperty); set => SetValue(NominalWidthProperty, value); }
     private double _limit = double.PositiveInfinity;
-    protected override Type StyleKeyOverride => typeof(MaterialShapeBorder);
+    internal double NaturalWidth { get; private set; }
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        var measured = base.MeasureOverride(new Size(Math.Max(availableSize.Width, NominalWidth), availableSize.Height));
+        NaturalWidth = Math.Max(NominalWidth, measured.Width) + Margin.Left + Margin.Right;
+        return measured;
+    }
     internal void SetVisualConstraint(double limit)
     {
         if (_limit == limit) return;
@@ -18,6 +24,6 @@ internal sealed class MaterialIconContainerBorder : MaterialShapeBorder
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == NominalWidthProperty) UpdateWidth();
+        if (change.Property == NominalWidthProperty) { UpdateWidth(); InvalidateMeasure(); }
     }
 }
