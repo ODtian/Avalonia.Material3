@@ -43,6 +43,8 @@ public partial class MaterialButtonGroup : Panel
     private readonly Dictionary<MaterialGroupButton, PressExpansion> _expansions = [];
     private MaterialSpring _spring = new(.6, 1500);
     private readonly MaterialFrameLease _frames;
+    private readonly MaterialFrameLease _textFrames;
+    private readonly HashSet<Themes.MaterialActionLabel> _textLabels = [];
     private double[] _widths = [];
     private IDisposable? _springSubscription;
     public MaterialButtonGroup()
@@ -51,9 +53,18 @@ public partial class MaterialButtonGroup : Panel
         // Children inherit this local layout policy; text/stroke rendering retains its own rasterization.
         UseLayoutRounding = false;
         _frames = MaterialRenderFrames.Bind(this, AdvanceExpansion);
+        _textFrames = MaterialRenderFrames.Bind(this, ReconcileTextOptions, ignoreOwnerEnabled: true);
         Children.CollectionChanged += TrackChildren;
         InitializeOverflow();
     }
+    internal void RegisterTextLabel(Themes.MaterialActionLabel label)
+    {
+        _textLabels.Add(label); _textFrames.Restart(); _textFrames.SetRunning(true);
+    }
+    internal void UnregisterTextLabel(Themes.MaterialActionLabel label)
+    { _textLabels.Remove(label); if (_textLabels.Count == 0) _textFrames.SetRunning(false); }
+    private bool ReconcileTextOptions(MaterialFrame frame)
+    { foreach (var label in _textLabels) label.ReconcileTextOptions(); return _textLabels.Count > 0; }
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);

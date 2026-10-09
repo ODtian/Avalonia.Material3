@@ -1,5 +1,5 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:c="using:Avalonia.Material3.Controls" xmlns:conv="using:Avalonia.Data.Converters">
+        xmlns:c="using:Avalonia.Material3.Controls" xmlns:conv="using:Avalonia.Data.Converters" xmlns:t="using:Avalonia.Material3.Themes">
   <Styles.Resources>
     <ControlTheme x:Key="{x:Type c:MaterialGroupButton}" TargetType="c:MaterialGroupButton" BasedOn="{StaticResource {x:Type c:MaterialButton}}">
       <Setter Property="HorizontalAlignment" Value="Stretch" />
@@ -30,7 +30,7 @@
                            VerticalAlignment="Center" IsVisible="{TemplateBinding TrailingIcon, Converter={x:Static conv:ObjectConverters.IsNotNull}}">
                     <ContentPresenter Content="{TemplateBinding TrailingIcon}" ContentTemplate="{TemplateBinding TrailingIconTemplate}" />
                   </Viewbox>
-                  <ContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
+                  <t:MaterialActionContentPresenter x:Name="PART_ContentPresenter" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}"
                           TextWrapping="Wrap" LineHeight="{TemplateBinding TextBlock.LineHeight}" LetterSpacing="{TemplateBinding LetterSpacing}"
                           HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="Center" RecognizesAccessKey="True" />
                 </DockPanel></c:MaterialContentPadding>

@@ -31,6 +31,44 @@ public class ReferenceParityScenarioTests
     }
 
     [AvaloniaFact]
+    public void Reference_group_captions_use_actual_native_integer_paragraph_widths()
+    {
+        using var host = new ReferenceHost("buttons");
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        { FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto") };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        var group = host.Find<MaterialButtonGroup>("button-group");
+        foreach (var item in new[] { ("Create",146), ("Edit",86), ("Share",128) })
+        {
+            var button = group.Children.OfType<MaterialGroupButton>().Single(button => Equals(button.Content, item.Item1));
+            var label = button.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == item.Item1);
+            Assert.Equal(item.Item2, label.Bounds.Width * 3.5, precision: 6);
+        }
+    }
+
+    [AvaloniaFact]
+    public void Group_native_caption_preserves_runtime_hinting_and_parent_template_priority()
+    {
+        using var host = new ReferenceHost("buttons");
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        { FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto") };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        var group = host.Find<MaterialButtonGroup>("button-group");
+        var create = group.Children.OfType<MaterialGroupButton>().Single(button => Equals(button.Content, "Create"));
+        TextBlock Caption() => create.GetVisualDescendants().OfType<TextBlock>().Single(text => text.Text == "Create");
+        Assert.Equal(146, Caption().Bounds.Width * 3.5, precision: 6);
+        TextOptions.SetTextHintingMode(host.Window, TextHintingMode.None); host.Render();
+        Assert.InRange(Caption().Bounds.Width * 3.5, 146.17, 146.20);
+        TextOptions.SetTextHintingMode(host.Window, TextHintingMode.Strong); host.Render();
+        Assert.Equal(146, Caption().Bounds.Width * 3.5, precision: 6);
+        var authored = new Border { Width = 60, Height = 20, Background = Brushes.Green };
+        host.Window.DataTemplates.Add(new Avalonia.Controls.Templates.FuncDataTemplate<string>(text => text == "Edit", (_, _) => authored));
+        var edit = group.Children.OfType<MaterialGroupButton>().Single(button => Equals(button.Content, "Edit"));
+        edit.Content = null; edit.Content = "Edit"; host.Render();
+        Assert.Contains(authored, edit.GetVisualDescendants());
+    }
+
+    [AvaloniaFact]
     public void Native_clock_selector_edge_uses_clear_xor_and_destination_over_colour()
     {
         using var host = new ReferenceHost("time");
