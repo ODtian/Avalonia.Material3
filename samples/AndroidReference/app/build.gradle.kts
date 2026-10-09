@@ -14,21 +14,11 @@ android {
         versionName = "1.5.0-beta01-reference"
     }
     buildFeatures { compose = true }
-    sourceSets.getByName("main").assets.srcDir(layout.buildDirectory.dir("generated/glyphProbeFonts").get().asFile)
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
-val prepareGlyphProbeFonts = tasks.register<Copy>("prepareGlyphProbeFonts") {
-    from("../../../src/Avalonia.Material3/Assets/Fonts")
-    from("../../Gallery/Assets/Fonts") {
-        include("Roboto-400.ttf", "Roboto-OFL.txt")
-        rename("Roboto-400.ttf", "GalleryRoboto400.ttf")
-    }
-    into(layout.buildDirectory.dir("generated/glyphProbeFonts"))
-}
-tasks.named("preBuild").configure { dependsOn(prepareGlyphProbeFonts) }
 dependencies {
     implementation("androidx.activity:activity-compose:1.11.0")
     implementation("androidx.compose.material3:material3:1.5.0-beta01")

@@ -284,7 +284,11 @@ public class MaterialClockDial : Panel
             2, 4, background.Color, primary.Color, selected.Color, density, glyphs.ToArray()));
         return true;
     }
-    internal void InvalidateComposite() => _paint.InvalidateVisual();
+    internal void InvalidateComposite()
+    {
+        _paint.InvalidateVisual();
+        foreach (var label in this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>()) label.InvalidateVisual();
+    }
     private void WatchPaintBrushes()
     {
         foreach (var brush in _paintBrushes) brush.PropertyChanged -= PaintBrushChanged;
@@ -294,7 +298,7 @@ public class MaterialClockDial : Panel
         { _paintBrushes.Add(brush); brush.PropertyChanged += PaintBrushChanged; }
     }
     private void PaintBrushChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
-    { InvalidateComposite(); foreach (var label in this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>()) label.InvalidateVisual(); }
+    { InvalidateComposite(); }
     private int FromPoint(Point point, bool tap)
     {
         point = new Point((point.X - FaceOrigin.X) / Scale, (point.Y - FaceOrigin.Y) / Scale);
@@ -394,7 +398,7 @@ public class MaterialClockDial : Panel
         if (change.Property == ValueProperty) { if (!_animateSelection) CancelConfirmation(); UpdateSelection(); UpdateAngle(_partTransition || _animateSelection); }
         else if (change.Property == ValueLabelProperty) UpdateSelection();
         if (change.Property == SelectorBrushProperty || change.Property == DialBrushProperty || change.Property == SelectedInkProperty)
-        { WatchPaintBrushes(); _paint.InvalidateVisual(); }
+        { WatchPaintBrushes(); InvalidateComposite(); }
         if (change.Property == TextBlock.FontSizeProperty)
         { CancelDrag(); UpdateExtent(); InvalidateMeasure(); _paint.InvalidateVisual(); }
     }

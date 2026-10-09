@@ -79,7 +79,8 @@ internal sealed class MaterialClockLabel : Control
     private void PaintConstraintChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == BoundsProperty || e.Property == OpacityProperty || e.Property == IsVisibleProperty
-            || e.Property == RenderTransformProperty || e.Property == ClipProperty || e.Property == ClipToBoundsProperty)
+            || e.Property == RenderTransformProperty || e.Property == ClipProperty || e.Property == ClipToBoundsProperty
+            || e.Property == OpacityMaskProperty || e.Property == EffectProperty)
             _subscribedDial?.InvalidateComposite();
     }
     private TextOptions Options()
@@ -175,7 +176,8 @@ internal sealed class MaterialClockLabel : Control
         Layouts();
         foreach (var visual in _paintAncestors)
         {
-            if (!visual.IsVisible || visual.Opacity != 1 || visual.RenderTransform is not null || visual.Clip is not null) return null;
+            if (!visual.IsVisible || visual.Opacity != 1 || visual.RenderTransform is not null || visual.Clip is not null
+                || visual.OpacityMask is not null || visual.Effect is not null) return null;
             if (visual.ClipToBounds && this.TransformToVisual(visual) is { } clipTransform
                 && !new Rect(visual.Bounds.Size).Contains(new Rect(Bounds.Size).TransformToAABB(clipTransform))) return null;
         }
