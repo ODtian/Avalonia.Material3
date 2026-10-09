@@ -244,8 +244,8 @@
       <Setter Property="Template">
         <ControlTemplate>
           <controls:MaterialActionLayoutPanel Background="Transparent">
-            <controls:MaterialShapeBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}"
-                    MinWidth="{TemplateBinding ContainerWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"
+            <controls:MaterialIconContainerBorder x:Name="Container" MinHeight="{TemplateBinding ContainerHeight}"
+                    NominalWidth="{TemplateBinding ContainerWidth}" HorizontalAlignment="Center" VerticalAlignment="Center"
                     Background="{TemplateBinding Background}" ShapeCornerRadius="{TemplateBinding CornerRadius}"
                     ShapeSpring="{DynamicResource M3.Motion.DefaultEffects}">
               <controls:MaterialInsetBorder x:Name="Stroke" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
@@ -260,7 +260,7 @@
                 </Viewbox>
               </Grid>
               </controls:MaterialInsetBorder>
-            </controls:MaterialShapeBorder>
+            </controls:MaterialIconContainerBorder>
             <controls:MaterialShapeBorder x:Name="FocusRing" IsVisible="False" IsHitTestVisible="False"
                     BorderBrush="{DynamicResource M3.PrimaryBrush}" BorderThickness="3"
                     ShapeCornerRadius="{TemplateBinding CornerRadius, Converter={StaticResource M3.ButtonFocusCornerRadiusConverter}}"

@@ -19,6 +19,33 @@ namespace Avalonia.Material3.Tests;
 public class NativeClockRasterScenarioTests
 {
     [AvaloniaTheory]
+    [InlineData(1.25, 11, 18)]
+    [InlineData(3.5, 29, 51)]
+    public void Known_medium_action_caption_uses_actual_native_integer_font_baseline(double density, double width, double baseline)
+    {
+        var family = ReferenceFamily();
+        var button = new MaterialGroupButton { Content = "3" }; var group = new MaterialButtonGroup(); group.Children.Add(button);
+        using var host = new GeometryHost(group, 260, 80);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = family }; host.Window.SetRenderScaling(density); host.Render();
+        using var before = host.Window.CaptureRenderedFrame()!;
+        using var source = AssetLoader.Open(new Uri($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts/Roboto-Medium.ttf"));
+        using var data = SKData.Create(source); using var face = SKTypeface.FromData(data);
+        button.ContentTemplate = new FuncDataTemplate<string>((_, _) => new NativeActionLabel(face, density, width, baseline)); host.Render();
+        using var after = host.Window.CaptureRenderedFrame()!; using var original = before.Lock(); using var expected = after.Lock();
+        var box = GeometryHost.Box(button, host.Window); var different = 0;
+        for (var y = (int)(box.Top * density); y < box.Bottom * density; y++)
+        for (var x = (int)(box.Left * density); x < box.Right * density; x++)
+        for (var channel = 0; channel < 4; channel++)
+            if (System.Runtime.InteropServices.Marshal.ReadByte(original.Address, y * original.RowBytes + x * 4 + channel)
+                != System.Runtime.InteropServices.Marshal.ReadByte(expected.Address, y * expected.RowBytes + x * 4 + channel)) different++;
+        Assert.Equal(0, different);
+    }
+    private sealed class NativeActionLabel(SKTypeface face, double density, double width, double baseline) : Control
+    {
+        protected override Size MeasureOverride(Size availableSize) => new(width / density, 20);
+        public override void Render(DrawingContext context) => context.Custom(new NativeInk(face, 14, baseline / density, density, Bounds.Size, true));
+    }
+    [AvaloniaTheory]
     [InlineData(3, false)]
     [InlineData(12, true)]
     [InlineData(3, false, "opacity")]
@@ -311,7 +338,7 @@ public class NativeClockRasterScenarioTests
         protected override Size MeasureOverride(Size availableSize) => new((density == 1.25 ? 12 : 32) / density, Math.Ceiling(layout.Height * density) / density);
         public override void Render(DrawingContext context) => context.Custom(new NativeInk(face, size, (density == 1.25 ? 22 : 61) / density, density, Bounds.Size));
     }
-    private sealed class NativeInk(SKTypeface face, double size, double baseline, double density, Size bounds) : ICustomDrawOperation
+    private sealed class NativeInk(SKTypeface face, double size, double baseline, double density, Size bounds, bool action = false) : ICustomDrawOperation
     {
         public Rect Bounds => new(bounds);
         public void Dispose() { }
@@ -323,7 +350,7 @@ public class NativeClockRasterScenarioTests
             using var font = new SKFont(face, (float)(size * density)) { Subpixel = false, LinearMetrics = false, EmbeddedBitmaps = true,
                 BaselineSnap = true, Hinting = SKFontHinting.None, Edging = SKFontEdging.Antialias };
             using var blob = SKTextBlob.Create("3", font);
-            using var paint = new SKPaint { Color = new SKColor(29, 27, 32), IsAntialias = true };
+            using var paint = new SKPaint { Color = action ? SKColors.White : new SKColor(29, 27, 32), IsAntialias = true };
             var canvas = lease.SkCanvas; var saved = canvas.Save();
             canvas.Scale((float)(1 / density)); canvas.DrawText(blob, 0, (float)(baseline * density), paint); canvas.RestoreToCount(saved);
         }
