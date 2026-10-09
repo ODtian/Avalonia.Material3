@@ -408,21 +408,34 @@ public class SnapshotDpiScenarioTests
     [InlineData(3.5, 1.25)]
     public void Clock_retiring_face_keeps_its_geometry_during_live_density_resize_and_reversal(double from, double to)
     {
-        var dial = new MaterialClockDial { Value = 3 };
+        var dial = new MaterialClockDial { Value = 12 };
         using var host = new GeometryHost(dial, 400, 400);
         host.Window.SetRenderScaling(from); host.Render();
+        var beforeMass = NormalInkMass(dial, from, new Rect(222, 118, 14, 20));
+        dial.Value = 3; host.Render();
         host.Theme.Motion = new MaterialMotion { Springs = MaterialSpringScheme.Expressive with {
-            DefaultEffects = new(1, .01), DefaultSpatial = new(1, .01) } }; host.Render();
-        var beforeMass = SelectedInkMass(dial, from, new Rect(222, 118, 14, 20));
-        dial.ActivePart = MaterialTimePickerPart.Minute;
+            DefaultEffects = new(1, .01), DefaultSpatial = new(1, 100) { IsInstant = true } } }; host.Render();
+        dial.ActivePart = MaterialTimePickerPart.Minute; dial.Value = 0;
         host.Window.SetRenderScaling(to);
         host.Theme.Typography = host.Theme.Typography with { Scale = 1.25 }; host.Render();
         var region = new Rect(222 * 1.25, 118 * 1.25, 14 * 1.25, 20 * 1.25);
-        var outgoingMass = SelectedInkMass(dial, to, region);
+        var outgoingMass = NormalInkMass(dial, to, region);
         var expectedMass = beforeMass * Math.Pow(to / from * 1.25, 2);
         Assert.InRange(outgoingMass / expectedMass, .95, 1.05);
         dial.ActivePart = MaterialTimePickerPart.Hour;
-        Assert.True(SelectedInkMass(dial, to, region) >= outgoingMass * .5);
+        Assert.True(NormalInkMass(dial, to, region) >= outgoingMass * .5);
+    }
+
+    private static double NormalInkMass(Control visual, double density, Rect region)
+    {
+        var size = new PixelSize((int)Math.Ceiling(visual.Bounds.Width * density), (int)Math.Ceiling(visual.Bounds.Height * density));
+        using var bitmap = new RenderTargetBitmap(size, new Vector(96 * density, 96 * density)); bitmap.Render(visual);
+        using var pixels = new WriteableBitmap(size, new Vector(96 * density, 96 * density), PixelFormat.Bgra8888, AlphaFormat.Premul);
+        using var storage = pixels.Lock(); bitmap.CopyPixels(storage); var mass = 0d;
+        for (var y = (int)(region.Top * density); y < region.Bottom * density; y++)
+        for (var x = (int)(region.Left * density); x < region.Right * density; x++)
+            mass += Math.Clamp((230 - Marshal.ReadByte(storage.Address, y * storage.RowBytes + x * 4 + 2)) / 201d, 0, 1);
+        return mass;
     }
 
     private static int WhiteInk(Control visual, double density, Rect region)

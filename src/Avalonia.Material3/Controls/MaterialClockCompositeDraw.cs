@@ -12,7 +12,6 @@ internal sealed class MaterialClockCompositeDraw(Rect bounds, Point center, doub
     double dotRadius, Color background, Color primary, Color selected, double density,
     MaterialNativeText.GlyphPaint[] glyphs) : ICustomDrawOperation
 {
-    private static readonly HashSet<string> BranchDiagnostics = [];
     public Rect Bounds => bounds;
     public bool HitTest(Point point) => false;
     public bool Equals(ICustomDrawOperation? other) => ReferenceEquals(this, other);
@@ -24,18 +23,6 @@ internal sealed class MaterialClockCompositeDraw(Rect bounds, Point center, doub
         if (context.TryGetFeature<ISkiaSharpApiLeaseFeature>() is { } feature)
         {
             using var lease = feature.Lease();
-            {
-                var key = $"{lease.GrContext is not null}/{lease.CurrentOpacity:R}/{angle:R}";
-                lock (BranchDiagnostics)
-                    if (BranchDiagnostics.Count < 8 && BranchDiagnostics.Add(key))
-                    {
-                        var matrix = lease.SkCanvas.TotalMatrix; var target = lease.SkCanvas.DeviceClipBounds;
-                        using var targetImage = lease.SkSurface?.Snapshot();
-                        Console.WriteLine($"M3ClockTarget gpu={lease.GrContext is not null} opacity={lease.CurrentOpacity:R} direct={lease.GrContext is not null && lease.CurrentOpacity == 1} " +
-                            $"matrix={matrix.ScaleX:R},{matrix.ScaleY:R},{matrix.SkewX:R},{matrix.SkewY:R},{matrix.TransX:R},{matrix.TransY:R} clip={target} target={targetImage?.ColorType}/{targetImage?.AlphaType}/srgb{targetImage?.ColorSpace?.IsSrgb} " +
-                            $"selectorDip={selector.X:R},{selector.Y:R} selectorPx={(float)selector.X * (float)density:R},{(float)selector.Y * (float)density:R} radiusPx={(float)radius * (float)density:R} angle={angle:R}");
-                    }
-            }
             if (lease.GrContext is not null && lease.CurrentOpacity == 1)
             {
                 Paint(lease.SkCanvas, false);
@@ -77,7 +64,7 @@ internal sealed class MaterialClockCompositeDraw(Rect bounds, Point center, doub
         using var paint = new SKPaint { IsAntialias = true, BlendMode = SKBlendMode.Clear };
         canvas.DrawCircle(selectorPx.X, selectorPx.Y, radiusPx, paint);
         canvas.RestoreToCount(saved);
-        foreach (var glyph in glyphs) glyph.Paint(canvas, 1);
+        foreach (var glyph in glyphs) glyph.Paint(canvas, 1, density);
         saved = canvas.Save();
         canvas.Scale(1 / scale);
         paint.Color = Colour(primary); paint.BlendMode = SKBlendMode.Xor;

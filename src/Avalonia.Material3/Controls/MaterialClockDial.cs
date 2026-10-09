@@ -44,6 +44,7 @@ public class MaterialClockDial : Panel
     private MaterialTimePickerPart _beforePart;
     private readonly DialPaint _paint;
     private static readonly StyledProperty<IBrush?> SelectedInkProperty = AvaloniaProperty.Register<MaterialClockDial, IBrush?>("SelectedInk");
+    private static readonly StyledProperty<IBrush?> NormalInkProperty = AvaloniaProperty.Register<MaterialClockDial, IBrush?>("NormalInk");
     private readonly MaterialMotionValue _angle, _faceAlpha;
     private readonly MaterialMotionSettings _motion;
     private readonly MaterialFrameLease _confirmationFrames;
@@ -51,6 +52,10 @@ public class MaterialClockDial : Panel
     private int? _confirmationValue;
     private double? _confirmationHold;
     private MaterialSnapshot? _oldFace;
+    private MaterialNativeText.GlyphPaint[]? _oldGlyphs;
+    private Rect _oldGlyphBounds;
+    private bool _oldFaceIsText, _capturingNormalFace;
+    internal bool CapturingNormalFace => _capturingNormalFace;
     private bool _partTransition, _animateSelection, _capturingFace;
     private readonly List<AvaloniaObject> _paintBrushes = [];
     public int Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
@@ -94,7 +99,7 @@ public class MaterialClockDial : Panel
         _faceAlpha = new(this, 1, value =>
         {
             foreach (var number in Children.OfType<MaterialClockNumber>()) number.Opacity = Math.Clamp(value, 0, 1);
-            if (value >= 1) { _oldFace?.Dispose(); _oldFace = null; }
+            if (value >= 1) ClearRetiringFace();
             _paint.InvalidateVisual();
         });
         _motion = new(this, () =>
@@ -109,6 +114,7 @@ public class MaterialClockDial : Panel
         Bind(TextBlock.FontSizeProperty, this.GetResourceObservable("M3.BodyLargeFontSize"), Avalonia.Data.BindingPriority.Style);
         Bind(SelectorBrushProperty, this.GetResourceObservable("M3.PrimaryBrush"), Avalonia.Data.BindingPriority.Style);
         MaterialPickerSupport.Resource(this, SelectedInkProperty, "OnPrimaryBrush");
+        MaterialPickerSupport.Resource(this, NormalInkProperty, "OnSurfaceBrush");
         AddHandler(PointerPressedEvent, Pressed, RoutingStrategies.Tunnel);
         AddHandler(PointerMovedEvent, Moved, RoutingStrategies.Tunnel);
         AddHandler(PointerReleasedEvent, Released, RoutingStrategies.Tunnel);
@@ -149,7 +155,6 @@ public class MaterialClockDial : Panel
     internal Point SelectorCenter => AnimatedPosition;
     internal double SelectorRadius => 24 * Scale;
     private bool _compositeDrawn;
-    private static readonly HashSet<string> CompositeDiagnostics = [];
     internal bool NativeSelectorComposition => _compositeDrawn && !_capturingFace;
     private Point Position(int number)
     {
@@ -217,12 +222,35 @@ public class MaterialClockDial : Panel
     private void CaptureFace()
     {
         if (Bounds.Width <= 0 || Bounds.Height <= 0 || _motion.DefaultEffects.IsInstant)
-        { _oldFace?.Dispose(); _oldFace = null; return; }
+        { ClearRetiringFace(); return; }
+        var region = new Rect(FaceOrigin, new Size(FaceSide, FaceSide));
+        if (GetValue(SelectedInkProperty) is ISolidColorBrush { Opacity: 1, Color.A: 255 } selected
+            && CaptureGlyphs(selected.Color, Math.Clamp(_faceAlpha.Value, 0, 1)) is { } current)
+        {
+            var captured = new List<MaterialNativeText.GlyphPaint>();
+            if (_oldGlyphs is { } previous && _faceAlpha.Value < 1)
+                foreach (var glyph in previous) captured.Add(new CapturedGlyph(glyph.Retain(), _oldGlyphBounds, region, 1 - _faceAlpha.Value));
+            foreach (var glyph in current) captured.Add(new CapturedGlyph(glyph, region, region, _faceAlpha.Value));
+            ClearRetiringFace(); _oldGlyphs = captured.ToArray(); _oldGlyphBounds = region;
+            return;
+        }
         MaterialSnapshot? face;
+        var retained = _oldGlyphs?.Select(glyph => (MaterialNativeText.GlyphPaint)new CapturedGlyph(glyph.Retain(), _oldGlyphBounds, region, 1 - _faceAlpha.Value)).ToArray();
         _capturingFace = true;
+        _capturingNormalFace = this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>().Count() == Children.OfType<MaterialClockNumber>().Count();
+        var text = _capturingNormalFace;
         _paint.InvalidateVisual();
-        try { face = MaterialSnapshot.Capture(this, new Rect(FaceOrigin, new Size(FaceSide, FaceSide))); } finally { _capturingFace = false; _paint.InvalidateVisual(); }
-        _oldFace?.Dispose(); _oldFace = face;
+        try { face = MaterialSnapshot.Capture(this, region); }
+        catch { if (retained is not null) foreach (var glyph in retained) glyph.Dispose(); throw; }
+        finally { _capturingFace = false; _capturingNormalFace = false; _paint.InvalidateVisual(); }
+        ClearRetiringFace(); _oldFace = face; _oldFaceIsText = text;
+        _oldGlyphs = retained; _oldGlyphBounds = region;
+    }
+    private void ClearRetiringFace()
+    {
+        _oldFace?.Dispose(); _oldFace = null;
+        if (_oldGlyphs is { } glyphs) foreach (var glyph in glyphs) glyph.Dispose();
+        _oldGlyphs = null; _oldFaceIsText = false;
     }
     internal void SetSelection(MaterialTimePickerPart part, int value, string label)
     {
@@ -262,7 +290,7 @@ public class MaterialClockDial : Panel
         {
             var center = FaceCenter;
             if (TryComposite(context)) _compositeDrawn = true;
-            else
+            else if (!DrawRetiringGlyphs(context))
             {
                 context.DrawEllipse(DialBrush, null, center, 128 * Scale, 128 * Scale);
                 var endpoint = AnimatedPosition;
@@ -274,39 +302,98 @@ public class MaterialClockDial : Panel
         if (_oldFace is not null && _faceAlpha.Value < 1)
         {
             using var opacity = context.PushOpacity(1 - Math.Clamp(_faceAlpha.Value, 0, 1));
-            _oldFace.Draw(context, new Rect(FaceOrigin, new Size(FaceSide, FaceSide)));
+            var region = new Rect(FaceOrigin, new Size(FaceSide, FaceSide));
+            if (!_oldFaceIsText || _capturingNormalFace) _oldFace.Draw(context, region);
+            else
+            {
+                var selector = new EllipseGeometry(new Rect(AnimatedPosition - new Vector(SelectorRadius, SelectorRadius), new Size(SelectorRadius * 2, SelectorRadius * 2)));
+                var outside = new GeometryGroup { FillRule = FillRule.EvenOdd, Children = { new RectangleGeometry(region), selector } };
+                using (context.PushGeometryClip(outside)) _oldFace.Draw(context, region);
+                using (context.PushGeometryClip(new EllipseGeometry(selector.Rect)))
+                using (_oldFace.OpacityMask(context, region)) context.DrawRectangle(GetValue(SelectedInkProperty), null, region);
+            }
         }
+    }
+    private bool DrawRetiringGlyphs(DrawingContext context)
+    {
+        if (_oldGlyphs is not { } glyphs || _faceAlpha.Value >= 1
+            || DialBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } background
+            || SelectorBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } primary
+            || GetValue(SelectedInkProperty) is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected) return false;
+        var region = new Rect(FaceOrigin, new Size(FaceSide, FaceSide));
+        var retained = glyphs.Select(glyph => (MaterialNativeText.GlyphPaint)new CapturedGlyph(glyph.Retain(), _oldGlyphBounds, region, 1 - _faceAlpha.Value)).ToArray();
+        context.Custom(new MaterialClockCompositeDraw(new Rect(Bounds.Size), FaceCenter, FaceSide / 2, AnimatedPosition, SelectorRadius,
+            (float)_angle.Value, 2, 4, background.Color, primary.Color, selected.Color, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1, retained));
+        return true;
     }
     private bool TryComposite(DrawingContext context)
     {
-        bool Reject(string reason)
-        {
-            lock (CompositeDiagnostics)
-                if (CompositeDiagnostics.Count < 8 && CompositeDiagnostics.Add(reason))
-                    Console.WriteLine($"M3ClockRejected reason={reason} angle={_angle.Value:R} value={Value} part={ActivePart}");
-            return false;
-        }
-        if (_oldFace is not null) return Reject("old-face");
+        if (_oldFace is not null) return false;
         if (DialBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } background
             || SelectorBrush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } primary
-            || GetValue(SelectedInkProperty) is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected) return Reject("brush");
+            || GetValue(SelectedInkProperty) is not ISolidColorBrush { Opacity: 1, Color.A: 255 } selected) return false;
+        var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+        var alpha = Math.Clamp(_faceAlpha.Value, 0, 1);
+        if (CaptureGlyphs(selected.Color, alpha) is not { } incoming) return false;
+        var region = new Rect(FaceOrigin, new Size(FaceSide, FaceSide));
+        var glyphs = new List<MaterialNativeText.GlyphPaint>();
+        if (_oldGlyphs is { } outgoing && alpha < 1)
+            foreach (var glyph in outgoing) glyphs.Add(new CapturedGlyph(glyph.Retain(), _oldGlyphBounds, region, 1 - alpha));
+        foreach (var glyph in incoming) glyphs.Add(alpha == 1 ? glyph : new CapturedGlyph(glyph, region, region, alpha));
+        context.Custom(new MaterialClockCompositeDraw(new Rect(Bounds.Size), FaceCenter, FaceSide / 2, AnimatedPosition, SelectorRadius,
+            (float)_angle.Value, 2, 4, background.Color, primary.Color, selected.Color, density, glyphs.ToArray()));
+        return true;
+    }
+    private MaterialNativeText.GlyphPaint[]? CaptureGlyphs(Color selected, double alpha)
+    {
         var labels = this.GetVisualDescendants().OfType<Themes.MaterialClockLabel>().ToArray();
-        if (labels.Length != Children.OfType<MaterialClockNumber>().Count()) return Reject("label-count");
+        if (labels.Length != Children.OfType<MaterialClockNumber>().Count()) return null;
         var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
         var glyphs = new List<MaterialNativeText.GlyphPaint>();
         foreach (var label in labels)
         {
-            if (label.CreateGlyphPaint(this, density, selected.Color) is not { } glyph)
+            if (label.CreateGlyphPaint(this, density, selected, alpha) is not { } glyph)
             {
                 foreach (var captured in glyphs) captured.Dispose();
-                var number = label.GetVisualAncestors().OfType<MaterialClockNumber>().FirstOrDefault();
-                return Reject($"glyph-{number?.Value} bounds={label.Bounds} matrix={label.TransformToVisual(this)} opacity={number?.Opacity} family={number?.FontFamily} foreground={number?.Foreground}");
+                return null;
             }
-            glyphs.Add(glyph);
+            var number = label.GetVisualAncestors().OfType<MaterialClockNumber>().First();
+            var brush = number.Foreground as ISolidColorBrush;
+            var usesRole = ReferenceEquals(number.Foreground, GetValue(NormalInkProperty));
+            Color? Colour()
+            {
+                var value = usesRole ? GetValue(NormalInkProperty) as ISolidColorBrush : brush;
+                if (value is null) return null;
+                var colour = value.Color;
+                return Color.FromArgb((byte)Math.Clamp(Math.Round(colour.A * value.Opacity), 0, 255), colour.R, colour.G, colour.B);
+            }
+            glyphs.Add(new RoleGlyph(glyph, Colour, Colour()));
         }
-        context.Custom(new MaterialClockCompositeDraw(new Rect(Bounds.Size), FaceCenter, FaceSide / 2, AnimatedPosition, SelectorRadius,
-            (float)_angle.Value, 2, 4, background.Color, primary.Color, selected.Color, density, glyphs.ToArray()));
-        return true;
+        return glyphs.ToArray();
+    }
+    private sealed class CapturedGlyph(MaterialNativeText.GlyphPaint glyph, Rect source, Rect destination, double alpha) : MaterialNativeText.GlyphPaint
+    {
+        public void Dispose() => glyph.Dispose();
+        public MaterialNativeText.GlyphPaint Retain() => new CapturedGlyph(glyph.Retain(), source, destination, alpha);
+        public void Paint(SkiaSharp.SKCanvas canvas, double opacity, double density, Color? normal = null)
+        {
+            var saved = canvas.Save();
+            try
+            {
+                canvas.Translate((float)destination.X, (float)destination.Y);
+                canvas.Scale((float)(destination.Width / source.Width), (float)(destination.Height / source.Height));
+                canvas.Translate(-(float)source.X, -(float)source.Y);
+                glyph.Paint(canvas, opacity * alpha, density, normal);
+            }
+            finally { canvas.RestoreToCount(saved); }
+        }
+    }
+    private sealed class RoleGlyph(MaterialNativeText.GlyphPaint glyph, Func<Color?> colour, Color? recorded) : MaterialNativeText.GlyphPaint
+    {
+        public void Dispose() => glyph.Dispose();
+        public MaterialNativeText.GlyphPaint Retain() => new RoleGlyph(glyph.Retain(), colour, colour());
+        public void Paint(SkiaSharp.SKCanvas canvas, double opacity, double density, Color? normal = null)
+            => glyph.Paint(canvas, opacity, density, normal ?? recorded);
     }
     internal void InvalidateComposite()
     {
@@ -318,7 +405,7 @@ public class MaterialClockDial : Panel
         foreach (var brush in _paintBrushes) brush.PropertyChanged -= PaintBrushChanged;
         _paintBrushes.Clear();
         if (!this.IsAttachedToVisualTree()) return;
-        foreach (var brush in new[] { DialBrush, SelectorBrush, GetValue(SelectedInkProperty) }.OfType<AvaloniaObject>().Distinct())
+        foreach (var brush in new[] { DialBrush, SelectorBrush, GetValue(SelectedInkProperty), GetValue(NormalInkProperty) }.OfType<AvaloniaObject>().Distinct())
         { _paintBrushes.Add(brush); brush.PropertyChanged += PaintBrushChanged; }
     }
     private void PaintBrushChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
@@ -410,7 +497,7 @@ public class MaterialClockDial : Panel
         WatchPaintBrushes();
         _textOptionsFrames.Restart(); _textOptionsFrames.SetRunning(true);
     }
-    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { foreach (var brush in _paintBrushes) brush.PropertyChanged -= PaintBrushChanged; _paintBrushes.Clear(); _textOptionsFrames.SetRunning(false); CancelConfirmation(); CancelDrag(); _oldFace?.Dispose(); _oldFace = null; base.OnDetachedFromVisualTree(e); }
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) { foreach (var brush in _paintBrushes) brush.PropertyChanged -= PaintBrushChanged; _paintBrushes.Clear(); _textOptionsFrames.SetRunning(false); CancelConfirmation(); CancelDrag(); ClearRetiringFace(); base.OnDetachedFromVisualTree(e); }
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -421,7 +508,7 @@ public class MaterialClockDial : Panel
         else if (change.Property == Is24HourProperty || change.Property == CultureProperty) { CancelDrag(); Rebuild(); }
         if (change.Property == ValueProperty) { if (!_animateSelection) CancelConfirmation(); UpdateSelection(); UpdateAngle(_partTransition || _animateSelection); }
         else if (change.Property == ValueLabelProperty) UpdateSelection();
-        if (change.Property == SelectorBrushProperty || change.Property == DialBrushProperty || change.Property == SelectedInkProperty)
+        if (change.Property == SelectorBrushProperty || change.Property == DialBrushProperty || change.Property == SelectedInkProperty || change.Property == NormalInkProperty)
         { WatchPaintBrushes(); InvalidateComposite(); }
         if (change.Property == TextBlock.FontSizeProperty)
         { CancelDrag(); UpdateExtent(); InvalidateMeasure(); _paint.InvalidateVisual(); }
