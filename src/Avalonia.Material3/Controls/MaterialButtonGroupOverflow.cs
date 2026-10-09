@@ -69,10 +69,19 @@ public partial class MaterialButtonGroup
         }
         _overflowLayoutWidth = Math.Max(0, remaining + OverflowButton.DesiredSize.Width);
         _updatingOverflow = true;
-        foreach (var child in all.Except(visible))
+        foreach (var child in all)
         {
-            _overflowed.Add(child);
-            VisualChildren.Remove(child);
+            if (visible.Contains(child))
+            {
+                // Membership can change while the available width stays fixed.
+                _overflowed.Remove(child);
+                if (!VisualChildren.Contains(child)) VisualChildren.Add(child);
+            }
+            else
+            {
+                _overflowed.Add(child);
+                VisualChildren.Remove(child);
+            }
         }
         _updatingOverflow = false;
         visible.Add(OverflowButton);
