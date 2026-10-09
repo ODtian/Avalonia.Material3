@@ -20,6 +20,7 @@ public partial class MaterialButtonGroup
     private readonly List<MaterialButton> _overflowEntries = [];
     private double _lastAvailableWidth = double.NaN;
     private bool _updatingOverflow;
+    private double _overflowLayoutWidth;
     private Size NaturalSize(Control child) => _naturalSizes.GetValueOrDefault(child, child.DesiredSize);
 
     private void InitializeOverflow()
@@ -58,13 +59,15 @@ public partial class MaterialButtonGroup
         OverflowButton.SetCurrentValue(IsVisibleProperty, true);
         OverflowButton.Measure(new Size(width, double.PositiveInfinity));
         List<Control> visible = [];
-        double used = OverflowButton.DesiredSize.Width;
+        var remaining = width - OverflowButton.DesiredSize.Width;
         foreach (var child in all)
         {
             var size = NaturalSize(child);
-            if (used + Spacing + size.Width > width) break;
-            visible.Add(child); used += Spacing + size.Width;
+            // Native accepts the item before charging its following gap.
+            if (size.Width > remaining) break;
+            visible.Add(child); remaining -= size.Width + Spacing;
         }
+        _overflowLayoutWidth = Math.Max(0, remaining + OverflowButton.DesiredSize.Width);
         _updatingOverflow = true;
         foreach (var child in all.Except(visible))
         {

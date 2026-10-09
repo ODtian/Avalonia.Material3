@@ -306,6 +306,12 @@ public partial class MaterialButtonGroup : Panel
                 _widths[i] = this is MaterialSegmentedButtonGroup && horizontal
                     ? (finalSize.Width - (row.Count - 1) * spacing) / row.Count : child.DesiredSize.Width;
             }
+            if (horizontal && row.Contains(OverflowButton))
+            {
+                var density = TopLevel.GetTopLevel(this)?.RenderScaling ?? 1;
+                var measured = _widths.Take(row.Count).Sum() + (row.Count - 1) * spacing;
+                offset = Math.Min(0, Math.Truncate((Math.Round(finalSize.Width * density) - Math.Round(measured * density)) / 2) / density);
+            }
             if (horizontal && Variant == MaterialButtonGroupVariant.Unconnected && this is not MaterialSegmentedButtonGroup)
             {
                 for (var active = 0; active < row.Count; active++)
@@ -336,7 +342,8 @@ public partial class MaterialButtonGroup : Panel
                     button.UpdateGroupShape();
                 }
                 // Logical layout crosses Avalonia's RTL mirror once; no per-frame array or IndexOf scan.
-                child.Arrange(new Rect(offset, y, width, height));
+                var left = child == OverflowButton ? offset - Math.Max(0, width - _overflowLayoutWidth) / 2 : offset;
+                child.Arrange(new Rect(left, y, width, height));
                 offset += width + spacing;
             }
             y += height + Math.Max(2, spacing);
