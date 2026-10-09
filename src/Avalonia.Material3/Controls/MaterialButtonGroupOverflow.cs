@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Data;
+using Avalonia.VisualTree;
 
 namespace Avalonia.Material3.Controls;
 
@@ -68,6 +69,8 @@ public partial class MaterialButtonGroup
             visible.Add(child); remaining -= size.Width + Spacing;
         }
         _overflowLayoutWidth = Math.Max(0, remaining + OverflowButton.DesiredSize.Width);
+        foreach (var surface in OverflowButton.GetVisualDescendants().OfType<MaterialIconContainerBorder>())
+            surface.SetVisualConstraint(_overflowLayoutWidth);
         _updatingOverflow = true;
         foreach (var child in all)
         {

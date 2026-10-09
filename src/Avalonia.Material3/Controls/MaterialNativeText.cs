@@ -44,9 +44,9 @@ internal sealed class MaterialNativeText : IDisposable
     }
     private readonly FaceLease _face;
     private readonly GlyphInfo[] _glyphs;
-    private readonly double _size, _baseline, _tracking;
-    private MaterialNativeText(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, double tracking)
-    { _face = face; _glyphs = glyphs; _size = size; _baseline = baseline; _tracking = tracking; }
+    private readonly double _size, _baseline, _tracking, _lineHeight;
+    private MaterialNativeText(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, double tracking, double lineHeight)
+    { _face = face; _glyphs = glyphs; _size = size; _baseline = baseline; _tracking = tracking; _lineHeight = lineHeight; }
 
     internal static MaterialNativeText? TryCreate(string text, TextLayout layout, double tracking)
     {
@@ -55,7 +55,7 @@ internal sealed class MaterialNativeText : IDisposable
         if (runs.Length != 1) return null;
         var run = runs[0].GlyphRun;
         var face = Acquire(run.GlyphTypeface);
-        return face is null ? null : new(face, run.GlyphInfos.ToArray(), run.FontRenderingEmSize, layout.TextLines[0].Baseline, tracking);
+        return face is null ? null : new(face, run.GlyphInfos.ToArray(), run.FontRenderingEmSize, layout.TextLines[0].Baseline, tracking, layout.Height);
     }
     internal static MaterialNativeText? TryCreateAction(string text, TextLayout layout, double tracking)
     {
@@ -71,7 +71,7 @@ internal sealed class MaterialNativeText : IDisposable
         var face = Acquire(run.GlyphTypeface);
         if (face is null) return null;
         if (!face.Face.LatinProfile) { face.Dispose(); return null; }
-        return new(face, glyphs, run.FontRenderingEmSize, layout.TextLines[0].Baseline, tracking);
+        return new(face, glyphs, run.FontRenderingEmSize, layout.TextLines[0].Baseline, tracking, layout.Height);
     }
     private static FaceLease? Acquire(GlyphTypeface chosen)
     {
@@ -134,14 +134,14 @@ internal sealed class MaterialNativeText : IDisposable
     internal bool Draw(DrawingContext context, IBrush? brush, Point origin, double density, Size bounds, TextOptions options)
     {
         if (!CanPaint(brush, options) || brush is not ISolidColorBrush solid) return false;
-        context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, solid.Color, solid.Opacity, origin, density, bounds, options));
+        context.Custom(new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, _lineHeight, solid.Color, solid.Opacity, origin, density, bounds, options));
         return true;
     }
     internal interface GlyphPaint : IDisposable { void Paint(SKCanvas canvas, double opacity, double density, Color? normal = null); GlyphPaint Retain(); }
     internal GlyphPaint? CreateGlyphDraw(IBrush? brush, Point origin, double density, Size bounds, TextOptions options)
     {
         if (!(_face.Face.NumericProfile || _face.Face.LatinProfile) || !CanPaint(brush, options) || brush is not ISolidColorBrush { Opacity: 1, Color.A: 255 } solid) return null;
-        return new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, solid.Color, 1, origin, density, bounds, options);
+        return new GlyphDraw(_face.Retain(), _glyphs, _size, _baseline, _tracking, _lineHeight, solid.Color, 1, origin, density, bounds, options);
     }
     private static bool CanPaint(IBrush? brush, TextOptions options) => brush is ISolidColorBrush
         && options.TextHintingMode is not (TextHintingMode.Light or TextHintingMode.None)
@@ -177,14 +177,14 @@ internal sealed class MaterialNativeText : IDisposable
     }
     public void Dispose() => _face.Dispose();
 
-    private sealed class GlyphDraw(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, double tracking, Color color,
+    private sealed class GlyphDraw(FaceLease face, GlyphInfo[] glyphs, double size, double baseline, double tracking, double lineHeight, Color color,
         double alpha, Point origin, double captureDensity, Size bounds, TextOptions options) : ICustomDrawOperation, GlyphPaint
     {
         public Rect Bounds => new(bounds);
         public bool HitTest(Point point) => false;
         public bool Equals(ICustomDrawOperation? other) => ReferenceEquals(this, other);
         public void Dispose() => face.Dispose();
-        public GlyphPaint Retain() => new GlyphDraw(face.Retain(), glyphs, size, baseline, tracking, color, alpha, origin, captureDensity, bounds, options);
+        public GlyphPaint Retain() => new GlyphDraw(face.Retain(), glyphs, size, baseline, tracking, lineHeight, color, alpha, origin, captureDensity, bounds, options);
         public void Render(ImmediateDrawingContext context)
         {
             if (context.TryGetFeature<ISkiaSharpApiLeaseFeature>() is { } feature)
@@ -232,6 +232,17 @@ internal sealed class MaterialNativeText : IDisposable
                 using var blob = builder.Build();
                 var paragraphBaseline = nativeProfile && options.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned
                     ? Math.Floor(baseline * density + .5) : baseline * density;
+                if (face.Face.LatinProfile && options.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned)
+                {
+                    // The pinned Android FreeType face uses hhea metrics; a
+                    // desktop font backend can instead expose OS/2 metrics.
+                    var hhea = face.Face.Typeface.GetTableData(Tag("hhea"));
+                    var scale = size * density / face.Face.Owner.Metrics.DesignEmHeight;
+                    var ascent = Math.Floor(-BinaryPrimitives.ReadInt16BigEndian(hhea.AsSpan(4)) * scale + .5);
+                    var descent = Math.Floor(-BinaryPrimitives.ReadInt16BigEndian(hhea.AsSpan(6)) * scale + .5);
+                    var height = Math.Ceiling(lineHeight * density);
+                    if (height >= descent - ascent) paragraphBaseline = -ascent + Math.Floor((height - (descent - ascent)) / 2);
+                }
                 canvas.DrawText(blob, 0, (float)paragraphBaseline, paint);
             }
             finally { canvas.RestoreToCount(saved); }

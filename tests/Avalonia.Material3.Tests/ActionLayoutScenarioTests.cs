@@ -14,6 +14,40 @@ namespace Avalonia.Material3.Tests;
 public class ActionLayoutScenarioTests
 {
     [AvaloniaFact]
+    public void Hidden_action_icon_slot_changes_restore_its_current_intrinsic_size()
+    {
+        var group = new MaterialButtonGroup { Width = 1128 / 3.5, HorizontalAlignment = HorizontalAlignment.Left };
+        group.OverflowButton.Width = 48;
+        group.Children.Add(new MaterialGroupButton { Content = "Create", Width = 314 / 3.5 });
+        group.Children.Add(new MaterialGroupButton { Content = "Edit", Width = 254 / 3.5 });
+        var share = new MaterialGroupButton { Content = new Border { Width = 128 / 3.5, Height = 20 }, Padding = new Thickness(24, 8), LeadingIcon = new Border { Width = 20, Height = 20 } };
+        group.Children.Add(share); group.Children.Add(new MaterialGroupButton { Content = "Disabled", Width = 400 / 3.5 });
+        using var host = new GeometryHost(group, 360, 80); host.Window.SetRenderScaling(3.5); host.Render();
+        Assert.Contains(share, group.OverflowItems);
+        share.LeadingIcon = null; host.Render();
+        Assert.DoesNotContain(share, group.OverflowItems); Assert.Contains(share, group.GetVisualDescendants());
+        share.TrailingIcon = new Border { Width = 20, Height = 20 }; host.Render();
+        Assert.Contains(share, group.OverflowItems);
+        share.TrailingIcon = null; host.Render();
+        Assert.DoesNotContain(share, group.OverflowItems); Assert.Contains(share, group.GetVisualDescendants());
+    }
+
+    [AvaloniaFact]
+    public void Overflow_visual_container_uses_native_secondary_measure_width_while_touch_stays_48()
+    {
+        var group = new MaterialButtonGroup { Width = 1128 / 3.5, HorizontalAlignment = HorizontalAlignment.Left };
+        group.OverflowButton.Width = 48;
+        foreach (var item in new[] { ("Create",314), ("Edit",254), ("Share",296), ("Disabled",400) })
+            group.Children.Add(new MaterialGroupButton { Content = item.Item1, Width = item.Item2 / 3.5 });
+        using var host = new GeometryHost(group, 360, 80); host.Window.SetRenderScaling(3.5); host.Render();
+        var box = GeometryHost.Box(group.OverflowButton, host.Window);
+        Assert.Equal(168, box.Width * 3.5, precision: 6);
+        Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(box.Left + 14d / 3.5, box.Center.Y));
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Left + 15d / 3.5, box.Center.Y));
+        Assert.Equal(Color.Parse("#FEF7FF"), host.Pixel(box.Right - 15d / 3.5, box.Center.Y));
+    }
+
+    [AvaloniaFact]
     public void Overflow_membership_reconciles_the_visual_tree_when_nested_content_remeasures()
     {
         var group = new MaterialButtonGroup { Width = 1128 / 3.5, HorizontalAlignment = HorizontalAlignment.Left };
