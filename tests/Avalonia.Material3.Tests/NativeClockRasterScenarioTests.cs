@@ -18,6 +18,108 @@ namespace Avalonia.Material3.Tests;
 public class NativeClockRasterScenarioTests
 {
     [AvaloniaFact]
+    public void Clock_composite_refreshes_live_solid_roles_and_generated_numeral_ink()
+    {
+        var dialBrush = new SolidColorBrush(Colors.Yellow);
+        var selectorBrush = new SolidColorBrush(Colors.Blue);
+        var dial = new MaterialClockDial { Value = 12, DialBrush = dialBrush, SelectorBrush = selectorBrush };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = ReferenceFamily() };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        Assert.Equal(Colors.Yellow, host.Pixel(128, 180));
+        Assert.Equal(Colors.Blue, host.Pixel(128, 128));
+        dialBrush.Color = Colors.Lime; selectorBrush.Color = Colors.Red; host.Render();
+        Assert.Equal(Colors.Lime, host.Pixel(128, 180));
+        Assert.Equal(Colors.Red, host.Pixel(128, 128));
+        var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        var foreground = new SolidColorBrush(Colors.Blue); number.Foreground = foreground; host.Render();
+        var box = GeometryHost.Box(number, host.Window);
+        Assert.True(CountColour(host, box, Colors.Blue) > 10);
+        foreground.Color = Colors.Red; host.Render();
+        Assert.True(CountColour(host, box, Colors.Red) > 10);
+        Assert.Equal(0, CountColour(host, box, Colors.Blue));
+        number.IsVisible = false; host.Render();
+        Assert.Equal(0, CountColour(host, box, Colors.Red));
+        number.IsVisible = true; host.Render();
+        Assert.True(CountColour(host, box, Colors.Red) > 10);
+    }
+
+    [AvaloniaTheory]
+    [InlineData("scale")]
+    [InlineData("clip")]
+    [InlineData("opacity")]
+    [InlineData("mask")]
+    [InlineData("effect")]
+    public void Clock_generated_numeral_preserves_caller_paint_constraints(string constraint)
+    {
+        var dial = new MaterialClockDial { Value = 12 };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = ReferenceFamily() };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        var number = dial.Children.OfType<MaterialClockNumber>().Single(mark => mark.Value == 3);
+        var box = GeometryHost.Box(number, host.Window);
+        var originalInk = CountColour(host, box, Color.Parse("#1D1B20"));
+        Assert.True(originalInk > 10);
+        if (constraint == "scale") number.RenderTransform = new ScaleTransform(0, 0);
+        else if (constraint == "clip") number.Clip = new RectangleGeometry(new Rect(0, 0, 1, 1));
+        else if (constraint == "opacity") number.GetVisualDescendants().OfType<ContentPresenter>().Single().Opacity = 0;
+        else if (constraint == "mask") number.OpacityMask = Brushes.Transparent;
+        else number.Effect = new BlurEffect { Radius = 10 };
+        Assert.Equal(0, CountColour(host, box, Color.Parse("#1D1B20")));
+        if (constraint == "scale") number.RenderTransform = null;
+        else if (constraint == "clip") number.Clip = null;
+        else if (constraint == "opacity") number.GetVisualDescendants().OfType<ContentPresenter>().Single().Opacity = 1;
+        else if (constraint == "mask") number.OpacityMask = null;
+        else number.Effect = null;
+        Assert.Equal(originalInk, CountColour(host, box, Color.Parse("#1D1B20")));
+    }
+
+    private static FontFamily ReferenceFamily() => new($"avares://{typeof(NativeClockRasterScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto");
+    [AvaloniaFact]
+    public void Clock_composite_route_changes_refresh_unchanged_numerals_together()
+    {
+        var dial = new MaterialClockDial { Value = 12 };
+        using var host = new GeometryHost(dial, 256, 256);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = ReferenceFamily() };
+        host.Window.SetRenderScaling(3.5); host.Render();
+        var numbers = dial.Children.OfType<MaterialClockNumber>().ToArray();
+        var changed = numbers.Single(mark => mark.Value == 3);
+        var unchanged = numbers.Single(mark => mark.Value == 9);
+        var box = GeometryHost.Box(unchanged, host.Window);
+        var ink = CountColour(host, box, Color.Parse("#1D1B20")); Assert.True(ink > 10);
+        changed.Opacity = .5;
+        Assert.Equal(ink, CountColour(host, box, Color.Parse("#1D1B20")));
+        changed.Opacity = 1;
+        Assert.Equal(ink, CountColour(host, box, Color.Parse("#1D1B20")));
+    }
+
+    [AvaloniaFact]
+    public void Clock_center_dot_retains_native_four_DIP_radius_at_double_font_scale()
+    {
+        var dial = new MaterialClockDial { Value = 12 };
+        using var host = new GeometryHost(dial, 512, 512);
+        host.Theme.Typography = host.Theme.Typography with { FontFamily = ReferenceFamily(), Scale = 2 };
+        host.Render();
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(258, 256));
+        Assert.Equal(Color.Parse("#E6E0E9"), host.Pixel(261, 256));
+    }
+
+    private static int CountColour(GeometryHost host, Rect box, Color colour)
+    {
+        using var bitmap = host.Window.CaptureRenderedFrame()!; using var pixels = bitmap.Lock();
+        var density = host.Window.RenderScaling; var count = 0;
+        for (var y = (int)(box.Top * density); y < (int)(box.Bottom * density); y++)
+        for (var x = (int)(box.Left * density); x < (int)(box.Right * density); x++)
+        {
+            var offset = y * pixels.RowBytes + x * 4; var red = pixels.Format == PixelFormat.Rgba8888 ? 0 : 2;
+            if (System.Runtime.InteropServices.Marshal.ReadByte(pixels.Address, offset + red) == colour.R
+                && System.Runtime.InteropServices.Marshal.ReadByte(pixels.Address, offset + 1) == colour.G
+                && System.Runtime.InteropServices.Marshal.ReadByte(pixels.Address, offset + 2 - red) == colour.B) count++;
+        }
+        return count;
+    }
+
+    [AvaloniaFact]
     public void Clock_cardinal_targets_match_the_actual_native_float_polar_boundary()
     {
         var dial = new MaterialClockDial();

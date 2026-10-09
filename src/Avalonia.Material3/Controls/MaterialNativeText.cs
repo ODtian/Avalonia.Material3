@@ -18,7 +18,6 @@ internal sealed class MaterialNativeText : IDisposable
     private const string DerivedRoboto = "BC75B0FDA23E7859E81034E2571126341636CD9C8853B66A57D51D17D094433F";
     private const string MediumRoboto = "185159164472F2F4AFD33BEAFB4CC3841C8329BEFA96642C7443E5BD9E5F8AB8";
     private static readonly Dictionary<GlyphTypeface, Face> Faces = [];
-    private static readonly HashSet<string> MatrixDiagnostics = [];
     private sealed class Face(GlyphTypeface owner, SKTypeface typeface, bool numericProfile, bool latinProfile)
     {
         internal readonly GlyphTypeface Owner = owner;
@@ -223,7 +222,6 @@ internal sealed class MaterialNativeText : IDisposable
             var saved = canvas.Save();
             try
             {
-                var before = canvas.TotalMatrix;
                 canvas.Scale((float)(1 / density));
                 canvas.Translate((float)(origin.X * density), (float)(origin.Y * density));
                 using var builder = new SKTextBlobBuilder();
@@ -232,18 +230,6 @@ internal sealed class MaterialNativeText : IDisposable
                 using var blob = builder.Build();
                 var paragraphBaseline = nativeProfile && options.BaselinePixelAlignment != BaselinePixelAlignment.Unaligned
                     ? Math.Floor(baseline * density + .5) : baseline * density;
-                if (face.Face.NumericProfile && indices.Length == 1 && indices[0] == 24)
-                {
-                    var after = canvas.TotalMatrix;
-                    var widths = font.GetGlyphWidths(indices);
-                    font.MeasureText(indices, out var ink);
-                    var metrics = font.Metrics;
-                    var diagnostic = $"M3FontMatrix density={density:R} size={font.Size:R} glyph={indices[0]} offset={glyphs[0].GlyphOffset} position={positions[0].X:R},{positions[0].Y:R} origin={origin.X:R},{origin.Y:R} baseline={paragraphBaseline:R} " +
-                        $"before={before.ScaleX:R},{before.ScaleY:R},{before.SkewX:R},{before.SkewY:R},{before.TransX:R},{before.TransY:R} after={after.ScaleX:R},{after.ScaleY:R},{after.SkewX:R},{after.SkewY:R},{after.TransX:R},{after.TransY:R} " +
-                        $"width={widths[0]:R} bounds={ink.Left:R},{ink.Top:R},{ink.Right:R},{ink.Bottom:R} metrics={metrics.Top:R},{metrics.Ascent:R},{metrics.Descent:R},{metrics.Bottom:R} hint={font.Hinting} subpixel={font.Subpixel} linear={font.LinearMetrics} bitmap={font.EmbeddedBitmaps} autoHint={font.ForceAutoHinting} opacity={opacity:R}";
-                    lock (MatrixDiagnostics)
-                        if (MatrixDiagnostics.Count < 24 && MatrixDiagnostics.Add(diagnostic)) Console.WriteLine(diagnostic);
-                }
                 canvas.DrawText(blob, 0, (float)paragraphBaseline, paint);
             }
             finally { canvas.RestoreToCount(saved); }

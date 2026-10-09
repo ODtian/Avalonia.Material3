@@ -162,9 +162,7 @@ private fun FabScene() {
             }
             ExtendedFloatingActionButton(onClick = {}) {
                 Icon(Icons.Default.Add, null); Spacer(Modifier.width(8.dp))
-                Text("Create", onTextLayout = { result ->
-                    android.util.Log.i("M3NativeReference", "text-probe kind=create500 size=${result.size} baseline=${result.firstBaseline} left=${result.getLineLeft(0)} right=${result.getLineRight(0)} paragraph=${result.multiParagraph.width},${result.multiParagraph.height} tracking=${result.layoutInput.style.letterSpacing}")
-                })
+                Text("Create")
             }
             TextButton(onClick = { toolbarExpanded = !toolbarExpanded }, modifier = Modifier.testTag("toolbar-toggle")) { Text("Toggle toolbar") }
             HorizontalFloatingToolbar(expanded = toolbarExpanded, modifier = Modifier.testTag("floating-toolbar"), leadingContent = { IconButton(onClick = {}) { Icon(Icons.Default.Menu, "Menu") } }, trailingContent = { IconButton(onClick = {}) { Icon(Icons.Default.MoreVert, "More") } }) {
