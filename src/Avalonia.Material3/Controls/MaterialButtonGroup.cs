@@ -159,7 +159,13 @@ public partial class MaterialButtonGroup : Panel
 
     private void ChildChanged(object? sender, AvaloniaPropertyChangedEventArgs args)
     {
-        if (!_updatingOverflow && (args.Property == MaterialButton.ContentProperty || args.Property == MaterialButton.SizeProperty || args.Property == MaterialButton.FontSizeProperty || args.Property == MaterialButton.IsVisibleProperty))
+        if (!_updatingOverflow && (args.Property == MaterialButton.ContentProperty || args.Property == MaterialButton.SizeProperty
+            || args.Property == MaterialButton.ContentTemplateProperty || args.Property == MaterialButton.FontSizeProperty
+            || args.Property == MaterialButton.FontFamilyProperty || args.Property == MaterialButton.FontWeightProperty
+            || args.Property == MaterialButton.FontStyleProperty || args.Property == MaterialButton.LetterSpacingProperty
+            || args.Property == TextBlock.LineHeightProperty || args.Property == MaterialButton.PaddingProperty
+            || args.Property == WidthProperty || args.Property == MinWidthProperty || args.Property == MaxWidthProperty
+            || args.Property == MaterialButton.IsVisibleProperty))
         {
             RestoreOverflow(); InvalidateMeasure();
         }

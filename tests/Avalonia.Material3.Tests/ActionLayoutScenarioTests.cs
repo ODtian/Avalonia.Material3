@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.Headless.XUnit;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Material3.Controls;
 using Avalonia.Media;
@@ -12,6 +13,49 @@ namespace Avalonia.Material3.Tests;
 
 public class ActionLayoutScenarioTests
 {
+    [AvaloniaFact]
+    public void Overflow_membership_reconciles_the_visual_tree_when_nested_content_remeasures()
+    {
+        var group = new MaterialButtonGroup { Width = 1128 / 3.5, HorizontalAlignment = HorizontalAlignment.Left };
+        group.OverflowButton.Width = 48;
+        var caption = new Border { Width = 400 / 3.5 - 48, Height = 20 };
+        group.Children.Add(new MaterialGroupButton { Content = caption, Padding = new Thickness(24, 8) });
+        foreach (var item in new[] { ("Edit",254), ("Share",296), ("Disabled",400) })
+            group.Children.Add(new MaterialGroupButton { Content = item.Item1, Width = item.Item2 / 3.5 });
+        var share = group.Children.OfType<MaterialGroupButton>().Single(button => Equals(button.Content, "Share"));
+        using var host = new GeometryHost(group, 360, 80); host.Window.SetRenderScaling(3.5); host.Render();
+        Assert.Equal(new[] { "Share", "Disabled" }, group.OverflowItems.Select(button => button.Content));
+        caption.Width = 314 / 3.5 - 48; host.Render();
+        Assert.Equal(new[] { "Disabled" }, group.OverflowItems.Select(button => button.Content));
+        Assert.Contains(share, group.GetVisualDescendants());
+        var box = GeometryHost.Box(share, host.Window);
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Center.X, box.Top + 10));
+        var clicked = 0; share.Click += (_, _) => clicked++;
+        host.Window.MouseDown(box.Center, MouseButton.Left); host.Window.MouseUp(box.Center, MouseButton.Left);
+        Assert.Equal(1, clicked);
+    }
+
+    [AvaloniaFact]
+    public void Overflow_remeasurement_restores_the_actual_visible_action_after_initial_layout()
+    {
+        var group = new MaterialButtonGroup { Width = 1128 / 3.5, HorizontalAlignment = HorizontalAlignment.Left };
+        group.OverflowButton.Width = 48;
+        foreach (var item in new[] { ("Create",314), ("Edit",254), ("Share",400), ("Disabled",400) })
+            group.Children.Add(new MaterialGroupButton { Content = item.Item1, Width = item.Item2 / 3.5 });
+        var share = group.Children.OfType<MaterialGroupButton>().Single(button => Equals(button.Content, "Share"));
+        using var host = new GeometryHost(group, 360, 80); host.Window.SetRenderScaling(3.5); host.Render();
+        Assert.Equal(new[] { "Share", "Disabled" }, group.OverflowItems.Select(button => button.Content));
+        share.Width = 296 / 3.5; host.Render();
+        Assert.Equal(new[] { "Disabled" }, group.OverflowItems.Select(button => button.Content));
+        Assert.Contains(share, group.GetVisualDescendants());
+        var box = GeometryHost.Box(share, host.Window);
+        Assert.Equal(Color.Parse("#6750A4"), host.Pixel(box.Center.X, box.Top + 10));
+        share.Width = 400 / 3.5; host.Render();
+        Assert.Equal(new[] { "Share", "Disabled" }, group.OverflowItems.Select(button => button.Content));
+        share.Width = 296 / 3.5; host.Render();
+        Assert.Contains(share, group.GetVisualDescendants());
+    }
+
     [AvaloniaFact]
     public void Standalone_group_button_keeps_ordinary_measure_when_font_options_change()
     {

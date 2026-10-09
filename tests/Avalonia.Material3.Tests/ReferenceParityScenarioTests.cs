@@ -17,6 +17,33 @@ namespace Avalonia.Material3.Tests;
 
 public class ReferenceParityScenarioTests
 {
+    [AvaloniaFact]
+    public void Reference_buttons_restore_visible_actions_after_small_viewport_and_live_density_initialization()
+    {
+        using var host = new ReferenceHost();
+        host.Window.Width = 1; host.Window.Height = 1; host.Render();
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        { FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto") };
+        host.Shell.Navigate("buttons"); host.Render();
+        host.Window.SetRenderScaling(3.5); host.Window.Width = 354.285714; host.Window.Height = 744; host.Render();
+        var group = host.Find<MaterialButtonGroup>("button-group");
+        var share = group.Children.OfType<MaterialGroupButton>().Single(button => Equals(button.Content, "Share"));
+        foreach (var mode in new[] { TextHintingMode.None, TextHintingMode.Strong, TextHintingMode.None, TextHintingMode.Strong })
+        {
+            TextOptions.SetTextHintingMode(host.Window, mode); host.Render();
+            Assert.Equal(new[] { "Disabled" }, group.OverflowItems.Select(button => button.Content));
+            Assert.Contains(share, group.GetVisualDescendants());
+            using var bitmap = host.Window.CaptureRenderedFrame()!; using var pixels = bitmap.Lock();
+            var box = GeometryHost.Box(share, host.Window);
+            var x = (int)(box.Center.X * 3.5); var y = (int)((box.Top + 10) * 3.5);
+            var offset = y * pixels.RowBytes + x * 4;
+            var red = pixels.Format == PixelFormat.Rgba8888 ? 0 : 2;
+            Assert.Equal(103, Marshal.ReadByte(pixels.Address, offset + red));
+            Assert.Equal(80, Marshal.ReadByte(pixels.Address, offset + 1));
+            Assert.Equal(164, Marshal.ReadByte(pixels.Address, offset + 2 - red));
+        }
+    }
+
     [AvaloniaTheory]
     [InlineData(1.25)]
     [InlineData(3.5)]
