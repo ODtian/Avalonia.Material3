@@ -100,8 +100,10 @@ internal sealed class MaterialNativeText : IDisposable
                 var count = bytes.Length >= 12 && BinaryPrimitives.ReadUInt32BigEndian(bytes) == Tag("ttcf")
                     ? BinaryPrimitives.ReadUInt32BigEndian(bytes.AsSpan(8)) : 1;
                 if (count > 256) return null;
-                SKTypeface? imported = null;
-                for (var index = 0; index < count; index++)
+                // Android's system manager retains the exact variable500 face.
+                // The static reproduction rounds variation coordinates on save.
+                SKTypeface? imported = latinProfile ? MatchedAndroidMedium(chosen) : null;
+                for (var index = 0; imported is null && index < count; index++)
                 {
                     var candidate = SKTypeface.FromData(data, index);
                     if (candidate is null) continue;
@@ -115,6 +117,20 @@ internal sealed class MaterialNativeText : IDisposable
         }
     }
     private static uint Tag(string name) => (uint)name[0] << 24 | (uint)name[1] << 16 | (uint)name[2] << 8 | name[3];
+    private static SKTypeface? MatchedAndroidMedium(GlyphTypeface chosen)
+    {
+        if (!OperatingSystem.IsAndroid()) return null;
+        var candidate = SKTypeface.FromFamilyName("sans-serif", 500, 5, SKFontStyleSlant.Upright);
+        if (candidate is null || candidate.FontStyle.Weight != 500 || candidate.FontStyle.Width != 5
+            || candidate.FontStyle.Slant != SKFontStyleSlant.Upright || candidate.GlyphCount != chosen.GlyphCount) return null;
+        using var stream = candidate.OpenStream(out var index);
+        if (stream is null || index != 0) return null;
+        using var data = SKData.Create(stream);
+        if (data is null || Convert.ToHexString(SHA256.HashData(data.ToArray())) != DefaultRoboto) return null;
+        if (!chosen.PlatformTypeface.TryGetTable(new OpenTypeTag(Tag("cmap")), out var expected)
+            || candidate.GetTableData(Tag("cmap")) is not { } actual || !expected.Span.SequenceEqual(actual)) return null;
+        return candidate;
+    }
     private static bool Corresponds(SKTypeface imported, GlyphTypeface chosen, bool derived)
     {
         if (imported.GlyphCount != chosen.GlyphCount || imported.FontStyle.Weight != (int)chosen.Weight ||
