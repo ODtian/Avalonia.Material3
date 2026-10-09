@@ -17,6 +17,19 @@ namespace Avalonia.Material3.Tests;
 
 public class ReferenceParityScenarioTests
 {
+    [AvaloniaTheory]
+    [InlineData(1.25)]
+    [InlineData(3.5)]
+    public void Reference_unconnected_group_keeps_native_three_actions_before_overflow_at_phone_density(double density)
+    {
+        using var host = new ReferenceHost("buttons");
+        host.Shell.MaterialTheme.Typography = host.Shell.MaterialTheme.Typography with
+        { FontFamily = new FontFamily($"avares://{typeof(ReferenceParityScenarioTests).Assembly.GetName().Name}/ReferenceFonts#Roboto") };
+        host.Window.SetRenderScaling(density); host.Render();
+        var group = host.Find<MaterialButtonGroup>("button-group");
+        Assert.Equal(new[] { "Disabled" }, group.OverflowItems.Select(button => button.Content));
+    }
+
     [AvaloniaFact]
     public void Native_clock_selector_edge_uses_clear_xor_and_destination_over_colour()
     {
@@ -200,7 +213,7 @@ public class ReferenceParityScenarioTests
         var buttons = host.Find<MaterialButtonGroup>(id).Children.OfType<MaterialGroupButton>().ToArray();
         Assert.All(buttons, button => Assert.Equal(new Thickness(left, vertical, right, vertical), button.Padding));
         if (id == "button-group-single") Assert.All(buttons, button => Assert.Equal(24, button.IconSize));
-        if (id == "button-group") Assert.Single(host.Find<MaterialButtonGroup>(id).OverflowItems, button => Equals(button.Content, "Disabled"));
+        if (id == "button-group") Assert.Equal(new[] { "Disabled" }, host.Find<MaterialButtonGroup>(id).OverflowItems.Select(button => button.Content));
     }
 
     [AvaloniaFact]

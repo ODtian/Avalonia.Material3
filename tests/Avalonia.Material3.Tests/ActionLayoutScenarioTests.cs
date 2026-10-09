@@ -13,6 +13,25 @@ namespace Avalonia.Material3.Tests;
 public class ActionLayoutScenarioTests
 {
     [AvaloniaFact]
+    public void Unconnected_overflow_uses_native_remaining_space_before_the_final_gap()
+    {
+        var group = new MaterialButtonGroup { Width = 1128 / 3.5, HorizontalAlignment = HorizontalAlignment.Left };
+        group.OverflowButton.Width = 48;
+        foreach (var item in new[] { ("Create",314), ("Edit",254), ("Share",296), ("Disabled",400) })
+            group.Children.Add(new MaterialGroupButton { Content = item.Item1, Width = item.Item2 / 3.5 });
+        using var host = new GeometryHost(group, 1128 / 3.5, 48); host.Window.SetRenderScaling(3.5); host.Render();
+        Assert.Equal(48, group.OverflowButton.DesiredSize.Width, precision: 6);
+        Assert.Equal(1128, group.Bounds.Width * 3.5, precision: 6);
+        Assert.Equal(314, group.Children[0].DesiredSize.Width * 3.5, precision: 6);
+        Assert.Equal(254, group.Children[1].DesiredSize.Width * 3.5, precision: 6);
+        Assert.Equal(296, group.Children[2].DesiredSize.Width * 3.5, precision: 6);
+        Assert.Equal(new[] { "Disabled" }, group.OverflowItems.Select(button => button.Content));
+        Assert.Equal(-15, group.Children[0].Bounds.Left * 3.5, precision: 6);
+        Assert.Equal(341, group.Children[1].Bounds.Left * 3.5, precision: 6);
+        Assert.Equal(637, group.Children[2].Bounds.Left * 3.5, precision: 6);
+    }
+
+    [AvaloniaFact]
     public void Extended_fab_preserves_parent_data_templates_for_non_string_content()
     {
         var content = new ActionCaption("Authored action");
